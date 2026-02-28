@@ -1,38 +1,72 @@
-"use client";
-import { useEffect, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { type FC, useRef } from "react";
+import { Transition } from "react-transition-group";
 
-export default function Modal({
-  isOpen,
-  onClose,
-  children,
-}: {
-  isOpen: boolean;
+type Props = {
+  isShowing: boolean;
   onClose: () => void;
-  children: React.ReactNode;
-}) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+};
 
-  useEffect(() => {
-    if (isOpen) {
-      dialogRef.current?.showModal();
-    } else {
-      dialogRef.current?.close();
-    }
-  }, [isOpen]);
+gsap.registerPlugin(useGSAP);
+
+const Modal: FC<Props> = ({ isShowing, onClose }) => {
+  const container = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: container });
+
+  const onEnter = contextSafe(() => {
+    gsap
+      .timeline()
+      .to(".backdrop", { opacity: 1, duration: 0.5 })
+      .fromTo(
+        ".content",
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.3 },
+        0,
+      )
+      .fromTo(
+        "h2, p",
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.24, stagger: 0.1 },
+        "-=0.2",
+      );
+  });
+
+  const onExit = contextSafe(() => {
+    gsap.to(".backdrop", { opacity: 0, duration: 0.2 });
+    gsap.to(".content", { opacity: 0, scale: 0.95, duration: 0.2 });
+  });
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="backdrop:bg-black/50 p-6 rounded-lg shadow-xl"
+    <Transition
+      in={isShowing}
+      timeout={{ enter: 0, exit: 300 }}
+      mountOnEnter
+      unmountOnExit
+      onEnter={onEnter}
+      onExit={onExit}
+      nodeRef={container}
     >
-      {children}
-      <button
-        onClick={onClose}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Close
-      </button>
-    </dialog>
+      {(status) => (
+        <div
+          ref={container}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div
+            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
+            onClick={onClose}
+          />
+          <div className="content relative h-[240px] w-[320px] space-y-4 rounded-md border border-black bg-off-black p-8 text-white shadow-2xl">
+            <h2 className="text-xl font-bold text-green">HELLOOOOOOOOOOOOO</h2>
+            <p>
+              It's me. I was wondering if after all these years you'd like to
+              meet
+            </p>
+          </div>
+        </div>
+      )}
+    </Transition>
   );
-}
+};
+
+export default Modal;

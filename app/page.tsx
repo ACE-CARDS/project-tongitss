@@ -6,7 +6,7 @@ import NavBar from "@/components/navbar";
 import Modal from "@/components/modal";
 
 export default function Home() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalShowing, setIsModalShowing] = useState(false);
 
   return (
     <div className="">
@@ -24,7 +24,7 @@ export default function Home() {
 
         <section>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsModalShowing(true)}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
           >
             Button
@@ -41,10 +41,10 @@ export default function Home() {
           </p>
         </section>
 
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <h2 className="text-xl font-semibold">Settings</h2>
-          <p className="text-gray-600 mt-2">heloooooooooooooooooo</p>
-        </Modal>
+        <Modal
+          isShowing={isModalShowing}
+          onClose={() => setIsModalShowing(false)}
+        />
       </main>
     </div>
   );
