@@ -1,5 +1,6 @@
 import Image from "next/image";
 import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
           <p className="text-lg mt-4">This is the home page of our card game application.</p>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }
