@@ -85,6 +85,7 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
               ANNOUNCEMENT
             </h2>
             <p>{announce_landing.announce_landing_title}</p>
+            <p>{announce_landing.announce_landing_desc}</p>
           </div>
         </div>
       )}
