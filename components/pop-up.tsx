@@ -1,7 +1,8 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { type FC, useRef } from "react";
+import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
+import { createClient } from "@/utils/supabase/client";
 
 type Props = {
   isShowing: boolean;
@@ -11,6 +12,29 @@ type Props = {
 gsap.registerPlugin(useGSAP);
 
 const Modal: FC<Props> = ({ isShowing, onClose }) => {
+  const [announce_landing, setAnnouncement] = useState({
+    announce_landing_title: "Loading...",
+    announce_landing_desc: "",
+  });
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function getAnnouncement() {
+      const { data, error } = await supabase
+        .from("announce_landing")
+        .select("announce_landing_title, announce_landing_desc")
+        .single();
+
+      if (data) {
+        setAnnouncement(data);
+      }
+    }
+
+    if (isShowing) {
+      getAnnouncement();
+    }
+  }, [isShowing, supabase]);
+
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 
@@ -57,11 +81,10 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
             onClick={onClose}
           />
           <div className="content relative h-[240px] w-[320px] space-y-4 rounded-md border border-black bg-off-black p-8 text-white shadow-2xl">
-            <h2 className="text-xl font-bold text-green">HELLOOOOOOOOOOOOO</h2>
-            <p>
-              It's me. I was wondering if after all these years you'd like to
-              meet
-            </p>
+            <h2 className="text-xl font-bold text-green text-center">
+              ANNOUNCEMENT
+            </h2>
+            <p>{announce_landing.announce_landing_title}</p>
           </div>
         </div>
       )}
