@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import NavBar from "@/components/navbar";
-import Modal from "@/components/modal";
+import Modal from "@/components/pop-up";
 
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
+
+  useEffect(() => {
+    setIsModalShowing(true);
+  }, []);
 
   return (
     <div className="">

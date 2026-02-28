@@ -17,17 +17,17 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
   const onEnter = contextSafe(() => {
     gsap
       .timeline()
-      .to(".backdrop", { opacity: 1, duration: 0.5 })
+      .to(".backdrop", { opacity: 1, duration: 0.1 })
       .fromTo(
         ".content",
-        { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 0.3 },
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.1 },
         0,
       )
       .fromTo(
         "h2, p",
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.24, stagger: 0.1 },
+        { opacity: 0, y: 3 },
+        { opacity: 1, y: 0, duration: 0.1, stagger: 0.01 },
         "-=0.2",
       );
   });
@@ -40,7 +40,7 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
   return (
     <Transition
       in={isShowing}
-      timeout={{ enter: 0, exit: 300 }}
+      timeout={{ exit: 300 }}
       mountOnEnter
       unmountOnExit
       onEnter={onEnter}
