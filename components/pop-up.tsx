@@ -17,9 +17,7 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
 
   useEffect(() => {
     async function getAnnouncements() {
-      const { data, error } = await supabase
-        .from("announce_landing")
-        .select("announce_landing_title, announce_landing_desc");
+      const { data, error } = await supabase.from("announce_landing").select();
 
       if (data) {
         setAnnouncements(data);
@@ -76,14 +74,18 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
             className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
             onClick={onClose}
           />
-          <div className="content relative h-[80%] w-[80%] space-y-4 rounded-3xl border border-black bg-[#011638] p-8 text-white shadow-2xl flex flex-col">
+          <div className="bg-linear-to-r to-[#011638] via-[#0b1763] from-[#011638] content relative h-[80%] w-[80%] space-y-4 rounded-3xl border border-black  p-8 text-white shadow-2xl flex flex-col">
             <div>
-              <h2 className="text-xl font-bold text-green text-center">
+              <h2 className="text-4xl font-bold text-[#eff0f2] text-center p-4 pb-6">
                 ANNOUNCEMENT
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto pr-6 custom-scrollbar">
-              {announcements.length === 0 && <p>Loading...</p>}
+              {announcements.length === 0 && (
+                <div className="flex h-full w-full items-center justify-center">
+                  <p>Loading...</p>
+                </div>
+              )}
               {announcements && (
                 <div className="announcements">
                   <div className="announcements-grid">
