@@ -68,36 +68,43 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
       {(status) => (
         <div
           ref={container}
+          id="popUpAnnouncement"
           className="fixed inset-0 z-50 flex items-center justify-center"
         >
           <div
             className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
             onClick={onClose}
           />
-          <div className="bg-linear-to-r to-[#011638] via-[#0b1763] from-[#011638] content relative h-[80%] w-[80%] space-y-4 rounded-3xl border border-black  p-8 text-white shadow-2xl flex flex-col">
-            <div>
-              <h2 className="text-4xl font-bold text-[#eff0f2] text-center p-4 pb-6">
-                ANNOUNCEMENT
-              </h2>
-            </div>
-            <div className="flex-1 overflow-y-auto pr-6 custom-scrollbar">
-              {announcements.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center">
-                  <p>Loading...</p>
-                </div>
-              )}
-              {announcements && (
-                <div className="announcements">
-                  <div className="announcements-grid">
-                    {announcements.map((announce_landing) => (
-                      <AnnounceCard
-                        key={announce_landing.id}
-                        announce_landing={announce_landing}
-                      />
-                    ))}
+          <div
+            id="scrollbar"
+            className="content relative z-10 h-full max-h-[80vh] w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4"
+          >
+            <div className="min-h-full rounded-2xl border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-8 text-white shadow-2xl flex flex-col">
+              <div id="announcementHeader" className="p-4">
+                <h2 className="text-4xl font-bold text-[#eff0f2] text-center p-4">
+                  ANNOUNCEMENT
+                </h2>
+              </div>
+
+              <div className="flex-1">
+                {announcements.length === 0 ? (
+                  <div className="flex h-64 w-full items-center justify-center">
+                    <p>Loading...</p>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="announcements">
+                    <div className="grid grid-cols-1 gap-6">
+                      {" "}
+                      {announcements.map((announce_landing) => (
+                        <AnnounceCard
+                          key={announce_landing.id}
+                          announce_landing={announce_landing}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
