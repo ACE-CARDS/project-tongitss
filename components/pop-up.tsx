@@ -12,7 +12,7 @@ type Props = {
 
 gsap.registerPlugin(useGSAP);
 const supabase = createClient();
-const Modal: FC<Props> = ({ isShowing, onClose }) => {
+const Popup: FC<Props> = ({ isShowing, onClose }) => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
   useEffect(() => {
@@ -113,4 +113,4 @@ const Modal: FC<Props> = ({ isShowing, onClose }) => {
   );
 };
 
-export default Modal;
+export default Popup;

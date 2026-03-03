@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import NavBar from "@/components/navbar";
-import Modal from "@/components/pop-up";
+import Popup from "@/components/pop-up";
+import Kidla from "@/components/kidlaButton";
 
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
@@ -26,6 +27,7 @@ export default function Home() {
           </p>
         </section>
 
+        <Kidla onClick={() => setIsModalShowing(true)} />
         <section>
           <button
             onClick={() => setIsModalShowing(true)}
@@ -45,7 +47,7 @@ export default function Home() {
           </p>
         </section>
 
-        <Modal
+        <Popup
           isShowing={isModalShowing}
           onClose={() => setIsModalShowing(false)}
         />
