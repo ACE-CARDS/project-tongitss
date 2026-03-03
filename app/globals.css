@@ -42,3 +42,11 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #0b1763;
 }
+
+#kidla {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 5px;
+}
