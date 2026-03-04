@@ -190,7 +190,7 @@ export default async function AddThesisPage() {
                   <select
                     id="category"
                     name="category"
-                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#eec643]"
+                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#011638]"
                     defaultValue=""
                   >
                     <option value="" disabled>Select a category</option>
@@ -209,7 +209,7 @@ export default async function AddThesisPage() {
                   <select
                     id="school"
                     name="school"
-                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#eec643]"
+                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#011638]"
                     defaultValue=""
                   >
                     <option value="" disabled>Select a school</option>
@@ -307,7 +307,7 @@ export default async function AddThesisPage() {
                 className="mt-1 accent-[#eec643]"
               />
               <label htmlFor="privacy" className="text-sm text-gray-600">
-                I confirm that I have the authority to submit this thesis.
+                I acknowledge and consent that the organization will collect, use, and process the information provided in this form for research documentation and archival purposes, in accordance with the Data Privacy Act.
               </label>
             </div>
 

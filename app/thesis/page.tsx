@@ -54,7 +54,7 @@ async function ThesisData({}: {searchParams: {page?: string}}) {
     );
   }
 
-  // thesis card grid
+  //thesis card grid
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -217,7 +217,7 @@ async function ThesisData({}: {searchParams: {page?: string}}) {
   );
 }
 
-// filter
+//filter
 async function FilterButton() {
   
   return ( //SOURCE: https://codepen.io/mattlake/pen/GRNzqoO
@@ -232,7 +232,7 @@ async function FilterButton() {
   );
 }
 
-// Main page
+//main page
 export default function ThesisPage({searchParams}: {searchParams: {page?:string}}) {
   return (
     <div className="">
@@ -243,7 +243,7 @@ export default function ThesisPage({searchParams}: {searchParams: {page?:string}
           <h1 className="text-3xl font-bold text-[#011638]">Scholar Theses Collection</h1>
           <p className="text-[#141414] mt-2">Browse all available theses</p>
           
-          {/* Filter, Search, and Add Buttons */}
+          {/*filter, search, and add*/}
           <div className="flex items-center gap-3 mt-4">
             <FilterButton/> 
 
