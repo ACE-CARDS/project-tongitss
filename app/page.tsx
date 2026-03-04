@@ -1,11 +1,46 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import NavBar from "@/components/navbar";
+import Popup from "@/components/pop-up";
+import Kidla from "@/components/kidlaButton";
+import KidlaDialogue from "@/components/kidlaDialogue";
 import Footer from "@/components/footer";
 
 export default function Home() {
+  const [isModalShowing, setIsModalShowing] = useState(false);
+  const [isDialogueShowing, setIsDialogueShowing] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsModalShowing(true);
+  }, []);
+
+  useEffect(() => {
+    setIsDialogueShowing(false);
+  }, []);
+
   return (
     <div className="">
       <NavBar />
+      <Popup
+        isShowing={isModalShowing}
+        onClose={() => setIsModalShowing(false)}
+      />
+      <KidlaDialogue
+        isShowing={isDialogueShowing}
+        onClose={() => setIsDialogueShowing(false)}
+        onAnnouncements={() => {
+          setIsDialogueShowing(false);
+          setIsModalShowing(true);
+        }}
+        onRedirectMemApp={() => {
+          setIsDialogueShowing(false);
+          router.push("/events");
+        }}
+      />
       <main className="">
       <section id="hero" className="py-50 bg-[#eff0f2] h-screen">
         <div className="flex flex-col lg:flex-row items-center justify-between pl-20 lg:pl-20 relative h-full">
@@ -33,7 +68,10 @@ export default function Home() {
 
          </div>
       </section>
-        
+        <Kidla
+          onClick={() => setIsDialogueShowing((prev) => !prev)}
+          isDialogueShowing={isDialogueShowing}
+        />
         <section id="wow" className="justify-center items-center text-center py-20 bg-blue-500 h-screen">
           <h1 className="text-3xl font-bold">[NEWS AND MEDIA]</h1>
         </section>
