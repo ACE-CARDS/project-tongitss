@@ -15,6 +15,7 @@ const routeTitles: Record<string, string> = {
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
+  "/executives": "EXECUTIVES",
 };
 
 export default function NavBar() {
