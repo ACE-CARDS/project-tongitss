@@ -5,12 +5,18 @@ import Image from "next/image";
 import NavBar from "@/components/navbar";
 import Popup from "@/components/pop-up";
 import Kidla from "@/components/kidlaButton";
+import KidlaDialogue from "@/components/kidlaDialogue";
 
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
+  const [isDialogueShowing, setIsDialogueShowing] = useState(false);
 
   useEffect(() => {
     setIsModalShowing(true);
+  }, []);
+
+  useEffect(() => {
+    setIsDialogueShowing(false);
   }, []);
 
   return (
@@ -19,6 +25,10 @@ export default function Home() {
       <Popup
         isShowing={isModalShowing}
         onClose={() => setIsModalShowing(false)}
+      />
+      <KidlaDialogue
+        isShowing={isDialogueShowing}
+        onClose={() => setIsDialogueShowing(false)}
       />
       <main className="">
         <section
@@ -32,8 +42,8 @@ export default function Home() {
         </section>
 
         <Kidla
-          onClick={() => setIsModalShowing(true)}
-          isModalOpen={isModalShowing}
+          onClick={() => setIsDialogueShowing((prev) => !prev)}
+          isDialogueShowing={isDialogueShowing}
         />
 
         <section

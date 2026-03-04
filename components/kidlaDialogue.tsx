@@ -1,9 +1,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { type FC, useRef, useEffect, useState } from "react";
+import { type FC, useRef } from "react";
 import { Transition } from "react-transition-group";
-import { createClient } from "@/lib/supabase/client";
-import AnnounceCard from "./announceCard";
 
 type Props = {
   isShowing: boolean;
@@ -11,27 +9,7 @@ type Props = {
 };
 
 gsap.registerPlugin(useGSAP);
-const supabase = createClient();
-const Popup: FC<Props> = ({ isShowing, onClose }) => {
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function getAnnouncements() {
-      const { data, error } = await supabase
-        .from("announce_landing")
-        .select()
-        .order("id", { ascending: true });
-
-      if (data) {
-        setAnnouncements(data);
-      }
-    }
-
-    if (isShowing) {
-      getAnnouncements();
-    }
-  }, [isShowing, supabase]);
-
+const KidlaDialogue: FC<Props> = ({ isShowing, onClose }) => {
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 
@@ -88,26 +66,6 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
                   ANNOUNCEMENT
                 </h2>
               </div>
-
-              <div className="flex-1">
-                {announcements.length === 0 ? (
-                  <div className="flex h-64 w-full items-center justify-center">
-                    <p>Loading...</p>
-                  </div>
-                ) : (
-                  <div className="announcements">
-                    <div className="grid grid-cols-1 gap-6">
-                      {" "}
-                      {announcements.map((announce_landing) => (
-                        <AnnounceCard
-                          key={announce_landing.id}
-                          announce_landing={announce_landing}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
@@ -116,4 +74,4 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
   );
 };
 
-export default Popup;
+export default KidlaDialogue;
