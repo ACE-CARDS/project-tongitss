@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import NavBar from "@/components/navbar";
 import Popup from "@/components/pop-up";
@@ -10,6 +11,7 @@ import KidlaDialogue from "@/components/kidlaDialogue";
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
   const [isDialogueShowing, setIsDialogueShowing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsModalShowing(true);
@@ -29,6 +31,14 @@ export default function Home() {
       <KidlaDialogue
         isShowing={isDialogueShowing}
         onClose={() => setIsDialogueShowing(false)}
+        onAnnouncements={() => {
+          setIsDialogueShowing(false);
+          setIsModalShowing(true);
+        }}
+        onRedirectMemApp={() => {
+          setIsDialogueShowing(false);
+          router.push("/events");
+        }}
       />
       <main className="">
         <section

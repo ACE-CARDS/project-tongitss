@@ -2,16 +2,22 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { type FC, useRef } from "react";
 import { Transition } from "react-transition-group";
+import Link from "next/link";
 
 type Props = {
   isShowing: boolean;
   onClose: () => void;
   onAnnouncements: () => void; // open announcements modal
-  onRedirectEvent: () => void; // go to events page
+  onRedirectMemApp: () => void; // go to events page
 };
 
 gsap.registerPlugin(useGSAP);
-const KidlaDialogue: FC<Props> = ({ isShowing, onClose, onAnnouncements, onRedirectEvent }) => {
+const KidlaDialogue: FC<Props> = ({
+  isShowing,
+  onClose,
+  onAnnouncements,
+  onRedirectMemApp,
+}) => {
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 
@@ -81,10 +87,10 @@ const KidlaDialogue: FC<Props> = ({ isShowing, onClose, onAnnouncements, onRedir
                     See Announcements
                   </button>
                   <button
-                    onClick={onRedirectEvent}
+                    onClick={onRedirectMemApp}
                     className="rounded-2xl text-white bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] hover:bg-gradient-to-bl font-medium rounded-base text-lg px-4 py-2.5 text-center leading-5 m-3"
                   >
-                    Go to Events
+                    Apply for Membership!
                   </button>
                 </div>
               </div>
