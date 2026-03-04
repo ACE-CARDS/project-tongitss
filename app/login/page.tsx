@@ -7,8 +7,8 @@ export default function LoginPage() {
     <div>
       <main>
         <div className="flex md:flex-row flex-col">
-          <section id="welcome" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-red-500">
-            <div className="flex flex-col my-auto mx-auto bg-yellow-500 w-sm">
+          <section id="welcome" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-white">
+            <div className="flex flex-col my-auto mx-auto w-sm">
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
                 alt="ACE CARDS Logo"
@@ -20,7 +20,7 @@ export default function LoginPage() {
                 <span className="text-5xl">ACE CARDS' User Area</span>
               </h1>
 
-              <ul className="flex flex-row gap-3 lg:mt-30 md:mt-20 mt-10 ml-2">
+              <ul className="flex flex-row gap-3 lg:mt-30 md:mt-20 mt-10 ml-2 text-gray-700">
                 <li>A</li>
                 <li>A</li>
                 <li>A</li>
@@ -31,7 +31,7 @@ export default function LoginPage() {
           </section>
 
           <section id="login-form" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-blue-500">
-            <div className="flex flex-col my-auto mx-auto bg-yellow-500 w-sm justify-center items-center">
+            <div className="flex flex-col my-auto mx-auto w-sm justify-center items-center">
               <span className="text-2xl text-black font-medium text-center">
                 Let's stay connected!<br/>
                 Please sign in to continue.
