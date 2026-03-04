@@ -76,7 +76,8 @@ const KidlaDialogue: FC<Props> = ({
                   </h2>
                   <h3 className="text-xl font-bold text-[#141414] text-center p-2">
                     Clicking on Kidla will open a dialogue box that lets you
-                    open the announcement modal or navigate to the events page
+                    open the announcement modal or navigate to the Membership
+                    Application page
                   </h3>
                 </div>
                 <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-4">
