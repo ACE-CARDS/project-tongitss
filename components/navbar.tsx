@@ -1,32 +1,76 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Image from "next/image";
+
+const siteName = "ACE CARDS";
+
+const routeTitles: Record<string, string> = {
+  "/": "HOME",
+  "/about-us": "ABOUT US",
+  "/events": "EVENTS",
+  "/survey": "RESEARCH SURVEYS",
+  "/thesis": "THESIS REPOSITORY",
+  "/member-appli": "BE A MEMBER",
+  "/dashboard": "DASHBOARD",
+};
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [academicsOpen, setAcademicsOpen] = useState(false);
+  const academicsRef = useRef<HTMLLIElement>(null);
+
+  const pathname = usePathname();
+  // const title = routeTitles[pathname] || "";
+  const title = pathname && pathname !== "/" ? routeTitles[pathname] || "" : "";
 
   const toggleMenu = () => {
-    setIsOpen(!isOpen);
-
-    const openIcon = document.querySelector("svg:nth-child(1)");
-    const closeIcon = document.querySelector("svg:nth-child(2)");
-
-    if (openIcon && closeIcon) {
-      openIcon.classList.toggle("hidden");
-      closeIcon.classList.toggle("hidden");
-    }
+    setIsOpen((o) => !o);
   }
 
+  const toggleDropdown = () => {
+    setAcademicsOpen(!academicsOpen);
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (academicsRef.current && !academicsRef.current.contains(event.target as Node)) {
+        setAcademicsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  
   return (
-    <nav className="w-full py-4 px-8 bg-blue-500 text-white fixed">
+    <nav className="w-full py-4 px-8 bg-[#011638] text-white sticky top-0 z-50">
+
       <div className="flex flex-row items-center justify-between w-full gap-4">
         
-        <div className="text-lg font-bold">ACE CARDS</div>
+        {/* <div className="flex flex-row bg-red-500"> */}
+          <a className="flex flex-row items-center" href="/">
+            <Image 
+              src="/assets/logos/ACE CARDS logo.png" 
+              alt="ACE CARDS Logo" 
+              className="w-9 h-9 inline-block mr-2"
+              width={9}
+              height={9}>
+            </Image>
+            <div className="flex flex-col">
+              {title && title !== siteName && (
+                <div className="text-sm opacity-75 m-0 p-0">{siteName}</div>
+              )}
+              <div className="text-3xl font-bold leading-tight">{title || siteName}</div>
+            </div>
+          </a>
+        {/* </div> */}
 
         <div className="flex flex-row">
-          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-15 bg-blue-500 text-white min-h-[30vh] w-full md:static md:min-h-fit md:w-auto md:block flex items-center justify-center ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} md:opacity-100 md:visible md:flex`}>
-            <ul className="flex md:flex-row flex-col gap-4 items-end right-5 absolute">
+          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-15 bg-[#011638] text-white min-h-[25rem] w-full lg:static lg:min-h-fit lg:w-auto lg:block flex items-center justify-center ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
+            <ul className="flex lg:flex-row flex-col gap-9 items-end right-5 absolute">
               <li className="hover:underline">
                 <Link href="/">Home</Link>
               </li>
@@ -39,13 +83,26 @@ export default function NavBar() {
                 <Link href="/events">Events</Link>
               </li>
 
-              <li>
+              <li ref={academicsRef} onClick={toggleDropdown} className="group relative flex-row flex gap-1 hover:underline cursor-pointer">
                 Academics
-                <ul className="hover:underline md:hidden hidden">
-                  <li>
-                    <Link href="/research">Research Surveys</Link>
+
+                {/* Arrow down */}
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor" 
+                  className="size-5">
+                  <path 
+                    fillRule="evenodd"
+                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" 
+                    clipRule="evenodd" />
+                </svg>
+
+                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg -left-10 top-5 w-50 gap-4 flex flex-col`}>
+                  <li className="hover:underline">
+                    <Link href="/survey">Research Surveys</Link>
                   </li>
-                  <li>
+                  <li className="hover:underline">
                     <Link href="/thesis">Thesis Repository</Link>
                   </li>
                 </ul>
@@ -62,11 +119,27 @@ export default function NavBar() {
           </div>
           
           <div className="flex items-center gap-4">
-            <svg onClick={() => toggleMenu()} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="duration-200 size-6 md:hidden cursor-pointer">
+            {/* hamburger */}
+            <svg
+              onClick={toggleMenu}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className={`duration-200 size-6 lg:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
 
-            <svg onClick={() => toggleMenu()} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="duration-200 size-6 hidden cursor-pointer">
+            {/* close icon */}
+            <svg
+              onClick={toggleMenu}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className={`duration-200 size-6 lg:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </div>
