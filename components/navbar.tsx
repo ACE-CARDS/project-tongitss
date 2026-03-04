@@ -61,7 +61,7 @@ export default function NavBar() {
             </Image>
             <div className="flex flex-col justify-center h-full gap-0">
               {title && title !== siteName && (
-                <div className="text-s opacity-75 font-bold leading-none">{siteName}</div>
+                <div className="text-sm opacity-75 font-bold leading-none">{siteName}</div>
               )}
               <div className="text-3xl font-bold leading-none">{title || siteName}</div>
             </div>
@@ -69,7 +69,7 @@ export default function NavBar() {
         {/* </div> */}
 
         <div className="flex flex-row h-full items-center">
-          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-20 bg-[#011638] text-white w-full lg:static lg:h-full lg:w-auto lg:block flex items-center justify-center ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
+          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-20 bg-[#011638] text-white w-full lg:static lg:h-full lg:w-auto lg:block flex text-right justify-end ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
             <ul className="flex lg:flex-row flex-col gap-6 lg:gap-8 lg:h-full lg:items-center py-6 lg:py-0 px-8 lg:px-0">
               <li className="hover:underline">
                 <Link href="/">Home</Link>
@@ -98,7 +98,7 @@ export default function NavBar() {
                     clipRule="evenodd" />
                 </svg>
 
-                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg -left-10 top-8 w-50 gap-2 flex flex-col`}>
+                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg lg:-left-10 -left-20 lg:top-8 top-5 w-50 lg:gap-2 gap-4 flex flex-col`}>
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
                   </li>
