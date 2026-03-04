@@ -17,7 +17,7 @@ export default function AboutMascot() {
 
       <div className="flex-1 flex justify-center mt-10 lg:mt-0 relative z-20">
         <img 
-          src="/placeholder1.jpg" 
+          src="mascot.png" 
           className="w-[300px] h-[300px] lg:w-[500px] lg:h-[500px] object-cover rounded-3xl shadow-2xl" 
           alt="Ace Cards Mascot" 
         />
