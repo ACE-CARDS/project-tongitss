@@ -99,7 +99,7 @@ export default function NavBar() {
                     clipRule="evenodd" />
                 </svg>
 
-                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg lg:-left-10 -left-20 lg:top-8 top-5 w-50 lg:gap-2 gap-4 flex flex-col`}>
+                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg lg:-left-10 -left-20 lg:top-8 top-5 w-50 gap-4 flex flex-col text-center`}>
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
                   </li>
