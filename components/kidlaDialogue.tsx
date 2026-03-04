@@ -6,10 +6,12 @@ import { Transition } from "react-transition-group";
 type Props = {
   isShowing: boolean;
   onClose: () => void;
+  onAnnouncements: () => void; // open announcements modal
+  onRedirectEvent: () => void; // go to events page
 };
 
 gsap.registerPlugin(useGSAP);
-const KidlaDialogue: FC<Props> = ({ isShowing, onClose }) => {
+const KidlaDialogue: FC<Props> = ({ isShowing, onClose, onAnnouncements, onRedirectEvent }) => {
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 
@@ -58,13 +60,33 @@ const KidlaDialogue: FC<Props> = ({ isShowing, onClose }) => {
           />
           <div
             id="scrollbar"
-            className="content relative z-10 h-full max-h-[80vh] w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4"
+            className="content relative z-10 h-full max-h-[50vh] w-full max-w-4xl overflow-y-auto custom-scrollbar pr-4"
           >
-            <div className="min-h-full rounded-2xl border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-8 text-white shadow-2xl flex flex-col">
-              <div id="announcementHeader" className="p-4">
-                <h2 className="text-4xl font-bold text-[#eff0f2] text-center p-4">
-                  ANNOUNCEMENT
-                </h2>
+            <div className="min-h-full rounded-2xl border border-white/10 bg-[#d9dee8] p-8 text-white shadow-2xl flex flex-col">
+              <div className="flex flex-col items-center justify-center">
+                <div id="announcementHeader" className="pt-2">
+                  <h2 className="text-3xl font-bold text-[#141414] text-center p-2">
+                    Welcome to ACE CARDS!
+                  </h2>
+                  <h3 className="text-xl font-bold text-[#141414] text-center p-2">
+                    Clicking on Kidla will open a dialogue box that lets you
+                    open the announcement modal or navigate to the events page
+                  </h3>
+                </div>
+                <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-4">
+                  <button
+                    onClick={onAnnouncements}
+                    className="rounded-2xl text-white bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] hover:bg-gradient-to-bl font-medium rounded-base text-lg px-4 py-2.5 text-center leading-5 m-3"
+                  >
+                    See Announcements
+                  </button>
+                  <button
+                    onClick={onRedirectEvent}
+                    className="rounded-2xl text-white bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] hover:bg-gradient-to-bl font-medium rounded-base text-lg px-4 py-2.5 text-center leading-5 m-3"
+                  >
+                    Go to Events
+                  </button>
+                </div>
               </div>
             </div>
           </div>
