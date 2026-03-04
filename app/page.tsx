@@ -1,9 +1,29 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import NavBar from "@/components/navbar";
+import Popup from "@/components/pop-up";
+import Kidla from "@/components/kidlaButton";
+import KidlaDialogue from "@/components/kidlaDialogue";
 import Footer from "@/components/footer";
 import Link from "next/link";
 
 
 export default function Home() {
+  const [isModalShowing, setIsModalShowing] = useState(false);
+  const [isDialogueShowing, setIsDialogueShowing] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsModalShowing(true);
+  }, []);
+
+  useEffect(() => {
+    setIsDialogueShowing(false);
+  }, []);
+
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
@@ -56,6 +76,31 @@ export default function Home() {
           <span className="px-6 py-3 bg-gradient-to-r from-yellow-100 to-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all">Servant Leadership</span>
         </div>
       </section>
+
+         </div>
+      <Popup
+        isShowing={isModalShowing}
+        onClose={() => setIsModalShowing(false)}
+      />
+      <KidlaDialogue
+        isShowing={isDialogueShowing}
+        onClose={() => setIsDialogueShowing(false)}
+        onAnnouncements={() => {
+          setIsDialogueShowing(false);
+          setIsModalShowing(true);
+        }}
+        onRedirectMemApp={() => {
+          setIsDialogueShowing(false);
+          router.push("/events");
+        }}
+       />
+        <Kidla
+          onClick={() => setIsDialogueShowing((prev) => !prev)}
+          isDialogueShowing={isDialogueShowing}
+        />
+        <section id="wow" className="justify-center items-center text-center py-20 bg-blue-500 h-screen">
+          <h1 className="text-3xl font-bold">[NEWS AND MEDIA]</h1>
+        </section>
 
 
         {/* EVENTS SECTION */}
