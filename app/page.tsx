@@ -16,6 +16,10 @@ export default function Home() {
   return (
     <div className="">
       <NavBar />
+      <Popup
+        isShowing={isModalShowing}
+        onClose={() => setIsModalShowing(false)}
+      />
       <main className="">
         <section
           id="hero"
@@ -27,7 +31,10 @@ export default function Home() {
           </p>
         </section>
 
-        <Kidla onClick={() => setIsModalShowing(true)} />
+        <Kidla
+          onClick={() => setIsModalShowing(true)}
+          isModalOpen={isModalShowing}
+        />
 
         <section
           id="wow"
@@ -38,11 +45,6 @@ export default function Home() {
             This is the home page of our card game application.
           </p>
         </section>
-
-        <Popup
-          isShowing={isModalShowing}
-          onClose={() => setIsModalShowing(false)}
-        />
       </main>
     </div>
   );
