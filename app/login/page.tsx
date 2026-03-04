@@ -12,9 +12,9 @@ export default function LoginPage() {
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
                 alt="ACE CARDS Logo"
-                className="w-20 h-20 inline-block mb-4"
-                width={20}
-                height={20}
+                className="w-28 h-28 inline-block mb-4"
+                width={1000}
+                height={1000}
               />
               <h1 className="font-bold text-black text-3xl">Welcome to the<br/>
                 <span className="text-5xl">ACE CARDS' User Area</span>
@@ -30,18 +30,18 @@ export default function LoginPage() {
             </div>
           </section>
 
-          <section id="login-form" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-blue-500">
+          <section id="login-form" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-blue-500 text-white">
             <div className="flex flex-col my-auto mx-auto w-sm justify-center items-center">
-              <span className="text-2xl text-black font-medium text-center">
+              <span className="text-2xl font-medium text-center">
                 Let's stay connected!<br/>
                 Please sign in to continue.
               </span>
 
-              <button className="mt-10 bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors">
+              <button className="mt-10 bg-blue-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors cursor-pointer">
                 Sign In
               </button>
 
-              <div className="flex flex-row hover:underline hover:cursor-pointer text-black items-center mt-5">
+              <div className="flex flex-row hover:underline hover:cursor-pointer items-center mt-5">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   viewBox="0 0 20 20" 
