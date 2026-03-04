@@ -15,6 +15,7 @@ const routeTitles: Record<string, string> = {
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
+  "/executives": "EXECUTIVES",
 };
 
 export default function NavBar() {
@@ -46,31 +47,31 @@ export default function NavBar() {
   }, []);
   
   return (
-    <nav className="w-full py-4 px-8 bg-[#011638] text-white sticky top-0 z-50">
+    <nav className="w-full h-20 px-8 bg-[#011638] text-white sticky top-0 z-50">
 
-      <div className="flex flex-row items-center justify-between w-full gap-4">
+      <div className="flex flex-row items-center justify-between w-full h-full gap-8">
         
         {/* <div className="flex flex-row bg-red-500"> */}
-          <a className="flex flex-row items-center" href="/">
+          <a className="flex flex-row items-center h-full gap-2" href="/">
             <Image 
               src="/assets/logos/ACE CARDS logo.png" 
               alt="ACE CARDS Logo" 
-              className="w-9 h-9 inline-block mr-2"
-              width={9}
-              height={9}>
+              className="w-10 h-10 flex-shrink-0"
+              width={40}
+              height={40}>
             </Image>
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center h-full gap-0">
               {title && title !== siteName && (
-                <div className="text-sm opacity-75 m-0 p-0">{siteName}</div>
+                <div className="text-sm opacity-75 font-bold leading-none">{siteName}</div>
               )}
-              <div className="text-3xl font-bold leading-tight">{title || siteName}</div>
+              <div className="text-3xl font-bold leading-none">{title || siteName}</div>
             </div>
           </a>
         {/* </div> */}
 
-        <div className="flex flex-row">
-          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-15 bg-[#011638] text-white min-h-[25rem] w-full lg:static lg:min-h-fit lg:w-auto lg:block flex items-center justify-center ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
-            <ul className="flex lg:flex-row flex-col gap-9 items-end right-5 absolute">
+        <div className="flex flex-row h-full items-center">
+          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-20 bg-[#011638] text-white w-full lg:static lg:h-full lg:w-auto lg:block flex text-right justify-end ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
+            <ul className="flex lg:flex-row flex-col gap-6 lg:gap-8 lg:h-full lg:items-center py-6 lg:py-0 px-8 lg:px-0">
               <li className="hover:underline">
                 <Link href="/">Home</Link>
               </li>
@@ -91,14 +92,14 @@ export default function NavBar() {
                   xmlns="http://www.w3.org/2000/svg" 
                   viewBox="0 0 20 20" 
                   fill="currentColor" 
-                  className="size-5">
+                  className="size-4">
                   <path 
                     fillRule="evenodd"
                     d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" 
                     clipRule="evenodd" />
                 </svg>
 
-                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg -left-10 top-5 w-50 gap-4 flex flex-col`}>
+                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg lg:-left-10 -left-20 lg:top-8 top-5 w-50 gap-4 flex flex-col text-center`}>
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
                   </li>
