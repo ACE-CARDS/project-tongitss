@@ -2,16 +2,28 @@ import { createClient } from "@/lib/supabase/server"; // supabase client
 import Link from "next/link";
 
 // fetch thesis data
-export default async function ThesisData({ searchParams }: { searchParams: { page?: string; query?: string } }) {
+export default async function ThesisData({
+  searchParams,
+}: {
+  searchParams: {
+    page?: string;
+    query?: string;
+    category?: string;
+    school?: string;
+  };
+}) {
   const supabase = await createClient();
 
   // apply search filter when query parameter is present
   const q = searchParams?.query?.trim();
+  const categoryId = searchParams?.category?.trim();
+  const schoolId = searchParams?.school?.trim();
 
   // fetch all theses from the DB (we'll filter in-memory when a query is present)
-  const baseQuery = supabase
+  let baseQuery = supabase
     .from("thesis") //table
-    .select(`
+    .select(
+      `
       id,
       thesis_title,
       thesis_abstract,
@@ -36,8 +48,17 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
           author_email
         )
       )
-    `) //fields
-    .order('thesis_date', { ascending: false }); // sort
+    `,
+    ) //fields
+    .order("thesis_date", { ascending: false }); // sort
+
+  if (categoryId) {
+    baseQuery = baseQuery.eq("r_category", categoryId);
+  }
+
+  if (schoolId) {
+    baseQuery = baseQuery.eq("school", schoolId);
+  }
 
   const { data: fetchedTheses, error } = await baseQuery;
 
@@ -46,7 +67,7 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
   if (q && theses.length) {
     // support multiple comma-separated search tokens; treat tokens as OR
     const tokens = q
-      .split(',')
+      .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
       .map((s) => s.toLowerCase());
@@ -71,7 +92,7 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
   }
 
   if (error) {
-    console.error('Error fetching theses:', error);
+    console.error("Error fetching theses:", error);
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
         Error loading theses: {error.message}
@@ -82,9 +103,7 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
   // case hwen theses is empty
   if (!theses || theses.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
-        No theses found.
-      </div>
+      <div className="text-center text-gray-500 py-8">No theses found.</div>
     );
   }
 
@@ -93,10 +112,9 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {theses.map((thesis: any) => (
-
           //for each card
-          <div 
-            key={thesis.id} 
+          <div
+            key={thesis.id}
             className="border rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 bg-[white] flex flex-col h-full hover:scale-102 hover:z-10"
           >
             {/*header with title*/}
@@ -117,21 +135,36 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
                   {thesis.thesis_author && thesis.thesis_author.length > 0 ? (
                     thesis.thesis_author.map((ta: any, index: number) => {
                       const author = ta.author;
-                      const middleInitial = author.author_minit ? ` ${author.author_minit}.` : '';
+                      const middleInitial = author.author_minit
+                        ? ` ${author.author_minit}.`
+                        : "";
                       return (
-                        <div 
+                        <div
                           key={author.id}
                           className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-medium"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
                           </svg>
-                          {author.author_fname} {middleInitial} {author.author_lname}
+                          {author.author_fname} {middleInitial}{" "}
+                          {author.author_lname}
                         </div>
                       );
                     })
                   ) : (
-                    <span className="text-[#141414] opacity-50 text-sm">No authors listed</span>
+                    <span className="text-[#141414] opacity-50 text-sm">
+                      No authors listed
+                    </span>
                   )}
                 </div>
               </div>
@@ -143,16 +176,17 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
                 </h3>
                 <div className="relative">
                   <p className="text-sm text-[#141414] line-clamp-3 leading-relaxed min-h-[63px]">
-                    {thesis.thesis_abstract || 'No abstract available'}
+                    {thesis.thesis_abstract || "No abstract available"}
                   </p>
-                  {thesis.thesis_abstract && thesis.thesis_abstract.length > 150 && (
-                    <Link
-                      href="/thesis/readmore"
-                      className="text-[#0d21a1] text-xs font-medium hover:text-[#011638] mt-1 inline-block transition-colors"
-                    >
-                      Read more →
-                    </Link>
-                  )}
+                  {thesis.thesis_abstract &&
+                    thesis.thesis_abstract.length > 150 && (
+                      <Link
+                        href="/thesis/readmore"
+                        className="text-[#0d21a1] text-xs font-medium hover:text-[#011638] mt-1 inline-block transition-colors"
+                      >
+                        Read more →
+                      </Link>
+                    )}
                 </div>
               </div>
 
@@ -162,11 +196,16 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
                   Keywords
                 </h3>
                 <div className="flex flex-wrap gap-1">
-                  {thesis.thesis_keyword?.split(',').map((keyword: string, index: number) => (
-                    <span key={index} className="bg-[#0d21a1] text-[#eff0f2] px-2 py-1 rounded text-xs">
-                      {keyword.trim()}
-                    </span>
-                  ))}
+                  {thesis.thesis_keyword
+                    ?.split(",")
+                    .map((keyword: string, index: number) => (
+                      <span
+                        key={index}
+                        className="bg-[#0d21a1] text-[#eff0f2] px-2 py-1 rounded text-xs"
+                      >
+                        {keyword.trim()}
+                      </span>
+                    ))}
                 </div>
               </div>
 
@@ -176,32 +215,33 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
                   Details
                 </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-
                   <div>
                     <span className="text-[#141414] block">Thesis Date:</span>
                     <span className="font-medium text-[#011638]">
-                      {new Date(thesis.thesis_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {new Date(thesis.thesis_date).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
                     </span>
                   </div>
 
                   <div>
                     <span className="text-[#141414] block">Category:</span>
                     <span className="font-medium text-[#011638]">
-                      {thesis.r_category?.r_category_name || 'Uncategorized'}
+                      {thesis.r_category?.r_category_name || "Uncategorized"}
                     </span>
                   </div>
 
                   <div>
                     <span className="text-[#141414] block">School:</span>
                     <span className="font-medium text-[#011638]">
-                      {thesis.school?.school_name || 'No School'}
+                      {thesis.school?.school_name || "No School"}
                     </span>
                   </div>
-
                 </div>
               </div>
 
@@ -220,25 +260,39 @@ export default async function ThesisData({ searchParams }: { searchParams: { pag
                         </span>
                       </div>
                     ) : (
-                      <span className="text-[#141414] opacity-50">Not Available</span>
+                      <span className="text-[#141414] opacity-50">
+                        Not Available
+                      </span>
                     )}
                   </div>
                   <div>
                     <span className="text-[#141414] block">Digital Copy:</span>
                     {thesis.thesis_digi ? (
-                      <a 
-                        href={thesis.thesis_digi} 
-                        target="_blank" 
+                      <a
+                        href={thesis.thesis_digi}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors"
                       >
                         View Digital Copy
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
                         </svg>
                       </a>
                     ) : (
-                      <span className="text-[#141414] opacity-50">Not Available</span>
+                      <span className="text-[#141414] opacity-50">
+                        Not Available
+                      </span>
                     )}
                   </div>
                 </div>
