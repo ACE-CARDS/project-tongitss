@@ -1,10 +1,39 @@
 import Image from "next/image";
+import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 export default function Home() {
   return (
     <div className="">
+      <NavBar />
       <main className="">
+      <section id="hero" className="py-50 bg-[#eff0f2] h-screen">
+        <div className="flex flex-col lg:flex-row items-center justify-between pl-20 lg:pl-20 relative h-full">
 
+          <div className="flex-1 relative z-10">
+            <h1 className="text-[#011638] text-6xl lg:text-9xl font-extrabold -mr-10 lg:-mr-40 " 
+            style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>ACE CARDS</h1>
+            <div className="space-y-2 mt-4 text-lg lg:text-xl">
+              <div>lorem ipsum</div>
+              <div>lorem ipsum</div>
+              <div>lorem ipsum</div>
+              <div>lorem ipsum</div>
+            </div>
+          </div>
+
+          <div className="flex-1 relative z-0 mt-10 lg:mt-0">
+            <img  
+              src="/placeholder1.jpg"  
+              alt="Ace Cards Image"
+              width={650}            
+              height={600}           
+              className="object-cover rounded-xl shadow-lg" 
+            />
+          </div>
+
+        </div>
+      </section>
+        
         <section id="wow" className="justify-center items-center text-center py-20 bg-blue-500 h-screen">
           <h1 className="text-3xl font-bold">[NEWS AND MEDIA]</h1>
         </section>
@@ -72,6 +101,7 @@ export default function Home() {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

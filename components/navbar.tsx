@@ -11,7 +11,7 @@ const routeTitles: Record<string, string> = {
   "/": "HOME",
   "/about-us": "ABOUT US",
   "/events": "EVENTS",
-  "/research": "RESEARCH SURVEYS",
+  "/survey": "RESEARCH SURVEYS",
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
@@ -47,6 +47,7 @@ export default function NavBar() {
   
   return (
     <nav className="w-full py-4 px-8 bg-[#011638] text-white sticky top-0 z-50">
+
       <div className="flex flex-row items-center justify-between w-full">
         
         {/* <div className="flex flex-row bg-red-500"> */}
@@ -99,7 +100,7 @@ export default function NavBar() {
 
                 <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg -left-10 top-5 w-50 gap-4 flex flex-col`}>
                   <li className="hover:underline">
-                    <Link href="/research">Research Surveys</Link>
+                    <Link href="/survey">Research Surveys</Link>
                   </li>
                   <li className="hover:underline">
                     <Link href="/thesis">Thesis Repository</Link>
