@@ -1,4 +1,3 @@
-=======
 export default function Footer() {
   return (
     <footer className="w-full bg-[#011638] text-white py-8">
