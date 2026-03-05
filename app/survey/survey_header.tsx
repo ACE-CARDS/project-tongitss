@@ -62,7 +62,6 @@ export default function SurveyHeader({
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSchool, setSelectedSchool] = useState(initialSchool);
   const [showFilters, setShowFilters] = useState(false);
-  console.log("showFilters:", showFilters);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

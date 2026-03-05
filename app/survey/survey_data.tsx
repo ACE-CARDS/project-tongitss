@@ -1,15 +1,26 @@
 import { createClient } from "@/lib/supabase/server"; // supabase client
 import Link from "next/link";
 
-// fetch survey data
-export default async function SurveyData({ searchParams }: { searchParams: { page?: string; query?: string } }) {
+// fetch thesis data
+export default async function SurveyData({
+  searchParams,
+}: {
+  searchParams: {
+    page?: string;
+    query?: string;
+    category?: string;
+    school?: string;
+  };
+}) {
   const supabase = await createClient();
 
   // apply search filter when query parameter is present
   const q = searchParams?.query?.trim();
+  const categoryId = searchParams?.category?.trim();
+  const schoolId = searchParams?.school?.trim();
 
-  // fetch all surveys from the DB (we'll filter in-memory when a query is present)
-  const baseQuery = supabase
+  // fetch all theses from the DB (we'll filter in-memory when a query is present)
+  let baseQuery = supabase
     .from("survey") //table
     .select(`
       id,
@@ -41,6 +52,14 @@ export default async function SurveyData({ searchParams }: { searchParams: { pag
       )
     `) //fields
     .order('survey_start', { ascending: false }); //sort
+
+      if (categoryId) {
+    baseQuery = baseQuery.eq("r_category", categoryId);
+  }
+
+  if (schoolId) {
+    baseQuery = baseQuery.eq("school", schoolId);
+  }
 
   const { data: fetchedSurveys, error } = await baseQuery;
 
