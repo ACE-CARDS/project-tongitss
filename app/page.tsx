@@ -28,6 +28,27 @@ export default function Home() {
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
 
+      <Popup
+          isShowing={isModalShowing}
+          onClose={() => setIsModalShowing(false)}
+        />
+        <KidlaDialogue
+          isShowing={isDialogueShowing}
+          onClose={() => setIsDialogueShowing(false)}
+          onAnnouncements={() => {
+            setIsDialogueShowing(false);
+            setIsModalShowing(true);
+          }}
+          onRedirectMemApp={() => {
+            setIsDialogueShowing(false);
+            router.push("/events");
+          }}
+        />
+          <Kidla
+            onClick={() => setIsDialogueShowing((prev) => !prev)}
+            isDialogueShowing={isDialogueShowing}
+          />
+
       <main>
       {/* HERO SECTION */}
       <section id="hero" className="bg-white/80 backdrop-blur-sm py-24 px-6 lg:px-20 overflow-hidden">
@@ -76,27 +97,6 @@ export default function Home() {
           <span className="px-6 py-3 bg-gradient-to-r from-yellow-100 to-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all">Servant Leadership</span>
         </div>
       </section>
-
-        <Popup
-          isShowing={isModalShowing}
-          onClose={() => setIsModalShowing(false)}
-        />
-        <KidlaDialogue
-          isShowing={isDialogueShowing}
-          onClose={() => setIsDialogueShowing(false)}
-          onAnnouncements={() => {
-            setIsDialogueShowing(false);
-            setIsModalShowing(true);
-          }}
-          onRedirectMemApp={() => {
-            setIsDialogueShowing(false);
-            router.push("/events");
-          }}
-        />
-          <Kidla
-            onClick={() => setIsDialogueShowing((prev) => !prev)}
-            isDialogueShowing={isDialogueShowing}
-          />
 
         {/* EVENTS SECTION */}
         <section className="relative py-28 px-6 overflow-hidden bg-gradient-to-b from-white/50 to-transparent">
