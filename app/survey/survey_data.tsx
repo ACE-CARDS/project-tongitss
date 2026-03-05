@@ -278,7 +278,7 @@ export default async function SurveyData({
                     href={survey.survey_link} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors"
+                    className="text-[#0d21a1] hover:text-[#011638] text-s underline inline-flex items-center gap-1 transition-colors"
                   >
                     Survey Link
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -170,41 +170,40 @@ export default function Home() {
               </div>
             </div>
 
-            {/* txt */}
-            <div className="flex-1 text-center lg:text-left max-w-lg">
-              <h1 className="text-8xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
-                208
-              </h1>
-              <h2 className="text-4xl lg:text-6xl font-bold text-[#141414]/90 mt-4 drop-shadow-lg">
-                Current Members
-              </h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
+          {/* txt */}
+          <div className="flex-1 text-center lg:text-left max-w-lg">
+            <h1 className="text-8xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
+              208
+            </h1>
+            <h2 className="text-4xl lg:text-6xl font-bold text-[#141414]/90 mt-4 drop-shadow-lg">
+              Current Members
+            </h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
 
-              <p className="mt-8 text-[#141414]/80 text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl">
-                A growing network of DOST CAR scholars committed to academic
-                excellence and servant leadership.
-              </p>
+            <p className="mt-4 text-[#141414]/80 text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-4 rounded-2xl shadow-xl">
+              A growing network of DOST CAR scholars committed to academic
+              excellence and servant leadership.
+            </p>
 
-              <div className="flex justify-center lg:justify-start gap-6 mt-12">
-                
-                <Link
-                href = ""
-                 className="group px-10 py-4 rounded-3xl bg-gradient-to-r from-[#011638] to-[#0d21a1] text-white font-bold text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 transform">
-                  Committees
-                  <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
+            <div className="flex justify-center lg:justify-start gap-6 mt-6">
+              
+              <Link
+                href=""
+                className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+              >
+                Committees
+                <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
+              </Link>
 
-                <Link
-                  href="/executives"
-                  className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
-                >
-                  Executives →
-                </Link>
+              <Link
+                href="/executives"
+                className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+              >
+                Executives →
+              </Link>
 
-              </div>
             </div>
+          </div>
           </div>
         </section>
 
@@ -293,45 +292,48 @@ export default function Home() {
 
         {/* ACADEMICS SECTION */}
         <section className="py-32 px-6 lg:px-24 bg-gradient-to-r from-transparent to-white/70">
-          <div className="flex flex-col lg:flex-row items-center gap-20">
-            {/* IMAGE */}
-            <div className="hidden lg:block flex-1 flex justify-center lg:justify-start">
-              <div className="relative">
-                <img
-                  src="/assets/logos/acad.jpg"
-                  alt="Academics"
-                  className="w-full max-w-lg lg:max-w-3xl rounded-3xl object-cover shadow-2xl ring-8 ring-white/70 hover:scale-105 transition-all duration-700 hover:shadow-4xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#011638]/20 rounded-3xl"></div>
+          <div className="max-w-7xl mx-auto"> {/* ← Add this container */}
+            <div className="flex flex-col lg:flex-row items-center gap-20">
+              {/* IMAGE */}
+              <div className="hidden lg:block flex-1 flex justify-center lg:justify-start">
+                <div className="relative">
+                  <img
+                    src="/assets/logos/acad.jpg"
+                    alt="Academics"
+                    className="w-full max-w-lg lg:max-w-3xl rounded-3xl object-cover shadow-2xl ring-8 ring-white/70 hover:scale-105 transition-all duration-700 hover:shadow-4xl"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#011638]/20 rounded-3xl"></div>
+                </div>
               </div>
-            </div>
 
-            {/* TEXT */}
-            <div className="flex-1 text-center lg:text-left max-w-lg">
-              <h2 className="text-5xl lg:text-8xl font-black text-[#011638] drop-shadow-2xl leading-tight">
-                Academics
-              </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
+              {/* TEXT */}
+              <div className="flex-1 text-center lg:text-left max-w-lg">
+                <h2 className="text-5xl lg:text-8xl font-black text-[#011638] drop-shadow-2xl leading-tight">
+                  ACADEMICS
+                </h2>
+                <div className="w-24 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
 
-              <p className="mt-8 text-[#141414]/85 text-lg lg:text-xl leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-8 rounded-2xl shadow-xl">
-                Supporting research and thesis initiatives
-                of members. Promoting academic growth and 
-                collaboration.
-              </p>
+                <p className="mt-4 text-[#141414]/85 text-lg lg:text-xl leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl">
+                  Supporting research and thesis initiatives
+                  of members. Promoting academic growth and 
+                  collaboration.
+                </p>
 
-              <div className="flex justify-center lg:justify-start gap-6 mt-12">
-                <Link
-                href = ""
-                  className="group px-10 py-4 lg:px-12 lg:py-5 rounded-3xl bg-gradient-to-r from-[#011638] to-[#0d21a1] text-white font-bold text-lg lg:text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 transform">
-                  Surveys
-                  <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
-                </Link>
-                <Link
-                  href="/thesis"
-                  className="group px-10 py-4 lg:px-12 lg:py-5 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg lg:text-xl hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                <div className="flex justify-center lg:justify-start gap-6 mt-6">
+                  <Link
+                    href=""
+                    className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
                   >
-                  Thesis →
+                    Surveys
+                    <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
                   </Link>
+                  <Link
+                    href="/thesis"
+                    className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                  >
+                    Thesis →
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

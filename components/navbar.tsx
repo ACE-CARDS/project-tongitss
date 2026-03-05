@@ -84,6 +84,10 @@ export default function NavBar() {
                 <Link href="/events">Events</Link>
               </li>
 
+              <li className="hover:underline">
+                <Link href="/executives">Executives</Link>
+              </li>
+
               <li ref={academicsRef} onClick={toggleDropdown} className="group relative flex-row flex gap-1 hover:underline cursor-pointer">
                 Academics
 
