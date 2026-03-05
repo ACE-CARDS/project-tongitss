@@ -68,7 +68,7 @@ const KidlaDialogue: FC<Props> = ({
             id="scrollbar"
             className="content relative z-10 h-full max-h-[50vh] w-full max-w-4xl overflow-y-auto custom-scrollbar pr-4"
           >
-            <div className="min-h-full rounded-2xl border border-white/10 bg-[#d9dee8] p-8 text-white shadow-2xl flex flex-col">
+            <div className="min-h-full rounded-2xl border border-white/10 bg-white p-8 text-white shadow-2xl flex flex-col">
               <div className="flex flex-col items-center justify-center">
                 <div id="announcementHeader" className="pt-2">
                   <h2 className="text-3xl font-bold text-[#141414] text-center p-2">
