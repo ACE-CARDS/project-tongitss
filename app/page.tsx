@@ -28,25 +28,25 @@ export default function Home() {
       <NavBar />
 
       <Popup
-          isShowing={isModalShowing}
-          onClose={() => setIsModalShowing(false)}
-        />
-        <KidlaDialogue
-          isShowing={isDialogueShowing}
-          onClose={() => setIsDialogueShowing(false)}
-          onAnnouncements={() => {
-            setIsDialogueShowing(false);
-            setIsModalShowing(true);
-          }}
-          onRedirectMemApp={() => {
-            setIsDialogueShowing(false);
-            router.push("/member-appli");
-          }}
-        />
-          <Kidla
-            onClick={() => setIsDialogueShowing((prev) => !prev)}
-            isDialogueShowing={isDialogueShowing}
-          />
+        isShowing={isModalShowing}
+        onClose={() => setIsModalShowing(false)}
+      />
+      <KidlaDialogue
+        isShowing={isDialogueShowing}
+        onClose={() => setIsDialogueShowing(false)}
+        onAnnouncements={() => {
+          setIsDialogueShowing(false);
+          setIsModalShowing(true);
+        }}
+        onRedirectMemApp={() => {
+          setIsDialogueShowing(false);
+          router.push("/member-appli");
+        }}
+      />
+      <Kidla
+        onClick={() => setIsDialogueShowing((prev) => !prev)}
+        isDialogueShowing={isDialogueShowing}
+      />
 
       <main>
         {/* HERO SECTION */}
@@ -57,7 +57,7 @@ export default function Home() {
           <div className="relative flex flex-col lg:flex-row items-center justify-center lg:ml-8 max-w-7xl mx-auto">
             {/* TEXT */}
             <div className="relative z-20 flex-1 text-center lg:text-left max-w-lg lg:max-w-xl lg:mr-8">
-              <h1 className="text-5xl sm:text-6xl lg:text-9xl font-black lg:-mr-24 bg-gradient-to-r from-[#eec643] via-[#0d21a1] to-[#011638] bg-clip-text text-transparent leading-none drop-shadow-lg">
+              <h1 className="text-13xl sm:text-6xl lg:text-9xl font-black lg:-mr-24 bg-gradient-to-r from-[#eec643] via-[#0d21a1] to-[#011638] bg-clip-text text-transparent leading-none drop-shadow-lg">
                 ACE CARDS
               </h1>
               <div className="w-24 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-md"></div>
