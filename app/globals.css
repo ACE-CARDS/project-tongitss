@@ -86,7 +86,7 @@ p {
   cursor: pointer;
   transition:
     transform 0.3s ease-out,
-    background-image 0.3s ease;
+    background-image 0.2s ease;
   background-position: center;
   transform: translateY(50%);
 }
@@ -99,6 +99,7 @@ p {
 #kidla.modal-open {
   transform: translateY(0);
   background-image: url("/images/D1.png");
+  animation: jello-vertical 0.4s;
 }
 
 /*Animations that I did not do manually*/
