@@ -16,11 +16,16 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsModalShowing(true);
+    setIsDialogueShowing(false);
   }, []);
 
   useEffect(() => {
-    setIsDialogueShowing(false);
+    const seenPopup = sessionStorage.getItem("seenPopup");
+
+    if (!seenPopup) {
+      setIsModalShowing(true);
+      sessionStorage.setItem("seenPopup", "true");
+    }
   }, []);
 
   return (
