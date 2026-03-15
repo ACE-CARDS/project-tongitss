@@ -60,6 +60,25 @@ p {
   background: #0b1763;
 }
 
+.btn-primary {
+  background-color: #0d21a1;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #022050;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #dbb32f;
+}
+
+.btn-secondary:hover {
+  background-color: #c49b16;
+}
+
+/* DONT MIND THIS*/
 #kidla {
   z-index: 40;
   cursor: pointer;
@@ -114,10 +133,6 @@ p {
   background-color: white;
   width: 200x;
   height: 100px;
-}
-
-button {
-  cursor: pointer;
 }
 /*Animations that I did not do manually*/
 

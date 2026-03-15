@@ -39,11 +39,11 @@ export default function KidlaTalk({ isParentOpen }: { isParentOpen: boolean }) {
 
   return (
     <div
-      className={`mb-[2px] px-3 py-1 bg-white text-[10px] lg:text-xs md:text-xs font-ubuntu-mono rounded-lg shadow-lg border border-gray-200 transition-all duration-500
+      className={`mb-[2px] px-3 py-1 bg-[#fbfaf8] text-[10px] lg:text-xs md:text-xs font-ubuntu-mono rounded-lg shadow-lg border border-gray-200 transition-all duration-500
         ${isVisible ? "opacity-100 translate-y-0 scale-100 bubble-float" : "opacity-0 translate-y-2 scale-90 pointer-events-none"}`}
     >
       {text}
-      <div className="absolute -bottom-1 right-6 w-2 h-2 bg-white border-r border-b border-gray-200 rotate-45"></div>
+      <div className="absolute -bottom-1 right-6 w-2 h-2 bg-[#fbfaf8] border-r border-b border-gray-200 rotate-45"></div>
     </div>
   );
 }

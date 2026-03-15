@@ -87,9 +87,22 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex h-5 w-5 lg:h-10 lg:w-10 items-center justify-center rounded-xl text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  className="flex h-5 w-5 lg:h-10 lg:w-10 items-center justify-center rounded-xl text-white transition hover:bg-[#0b1763]/50 focus:outline-none focus:ring-2 focus:ring-white/30"
                 >
-                  <span className="text-2xl lg:text-3xl leading-none">×</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
               <div id="announcementHeader" className=" pb-8">
