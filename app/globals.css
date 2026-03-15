@@ -64,16 +64,18 @@ p {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 40;
   padding: 5px;
   cursor: pointer;
 }
 
-#kidla:hover:not(.modal-open) {
+#kidla:hover:not(.modal-open),
+#kidla:active:not(.modal-open) {
   animation: jello-vertical 0.8s;
 }
 
-#kidla.modal-open:hover {
+#kidla.modal-open:hover,
+#kidla.modal-open:active {
   animation: none;
 }
 

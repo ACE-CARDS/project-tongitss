@@ -26,11 +26,13 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
-
+      {/*Announcements*/}
       <Popup
         isShowing={isModalShowing}
         onClose={() => setIsModalShowing(false)}
       />
+
+      {/*Kidla*/}
       <KidlaDialogue
         isShowing={isDialogueShowing}
         onClose={() => setIsDialogueShowing(false)}

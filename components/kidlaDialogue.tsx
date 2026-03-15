@@ -58,7 +58,7 @@ const KidlaDialogue: FC<Props> = ({
         <div
           ref={container}
           id="popUpAnnouncement"
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-30 flex items-center justify-center"
         >
           <div
             className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
