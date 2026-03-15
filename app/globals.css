@@ -61,9 +61,6 @@ p {
 }
 
 #kidla {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
   z-index: 40;
   cursor: pointer;
 }
@@ -83,25 +80,45 @@ p {
   background-image: url("/images/D2.png");
   background-size: contain;
   background-repeat: no-repeat;
-  cursor: pointer;
-  transition:
-    transform 0.3s ease-out,
-    background-image 0.2s ease;
+
   background-position: center;
-  transform: translateY(50%);
 }
 
 #kidla:hover {
-  transform: translateY(25%);
   background-image: url("/images/D2.png");
 }
 
 #kidla.modal-open {
+  background-image: url("/images/D1.png") !important;
   transform: translateY(0);
-  background-image: url("/images/D1.png");
   animation: jello-vertical 0.4s;
 }
 
+.huh {
+  transition: transform 0.3s ease-out;
+  transform: translateY(50%);
+}
+
+.huh:hover {
+  transform: translateY(25%);
+}
+
+.is-open {
+  transform: translateY(0) !important;
+  transition: transform 0.3s ease-out;
+}
+
+.triangle {
+  aspect-ratio: 1;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  background-color: white;
+  width: 200x;
+  height: 100px;
+}
+
+button {
+  cursor: pointer;
+}
 /*Animations that I did not do manually*/
 
 /* ----------------------------------------------
@@ -139,4 +156,18 @@ p {
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
   }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.bubble-float {
+  animation: float 2s ease-in-out infinite;
 }
