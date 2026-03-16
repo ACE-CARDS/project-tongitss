@@ -75,7 +75,7 @@ export default function NavBar() {
                   {siteName}
                 </div>
               )}
-              <div className="lg:text-3xl text-[22px] font-bold leading-none whitespace-nowrap">
+              <div className="text-3xl font-bold leading-none whitespace-nowrap font-oswald">
                 {title || siteName}
               </div>
             </div>
