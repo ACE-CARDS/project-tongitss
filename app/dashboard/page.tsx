@@ -36,17 +36,27 @@ export default function Dashboard() {
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
-      <div className="rounded-xl bg-[green] mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
-        <h2 className="text-lg font-bold text-center md:text-left md:text-xl">
-          dasdasdasdasdasdasd
-        </h2>
 
-        <div className="flex w-full justify-center md:justify-end gap-1 md:w-auto">
-          <p>sjajdkaskjd</p>
+      {/* Name and Committee etcetera*/}
+      <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row shadow-sm w-[80%] mx-auto mt-8 ">
+        <div className="m-3 p-2">
+          <h2 className="text-lg font-bold text-center md:text-left md:text-4xl">
+            Marionne T. Villagracia
+          </h2>
+          <p className="text-xs text-center md:text-left md:text-xl">
+            Internals Committee
+          </p>
+          <div className="mt-3 flex w-full justify-center md:justify-start md:w-auto md:text-">
+            <p>University of the Philippines Baguio</p>
+          </div>
+        </div>
+
+        <div className="md:m-3 p-2 text-sm md:self-end">
+          <p>Current Total Members: 69420</p>
         </div>
       </div>
 
-      <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] py-8 lg:py-12">
+      <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Calendar */}
           <div className="w-full">
@@ -56,7 +66,7 @@ export default function Dashboard() {
           {/* Announcements */}
           <div className="w-full flex flex-col md:pt-3">
             <div className="shadow-2xl">
-              <h2 className="text-4xl lg:text-5xl font-bold text-black text-center mb-6 mt-6">
+              <h2 className="text-2xl lg:text-4xl font-bold text-black text-center mb-6 mt-6">
                 ANNOUNCEMENTS
               </h2>
 
