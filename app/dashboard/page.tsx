@@ -28,7 +28,7 @@ export default function Home() {
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
 
-      <div className="flex flex-col p-4 h-[30%] w-[50%]">
+      <div className="flex flex-col p-0 lg:p-4 lg:h-[30%] lg:w-[50%]">
         <Calendar />
       </div>
 

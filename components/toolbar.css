@@ -3,9 +3,6 @@
   border-radius: 8px;
   padding: 10px 20px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: start;
   flex-wrap: wrap;
   margin-bottom: 20px;
   border: 1px solid #e0e0e0;
@@ -13,28 +10,17 @@
 
 .toolbar a,
 .toolbar button {
-  background-color: #e0e0e0;
-  color: #333;
   text-decoration: none;
-  margin: 0 10px;
-  padding: 5px 15px;
-  border-radius: 15px;
-  transition: all 0.3s;
+  margin: 2px;
+  padding: 5px;
+  border-radius: 8px;
+  transition: all 0.1s;
   border: none;
   cursor: pointer;
   outline: none;
 }
 
-.toolbar a:hover,
-.toolbar button:hover {
-  /* light gray */
-  background-color: #909090;
-  color: #fff;
-}
-
 .toolbar button {
-  background-color: #666;
-  color: #fff;
   padding: 7px 17px;
 }
 
@@ -88,4 +74,96 @@
   display: flex;
   align-items: center;
   margin-right: 15px;
+}
+
+.month_default_main,
+.month_default_header {
+  font-family: var(--font-oswald), ui-sans-serif, system-ui;
+}
+
+.month_default_cell_inner,
+.month_default_event {
+  font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
+}
+
+/*Day Names*/
+.month_default_header_inner {
+  background-color: #14258e !important;
+  color: #f7f7f9 !important;
+  border-bottom: 1px solid #ccc;
+  font-weight: 0;
+  font-size: 17px;
+  padding: 5px 0;
+}
+
+/* Date Number */
+.month_default_cell_inner {
+  font-size: 14px;
+  background-color: white !important;
+}
+
+.month_default_event_inner {
+  background-color: #eec643 !important;
+  background-image: none !important;
+  color: #141414 !important;
+  border: 1px solid #011638 !important;
+  border-radius: 4px !important;
+  font-size: 13px;
+  padding-left: 5px;
+  display: block !important;
+  align-items: center;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.month_default_event_bar,
+.month_default_event_bar_inner {
+  display: none !important;
+}
+
+.toolbar {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px 15px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.toolbar button {
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .toolbar {
+    padding: 10px 20px;
+  }
+  .toolbar button {
+    padding: 7px 17px;
+    font-size: 16px;
+  }
+}
+
+.month_default_header_inner {
+  background-color: #14258e !important;
+  color: #f7f7f9 !important;
+  font-size: 12px;
+  padding: 5px 0;
+}
+
+@media (min-width: 768px) {
+  .month_default_header_inner {
+    font-size: 17px;
+  }
+}
+
+.month_default_event_inner {
+  font-size: 10px !important;
+}
+
+@media (min-width: 768px) {
+  .month_default_event_inner {
+    font-size: 13px !important;
+  }
 }

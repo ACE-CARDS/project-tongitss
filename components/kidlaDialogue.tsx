@@ -65,7 +65,7 @@ const KidlaDialogue: FC<Props> = ({
           />
 
           <div className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[40vh] md:min-h-[50vh] rounded-[2rem] md:rounded-[90rem] lg:rounded-full border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center">
-            <div className="z-[-1] absolute -bottom-8 right-10 md:right-20 w-12 h-12 bg-[#fbfaf8] triangle " />
+            <div className="z-[-1] absolute -bottom-8 right-10 md:right-20 md:-bottom-1 w-12 h-12 bg-[#fbfaf8] triangle " />
             <div className="absolute top-3 right-3 z-10">
               <button
                 type="button"
