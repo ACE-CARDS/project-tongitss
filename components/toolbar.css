@@ -115,6 +115,7 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  cursor: default;
 }
 
 .month_default_event_bar,
