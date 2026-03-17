@@ -63,6 +63,7 @@ p {
 .btn-primary {
   background-color: #0d21a1;
   color: white;
+  border-radius: 8px;
 }
 
 .btn-primary:hover {
@@ -72,6 +73,7 @@ p {
 
 .btn-secondary {
   background-color: #dbb32f;
+  border-radius: 8px;
 }
 
 .btn-secondary:hover {
@@ -130,7 +132,6 @@ p {
 .triangle {
   aspect-ratio: 1;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
-  background-color: white;
   width: 200x;
   height: 100px;
 }
