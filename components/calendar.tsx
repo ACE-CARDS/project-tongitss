@@ -86,7 +86,7 @@ export default function Calendar() {
               onClick={goToToday}
               className="btn-primary flex-1 md:flex-none"
             >
-              Today
+              O
             </button>
             <button
               onClick={nextMonth}

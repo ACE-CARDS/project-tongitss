@@ -38,7 +38,7 @@ export default function Dashboard() {
       <NavBar />
 
       {/* Name and Committee etcetera*/}
-      <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row shadow-sm w-[80%] mx-auto mt-8 ">
+      <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row shadow-sm w-[80%] mx-auto mt-8 max-w-[1400px]">
         <div className="m-3 p-2">
           <h2 className="text-lg font-bold text-center md:text-left md:text-4xl">
             Marionne T. Villagracia
