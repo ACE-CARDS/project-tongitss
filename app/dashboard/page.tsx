@@ -38,15 +38,18 @@ export default function Dashboard() {
       <NavBar />
 
       {/* Name and Committee etcetera*/}
-      <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row shadow-sm w-[80%] mx-auto mt-8 max-w-[1400px]">
+      <div className="w-full h-1 bg-[#0b1763] my-4"></div>
+      <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
+
+      <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row w-[80%] mx-auto mt-8 mb-8 max-w-[1400px]">
         <div className="m-3 p-2">
-          <h2 className="text-lg font-bold text-center md:text-left md:text-4xl">
+          <h2 className="text-lg font-bold text-center md:text-left md:text-5xl">
             Marionne T. Villagracia
           </h2>
-          <p className="text-xs text-center md:text-left md:text-xl">
+          <p className="text-xs text-center md:text-left md:text-2xl md:mt-3">
             Internals Committee
           </p>
-          <div className="mt-3 flex w-full justify-center md:justify-start md:w-auto md:text-">
+          <div className="mt-3 flex w-full justify-center md:justify-start md:w-auto md:text-xl">
             <p>University of the Philippines Baguio</p>
           </div>
         </div>
@@ -55,6 +58,9 @@ export default function Dashboard() {
           <p>Current Total Members: 69420</p>
         </div>
       </div>
+
+      <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
+      <div className="w-full h-1 bg-[#0b1763] my-4"></div>
 
       <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -70,7 +76,7 @@ export default function Dashboard() {
                 ANNOUNCEMENTS
               </h2>
 
-              <div className="h-[530px] overflow-y-auto custom-scrollbar pr-4">
+              <div className="h-[537px] overflow-y-auto custom-scrollbar pr-4">
                 {loading ? (
                   <div className="flex h-64 w-full items-center justify-center">
                     <p>Loading...</p>

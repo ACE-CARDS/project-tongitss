@@ -60,7 +60,7 @@ const KidlaDialogue: FC<Props> = ({
           className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end lg:pr-24 px-4"
         >
           <div
-            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
+            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-[3px]"
             onClick={onClose}
           />
 

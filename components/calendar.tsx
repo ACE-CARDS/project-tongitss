@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { DayPilot, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { createClient } from "@/lib/supabase/client";
 import "./toolbar.css";
+import CalendarEvent from "./calendarEvent";
 
 const supabase = createClient();
 
@@ -67,11 +68,14 @@ export default function Calendar() {
     },
   };
 
+  const [isPopupShowing, setIsPopupShowing] = useState(false);
+  const [selectedEventData, setSelectedEventData] = useState<any>(null);
+
   return (
     <div style={styles.wrap}>
       <div>
         <div className="toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
-          <h2 className="text-lg font-bold text-center md:text-left md:text-xl">
+          <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
             {startDate.toString("MMMM yyyy")}
           </h2>
 
@@ -100,7 +104,17 @@ export default function Calendar() {
           <DayPilotMonth
             startDate={startDate}
             events={events}
-            cellHeight={cellHeight}
+            onEventClick={(args) => {
+              setSelectedEventData(args.e.data.data);
+              setIsPopupShowing(true);
+            }}
+            onBeforeEventRender={(args) => {}}
+          />
+
+          <CalendarEvent
+            isShowing={isPopupShowing}
+            onClose={() => setIsPopupShowing(false)}
+            eventDetail={selectedEventData}
           />
         </div>
       </div>

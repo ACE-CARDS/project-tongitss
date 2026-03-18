@@ -41,18 +41,23 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
       .to(".backdrop", { opacity: 1, duration: 0.1 })
       .fromTo(
         ".content",
-        { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.1 },
+        { opacity: 0, scale: 0.9, y: 30 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "back.out(1.2)",
+        },
         0,
       )
       .fromTo(
-        "h2, p",
-        { opacity: 0, y: 3 },
-        { opacity: 1, y: 0, duration: 0.1, stagger: 0.01 },
-        "-=0.2",
+        "#announcementHeader, .announcements",
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.2, stagger: 0.1 },
+        "-=0.1",
       );
   });
-
   const onExit = contextSafe(() => {
     gsap.to(".backdrop", { opacity: 0, duration: 0.2 });
     gsap.to(".content", { opacity: 0, scale: 0.95, duration: 0.2 });
@@ -75,7 +80,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
           className="fixed inset-0 z-50 flex items-center justify-center"
         >
           <div
-            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
+            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-[3px]"
             onClick={onClose}
           />
           <div

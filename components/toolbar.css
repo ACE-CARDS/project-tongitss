@@ -5,7 +5,7 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
   margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #eec643;
 }
 
 .toolbar a,
@@ -15,13 +15,8 @@
   padding: 5px;
   border-radius: 8px;
   transition: all 0.1s;
-  border: none;
   cursor: pointer;
   outline: none;
-}
-
-.toolbar button {
-  padding: 7px 17px;
 }
 
 .toolbar select {
@@ -106,7 +101,7 @@
   background-color: #eec643 !important;
   background-image: none !important;
   color: #141414 !important;
-  border: 1px solid #011638 !important;
+  border: 1px solid #eec643 !important;
   border-radius: 4px !important;
   font-size: 13px;
   padding-left: 5px;
@@ -115,7 +110,7 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  cursor: default;
+  cursor: pointer;
 }
 
 .month_default_event_bar,
@@ -132,7 +127,7 @@
 }
 
 .toolbar button {
-  padding: 10px 15px;
+  padding: 3px;
   font-size: 14px;
 }
 
@@ -142,7 +137,6 @@
   }
   .toolbar button {
     padding: 7px 17px;
-    font-size: 16px;
   }
 }
 
