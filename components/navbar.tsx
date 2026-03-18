@@ -173,7 +173,7 @@ export default function NavBar() {
                 </li>
               </Link>
 
-              <Link href="/login" >
+              <Link href="/auth/login" >
                 <li className="w-[140px] py-[8px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center">
                   Login
                 </li>
