@@ -187,3 +187,27 @@ p {
 .bubble-float {
   animation: float 2s ease-in-out infinite;
 }
+
+@media (max-width: 768px) {
+  #kidla {
+    background-image: url("/images/D2.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  #kidla.modal-open {
+    background-image: url("/images/D1.png") !important;
+    transform: translateY(0);
+    animation: jello-vertical 0.4s;
+  }
+  .huh {
+    transition: transform 0.3s ease-out;
+    transform: translateY(25%);
+  }
+
+  .is-open {
+    transform: translateY(0) !important;
+    transition: transform 0.3s ease-out;
+  }
+}
