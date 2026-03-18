@@ -1,6 +1,6 @@
 const AnnounceMemberCard = ({ announce_dash }) => {
   return (
-    <div className="ml-4 mb-4 p-4 rounded-2xl border-1 border-[#a6a6a6] pr-6 pl-6">
+    <div className="ml-4 mb-4 p-4 rounded-2xl border-1 border-[#d7d7d7] pr-6 pl-6">
       <h3 className="text-l font-bold text-[black] pb-2">
         {announce_dash.announce_dash_title}
       </h3>

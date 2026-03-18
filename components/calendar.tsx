@@ -61,7 +61,7 @@ export default function Calendar() {
 
   const styles = {
     wrap: {
-      padding: "20px",
+      padding: "0px",
     },
     main: {
       flexGrow: "1",
@@ -104,6 +104,7 @@ export default function Calendar() {
           <DayPilotMonth
             startDate={startDate}
             events={events}
+            timeRangeSelectedHandling={"Disabled"}
             onEventClick={(args) => {
               setSelectedEventData(args.e.data.data);
               setIsPopupShowing(true);
