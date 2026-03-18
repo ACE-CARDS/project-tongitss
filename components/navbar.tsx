@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { getUserWithRole } from "@/lib/supabase/session";
 
 const siteName = "ACE CARDS";
 
@@ -18,7 +19,7 @@ const routeTitles: Record<string, string> = {
   "/executives": "EXECUTIVES",
 };
 
-export default function NavBar() {
+export default async function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);

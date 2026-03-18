@@ -23,6 +23,13 @@ export default function Home() {
     setIsDialogueShowing(false);
   }, []);
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('error')) {
+      router.push('/auth/login?error=' + query.get('error_description'));
+    }
+  }, []);
+
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
       <NavBar />

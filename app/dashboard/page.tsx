@@ -1,11 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import { getUserWithRole } from "@/lib/supabase/session";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
+  const user = await getUserWithRole();
 
-  const session = await supabase.auth.getUser();
+  // If no session, send to login
+  if (!user) {
+    redirect('/auth/login');
+  }
 
-  console.log(session);
+  // Check for specific roles
+  if (user.role !== 'admin' && user.role !== 'member') {
+    return <div>Access Denied: You do not have the required permissions.</div>;
+  }
 
   return (
     <div>
