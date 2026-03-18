@@ -5,6 +5,7 @@ import { DayPilot, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { createClient } from "@/lib/supabase/client";
 import "./toolbar.css";
 import CalendarEvent from "./calendarEvent";
+import Image from "next/image";
 
 const supabase = createClient();
 
@@ -84,19 +85,37 @@ export default function Calendar() {
               onClick={prevMonth}
               className="btn-primary flex-1 md:flex-none"
             >
-              &lt;
+              <Image
+                src="/left-arrow.svg"
+                alt="Previous Month"
+                width={20}
+                height={20}
+                className="mx-auto"
+              />
             </button>
             <button
               onClick={goToToday}
               className="btn-primary flex-1 md:flex-none"
             >
-              O
+              <Image
+                src="/current.svg"
+                alt="Current Month"
+                width={20}
+                height={20}
+                className="mx-auto"
+              />
             </button>
             <button
               onClick={nextMonth}
               className="btn-primary flex-1 md:flex-none"
             >
-              &gt;
+              <Image
+                src="/right-arrow.svg"
+                alt="Next Month"
+                width={20}
+                height={20}
+                className="mx-auto"
+              />
             </button>
           </div>
         </div>
