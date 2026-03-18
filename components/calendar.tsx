@@ -75,6 +75,7 @@ export default function Calendar() {
   return (
     <div style={styles.wrap}>
       <div>
+        {/*Toolbar*/}
         <div className="toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
           <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
             {startDate.toString("MMMM yyyy")}
@@ -119,6 +120,8 @@ export default function Calendar() {
             </button>
           </div>
         </div>
+
+        {/*calendar*/}
         <div style={styles.main} className="calendar">
           <DayPilotMonth
             startDate={startDate}
@@ -130,6 +133,7 @@ export default function Calendar() {
             onBeforeEventRender={(args) => {}}
           />
 
+          {/*Calendar Modal mhm*/}
           <CalendarEvent
             isShowing={isPopupShowing}
             onClose={() => setIsPopupShowing(false)}

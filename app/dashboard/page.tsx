@@ -5,7 +5,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Calendar from "@/components/calendar";
 import { createClient } from "@/lib/supabase/client";
-import AnnounceMemberCard from "@/components/announceMemberCard"; // Check this path!
+import AnnounceMemberCard from "@/components/announceMemberCard";
 
 const supabase = createClient();
 
@@ -17,7 +17,7 @@ export default function Dashboard() {
     async function getAnnouncements() {
       try {
         const { data, error } = await supabase
-          .from("announce_dash") // Ensure this table exists in your DB
+          .from("announce_dash")
           .select("*")
           .order("id", { ascending: true });
 

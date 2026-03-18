@@ -2,8 +2,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
-import { createClient } from "@/lib/supabase/client";
-import AnnounceCard from "./announceCard";
 
 type Props = {
   isShowing: boolean;
