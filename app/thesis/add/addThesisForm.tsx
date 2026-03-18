@@ -488,7 +488,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                           type="text"
                           name="firstName[]"
                           required
-                          maxLength={50}
+                          maxLength={20}
                           placeholder="First Name"
                           className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         />
@@ -514,7 +514,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         type="text"
                         name="lastName[]"
                         required
-                        maxLength={50}
+                        maxLength={20}
                         placeholder="Last Name"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                       />
@@ -527,7 +527,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         type="email"
                         name="email[]"
                         required
-                        maxLength={100}
+                        maxLength={30}
                         placeholder="Email"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                       />
@@ -588,6 +588,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Enter new category name"
+                        maxLength={30}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
                       />
@@ -647,6 +648,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         value={newSchoolName}
                         onChange={(e) => setNewSchoolName(e.target.value)}
                         placeholder="Enter new school name"
+                        maxLength={34}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
                       />
