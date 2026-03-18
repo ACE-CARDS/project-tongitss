@@ -104,7 +104,6 @@ export default function Calendar() {
           <DayPilotMonth
             startDate={startDate}
             events={events}
-            timeRangeSelectedHandling={"Disabled"}
             onEventClick={(args) => {
               setSelectedEventData(args.e.data.data);
               setIsPopupShowing(true);

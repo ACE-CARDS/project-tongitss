@@ -70,13 +70,13 @@ export default function Dashboard() {
           </div>
 
           {/* Announcements */}
-          <div className="w-full flex flex-col ">
+          <div className="w-[90%] mb-12 md:w-full flex flex-col mx-auto ">
             <div className="shadow-2xl border-1 border-[#d7d7d7] rounded-[5px] bg-[#f9f9f9]">
-              <h2 className="text-2xl lg:text-4xl font-bold text-black text-center mb-6 mt-6 ">
+              <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6 ">
                 ANNOUNCEMENTS
               </h2>
 
-              <div className="h-[525.5px] overflow-y-auto custom-scrollbar pr-4 ">
+              <div className="h-[300] md:h-[525.5px] overflow-y-auto custom-scrollbar pr-4 ">
                 {loading ? (
                   <div className="flex h-64 w-full items-center justify-center">
                     <p>Loading...</p>
