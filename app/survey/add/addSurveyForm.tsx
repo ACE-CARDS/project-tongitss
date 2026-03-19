@@ -474,7 +474,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     id="keywords"
                     name="keywords"
                     required
-                    maxLength={50}
+                    maxLength={100}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
@@ -641,7 +641,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     id="respondents"
                     name="respondents"
                     required
-                    maxLength={200}
+                    maxLength={34}
                     placeholder="Enter respondent criteria separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
@@ -706,7 +706,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Enter new category name"
-                        maxLength={40}
+                        maxLength={20}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
                       />
@@ -766,7 +766,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         value={newSchoolName}
                         onChange={(e) => setNewSchoolName(e.target.value)}
                         placeholder="Enter new school name"
-                        maxLength={40}
+                        maxLength={34}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
                       />
