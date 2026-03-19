@@ -1,48 +1,59 @@
-import NavBar from "@/components/navbar"; // import the nav bar
-import Footer from "@/components/footer"; // import the footer
-import ThesisData from "./thesis_data"; // import the thesis data component
-import ThesisHeader from "./thesis_header"; // import the thesis header component
+import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
+import ThesisData from "./thesis_data";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/components/backButton"; // For back button
 
-//main page (server component by default)
+// Main export
 export default async function ThesisPage({
-  searchParams,
+  searchParams, 
 }: {
-  searchParams: Promise<{
-    page?: string;
-    query?: string;
-    category?: string;
-    school?: string;
+  // Define type for searchParams
+  searchParams: Promise<{ 
+    page?: string;    
+    query?: string;   
+    category?: string; 
+    school?: string;  
+    year?: string | string[]; // Year filter that can accept mult values
   }>;
 }) {
+  
   const params = await searchParams;
   const supabase = await createClient();
 
+  // Fetch categories and schools
   const [{ data: categories }, { data: schools }] = await Promise.all([
+    // Categories
     supabase
-      .from("r_category")
-      .select("id, r_category_name")
-      .order("r_category_name", { ascending: true }),
+      .from("r_category")           // From 'r_categories' table
+      .select("id, r_category_name") // Cols
+      .order("r_category_name", { ascending: true }), // Sort 
+    
+    // Schools
     supabase
-      .from("school")
-      .select("id, school_name")
-      .order("school_name", { ascending: true }),
+      .from("school")                // From 'school' table
+      .select("id, school_name")     // Cols
+      .order("school_name", { ascending: true }), // Sort
   ]);
 
   return (
-    <div className="">
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" //default bg 
+     style={{
+       backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
+       backgroundSize: "20px 20px" 
+     }}>
       <NavBar />
 
-      <div className="container mx-auto py-8 px-4 max-w-7xl bg-[#eff0f2] min-h-screen">
-        <ThesisHeader
-          initialQuery={params?.query}
-          categories={categories || []}
-          schools={schools || []}
-          initialCategory={params?.category}
-          initialSchool={params?.school}
-        />
+      {/* Content */}
+      <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
+  
+        <div className="mb-4">
+          <BackButton /> {/* Back Button */}
+        </div>
+
         <ThesisData searchParams={params} />
       </div>
+
       <Footer />
     </div>
   );
