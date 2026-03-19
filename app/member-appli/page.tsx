@@ -151,7 +151,7 @@ export default function MembershipApplication() {
             className="absolute -bottom-10 right-0 lg:right-10 z-20 w-56 h-56 lg:w-80 lg:h-80 drop-shadow-2xl pointer-events-none"
           >
             <img 
-              src="/assets/mascot.png" 
+              src="/assets/logos/mascot.png" 
               alt="Ace Cards Mascot" 
               className="w-full h-full object-contain" 
             />
