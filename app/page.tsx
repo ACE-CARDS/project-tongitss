@@ -11,6 +11,7 @@ import Footer from "@/components/footer";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import GradualBlur from "@/components/GradualBlur";
+import NewsMedia from "@/components/newsMedia";
 
 const supabase = createClient();
 
@@ -289,6 +290,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <NewsMedia />
 
         {/* EVENTS SECTION */}
         <section
