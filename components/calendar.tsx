@@ -126,6 +126,9 @@ export default function Calendar() {
           <DayPilotMonth
             startDate={startDate}
             events={events}
+            timeRangeSelectedHandling="Disabled"
+            eventMoveHandling="Disabled" // Disables drag and drop
+            eventResizeHandling="Disabled"
             onEventClick={(args) => {
               setSelectedEventData(args.e.data.data);
               setIsPopupShowing(true);
