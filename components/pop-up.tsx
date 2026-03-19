@@ -41,18 +41,23 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
       .to(".backdrop", { opacity: 1, duration: 0.1 })
       .fromTo(
         ".content",
-        { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.1 },
+        { opacity: 0, scale: 0.9, y: 30 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "back.out(1.2)",
+        },
         0,
       )
       .fromTo(
-        "h2, p",
-        { opacity: 0, y: 3 },
-        { opacity: 1, y: 0, duration: 0.1, stagger: 0.01 },
-        "-=0.2",
+        "#announcementHeader, .announcements",
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.2, stagger: 0.1 },
+        "-=0.1",
       );
   });
-
   const onExit = contextSafe(() => {
     gsap.to(".backdrop", { opacity: 0, duration: 0.2 });
     gsap.to(".content", { opacity: 0, scale: 0.95, duration: 0.2 });
@@ -75,14 +80,14 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
           className="fixed inset-0 z-50 flex items-center justify-center"
         >
           <div
-            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
+            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-[3px]"
             onClick={onClose}
           />
           <div
             id="scrollbar"
-            className="content relative z-10 h-full max-h-[80vh] w-[92%] lg:w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4"
+            className="content relative z-10 max-h-[80vh] w-[92%] lg:w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4 shadow-3xl "
           >
-            <div className="min-h-full rounded-2xl border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-4 lg:p-8 text-white shadow-2xl flex flex-col">
+            <div className="min-h-full rounded-md border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-4 lg:p-8 text-white flex flex-col">
               <div className="absolute right-4 top-4 z-20 lg:pr-4 pl-2 pr-4">
                 <button
                   type="button"
