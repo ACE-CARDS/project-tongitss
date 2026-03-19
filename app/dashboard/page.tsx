@@ -35,7 +35,7 @@ export default function Dashboard() {
     getAnnouncements();
   }, []);
 
-    console.log(user);
+  console.log(user);
 
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
@@ -59,7 +59,7 @@ export default function Dashboard() {
         </div>
 
         <div className="md:m-3 p-2 text-sm md:self-end">
-          <p>Current Total Members: 69420</p>
+          <p>Current Total Members</p>
         </div>
       </div>
 
