@@ -110,6 +110,14 @@ export default async function SurveyData({
     baseQuery = baseQuery.eq("school", schoolId);
   }
 
+      if (categoryId) {
+    baseQuery = baseQuery.eq("r_category", categoryId);
+  }
+
+  if (schoolId) {
+    baseQuery = baseQuery.eq("school", schoolId);
+  }
+
   const { data: fetchedSurveys, error } = await baseQuery;
 
   console.log("Fetched surveys:", fetchedSurveys);

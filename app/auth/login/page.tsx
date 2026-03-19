@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Footer from "@/components/footer";
 import Link from "next/link";
+import { signinWithGoogle } from "@/lib/actions";
 
 export default function LoginPage() {
   return (
@@ -36,11 +37,11 @@ export default function LoginPage() {
                 Let's stay connected!<br/>
                 Please sign in to continue.
               </span>
-
-              <button className="mt-10 bg-blue-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors cursor-pointer">
-                Sign In
-              </button>
-
+              <form action={signinWithGoogle} >
+                <button type="submit" className="mt-10 bg-blue-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors cursor-pointer">
+                  Sign In With Google
+                </button>
+              </form>
               <div className="flex flex-row hover:underline hover:cursor-pointer items-center mt-5">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 

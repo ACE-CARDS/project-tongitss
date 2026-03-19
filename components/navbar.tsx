@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { useUser } from "./context/userContext";
+
 
 const siteName = "ACE CARDS";
 
@@ -19,6 +21,7 @@ const routeTitles: Record<string, string> = {
 };
 
 export default function NavBar() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
@@ -26,18 +29,22 @@ export default function NavBar() {
   const pathname = usePathname();
   // const title = routeTitles[pathname] || "";
   const title = pathname && pathname !== "/" ? routeTitles[pathname] || "" : "";
+  const isActive = (path: string) => pathname === path;
 
   const toggleMenu = () => {
     setIsOpen((o) => !o);
-  }
+  };
 
   const toggleDropdown = () => {
     setAcademicsOpen(!academicsOpen);
-  }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (academicsRef.current && !academicsRef.current.contains(event.target as Node)) {
+      if (
+        academicsRef.current &&
+        !academicsRef.current.contains(event.target as Node)
+      ) {
         setAcademicsOpen(false);
       }
     };
@@ -47,59 +54,108 @@ export default function NavBar() {
   }, []);
   
   return (
-    <nav className="w-full h-20 px-8 bg-[#011638] text-white sticky top-0 z-50">
+    // class="w-full  mx-auto mb-10 max-w-[1920px]
+    <div className="sticky top-0 z-50">
 
-      <div className="flex flex-row items-center justify-between w-full h-full gap-8">
-        
-        {/* <div className="flex flex-row bg-red-500"> */}
-          <a className="flex flex-row items-center h-full gap-2" href="/">
-            <Image 
-              src="/assets/logos/ACE CARDS logo.png" 
-              alt="ACE CARDS Logo" 
+      {/* Blur */}
+      <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
+
+      {/* Navbar */}
+      <nav className="relative w-full mx-auto my-auto max-w-[1400px] top-3 h-16">
+        <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
+          {/* <div className="flex flex-row bg-red-500"> */}
+          <a className="shadow-[0_5px_10px_#011638]/80 flex flex-row items-center h-full w-fit gap-2 rounded-[50px] px-4 pr-6 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
+            <Image
+              src="/assets/logos/ACE CARDS logo.png"
+              alt="ACE CARDS Logo"
               className="w-10 h-10 flex-shrink-0"
               width={40}
-              height={40}>
-            </Image>
-            <div className="flex flex-col justify-center h-full gap-0">
+              height={40}
+            ></Image>
+            <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap">
               {title && title !== siteName && (
-                <div className="text-sm opacity-75 font-bold leading-none">{siteName}</div>
+                <div className="text-sm opacity-75 font-bold leading-none title">
+                  {siteName}
+                </div>
               )}
-              <div className="text-3xl font-bold leading-none">{title || siteName}</div>
+              <div className="md:text-3xl sm:text-2xl text-xl font-bold leading-none whitespace-nowrap font-oswald">
+                {title || siteName}
+              </div>
             </div>
           </a>
-        {/* </div> */}
+          {/* </div> */}
 
-        <div className="flex flex-row h-full items-center">
-          <div id="mobile-menu" className={`duration-200 ease-in-out fixed left-0 top-20 bg-[#011638] text-white w-full lg:static lg:h-full lg:w-auto lg:block flex text-right justify-end ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} lg:opacity-100 lg:visible lg:flex`}>
-            <ul className="flex lg:flex-row flex-col gap-6 lg:gap-8 lg:h-full lg:items-center py-6 lg:py-0 px-8 lg:px-0">
-              <li className="hover:underline">
-                <Link href="/">Home</Link>
-              </li>
+          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[13px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
+            <ul className="gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap">
+              <Link href="/">
+                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                ${isActive("/") 
+                  ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                  : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                }`}>
+                  Home
+                </li>
+              </Link>
 
-              <li className="hover:underline">
-                <Link href="/about-us">About Us</Link>
-              </li>
+              <Link href="/about-us">
+                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                ${isActive("/about-us") 
+                  ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                  : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                }`}>
+                  About Us
+                </li>
+              </Link>
 
-              <li className="hover:underline">
-                <Link href="/events">Events</Link>
-              </li>
+              <Link href="/events">
+                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                ${isActive("/events") 
+                  ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                  : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                }`}>
+                  Events
+                </li>
+              </Link>
 
-              <li ref={academicsRef} onClick={toggleDropdown} className="group relative flex-row flex gap-1 hover:underline cursor-pointer">
+              <Link href="/executives">
+                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                ${isActive("/executives") 
+                  ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                  : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                }`}>
+                  Executives
+                </li>
+              </Link>
+
+
+              <li
+                ref={academicsRef}
+                onClick={toggleDropdown}
+                className={`z-20 group relative flex-row flex gap-1 cursor-pointer px-[15px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                ${isActive("/thesis") || isActive("/survey")
+                  ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                  : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                }
+                ${academicsOpen ? "bg-[#a6a6a6]/30 border-[#a6a6a6]/10 scale-[1.04]" : ""}
+                `}
+              >
                 Academics
-
                 {/* Arrow down */}
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor" 
-                  className="size-4">
-                  <path 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="size-4"
+                >
+                  <path
                     fillRule="evenodd"
-                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" 
-                    clipRule="evenodd" />
+                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
-
-                <ul className={`${academicsOpen ? "visible" : "invisible"} absolute bg-[#011638] ease-in-out text-white p-4 rounded-lg lg:-left-10 -left-20 lg:top-8 top-5 w-50 gap-4 flex flex-col text-center`}>
+                <ul
+                  className={`${academicsOpen ? "visible" : "invisible"} absolute shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm ease-in-out text-white p-4 rounded-[30px] xl:-left-10 -left-10 xl:top-8 top-10 w-50 gap-4 flex flex-col text-center`}
+                >
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
                   </li>
@@ -109,17 +165,56 @@ export default function NavBar() {
                 </ul>
               </li>
 
-              <li className="hover:underline">
-                <Link href="/member-appli">Be A Member</Link>
-              </li>
+              
+              {/* 1. If NO user is found, show Login and Join buttons */}
+              {!user ? (
+                <>
+                  <Link href="/member-appli">
+                    <li className={`w-[140px] py-[8px] rounded-[50px] border-white/50 border-2 duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
+                        ${isActive("/member-appli") 
+                          ? "shadow-[0_0_15px_white] border-[#a6a6a6]/10 bg-white/100 scale-[1.04]"
+                          : "hover:shadow-[0_0_15px_white] border-[#a6a6a6]/0 hover:border-[#a6a6a6]/10 hover:bg-white/100 hover:scale-[1.04]"
+                        }`}>
+                      Be A Member
+                    </li>
+                  </Link>
 
-              <li className="hover:underline">
-                <Link href="/login">Log In</Link>
-              </li>
+                  <Link href="/auth/login" >
+                    <li className="w-[140px] py-[8px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center ">
+                      Login
+                    </li>
+                  </Link>
+                </>
+              ) : (
+                /* 2. If user IS found, show Dashboard and Logout */
+                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[4px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
+                  <Link href="/dashboard">
+                    <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all xl:text-black text-white
+                      ${isActive("/dashboard") 
+                        ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                        : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                      }`}>
+                      Dashboard
+                    </li>
+                  </Link>
+
+                  <li 
+                    onClick={async () => {
+                      const { createClient } = await import('@/lib/supabase/client');
+                      const supabase = createClient();
+                      await supabase.auth.signOut();
+                      window.location.href = "/"; // Refresh to clear state
+                    }}
+                    className="cursor-pointer rounded-[50px] bg-red-500/60 xl:text-white border-red-500/80 text-white xl:text-red-500 border-2 duration-200 transition-all px-[13px] py-[4px] border-red-500/0 xl:hover:bg-red-500/90 xl:hover:border-red-500/10 xl:hover:scale-[1.04] xl:hover:scale-[1.04]"
+                  >
+                    Logout
+                  </li>
+                </div>
+              )}
             </ul>
           </div>
-          
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-4 shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] w-[70px] h-16 justify-center xl:hidden">
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
@@ -128,8 +223,13 @@ export default function NavBar() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className={`duration-200 size-6 lg:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
             </svg>
 
             {/* close icon */}
@@ -140,12 +240,22 @@ export default function NavBar() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className={`duration-200 size-6 lg:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
             </svg>
           </div>
+
+          
+
+
+          {/*shadow-[0_0_0px_#eec643] hover:shadow-[0_5px_20px_#eec643] ease-in-out duration-100 transition-all */}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
