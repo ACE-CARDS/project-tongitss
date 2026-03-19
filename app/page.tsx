@@ -216,6 +216,11 @@ export default function Home() {
             curve="ease-out"
           />
         </div>
+        <div
+          className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[10001] bounce text-white text-6xl pointer-events-none transition-opacity duration-500 ${isAtTop ? "opacity-100" : "opacity-0"} `}
+        >
+          ↓
+        </div>
 
         {/* HERO SECTION */}
         <section
@@ -273,12 +278,6 @@ export default function Home() {
                 <span className="px-4 py-2 bg-white/70 backdrop-blur-md rounded-xl shadow-md font-semibold">
                   Servant Leadership
                 </span>
-              </div>
-
-              <div
-                className={`bounce text-white text-6xl flex justify-center mt-4 transition-opacity duration-500 ${isAtTop ? "opacity-100" : "opacity-0"} z-[10000] relative`}
-              >
-                ↓
               </div>
             </div>
           </div>
