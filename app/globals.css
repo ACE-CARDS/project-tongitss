@@ -14,12 +14,12 @@
   --font-ubuntu-mono: var(--font-ubuntu-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #171717;
     --foreground: #eff0f2;
   }
-}
+} */
 
 body {
   background: var(--background);
