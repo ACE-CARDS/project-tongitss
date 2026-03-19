@@ -1,10 +1,9 @@
-import NavBar from "@/components/navbar"; // import the nav bar
-import Footer from "@/components/footer"; // import the footer
-import SurveyData from "./survey_data"; // import the survey data component
-import SurveyHeader from "./survey_header"; // import the survey header component
+import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
+import SurveyData from "./survey_data";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/components/backButton";
 
-//main page (server component by default)
 export default async function SurveyPage({
   searchParams,
 }: {
@@ -13,6 +12,7 @@ export default async function SurveyPage({
     query?: string;
     category?: string;
     school?: string;
+    year?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -30,18 +30,19 @@ export default async function SurveyPage({
   ]);
 
   return (
-    <div className="">
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" 
+     style={{
+       backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+       backgroundSize: "20px 20px"
+     }}>
       <NavBar />
 
-      <div className="container mx-auto py-8 px-4 max-w-7xl bg-[#eff0f2] min-h-screen">
-        <SurveyHeader 
-          initialQuery={params?.query}
-          categories={categories || []}
-          schools={schools || []}
-          initialCategory={params?.category}
-          initialSchool={params?.school} 
-        />
+      <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
+        <div className="mb-4">
+          <BackButton />
+        </div>
         <SurveyData searchParams={params} />
+
       </div>
       <Footer />
     </div>
