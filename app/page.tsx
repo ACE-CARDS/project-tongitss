@@ -480,7 +480,7 @@ export default function Home() {
                   </h2>
 
                   {/* uni list */}
-                  <div className="space-y-4 w-full max-w-lg max-h-[400px] overflow-y-auto">
+                  <div className="space-y-4 w-full max-w-lg max-h-[400px] overflow-y-auto custom-scrollbar">
                     {provinceSchools.length > 0 ? (
                       provinceSchools.map((school) => (
                         <div
