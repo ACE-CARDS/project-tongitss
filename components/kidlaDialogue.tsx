@@ -57,45 +57,63 @@ const KidlaDialogue: FC<Props> = ({
       {(status) => (
         <div
           ref={container}
-          id="popUpAnnouncement"
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end lg:pr-24 px-4"
         >
           <div
             className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-md"
             onClick={onClose}
           />
-          <div
-            id="scrollbar"
-            className="content relative z-10 h-full max-h-[50vh] w-full max-w-4xl overflow-y-auto custom-scrollbar pr-4"
-          >
-            <div className="min-h-full rounded-2xl border border-white/10 bg-white p-8 text-white shadow-2xl flex flex-col">
-              <div className="flex flex-col items-center justify-center">
-                <div id="announcementHeader" className="pt-2">
-                  <h2 className="text-3xl font-bold text-[#141414] text-center p-2">
-                    Welcome to ACE CARDS!
-                  </h2>
-                  <h3 className="text-xl font-bold text-[#141414] text-center p-2">
-                    Clicking on Kidla will open a dialogue box that lets you
-                    open the announcement modal or navigate to the Membership
-                    Application page
-                  </h3>
-                </div>
-                <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-4">
-                  <button
-                    onClick={onAnnouncements}
-                    className="rounded-2xl text-white bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] hover:bg-gradient-to-bl font-medium rounded-base text-lg px-4 py-2.5 text-center leading-5 m-3"
-                  >
-                    See Announcements
-                  </button>
-                  <button
-                    onClick={onRedirectMemApp}
-                    className="rounded-2xl text-white bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] hover:bg-gradient-to-bl font-medium rounded-base text-lg px-4 py-2.5 text-center leading-5 m-3"
-                  >
-                    Apply for Membership!
-                  </button>
-                </div>
+
+          <div className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[40vh] md:min-h-[50vh] rounded-[2rem] md:rounded-[90rem] lg:rounded-full border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center">
+            <div className="absolute top-3 right-3 z-10">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-5 w-5 lg:h-8 lg:w-8 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="flex flex-col items-center justify-center text-center">
+              <div id="announcementHeader" className="space-y-4 md:pt-4 ">
+                <p className="text-xl md:text-3xl font-bold text-[#141414]">
+                  Welcome to ACE CARDS!
+                </p>
+                <p className="text-base md:text-xl font-medium text-[#141414] max-w-md mx-auto">
+                  Would you like to see announcements or take a look at our
+                  member application process?
+                </p>
+              </div>
+              <div className="mt-8 flex flex-col sm:flex-row justify-center gap-2 md:gap-4 w-full px-4 md:pb-6">
+                <button
+                  onClick={onAnnouncements}
+                  className="cursor-pointer rounded-2xl btn-primary hover:scale-105 transition-transform font-medium text-sm md:text-lg px-6 py-3"
+                >
+                  See Announcements
+                </button>
+                <button
+                  onClick={onRedirectMemApp}
+                  className="cursor-pointer rounded-2xl btn-primary hover:scale-105 transition-transform font-medium text-sm md:text-lg px-6 py-3"
+                >
+                  Apply for Membership!
+                </button>
               </div>
             </div>
+
+            <div className="z-[-1] absolute -bottom-8 right-10 md:right-20 w-12 h-12 bg-[#fbfaf8] triangle" />
           </div>
         </div>
       )}

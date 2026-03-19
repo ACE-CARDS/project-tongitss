@@ -16,11 +16,16 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsModalShowing(true);
+    setIsDialogueShowing(false);
   }, []);
 
   useEffect(() => {
-    setIsDialogueShowing(false);
+    const seenPopup = sessionStorage.getItem("seenPopup");
+
+    if (!seenPopup) {
+      setIsModalShowing(true);
+      sessionStorage.setItem("seenPopup", "true");
+    }
   }, []);
 
   useEffect(() => {
@@ -33,11 +38,13 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
       <NavBar />
-
+      {/*Announcements*/}
       <Popup
         isShowing={isModalShowing}
         onClose={() => setIsModalShowing(false)}
       />
+
+      {/*Kidla*/}
       <KidlaDialogue
         isShowing={isDialogueShowing}
         onClose={() => setIsDialogueShowing(false)}

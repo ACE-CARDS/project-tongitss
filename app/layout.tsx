@@ -1,27 +1,11 @@
 import type { Metadata } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  Oswald,
-  Open_Sans,
-  Ubuntu_Sans,
-} from "next/font/google";
+import { Oswald, Ubuntu_Sans } from "next/font/google";
 import "./globals.css";
 import { getUserWithRole } from "@/lib/supabase/session";
 import { UserProvider } from "@/components/context/userContext";
 
 
 const siteName = "ACE CARDS";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -49,7 +33,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable}  ${ubuntu_mono.variable} antialiased`}
+        className={`${oswald.variable}  ${ubuntu_mono.variable} antialiased`}
       >
         <UserProvider user={user}>  
           {children}
