@@ -14,17 +14,17 @@
   --font-ubuntu-mono: var(--font-ubuntu-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
-    --background: #eff0f2;
+    --background: #171717;
     --foreground: #eff0f2;
   }
-}
+} */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui;
+  font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
   scrollbar-gutter: stable;
 }
 

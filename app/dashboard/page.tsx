@@ -6,10 +6,12 @@ import Footer from "@/components/footer";
 import Calendar from "@/components/calendar";
 import { createClient } from "@/lib/supabase/client";
 import AnnounceMemberCard from "@/components/announceMemberCard";
+import { useUser } from "@/components/context/userContext";
 
 const supabase = createClient();
 
 export default function Dashboard() {
+  const { user } = useUser();
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +35,8 @@ export default function Dashboard() {
     getAnnouncements();
   }, []);
 
+    console.log(user);
+
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
@@ -44,7 +48,7 @@ export default function Dashboard() {
       <div className="rounded-xl bg-[f9f9f9] flex flex-col items-center justify-between md:flex-row w-[80%] mx-auto mt-8 mb-8 max-w-[1400px]">
         <div className="m-3 p-2">
           <h2 className="text-lg font-bold text-center md:text-left md:text-5xl">
-            Marionne T. Villagracia
+            {user ? `${user.user_metadata.name}` : "Welcome, Guest"}
           </h2>
           <p className="text-xs text-center md:text-left md:text-2xl md:mt-3">
             Internals Committee
