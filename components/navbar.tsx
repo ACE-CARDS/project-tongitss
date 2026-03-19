@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { getUserWithRole } from "@/lib/supabase/session";
+import { useUser } from "./context/userContext";
+
 
 const siteName = "ACE CARDS";
 
@@ -19,7 +20,8 @@ const routeTitles: Record<string, string> = {
   "/executives": "EXECUTIVES",
 };
 
-export default async function NavBar() {
+export default function NavBar() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
@@ -50,7 +52,7 @@ export default async function NavBar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
+  
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
     <div className="sticky top-0 z-50">
@@ -76,15 +78,15 @@ export default async function NavBar() {
                   {siteName}
                 </div>
               )}
-              <div className="text-3xl font-bold leading-none whitespace-nowrap font-oswald">
+              <div className="md:text-3xl sm:text-2xl text-xl font-bold leading-none whitespace-nowrap font-oswald">
                 {title || siteName}
               </div>
             </div>
           </a>
           {/* </div> */}
 
-          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row 2xl:flex-row text-right 2xl:px-[13px] 2xl:items-end 2xl:h-full 2xl:static 2xl:w-full w-fit justify-end shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 2xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} 2xl:opacity-100 2xl:visible`}>
-            <ul className="gap-2 flex 2xl:flex-row flex-col 2xl:h-full 2xl:items-center py-6 2xl:py-0 px-4 2xl:px-0 whitespace-nowrap">
+          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[13px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
+            <ul className="gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap">
               <Link href="/">
                 <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
                 ${isActive("/") 
@@ -152,7 +154,7 @@ export default async function NavBar() {
                   />
                 </svg>
                 <ul
-                  className={`${academicsOpen ? "visible" : "invisible"} absolute shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm ease-in-out text-white p-4 rounded-[30px] 2xl:-left-10 -left-10 2xl:top-8 top-10 w-50 gap-4 flex flex-col text-center`}
+                  className={`${academicsOpen ? "visible" : "invisible"} absolute shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm ease-in-out text-white p-4 rounded-[30px] xl:-left-10 -left-10 xl:top-8 top-10 w-50 gap-4 flex flex-col text-center`}
                 >
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
@@ -164,25 +166,55 @@ export default async function NavBar() {
               </li>
 
               
-              <Link href="/member-appli">
-                <li className={`w-[140px] py-[8px] rounded-[50px] border-white/50  border-2 duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
-                    ${isActive("/member-appli") 
-                      ? "shadow-[0_0_15px_white] border-[#a6a6a6]/10 bg-white/100 scale-[1.04]"
-                      : "hover:shadow-[0_0_15px_white] border-[#a6a6a6]/0 hover:border-[#a6a6a6]/10 hover:bg-white/100 hover:scale-[1.04]"
-                    }`}>
-                  Be A Member
-                </li>
-              </Link>
+              {/* 1. If NO user is found, show Login and Join buttons */}
+              {!user ? (
+                <>
+                  <Link href="/member-appli">
+                    <li className={`w-[140px] py-[8px] rounded-[50px] border-white/50 border-2 duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
+                        ${isActive("/member-appli") 
+                          ? "shadow-[0_0_15px_white] border-[#a6a6a6]/10 bg-white/100 scale-[1.04]"
+                          : "hover:shadow-[0_0_15px_white] border-[#a6a6a6]/0 hover:border-[#a6a6a6]/10 hover:bg-white/100 hover:scale-[1.04]"
+                        }`}>
+                      Be A Member
+                    </li>
+                  </Link>
 
-              <Link href="/auth/login" >
-                <li className="w-[140px] py-[8px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center">
-                  Login
-                </li>
-              </Link>
+                  <Link href="/auth/login" >
+                    <li className="w-[140px] py-[8px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center ">
+                      Login
+                    </li>
+                  </Link>
+                </>
+              ) : (
+                /* 2. If user IS found, show Dashboard and Logout */
+                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[4px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
+                  <Link href="/dashboard">
+                    <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all xl:text-black text-white
+                      ${isActive("/dashboard") 
+                        ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                        : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                      }`}>
+                      Dashboard
+                    </li>
+                  </Link>
+
+                  <li 
+                    onClick={async () => {
+                      const { createClient } = await import('@/lib/supabase/client');
+                      const supabase = createClient();
+                      await supabase.auth.signOut();
+                      window.location.href = "/"; // Refresh to clear state
+                    }}
+                    className="cursor-pointer rounded-[50px] bg-red-500/60 xl:text-white border-red-500/80 text-white xl:text-red-500 border-2 duration-200 transition-all px-[13px] py-[4px] border-red-500/0 xl:hover:bg-red-500/90 xl:hover:border-red-500/10 xl:hover:scale-[1.04] xl:hover:scale-[1.04]"
+                  >
+                    Logout
+                  </li>
+                </div>
+              )}
             </ul>
           </div>
 
-          <div className="flex items-center gap-4 shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] w-[70px] h-16 justify-center 2xl:hidden">
+          <div className="flex items-center gap-4 shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] w-[70px] h-16 justify-center xl:hidden">
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
@@ -191,7 +223,7 @@ export default async function NavBar() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className={`duration-200 size-8 2xl:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}
             >
               <path
                 strokeLinecap="round"
@@ -208,7 +240,7 @@ export default async function NavBar() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className={`duration-200 size-8 2xl:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}
             >
               <path
                 strokeLinecap="round"
