@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
+import BackButton from "@/components/backButton";
 
 export default function Executives() {
   const [executives, setExecutives] = useState([]);
@@ -48,7 +49,9 @@ export default function Executives() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavBar />
-
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        <BackButton />
+      </div>
       <main className="px-6 sm:px-10 lg:px-20 py-20">
         {/* title */}
         <div className="text-center mb-12">

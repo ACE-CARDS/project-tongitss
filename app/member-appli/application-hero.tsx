@@ -1,17 +1,21 @@
 export default function ApplicationHero() {
   return (
     <section className="relative pt-40 pb-20 px-5 flex flex-col items-center justify-center text-center overflow-hidden min-h-[60vh]">
-      
-      <div 
-        className="absolute inset-0 z-0 opacity-30 pointer-events-none" 
-        style={{ backgroundImage: 'radial-gradient(#011638 2px, transparent 2px)', backgroundSize: '30px 30px' }}
+      <div
+        className="absolute inset-0 z-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(#011638 2px, transparent 2px)",
+          backgroundSize: "30px 30px",
+        }}
       ></div>
 
       <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">
         <h1 className="text-5xl lg:text-7xl font-extrabold text-[#011638] uppercase border-b-8 border-[#011638] pb-4 mb-4 inline-block tracking-tight">
-          MEMBER<br />APPLICATION
+          MEMBER
+          <br />
+          APPLICATION
         </h1>
-        
+
         <p className="text-red-500 font-bold tracking-widest uppercase mb-12 text-lg">
           STATUS: OPEN
         </p>
@@ -20,7 +24,9 @@ export default function ApplicationHero() {
           <h2 className="text-4xl lg:text-6xl font-bold text-[#011638] tracking-widest">
             DEADLINE
           </h2>
-          <p className="mt-4 text-xl text-gray-600 font-medium">To Be Announced</p>
+          <p className="mt-4 text-xl text-gray-600 font-medium">
+            To Be Announced
+          </p>
         </div>
       </div>
     </section>
