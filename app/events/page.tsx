@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import EventsTimeline from "./events-timeline";
+import BackButton from "@/components/backButton";
 
 export default function EventsPage() {
   const router = useRouter();
@@ -16,7 +17,9 @@ export default function EventsPage() {
       <div className="absolute bottom-[10%] left-[20%] w-[600px] h-[600px] bg-[#011638] rounded-full blur-[150px] opacity-5 pointer-events-none -z-10"></div>
 
       <NavBar />
-
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        <BackButton />
+      </div>
       <main className="flex-grow relative z-10 pb-8">
         {/* HERO SECTION */}
         <section className="pt-32 pb-16 px-6 lg:px-20 relative">
@@ -24,7 +27,9 @@ export default function EventsPage() {
           <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl -z-10 border-b border-white/60"></div>
 
           {/* ABSOLUTE TOP-LEFT BACK BUTTON */}
-          <div className="absolute top-24 left-4 sm:left-6 lg:left-12 z-50">
+
+          {/*    
+         <div className="absolute top-24 left-4 sm:left-6 lg:left-12 z-50">
             <button
               onClick={() => router.back()}
               className="bg-white/90 p-3 sm:p-4 rounded-2xl shadow-sm border border-white hover:scale-105 hover:shadow-md transition-all text-[#011638] flex items-center justify-center backdrop-blur-md"
@@ -44,7 +49,7 @@ export default function EventsPage() {
                 <polyline points="12 19 5 12 12 5" />
               </svg>
             </button>
-          </div>
+          </div>  */}
 
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative mt-12 lg:mt-4">
             {/* TITLE & DESCRIPTION */}
