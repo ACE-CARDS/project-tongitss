@@ -80,11 +80,33 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
           />
           <div
             id="scrollbar"
-            className="content relative z-10 h-full max-h-[80vh] w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4"
+            className="content relative z-10 h-full max-h-[80vh] w-[92%] lg:w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4"
           >
-            <div className="min-h-full rounded-2xl border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-8 text-white shadow-2xl flex flex-col">
-              <div id="announcementHeader" className="p-4">
-                <h2 className="text-4xl font-bold text-[#eff0f2] text-center p-4">
+            <div className="min-h-full rounded-2xl border border-white/10 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-4 lg:p-8 text-white shadow-2xl flex flex-col">
+              <div className="absolute right-4 top-4 z-20 lg:pr-4 pl-2 pr-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex h-5 w-5 lg:h-10 lg:w-10 items-center justify-center rounded-xl text-white transition hover:bg-[#0b1763]/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div id="announcementHeader" className=" pb-8">
+                <h2 className="text-4xl lg:text-6xl font-bold text-[#eff0f2] text-center p-4">
                   ANNOUNCEMENT
                 </h2>
               </div>
