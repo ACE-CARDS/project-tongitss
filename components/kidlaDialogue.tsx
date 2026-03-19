@@ -101,13 +101,13 @@ const KidlaDialogue: FC<Props> = ({
               <div className="mt-8 flex flex-col sm:flex-row justify-center gap-2 md:gap-4 w-full px-4 md:pb-6">
                 <button
                   onClick={onAnnouncements}
-                  className="cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                  className="bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
                 >
                   See Announcements
                 </button>
                 <button
                   onClick={onRedirectMemApp}
-                  className="cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                  className="bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
                 >
                   Apply for Membership!
                 </button>
