@@ -219,7 +219,7 @@ export default function Home() {
 
               <div className="flex justify-center lg:justify-start gap-6 mt-6">
                 <Link
-                  href=""
+                  href="/committee"
                   className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
                 >
                   Committees

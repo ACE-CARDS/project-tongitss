@@ -9,7 +9,7 @@ export default function Committee() {
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
 
-      <div className="m-5 w-200 mx-auto">
+      <div className="m-5 w-250 mx-auto">
         <Image
           src="/images/committee-organization.png"
           alt="Current Month"
