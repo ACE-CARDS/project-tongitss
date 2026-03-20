@@ -12,7 +12,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import GradualBlur from "@/components/GradualBlur";
 import NewsMedia from "@/components/newsMedia";
-
+//try q lang magpush if working
 const supabase = createClient();
 
 export default function Home() {
