@@ -511,10 +511,12 @@ useEffect(() => {
               <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-[#011638]/90 mt-1 drop-shadow-xl">
                 Events
               </h2>
-              <button className="mt-10 group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform">
-                View All →
-                <span className="ml-2 inline-block transition-transform group-hover:translate-x-1"></span>
-              </button>
+              <Link
+                    href="/events"
+                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
+                  >
+                    View Events →
+                  </Link>
             </div>
           </div>
 
@@ -613,12 +615,9 @@ useEffect(() => {
                 <div className="flex justify-center lg:justify-start gap-6 mt-12">
                   <Link
                     href="/committee"
-                    className="group px-10 py-4 rounded-3xl bg-gradient-to-r from-[#011638] to-[#0d21a1] text-white font-bold text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 transform"
+                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
-                    Committees
-                    <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">
-                      →
-                    </span>
+                    Committees →
                   </Link>
 
                   <Link
@@ -689,7 +688,7 @@ useEffect(() => {
                     </select>
                   </div>
 
-                  <h2 className="text-6xl sm:text-7xl lg:text-9xl font-black text-[#011638] flex-shrink-0 drop-shadow-2xl bg-gradient-to-b from-[#011638] to-[#0d21a1] bg-clip-text text-transparent">
+                  <h2 className="text-6xl sm:text-7xl lg:text-9xl font-black text-[#011638] flex-shrink-0 drop-shadow-2xl">
                   {provinceDisplayCount}
                   </h2>
 
@@ -852,18 +851,15 @@ useEffect(() => {
                 </p>
 
                 <div className="flex justify-center lg:justify-start gap-6 mt-6">
-                  <Link
+                <Link
                     href="/survey"
-                    className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
-                    Surveys
-                    <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">
-                      →
-                    </span>
+                    Survey →
                   </Link>
                   <Link
                     href="/thesis"
-                    className="group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Thesis →
                   </Link>
