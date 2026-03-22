@@ -21,6 +21,10 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    setIsModalShowing(true);
+  }, []);
+
+  useEffect(() => {
     setIsDialogueShowing(false);
   }, []);
 
@@ -216,7 +220,7 @@ useEffect(() => {
   return () => observer.disconnect();
 }, [eventCount, hasAnimated]);
 
-//button pataas
+//button pataas hi
 
 const [showBackToHero, setShowBackToHero] = useState(false);
 
