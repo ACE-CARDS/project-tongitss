@@ -55,7 +55,7 @@ export default function NavBar() {
   
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
-    <div className="sticky top-0 z-50">
+    <div className="fixed w-full top-0 z-50">
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
