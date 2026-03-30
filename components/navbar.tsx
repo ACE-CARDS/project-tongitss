@@ -55,7 +55,7 @@ export default function NavBar() {
   
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
-    <div className="fixed w-full top-0 z-50">
+    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50 inset-0`}>
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
@@ -63,8 +63,7 @@ export default function NavBar() {
       {/* Navbar */}
       <nav className="relative w-full mx-auto my-auto max-w-[1400px] top-3 h-16">
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
-          {/* <div className="flex flex-row bg-red-500"> */}
-          <a className="shadow-[0_5px_10px_#011638]/80 flex flex-row items-center h-full w-fit gap-2 rounded-[50px] px-4 pr-6 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
+          <a className="flex flex-row items-center h-full w-fit gap-2 rounded-[50px] px-4 pr-6 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
@@ -85,7 +84,7 @@ export default function NavBar() {
           </a>
           {/* </div> */}
 
-          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[13px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
+          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[13px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
             <ul className="gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap">
               <Link href="/">
                 <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
