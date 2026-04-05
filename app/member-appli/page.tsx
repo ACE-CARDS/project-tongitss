@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { createClient } from "@/lib/supabase/client";
 
 export default function MembershipApplication() {
+  const supabase = createClient();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
