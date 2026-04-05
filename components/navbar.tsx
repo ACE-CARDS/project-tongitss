@@ -193,7 +193,7 @@ export default function NavBar() {
                 </>
               ) : (
                 /* 2. If user IS found, show Dashboard and Logout */
-                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[4px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
+                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[1px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
                   <Link href="/dashboard">
                     <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all xl:text-black text-white
                       ${isActive("/dashboard") 
