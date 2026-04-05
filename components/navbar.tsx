@@ -50,14 +50,14 @@ export default function NavBar() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("wheel", handleClickOutside);
+    document.addEventListener("scroll", handleClickOutside);
     return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
         document.removeEventListener("wheel", handleClickOutside);
+        document.removeEventListener("scroll", handleClickOutside);
     };
   }, []);
-  
+
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
     <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50 inset-0`}>
@@ -91,8 +91,8 @@ export default function NavBar() {
           </a>
           
           {/* Navigation   */}
-          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out `}>
-            <ul className={`gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap ${menuOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
+          <div className={`fixed text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"} origin-top-right transition-all duration-300 ease-in-out`}>
+            <ul className={`relative gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap xl:opacity-100 xl:visible`}>
               <Link href="/">
                 <li className={`px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/") 
@@ -218,7 +218,8 @@ export default function NavBar() {
                 </div>
               )}
             </ul>
-          <div className="flex items-center gap-4 justify-center xl:hidden">
+          </div>
+<div className="flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm">
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
@@ -253,11 +254,10 @@ export default function NavBar() {
               />
             </svg>
           </div>
-          </div>
-
 
         </div>
       </nav>
+
     </div>
   );
 }
