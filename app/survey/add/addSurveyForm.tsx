@@ -42,6 +42,58 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
+  const [surveyLinkError, setSurveyLinkError] = useState("");
+
+  // To check duplicate authors on each field
+  const checkDuplicateAuthors = () => {
+  const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
+  const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
+  const middleInitialInputs = document.querySelectorAll('input[name="middleInitial[]"]') as NodeListOf<HTMLInputElement>;
+  const emailInputs = document.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
+  
+  for (let i = 0; i < emailInputs.length; i++) {
+    for (let j = i + 1; j < emailInputs.length; j++) {
+      // Check duplicate emails
+      if (emailInputs[i]?.value && emailInputs[j]?.value && 
+          emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
+        return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
+      }
+      
+      // Check duplicate names
+      if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
+          firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
+          firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
+          lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+        
+        // Check middle initials
+        const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
+        const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
+        
+        if (middleI === middleJ) {
+          return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
+        }
+      }
+    }
+  }
+  return null;
+};
+
+  const checkDuplicateSurveyLink = async (link: string) => {
+  if (!link) return;
+  
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("survey")
+    .select("id")
+    .ilike("survey_link", link) // .ilike for case-insensitivity
+    .maybeSingle();
+  
+  if (data) {
+    setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
+  } else {
+    setSurveyLinkError("");
+  }
+};
 
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("surveyDraft");
@@ -304,19 +356,21 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         throw new Error("Please fill in all required fields");
       }
 
-      const startDate = new Date(startDateInput.value);
-      const endDate = new Date(endDateInput.value);
-      const minStartDate = new Date('2022-01-01');
+      // Check duplicate survey link
+      if (surveyLinkInput.value) {
+      const { data: existingSurvey } = await supabase
+        .from("survey")
+        .select("id")
+        .ilike("survey_link", surveyLinkInput.value)
+        .maybeSingle();
+      
+      if (existingSurvey) {
+        throw new Error("This survey link is already in use. Please provide a unique link.");
+      }
+    }
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
-      if (startDate < minStartDate) {
-        throw new Error("Start date must be from 2022 onwards");
-      }
-
-      if (endDate <= startDate) {
-        throw new Error("End date must be after start date");
-      }
 
       if (!categorySelect?.value) {
         throw new Error("Please select a category");
@@ -331,6 +385,12 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
       const lastNameInputs = form.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
       const emailInputs = form.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
+
+      // Check duplicate authors
+      const duplicateError = checkDuplicateAuthors();
+      if (duplicateError) {
+        throw new Error(duplicateError);
+      }
 
       let validAuthors = 0;
       for (let i = 0; i < firstNameInputs.length; i++) {
@@ -385,7 +445,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
           max_respondents: maxRespondentsInput?.value ? parseInt(maxRespondentsInput.value) : null,
           r_category: parseInt(categoryId),
           school: parseInt(schoolId),
-          survey_status: 'accepted',
+          survey_status: 'pending',
         })
         .select("id")
         .single();
@@ -447,7 +507,22 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     maxLength={100}
                     placeholder="Enter survey title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Error handling
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('title-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'Title is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 5) {
+                        errorSpan!.textContent = 'Title must be at least 5 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
+                />
+                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -462,7 +537,22 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     maxLength={1500}
                     placeholder="Enter survey description"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Error handling
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('description-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'Description is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 10) {
+                        errorSpan!.textContent = 'Description must be at least 10 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
+                />
+                <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -477,7 +567,32 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     maxLength={100}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Key Limits
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        return;
+                      }
+
+                      if (!/[A-Za-z\s\-'.,]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    // Error handling
+                    onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('keywords-error');
+                        if (input.value.length === 0) {
+                          errorSpan!.textContent = 'Atleast 1 keyword is required.';
+                          errorSpan!.style.display = 'block';
+                        } else if (input.value.length < 2) {
+                          errorSpan!.textContent = 'Keywords must be at least 2 characters.';
+                          errorSpan!.style.display = 'block';
+                        } else {
+                          errorSpan!.style.display = 'none';
+                        }
+                      }}
+                />
+                <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
@@ -515,8 +630,41 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                           maxLength={20}
                           placeholder="First Name"
                           className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        />
-                      </div>
+                          // Key Limits
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+
+                            if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                          // Error handling
+                          onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`firstname-error-${index}`);
+
+                          if (input.value.length === 0) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'First Name is required.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else if (input.value.length < 2) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'First Name must be at least 2 characters.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else {
+                            if (errorSpan) {
+                              errorSpan.style.display = 'none';
+                            }
+                          }
+                        }}
+                      />
+                      <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                    </div>
+
                       <div>
                         <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                           Middle Initial
@@ -527,6 +675,16 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                           maxLength={4}
                           placeholder="M.I."
                           className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          // Key Limits
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+
+                            if (!/[A-Za-z\s.]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -541,8 +699,88 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         maxLength={20}
                         placeholder="Last Name"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                      />
-                    </div>
+                        // Key Limits
+                        onKeyDown={(e) => {
+                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                          return;
+                        }
+
+                        if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      // Error handling
+                      onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById(`lastname-error-${index}`);
+                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                        const lastNameInput = input;
+                        const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
+
+                        if (input.value.length === 0) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Last Name is required.';
+                            errorSpan.style.display = 'block';
+                          }
+                          return;
+                        } else if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Last Name must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                          return;
+                        }
+
+                      // Check duplicate authors 
+                      const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
+                      const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
+                      const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
+
+                      const currentFirstName = firstNameInput?.value?.trim();
+                      const currentLastName = lastNameInput?.value?.trim();
+                      const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
+
+                      const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
+
+                      for (let i = 0; i < allFirstNames.length; i++) {
+                        if (i !== index) {
+                          const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
+                          const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
+                          const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
+                          
+                          const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
+                          
+                          // Check name fields match
+                          if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
+                            const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
+                            const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
+                            
+                            if (firstNameMatch && lastNameMatch) {
+                              // Check middle initial
+                              const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
+                              
+                              if (middleMatch) {
+                                if (errorSpan) {
+                                  const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
+                                  errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
+                                  errorSpan.style.display = 'block';
+                                }
+                                return;
+                              }
+                            }
+                          }
+                        }
+                      }
+
+                        // No duplicate
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
+                      }}
+                    />
+                    <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  </div>
+                  
                     <div>
                       <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Email <span className="text-[#eec643]">*</span>
@@ -554,7 +792,82 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         maxLength={30}
                         placeholder="Email"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                      />
+                        // Key Limits
+                        onKeyUp={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const char = e.key;
+                          const value = input.value;
+                          const atCount = (value.match(/@/g) || []).length;
+                          
+                          // Prevent second @
+                          if (char === '@' && atCount >= 1) {
+                            e.preventDefault();
+                            return;
+                          }
+                          
+                          if (!value.includes('@')) {
+                            if (!/[a-zA-Z0-9.]/.test(char) && char !== '@') {
+                              e.preventDefault();
+                            }
+                          }
+                        }}
+                        // Error handling
+                        onInput={async (e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById(`email-error-${index}`);
+                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                        const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                        if (input.value.length === 0) {
+                          errorSpan!.textContent = 'Email is required.';
+                          errorSpan!.style.display = 'block';
+                          return;
+                        }
+                        
+                        if (!emailRegex.test(input.value)) {
+                          errorSpan!.textContent = 'Please enter a valid email address.';
+                          errorSpan!.style.display = 'block';
+                          return;
+                        }
+
+                        // Check duplicate emails
+                        const allEmails = document.querySelectorAll('input[name="email[]"]');
+                        for (let i = 0; i < allEmails.length; i++) {
+                          if (i !== index) {
+                            const otherEmail = (allEmails[i] as HTMLInputElement).value;
+                            if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
+                              errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                              errorSpan!.style.display = 'block';
+                              return;
+                            }
+                          }
+                        }
+
+                        // Check existing author
+                        const supabase = createClient();
+                        const { data: existing } = await supabase
+                          .from("author")
+                          .select("id, author_fname, author_lname")
+                          .eq("author_email", input.value)
+                          .maybeSingle();
+                        
+                        if (existing) {
+                          const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
+                          const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                          
+                          if (firstNameMatch && lastNameMatch) {
+                            errorSpan!.style.display = 'none';
+                          } else {
+                            errorSpan!.textContent = 'This email is already registered to a different author.';
+                            errorSpan!.style.display = 'block';
+                          }
+                        } else {
+                          errorSpan!.style.display = 'none';
+                        }
+                      }}
+                    />
+                    <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
@@ -590,11 +903,15 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       min="2022-01-01"
                       max={new Date().toISOString().split('T')[0]}
                       className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      // Date Limit
                       onChange={(e) => {
                         const endDateInput = document.querySelector('input[name="end_date"]') as HTMLInputElement;
                         if (endDateInput) {
-                          endDateInput.min = e.target.value;
-                          if (endDateInput.value && endDateInput.value < e.target.value) {
+                          const startDate = e.target.value;
+                          const today = new Date().toISOString().split('T')[0];
+                          endDateInput.min = startDate > today ? startDate : today;
+
+                          if (endDateInput.value && endDateInput.value < startDate) {
                             endDateInput.value = '';
                           }
                         }
@@ -611,7 +928,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       id="end_date"
                       name="end_date"
                       required
-                      min="2022-01-01"
+                      min={new Date().toISOString().split('T')[0]} //Date Limit
                       className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     />
                   </div>
@@ -629,7 +946,49 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     maxLength={200}
                     placeholder="Enter survey URL"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Error handling
+                    onInput={async (e) => {
+                    const input = e.target as HTMLInputElement;
+                    const errorSpan = document.getElementById('survey-link-error');
+                    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+                    
+                    if (input.value.length === 0) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Survey link is required.';
+                        errorSpan.style.display = 'block';
+                      }
+                      setSurveyLinkError("");
+                    } else if (!urlRegex.test(input.value)) {
+                      let isValidUrl = false;
+
+                      try {
+                        new URL(input.value);
+                        isValidUrl = true;
+                      } catch {
+                        isValidUrl = false;
+                      }
+
+                      if (!isValidUrl) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please enter a valid URL.';
+                          errorSpan.style.display = 'block';
+                        }
+                        setSurveyLinkError("");
+                      } else {
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
+                        await checkDuplicateSurveyLink(input.value);
+                      }
+                    }
+                  }}
+                />
+                <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                {surveyLinkError && (
+                  <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
+                    {surveyLinkError}
+                  </span>
+                )}
                 </div>
 
                 <div>
@@ -644,7 +1003,47 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     maxLength={34}
                     placeholder="Enter respondent criteria separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Key Limits
+                    onKeyDown={(e) => {
+                    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                      return;
+                    }
+                    
+                    if (!/[A-Za-z\s,.'-]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  // Error Handling
+                    onInput={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    const errorSpan = document.getElementById('respondents-error');
+                    
+                    // No consecutive commas
+                    input.value = input.value.replace(/,{2,}/g, ',');
+
+                    if (input.value.length === 0) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Target respondents are required.';
+                        errorSpan.style.display = 'block';
+                      }
+                    } else if (input.value.length < 2) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Please provide at least 1 respondent criteria.';
+                        errorSpan.style.display = 'block';
+                      }
+                    } else if (input.value.length > 200) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Target respondents must not exceed 200 characters.';
+                        errorSpan.style.display = 'block';
+                      }
+                    } else {
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
+                      }
+                    }
+                  }}
+                />
+                <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -657,9 +1056,40 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                     name="max_respondents"
                     min="1"
                     max="10000"
+                    maxLength={6}
                     placeholder="e.g., 100"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+                    // Key Limits
+                    onKeyDown={(e) => {
+                    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                      return;
+                    }
+                    
+                    const input = e.target as HTMLInputElement;
+                    if (input.value.length >= 5 && /[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+
+                  // Error Handling
+                    onInput={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    const errorSpan = document.getElementById('max-respondents-error');
+                    const value = parseInt(input.value);
+                    
+                    if (input.value && (value < 1 || value > 10000)) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Maximum respondents must be between 1 and 10,000.';
+                        errorSpan.style.display = 'block';
+                      }
+                    } else {
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
+                      }
+                    }
+                  }}
+                />
+                <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
@@ -683,6 +1113,20 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         required
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         defaultValue=""
+                        // Error handling
+                        onChange={(e) => {
+                        const errorSpan = document.getElementById('category-error');
+                        if (!e.target.value) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Please select a category.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       >
                         <option value="" disabled>Select a category</option>
                         {availableCategories.map((category) => (
@@ -709,6 +1153,37 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         maxLength={20}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
+                        // Key Limits
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        // Error Handling
+                        onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('category-error');
+                        
+                        if (!input.value.trim()) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Category name is required.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Category name must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       />
                       <button
                         type="button"
@@ -722,6 +1197,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         onClick={() => {
                           setShowNewCategory(false);
                           setNewCategoryName("");
+                          const errorSpan = document.getElementById('category-error');
+                          if (errorSpan) errorSpan.style.display = 'none';
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -729,6 +1206,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       </button>
                     </div>
                   )}
+                  <span id="category-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -743,6 +1221,20 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         required
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         defaultValue=""
+                        // Error handling
+                        onChange={(e) => {
+                        const errorSpan = document.getElementById('school-error');
+                        if (!e.target.value) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Please select a school.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       >
                         <option value="" disabled>Select a school</option>
                         {availableSchools.map((school) => (
@@ -769,6 +1261,37 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         maxLength={34}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
+                        // Key Limits
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        // Error Handling
+                        onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('school-error');
+                        
+                        if (!input.value.trim()) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'School name is required.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'School name must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       />
                       <button
                         type="button"
@@ -782,6 +1305,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         onClick={() => {
                           setShowNewSchool(false);
                           setNewSchoolName("");
+                          const errorSpan = document.getElementById('school-error');
+                          if (errorSpan) errorSpan.style.display = 'none';
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -789,6 +1314,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       </button>
                     </div>
                   )}
+                  <span id="school-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>

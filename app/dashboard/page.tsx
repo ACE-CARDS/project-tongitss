@@ -5,18 +5,21 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 import Announcements from "@/components/announcements";
-// import SurveyAdmin from "@/components/surveyAdmin";
+import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 
 export default function Dashboard() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("announcements");
+  
+  // Get user role
+  const userRole = user?.user_metadata?.role || user?.role || "user";
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
     { label: "COMMITTEE", key: "committee" },
     { label: "MEMBERS", key: "members" },
     { label: "THESIS", key: "thesis" },
-    { label: "SURVEY", key: "survey" },
+    { label: "SURVEY", key: "survey" }, 
   ];
 
   const renderTabContent = () => {
@@ -48,7 +51,19 @@ export default function Dashboard() {
           </div>
         );
       case "survey":
-        // return <SurveyAdmin searchParams={Promise.resolve({})} />;
+        // if admin or super admin
+        if (userRole === "admin" || userRole === "superadmin") {
+          return <SurveyAdminWrapper />; //show the RUD for survey
+        } else {
+          // if member
+          return (
+            <div className="h-[400px] overflow-y-auto">
+              <div className="flex h-full w-full items-center justify-center">
+                <p className="text-gray-500 italic">Survey archive coming soon...</p>
+              </div>
+            </div>
+          );
+        }
       default:
         return null;
     }
@@ -59,7 +74,8 @@ export default function Dashboard() {
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-        backgroundSize: "20px 20px"
+        backgroundSize: "20px 20px",
+        backgroundAttachment: 'fixed'
       }}
     >
       <NavBar />
@@ -87,12 +103,12 @@ export default function Dashboard() {
 
         <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
           <div className="w-full">
-            <div className="flex gap-1 mb-0">
+            <div className="flex gap-1 mb-0 overflow-x-auto">
               {mainTabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-3 px-4 rounded-t-lg font-bold text-sm md:text-base transition-all ${
+                  className={`flex-1 py-3 px-4 rounded-t-lg font-bold text-sm md:text-base transition-all whitespace-nowrap ${
                     activeTab === tab.key
                       ? "bg-[#0b1763] text-white shadow-lg"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
