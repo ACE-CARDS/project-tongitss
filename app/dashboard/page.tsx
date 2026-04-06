@@ -5,7 +5,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 import Announcements from "@/components/announcements";
-import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
+// import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 
 export default function Dashboard() {
   const { user } = useUser();
