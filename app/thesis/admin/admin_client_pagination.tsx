@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import SurveyDescription from "../survey_description";
+import ThesisAbstract from "../thesis_abstract";
 import SpotlightCard from "@/components/SpotlightCard";
 import Pagination from "@/components/pagination";
 import { createClient } from "@/lib/supabase/client";
-import EditSurveyModal from "./edit_survey_modal";
-import MoveSurveyModal from "./move_survey_modal";
-import ReviewSurveyModal from "./review_survey_modal";
+import EditThesisModal from "./edit_thesis_modal";
+import MoveThesisModal from "./move_thesis_modal";
+import ReviewThesisModal from "./review_thesis_modal";
 
 interface ClientPaginationProps {
-  allSurveys: any[];
+  allTheses: any[];
   currentPage: number;
   onPageChange: (page: number) => void;
   onPendingCountChange?: (count: number) => void;
@@ -25,27 +25,27 @@ const getItemsPerPage = () => {
   return 6;
 };
 
-export default function AdminClientPagination({ allSurveys, currentPage, onPageChange, onPendingCountChange }: ClientPaginationProps) {
+export default function AdminClientPagination({ allTheses, currentPage, onPageChange, onPendingCountChange }: ClientPaginationProps) {
   const supabase = createClient();
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
-  const [editingSurvey, setEditingSurvey] = useState<any>(null);
-  const [movingSurvey, setMovingSurvey] = useState<any>(null);
-  const [reviewingSurvey, setReviewingSurvey] = useState<any>(null);
-  const [surveys, setSurveys] = useState(allSurveys);
+  const [editingThesis, setEditingThesis] = useState<any>(null);
+  const [movingThesis, setMovingThesis] = useState<any>(null);
+  const [reviewingThesis, setReviewingThesis] = useState<any>(null);
+  const [theses, setTheses] = useState(allTheses);
 
   useEffect(() => {
     if (onPendingCountChange) {
-      const pendingCount = surveys.filter(
-        (s: any) => s.survey_status === "pending"
+      const pendingCount = theses.filter(
+        (t: any) => t.thesis_status === "pending"
       ).length;
       onPendingCountChange(pendingCount);
     }
-  }, [surveys, onPendingCountChange]);
+  }, [theses, onPendingCountChange]);
 
   useEffect(() => {
-    setSurveys(sortSurveys(allSurveys));
-  }, [allSurveys]);
+    setTheses(sortTheses(allTheses));
+  }, [allTheses]);
 
   useEffect(() => {
     setMounted(true);
@@ -60,19 +60,19 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const totalItems = surveys.length;
+  const totalItems = theses.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const startIndex = (validCurrentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedSurveys = surveys.slice(startIndex, endIndex);
+  const paginatedTheses = theses.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     onPageChange(page);
   };
 
-  const sortSurveys = (surveysArray: any[]) => {
+  const sortTheses = (thesesArray: any[]) => {
     const statusOrder = {
       pending: 1,
       accepted: 2,
@@ -80,84 +80,81 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
       rejected: 4
     };
     
-    return [...surveysArray].sort((a, b) => {
-      // sorting by status prio
-      const statusDiff = (statusOrder[a.survey_status as keyof typeof statusOrder] || 5) - 
-                        (statusOrder[b.survey_status as keyof typeof statusOrder] || 5);
+    return [...thesesArray].sort((a, b) => {
+      const statusDiff = (statusOrder[a.thesis_status as keyof typeof statusOrder] || 5) - 
+                        (statusOrder[b.thesis_status as keyof typeof statusOrder] || 5);
       
       if (statusDiff !== 0) return statusDiff;
       
-      // once same status, sort by end date 
-      const dateA = new Date(a.survey_end).getTime();
-      const dateB = new Date(b.survey_end).getTime();
+      const dateA = new Date(a.thesis_date).getTime();
+      const dateB = new Date(b.thesis_date).getTime();
       
-      return dateA - dateB; // ascending order
+      return dateB - dateA;
     });
   };
 
-  const handleApprove = async (surveyId: string, rejectionReason?: string) => {
-    const updateData: any = { survey_status: "accepted" };
+  const handleApprove = async (thesisId: string, rejectionReason?: string) => {
+    const updateData: any = { thesis_status: "accepted" };
     if (rejectionReason) {
       updateData.rejection_reason = rejectionReason;
     }
     
     const { error } = await supabase
-      .from("survey")
+      .from("thesis")
       .update(updateData)
-      .eq("id", surveyId);
+      .eq("id", thesisId);
 
     if (error) {
-      console.error("Error approving survey:", error);
-      alert("Failed to approve survey");
+      console.error("Error approving thesis:", error);
+      alert("Failed to approve thesis");
     } else {
-      setSurveys((prev) => {
-        const updated = prev.map((s) =>
-          s.id === surveyId ? { ...s, survey_status: "accepted", rejection_reason: rejectionReason } : s
+      setTheses((prev) => {
+        const updated = prev.map((t) =>
+          t.id === thesisId ? { ...t, thesis_status: "accepted", rejection_reason: rejectionReason } : t
         );
-        return sortSurveys(updated);
+        return sortTheses(updated);
       });
     }
   };
 
-  const handleReject = async (surveyId: string, rejectionReason: string) => {
+  const handleReject = async (thesisId: string, rejectionReason: string) => {
     const { error } = await supabase
-      .from("survey")
-      .update({ survey_status: "rejected", rejection_reason: rejectionReason })
-      .eq("id", surveyId);
+      .from("thesis")
+      .update({ thesis_status: "rejected", rejection_reason: rejectionReason })
+      .eq("id", thesisId);
 
     if (error) {
-      console.error("Error rejecting survey:", error);
-      alert("Failed to reject survey");
+      console.error("Error rejecting thesis:", error);
+      alert("Failed to reject thesis");
     } else {
-      setSurveys((prev) => {
-        const updated = prev.map((s) =>
-          s.id === surveyId ? { ...s, survey_status: "rejected", rejection_reason: rejectionReason } : s
+      setTheses((prev) => {
+        const updated = prev.map((t) =>
+          t.id === thesisId ? { ...t, thesis_status: "rejected", rejection_reason: rejectionReason } : t
         );
-        return sortSurveys(updated);
+        return sortTheses(updated);
       });
     }
   };
 
-  const handleUpdateStatus = async (surveyId: string, newStatus: string) => {
+  const handleUpdateStatus = async (thesisId: string, newStatus: string) => {
     const { error } = await supabase
-      .from("survey")
-      .update({ survey_status: newStatus })
-      .eq("id", surveyId);
+      .from("thesis")
+      .update({ thesis_status: newStatus })
+      .eq("id", thesisId);
 
     if (error) {
-      console.error("Error updating survey status:", error);
-      alert("Failed to update survey status");
+      console.error("Error updating thesis status:", error);
+      alert("Failed to update thesis status");
     } else {
-      setSurveys((prev) => {
-        const updated = prev.map((s) =>
-          s.id === surveyId ? { ...s, survey_status: newStatus } : s
+      setTheses((prev) => {
+        const updated = prev.map((t) =>
+          t.id === thesisId ? { ...t, thesis_status: newStatus } : t
         );
-        return sortSurveys(updated);
+        return sortTheses(updated);
       });
     }
   };
 
-  // status colors for card
   const getStatusColor = (status: string) => {
     switch (status) {
       case "accepted":
@@ -173,7 +170,6 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
     }
   };
 
-  // ping colors for card
   const getPingColor = (status: string) => {
     switch (status) {
       case "accepted":
@@ -199,37 +195,33 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
 
   return (
     <>
-      {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
+      {(!paginatedTheses || paginatedTheses.length === 0) ? (
         <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-          No surveys found.
+          No theses found.
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {paginatedSurveys.map((survey: any) => (
+            {paginatedTheses.map((thesis: any) => (
               <SpotlightCard
-                key={survey.id}
+                key={thesis.id}
                 className="border border-[#011638] rounded-lg overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
                 spotlightColor="rgba(239, 240, 242, 0.16)"
               >
                 
-        {/* Status and Action Buttons */}
         <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
-
-          {/* Status */}
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(survey.survey_status)} flex items-center gap-2 shadow-sm`}>
+          <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} flex items-center gap-2 shadow-sm`}>
             <span className="relative flex size-2">
-              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(survey.survey_status)} opacity-75`}></span>
-              <span className={`relative inline-flex size-2 rounded-full ${getPingColor(survey.survey_status)}`}></span>
+              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(thesis.thesis_status)} opacity-75`}></span>
+              <span className={`relative inline-flex size-2 rounded-full ${getPingColor(thesis.thesis_status)}`}></span>
             </span>
-            {survey.survey_status?.toUpperCase()}
+            {thesis.thesis_status?.toUpperCase()}
           </div>
 
-          {/* Action Buttons: https://heroicons.com/outline */}
           <div className="flex gap-2 -mr-1">
-            {survey.survey_status === "pending" ? (
+            {thesis.thesis_status === "pending" ? (
               <button
-                onClick={() => setReviewingSurvey(survey)}
+                onClick={() => setReviewingThesis(thesis)}
                 className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                 title="Review"
               >
@@ -240,7 +232,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
             ) : (
               <>
                 <button
-                  onClick={() => setEditingSurvey(survey)}
+                  onClick={() => setEditingThesis(thesis)}
                   className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                   title="Edit"
                 >
@@ -249,7 +241,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                   </svg>
                 </button>
                 <button
-                  onClick={() => setMovingSurvey(survey)}
+                  onClick={() => setMovingThesis(thesis)}
                   className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                   title="Move"
                 >
@@ -262,10 +254,9 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
           </div>
         </div>
                
-                {/* title */}
                 <div className="bg-[#011638] pt-12 pb-4 px-6 flex items-center h-[150px]">
                   <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden pr-12">
-                    {survey.survey_title}
+                    {thesis.thesis_title}
                   </h2>
                 </div>
 
@@ -275,9 +266,9 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                       Author(s)
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {survey.survey_author && survey.survey_author.length > 0 ? (
-                        survey.survey_author.map((sa: any, index: number) => {
-                          const author = sa.author;
+                      {thesis.thesis_author && thesis.thesis_author.length > 0 ? (
+                        thesis.thesis_author.map((ta: any, index: number) => {
+                          const author = ta.author;
                           if (!author) return null;
 
                           const middleInitial = author.author_minit
@@ -313,23 +304,21 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                     </div>
                   </div>
 
-                  {/* description */}
                   <div className="mb-4 flex-1">
                     <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                      Description
+                      Abstract
                     </h3>
                     <div>
-                      <SurveyDescription description={survey.survey_desc} />
+                      <ThesisAbstract abstract={thesis.thesis_abstract} />
                     </div>
                   </div>
 
-                  {/* keywords */}
                   <div className="mb-4 min-h-[70px]">
                     <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
                       Keywords
                     </h3>
                     <div className="flex flex-wrap gap-1">
-                      {survey.survey_keyword
+                      {thesis.thesis_keyword
                         ?.split(",")
                         .map((keyword: string, index: number) => (
                           <span
@@ -348,10 +337,9 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                     </h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        {/* dates */}
-                        <span className="text-[#475569] block font-ubuntu-mono">Start Date:</span>
+                        <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
                         <span className="font-ubuntu-mono text-[#011638]">
-                          {new Date(survey.survey_start).toLocaleDateString(
+                          {new Date(thesis.thesis_date).toLocaleDateString(
                             "en-US",
                             {
                               year: "numeric",
@@ -362,107 +350,90 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         </span>
                       </div>
 
-                      <div>
-                        <span className="text-[#475569] block font-ubuntu-mono">End Date:</span>
-                        <span className="font-ubuntu-mono text-[#011638]">
-                          {new Date(survey.survey_end).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )}
-                        </span>
-                      </div>
-
-                      {/* category n school */}
                       <div>
                         <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
                         <span className="font-ubuntu-mono text-[#011638]">
-                          {survey.r_category?.r_category_name || "Uncategorized"}
+                          {thesis.r_category?.r_category_name || "Uncategorized"}
                         </span>
                       </div>
 
                       <div>
                         <span className="text-[#475569] block font-ubuntu-mono">School:</span>
                         <span className="font-ubuntu-mono text-[#011638]">
-                          {survey.school?.school_name || "No School"}
+                          {thesis.school?.school_name || "No School"}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* respondent criteria */}
-                  <div className="mb-4">
-                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                      Target Respondents
-                      {survey.max_respondents && (
-                        <span className="ml-2 text-[#1e4db7] font-normal">
-                          (Max: {survey.max_respondents})
-                        </span>
-                      )}
-                    </h3>
-                    <div className="flex flex-wrap gap-1">
-                      {survey.survey_respondents ? (
-                        survey.survey_respondents.split(",").map((criteria: string, index: number) => (
-                          <span
-                            key={index}
-                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
-                          >
-                            {criteria.trim()}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[#475569] opacity-50 text-sm font-ubuntu-mono">No specific criteria</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* survey link */}
                   <div className="mt-auto">
-                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                      Survey Link
-                    </h3>
+                  <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                    Files
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Physical Copy */}
                     <div>
-                      {survey.survey_link ? (
-                        <a
-                          href={survey.survey_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
-                        >
-                          Take Survey
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
+                        Physical Copy:
+                      </h4>
+                      <div>
+                        {thesis.thesis_phys ? (
+                          <span className="text-[#011638] text-sm font-ubuntu-mono">
+                            {thesis.thesis_phys}
+                          </span>
+                        ) : (
+                          <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
+                            No physical copy available
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Digital Copy */}
+                    <div>
+                      <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
+                        Digital Copy:
+                      </h4>
+                      <div>
+                        {thesis.thesis_digi ? (
+                          <a
+                            href={thesis.thesis_digi}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </a>
-                      ) : (
-                        <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                          No link available
-                        </span>
-                      )}
+                            View Digital Copy
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                          </a>
+                        ) : (
+                          <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
+                            No digital copy available
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </SpotlightCard> // end of card
+                </div>
+              </SpotlightCard>
             ))}
           </div>
           
-          {/* pagination info at the END as suggested by Ma'am */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
             <p className="text-[#475569] font-ubuntu-mono text-sm">
-              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} surveys
+              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} theses
             </p>
             <p className="text-[#475569] font-ubuntu-mono text-sm">
               Page {validCurrentPage} of {totalPages || 1}
@@ -477,48 +448,44 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
         </>
       )}
 
-      {/* MODALS */}
-      {/* edit modal */}
-      {editingSurvey && (
-        <EditSurveyModal
-          survey={editingSurvey}
-          onClose={() => setEditingSurvey(null)}
-          onUpdate={(updatedSurvey) => {
-            setSurveys((prev) => {
-              const updated = prev.map((s) =>
-                s.id === updatedSurvey.id ? updatedSurvey : s
+      {editingThesis && (
+        <EditThesisModal
+          thesis={editingThesis}
+          onClose={() => setEditingThesis(null)}
+          onUpdate={(updatedThesis) => {
+            setTheses((prev) => {
+              const updated = prev.map((t) =>
+                t.id === updatedThesis.id ? updatedThesis : t
               );
-              return sortSurveys(updated);
+              return sortTheses(updated);
             });
-            setEditingSurvey(null);
+            setEditingThesis(null);
           }}
         />
       )}
 
-      {/* move modal */}
-      {movingSurvey && (
-        <MoveSurveyModal
-          survey={movingSurvey}
-          onClose={() => setMovingSurvey(null)}
+      {movingThesis && (
+        <MoveThesisModal
+          thesis={movingThesis}
+          onClose={() => setMovingThesis(null)}
           onMove={(newStatus) => {
-            handleUpdateStatus(movingSurvey.id, newStatus);
-            setMovingSurvey(null);
+            handleUpdateStatus(movingThesis.id, newStatus);
+            setMovingThesis(null);
           }}
         />
       )}
 
-      {/* review modal */}
-      {reviewingSurvey && (
-        <ReviewSurveyModal
-          survey={reviewingSurvey}
-          onClose={() => setReviewingSurvey(null)}
+      {reviewingThesis && (
+        <ReviewThesisModal
+          thesis={reviewingThesis}
+          onClose={() => setReviewingThesis(null)}
           onApprove={(id, reason) => {
             handleApprove(id, reason);
-            setReviewingSurvey(null);
+            setReviewingThesis(null);
           }}
           onReject={(id, reason) => {
             handleReject(id, reason);
-            setReviewingSurvey(null);
+            setReviewingThesis(null);
           }}
         />
       )}

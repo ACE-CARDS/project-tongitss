@@ -24,13 +24,13 @@ interface Author {
   email?: string;
 }
 
-interface EditSurveyModalProps {
-  survey: any;
+interface EditThesisModalProps {
+  thesis: any;
   onClose: () => void;
-  onUpdate: (updatedSurvey: any) => void;
+  onUpdate: (updatedThesis: any) => void;
 }
 
-export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurveyModalProps) {
+export default function EditThesisModal({ thesis, onClose, onUpdate }: EditThesisModalProps) {
   const router = useRouter();
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,36 +41,19 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
-  const [surveyLinkError, setSurveyLinkError] = useState("");
-  const [statusError, setStatusError] = useState<string | null>(null);
-  const [statusNotice, setStatusNotice] = useState<{ title: string; message: string } | null>(null);
 
-  // initialize formData
   const [formData, setFormData] = useState({
-    survey_title: survey.survey_title,
-    survey_desc: survey.survey_desc,
-    survey_keyword: survey.survey_keyword,
-    survey_start: survey.survey_start.split("T")[0],
-    survey_end: survey.survey_end.split("T")[0],
-    survey_link: survey.survey_link,
-    survey_respondents: survey.survey_respondents,
-    max_respondents: survey.max_respondents || "",
-    r_category: survey.r_category?.id.toString() || "",
-    school: survey.school?.id.toString() || "",
-    survey_status: survey.survey_status,
+    thesis_title: thesis.thesis_title,
+    thesis_abstract: thesis.thesis_abstract,
+    thesis_keyword: thesis.thesis_keyword,
+    thesis_date: thesis.thesis_date.split("T")[0],
+    thesis_phys: thesis.thesis_phys || "",
+    thesis_digi: thesis.thesis_digi || "",
+    r_category: thesis.r_category?.id.toString() || "",
+    school: thesis.school?.id.toString() || "",
+    thesis_status: thesis.thesis_status,
   });
 
-  // check past date
-  const [isPastDate, setIsPastDate] = useState(() => {
-    const endDate = new Date(formData.survey_end);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return endDate < today;
-  });
-
-  const currentStatus = survey.survey_status;
-
-  // check duplicated authors
   const checkDuplicateAuthors = () => {
     const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
     const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
@@ -79,98 +62,27 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
     
     for (let i = 0; i < emailInputs.length; i++) {
       for (let j = i + 1; j < emailInputs.length; j++) {
-        // check duplicated emails
         if (emailInputs[i]?.value && emailInputs[j]?.value && 
             emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
           return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
         }
         
-        // check duplicated names
         if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
             firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
             firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
             lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
           
-          // check middle initials
           const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
           const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
           
           if (middleI === middleJ) {
-            return `Author ${i + 1} and Author ${j + 1} have the same full name.`; // same full name
+            return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
           }
         }
       }
     }
     return null;
   };
-
-  // check survey link duplication
-  const checkDuplicateSurveyLink = async (link: string) => {
-    if (!link) return;
-    
-    const { data, error } = await supabase
-      .from("survey")
-      .select("id")
-      .ilike("survey_link", link)
-      .neq("id", survey.id) // exclude current
-      .maybeSingle();
-    
-    if (data) {
-      setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
-    } else {
-      setSurveyLinkError("");
-    }
-  };
-
-  // updates isPastDate when survey_end changes
-  useEffect(() => {
-    const endDate = new Date(formData.survey_end);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const newIsPastDate = endDate < today;
-    setIsPastDate(newIsPastDate);
-    
-    if (!newIsPastDate && (currentStatus === 'archived' || currentStatus === 'rejected')) {
-      setStatusError(null);
-    }
-  }, [formData.survey_end, currentStatus]);
-
-  // notice based on status and date
-  useEffect(() => {
-    const endDate = new Date(formData.survey_end);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isPast = endDate < today;
-    const currentFormStatus = formData.survey_status;
-    
-    if (isPast) {
-      if (currentFormStatus === 'archived') {
-        setStatusNotice({
-          title: "Archived Survey with Past Date",
-          message: "This archived survey has passed its end date. It cannot be moved to Accepted or Pending until the end date is updated to a future date. Only Rejected or Archived status is available."
-        });
-      } else if (currentFormStatus === 'rejected') {
-        setStatusNotice({
-          title: "Rejected Survey with Past Date",
-          message: "This rejected survey has passed its end date. It cannot be moved to Accepted or Pending until the end date is updated to a future date. Only Rejected or Archived status is available."
-        });
-      } else if (currentFormStatus === 'pending') {
-        setStatusNotice({
-          title: "Pending Survey with Past Date",
-          message: "This survey's end date has passed. It cannot be moved to Accepted. Consider archiving it or updating the end date first."
-        });
-      } else if (currentFormStatus === 'accepted') {
-        setStatusNotice({
-          title: "Accepted Survey with Past Date",
-          message: "This accepted survey has passed its end date. It cannot be moved back to Pending. Only Archived or Rejected status is available."
-        });
-      } else {
-        setStatusNotice(null);
-      }
-    } else {
-      setStatusNotice(null);
-    }
-  }, [formData.survey_end, formData.survey_status]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -189,11 +101,10 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
     fetchData();
   }, [supabase]);
 
-  // fetch authors
   useEffect(() => {
     const fetchAuthors = async () => {
       const { data, error } = await supabase
-        .from("survey_author")
+        .from("thesis_author")
         .select(`
           author (
             id,
@@ -203,21 +114,21 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
             author_email
           )
         `)
-        .eq("survey", survey.id);
+        .eq("thesis", thesis.id);
 
       if (data && data.length > 0) {
-        const surveyAuthors = data.map((item: any, index: number) => ({
+        const thesisAuthors = data.map((item: any, index: number) => ({
           id: index + 1,
           firstName: item.author.author_fname,
           middleInitial: item.author.author_minit,
           lastName: item.author.author_lname,
           email: item.author.author_email
         }));
-        setAuthors(surveyAuthors);
+        setAuthors(thesisAuthors);
       }
     };
     fetchAuthors();
-  }, [supabase, survey.id]);
+  }, [supabase, thesis.id]);
 
   const addAuthor = () => {
     setAuthors([...authors, { id: authors.length + 1 }]);
@@ -378,7 +289,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
     }
   };
 
-  // status options
   const statusOptions = [
     { value: "accepted", label: "Accepted" },
     { value: "pending", label: "Pending" },
@@ -386,100 +296,32 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
     { value: "rejected", label: "Rejected" },
   ];
 
-  // disable status options based on status and date
-  const isStatusDisabled = (statusValue: string): { disabled: boolean; reason?: string } => {
-    if (currentStatus === 'archived' && isPastDate) {
-      if (statusValue === 'pending' || statusValue === 'accepted') {
-        return { 
-          disabled: true, 
-          reason: "Archived surveys with past end dates cannot be moved to Pending or Accepted. Please update the end date first." 
-        };
-      }
-    }
-    
-    if (currentStatus === 'rejected' && isPastDate) {
-      if (statusValue === 'pending' || statusValue === 'accepted') {
-        return { 
-          disabled: true, 
-          reason: "Rejected surveys with past end dates cannot be moved to Pending or Accepted. Please update the end date first." 
-        };
-      }
-    }
-    
-    if (currentStatus === 'pending' && isPastDate) {
-      if (statusValue === 'accepted') {
-        return { 
-          disabled: true, 
-          reason: "Cannot accept a survey with past end date. Please extend the end date first or archive/reject it." 
-        };
-      }
-    }
-    
-    if (currentStatus === 'accepted' && isPastDate) {
-      if (statusValue === 'pending') {
-        return { 
-          disabled: true, 
-          reason: "Cannot change an accepted survey with past end date back to Pending. Only Archived or Rejected status is allowed." 
-        };
-      }
-    }
-    
-    return { disabled: false };
-  };
-
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value;
-    const { disabled, reason } = isStatusDisabled(newStatus);
-    
-    if (disabled) {
-      setStatusError(reason || "Cannot change to this status due to restrictions.");
-      setTimeout(() => setStatusError(null), 5000);
-    } else {
-      setStatusError(null);
-      setFormData(prev => ({ ...prev, survey_status: newStatus }));
-    }
+    setFormData(prev => ({ ...prev, thesis_status: e.target.value }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'survey_end') {
-      const newEndDate = new Date(value);
-      const currentStartDate = new Date(formData.survey_start);
-      
-      if (newEndDate < currentStartDate) {
-        alert("End date cannot be earlier than start date.");
-        return;
-      }
-    }
-    
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatusError(null);
 
     try {
       const form = e.currentTarget as HTMLFormElement;
       
-      // get form values
       const titleInput = form.elements.namedItem("title") as HTMLInputElement;
-      const descriptionInput = form.elements.namedItem("description") as HTMLTextAreaElement;
+      const abstractInput = form.elements.namedItem("abstract") as HTMLTextAreaElement;
       const keywordsInput = form.elements.namedItem("keywords") as HTMLInputElement;
-      const startDateInput = form.elements.namedItem("start_date") as HTMLInputElement;
-      const endDateInput = form.elements.namedItem("end_date") as HTMLInputElement;
-      const surveyLinkInput = form.elements.namedItem("survey_link") as HTMLInputElement;
-      const respondentsInput = form.elements.namedItem("respondents") as HTMLInputElement;
-      const maxRespondentsInput = form.elements.namedItem("max_respondents") as HTMLInputElement;
+      const pubDateInput = form.elements.namedItem("pub_date") as HTMLInputElement;
+      const physLinkInput = form.elements.namedItem("phys_link") as HTMLInputElement;
+      const digiLinkInput = form.elements.namedItem("digi_link") as HTMLInputElement;
       const categorySelect = form.elements.namedItem("category") as HTMLSelectElement;
       const schoolSelect = form.elements.namedItem("school") as HTMLSelectElement;
-      const privacyCheckbox = form.elements.namedItem("privacy") as HTMLInputElement;
 
-      // validation
-      if (!titleInput?.value || !descriptionInput?.value || !keywordsInput?.value || 
-          !startDateInput?.value || !endDateInput?.value || !surveyLinkInput?.value || !respondentsInput?.value) {
+      if (!titleInput?.value || !abstractInput?.value || !keywordsInput?.value || !pubDateInput?.value) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -487,38 +329,8 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
         throw new Error("Title must be at least 5 characters");
       }
 
-      if (descriptionInput.value.length < 10) {
-        throw new Error("Description must be at least 10 characters");
-      }
-
-      // check duplicate survey link
-      if (surveyLinkInput.value) {
-        const { data: existingSurvey } = await supabase
-          .from("survey")
-          .select("id")
-          .ilike("survey_link", surveyLinkInput.value)
-          .neq("id", survey.id)
-          .maybeSingle();
-        
-        if (existingSurvey) {
-          throw new Error("This survey link is already in use. Please provide a unique link.");
-        }
-      }
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const endDate = new Date(endDateInput.value);
-      
-      let finalStatus = formData.survey_status;
-      if (endDate < today && finalStatus !== 'archived' && finalStatus !== 'rejected') {
-        const confirmArchive = confirm(
-          "This survey's end date is in the past. It will be automatically archived. Do you want to proceed?"
-        );
-        if (!confirmArchive) {
-          setIsSubmitting(false);
-          return;
-        }
-        finalStatus = 'archived';
+      if (abstractInput.value.length < 10) {
+        throw new Error("Abstract must be at least 10 characters");
       }
 
       if (!categorySelect?.value) {
@@ -531,12 +343,10 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
       }
       const schoolId = schoolSelect.value;
 
-      // get author fields
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
       const lastNameInputs = form.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
       const emailInputs = form.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
 
-      // check duplicate authors
       const duplicateError = checkDuplicateAuthors();
       if (duplicateError) {
         throw new Error(duplicateError);
@@ -553,34 +363,29 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
         throw new Error("Please add at least one author with complete information");
       }
 
-      // update survey
-      const { data: updatedSurvey, error: surveyError } = await supabase
-        .from("survey")
+      const { data: updatedThesis, error: thesisError } = await supabase
+        .from("thesis")
         .update({
-          survey_title: titleInput.value,
-          survey_desc: descriptionInput.value,
-          survey_keyword: keywordsInput.value,
-          survey_start: startDateInput.value,
-          survey_end: endDateInput.value,
-          survey_link: surveyLinkInput.value,
-          survey_respondents: respondentsInput.value,
-          max_respondents: maxRespondentsInput?.value ? parseInt(maxRespondentsInput.value) : null,
+          thesis_title: titleInput.value,
+          thesis_abstract: abstractInput.value,
+          thesis_keyword: keywordsInput.value,
+          thesis_date: pubDateInput.value,
+          thesis_phys: physLinkInput?.value || null,
+          thesis_digi: digiLinkInput?.value || null,
           r_category: parseInt(categoryId),
           school: parseInt(schoolId),
-          survey_status: finalStatus,
+          thesis_status: formData.thesis_status,
         })
-        .eq("id", survey.id)
+        .eq("id", thesis.id)
         .select(`
           id,
-          survey_title,
-          survey_desc,
-          survey_keyword,
-          survey_start,
-          survey_end,
-          survey_link,
-          survey_respondents,
-          max_respondents,
-          survey_status,
+          thesis_title,
+          thesis_abstract,
+          thesis_keyword,
+          thesis_date,
+          thesis_phys,
+          thesis_digi,
+          thesis_status,
           r_category (
             id,
             r_category_name
@@ -589,7 +394,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
             id,
             school_name
           ),
-          survey_author (
+          thesis_author (
             author (
               id,
               author_fname,
@@ -601,13 +406,12 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
         `)
         .single();
 
-      if (surveyError) throw surveyError;
+      if (thesisError) throw thesisError;
 
-      // update authors
       const { error: deleteError } = await supabase
-        .from("survey_author")
+        .from("thesis_author")
         .delete()
-        .eq("survey", survey.id);
+        .eq("thesis", thesis.id);
 
       if (deleteError) throw deleteError;
 
@@ -640,23 +444,23 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
         }
       }
 
-      const surveyAuthorInserts = authorIds.map(authorId => ({
-        survey: survey.id,
+      const thesisAuthorInserts = authorIds.map(authorId => ({
+        thesis: thesis.id,
         author: parseInt(authorId),
       }));
 
       const { error: linkError } = await supabase
-        .from("survey_author")
-        .insert(surveyAuthorInserts);
+        .from("thesis_author")
+        .insert(thesisAuthorInserts);
 
       if (linkError) throw linkError;
 
-      onUpdate(updatedSurvey);
-      router.push('/survey/admin/success') // redirect to success page
+      onUpdate(updatedThesis);
+      router.push('/thesis/admin/success')
       
     } catch (error) {
-      console.error("Error updating survey:", error);
-      alert(error instanceof Error ? error.message : "Failed to update survey");
+      console.error("Error updating thesis:", error);
+      alert(error instanceof Error ? error.message : "Failed to update thesis");
     } finally {
       setIsSubmitting(false);
     }
@@ -681,13 +485,12 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
             >
               ← Back to List
             </button>
-            <h1 className="text-2xl font-oswald font-bold text-[#011638]">Edit Survey</h1>
+            <h1 className="text-2xl font-oswald font-bold text-[#011638]">Edit Thesis</h1>
           </div>
 
           <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              {/* basic info section w/ same validation logic */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
                   <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
@@ -696,16 +499,16 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="title" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Survey Title <span className="text-[#eec643]">*</span>
+                        Thesis Title <span className="text-[#eec643]">*</span>
                       </label>
                       <input
                         type="text"
                         id="title"
                         name="title"
-                        defaultValue={formData.survey_title}
+                        defaultValue={formData.thesis_title}
                         required
                         maxLength={100}
-                        placeholder="Enter survey title"
+                        placeholder="Enter thesis title"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         onInput={(e) => {
                           const input = e.target as HTMLInputElement;
@@ -725,33 +528,33 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                     </div>
 
                     <div>
-                      <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Description <span className="text-[#eec643]">*</span>
+                      <label htmlFor="abstract" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Abstract <span className="text-[#eec643]">*</span>
                       </label>
                       <textarea
-                        id="description"
-                        name="description"
-                        defaultValue={formData.survey_desc}
+                        id="abstract"
+                        name="abstract"
+                        defaultValue={formData.thesis_abstract}
                         required
                         rows={4}
                         maxLength={1500}
-                        placeholder="Enter survey description"
+                        placeholder="Enter thesis abstract"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         onInput={(e) => {
                           const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('description-error');
+                          const errorSpan = document.getElementById('abstract-error');
                           if (input.value.length === 0) {
-                            errorSpan!.textContent = 'Description is required.';
+                            errorSpan!.textContent = 'Abstract is required.';
                             errorSpan!.style.display = 'block';
                           } else if (input.value.length < 10) {
-                            errorSpan!.textContent = 'Description must be at least 10 characters.';
+                            errorSpan!.textContent = 'Abstract must be at least 10 characters.';
                             errorSpan!.style.display = 'block';
                           } else {
                             errorSpan!.style.display = 'none';
                           }
                         }}
                       />
-                      <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
                     <div>
@@ -762,7 +565,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                         type="text"
                         id="keywords"
                         name="keywords"
-                        defaultValue={formData.survey_keyword}
+                        defaultValue={formData.thesis_keyword}
                         required
                         maxLength={100}
                         placeholder="Enter keywords separated by commas"
@@ -779,7 +582,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                           const input = e.target as HTMLInputElement;
                           const errorSpan = document.getElementById('keywords-error');
                           if (input.value.length === 0) {
-                            errorSpan!.textContent = 'Atleast 1 keyword is required.';
+                            errorSpan!.textContent = 'At least 1 keyword is required.';
                             errorSpan!.style.display = 'block';
                           } else if (input.value.length < 2) {
                             errorSpan!.textContent = 'Keywords must be at least 2 characters.';
@@ -795,7 +598,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                 </div>
               </div>
 
-              {/* authors section */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
                   <h2 className="text-lg font-oswald font-semibold">Authors</h2>
@@ -923,7 +725,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                                 return;
                               }
 
-                              // check duplicate authors
                               const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
                               const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
                               const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
@@ -1018,7 +819,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                                 return;
                               }
 
-                              // check duplicate emails
                               const allEmails = document.querySelectorAll('input[name="email[]"]');
                               for (let i = 0; i < allEmails.length; i++) {
                                 if (i !== index) {
@@ -1031,7 +831,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                                 }
                               }
 
-                              // check existing author
                               const { data: existing } = await supabase
                                 .from("author")
                                 .select("id, author_fname, author_lname")
@@ -1070,213 +869,84 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                 </div>
               </div>
 
-              {/* survey details section */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                  <h2 className="text-lg font-oswald font-semibold">Survey Details</h2>
+                  <h2 className="text-lg font-oswald font-semibold">Thesis Details</h2>
                 </div>
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="start_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          Start Date <span className="text-[#eec643]">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="start_date"
-                          name="start_date"
-                          defaultValue={formData.survey_start}
-                          required
-                          min="2022-01-01"
-                          max={new Date().toISOString().split('T')[0]}
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                          onChange={(e) => {
-                            const endDateInput = document.querySelector('input[name="end_date"]') as HTMLInputElement;
-                            if (endDateInput) {
-                              const startDate = e.target.value;
-                              const today = new Date().toISOString().split('T')[0];
-                              endDateInput.min = startDate > today ? startDate : today;
-
-                              if (endDateInput.value && endDateInput.value < startDate) {
-                                endDateInput.value = '';
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                      
-                      <div>
-                        <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          End Date <span className="text-[#eec643]">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="end_date"
-                          name="end_date"
-                          defaultValue={formData.survey_end}
-                          required
-                          min={formData.survey_start || new Date().toISOString().split('T')[0]}
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        />
-                      </div>
+                    <div>
+                      <label htmlFor="pub_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Publication Date <span className="text-[#eec643]">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        id="pub_date"
+                        name="pub_date"
+                        defaultValue={formData.thesis_date}
+                        required
+                        min="2022-01-01"
+                        max={new Date().toISOString().split('T')[0]}
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      />
                     </div>
 
                     <div>
-                      <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Survey Link <span className="text-[#eec643]">*</span>
+                    <label htmlFor="phys_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      Physical Copy
+                    </label>
+                    <input
+                      type="text"
+                      id="phys_link"
+                      name="phys_link"
+                      defaultValue={formData.thesis_phys}
+                      maxLength={200}
+                      placeholder="Enter physical copy location"
+                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                          return;
+                        }
+                        if (!/[A-Za-z0-9\s.'#@-]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('phys-error');
+                        
+                        if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Physical copy location must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+
+                    <div>
+                      <label htmlFor="digi_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Digital Copy Link
                       </label>
                       <input
                         type="url"
-                        id="survey_link"
-                        name="survey_link"
-                        defaultValue={formData.survey_link}
-                        required
+                        id="digi_link"
+                        name="digi_link"
+                        defaultValue={formData.thesis_digi}
                         maxLength={200}
-                        placeholder="Enter survey URL"
+                        placeholder="Enter digital copy URL"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onInput={async (e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('survey-link-error');
-                          const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-                          
-                          if (input.value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Survey link is required.';
-                              errorSpan.style.display = 'block';
-                            }
-                            setSurveyLinkError("");
-                          } else if (!urlRegex.test(input.value)) {
-                            let isValidUrl = false;
-                            try {
-                              new URL(input.value);
-                              isValidUrl = true;
-                            } catch {
-                              isValidUrl = false;
-                            }
-
-                            if (!isValidUrl) {
-                              if (errorSpan) {
-                                errorSpan.textContent = 'Please enter a valid URL.';
-                                errorSpan.style.display = 'block';
-                              }
-                              setSurveyLinkError("");
-                            } else {
-                              if (errorSpan) {
-                                errorSpan.style.display = 'none';
-                              }
-                              await checkDuplicateSurveyLink(input.value);
-                            }
-                          }
-                        }}
                       />
-                      <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                      {surveyLinkError && (
-                        <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                          {surveyLinkError}
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <label htmlFor="respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Target Respondents <span className="text-[#eec643]">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="respondents"
-                        name="respondents"
-                        defaultValue={formData.survey_respondents}
-                        required
-                        maxLength={34}
-                        placeholder="Enter respondent criteria separated by commas"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          if (!/[A-Za-z\s,.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('respondents-error');
-                          
-                          input.value = input.value.replace(/,{2,}/g, ',');
-
-                          if (input.value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Target respondents are required.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (input.value.length < 2) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Please provide at least 1 respondent criteria.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (input.value.length > 200) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Target respondents must not exceed 200 characters.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
-                        }}
-                      />
-                      <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                    </div>
-
-                    <div>
-                      <label htmlFor="max_respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Maximum Respondents
-                      </label>
-                      <input
-                        type="number"
-                        id="max_respondents"
-                        name="max_respondents"
-                        defaultValue={formData.max_respondents}
-                        min="1"
-                        max="10000"
-                        maxLength={6}
-                        placeholder="e.g., 100"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          const input = e.target as HTMLInputElement;
-                          if (input.value.length >= 5 && /[0-9]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('max-respondents-error');
-                          const value = parseInt(input.value);
-                          
-                          if (input.value && (value < 1 || value > 10000)) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Maximum respondents must be between 1 and 10,000.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
-                        }}
-                      />
-                      <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* classification section */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
                   <h2 className="text-lg font-oswald font-semibold">Classification</h2>
@@ -1388,7 +1058,6 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                       <span id="category-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
-                    {/* school section */}
                     <div>
                       <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         School <span className="text-[#eec643]">*</span>
@@ -1497,56 +1166,23 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                 </div>
               </div>
 
-              {/* status section */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
                   <h2 className="text-lg font-oswald font-semibold">Status</h2>
                 </div>
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
-                  {/* warning banner for past date surveys */}
-                  {statusNotice && (
-                    <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-yellow-700">
-                            <strong className="font-bold">{statusNotice.title}:</strong> {statusNotice.message}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {statusError && (
-                    <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm">
-                      <p className="text-red-700 text-xs font-ubuntu-mono">{statusError}</p>
-                    </div>
-                  )}
-                  
                   <select
-                    name="survey_status"
-                    value={formData.survey_status}
+                    name="thesis_status"
+                    value={formData.thesis_status}
                     onChange={handleStatusChange}
                     required
                     className="w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] focus:ring-1 focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono transition-colors"
                   >
-                    {statusOptions.map((option) => {
-                      const { disabled } = isStatusDisabled(option.value);
-                      return (
-                        <option 
-                          key={option.value} 
-                          value={option.value}
-                          disabled={disabled}
-                          className={disabled ? "text-gray-400 bg-gray-50" : "text-[#475569]"}
-                        >
-                          {option.label} {disabled}
-                        </option>
-                      );
-                    })}
+                    {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

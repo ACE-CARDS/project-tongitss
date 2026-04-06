@@ -1,4 +1,4 @@
-// same code as /survey/admin/success/page.tsx 
+// same logic as survey admin
 
 import Link from "next/link";
 import NavBar from "@/components/navbar";
@@ -22,16 +22,16 @@ export default function SuccessPage() {
           </div>
           
           <h1 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-            Survey Edited Successfully!
+            Thesis Edited Successfully!
           </h1>
           
           {/* 1 option only after submitting */}
           <div className="flex gap-4 justify-center">
             <Link
-              href="/dashboard#survey" // back to dashboard survey tab
+              href="/dashboard#thesis" // back to dashboard thesis tab
               className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
             >
-              Browse All Surveys
+              Browse All Thesis
             </Link>
             
           </div>

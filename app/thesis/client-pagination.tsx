@@ -75,16 +75,6 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
 
   return (
     <>
-      {/* Pagination info */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-        <p className="text-[#475569] font-ubuntu-mono text-sm">
-          Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} theses
-        </p>
-        <p className="text-[#475569] font-ubuntu-mono text-sm">
-          Page {validCurrentPage} of {totalPages || 1}
-        </p>
-      </div>
-
       {/* If no theses, message : otherwise, show grid */}
       {(!paginatedTheses || paginatedTheses.length === 0) ? (
         <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
@@ -290,6 +280,16 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
             ))}
           </div>
 
+          {/* Pagination info */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
+            <p className="text-[#475569] font-ubuntu-mono text-sm">
+              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} theses
+            </p>
+            <p className="text-[#475569] font-ubuntu-mono text-sm">
+              Page {validCurrentPage} of {totalPages || 1}
+            </p>
+          </div>
+          
           <Pagination 
             currentPage={validCurrentPage} 
             totalPages={totalPages || 1} 

@@ -1,12 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useRef, useEffect } from "react";
 
-//filter popup
 function FilterPopup({
-  isOpen, 
+  isOpen,
   onClose,
   categories,
   schools,
@@ -14,12 +11,14 @@ function FilterPopup({
   selectedCategory,
   selectedSchool,
   selectedYears,
+  selectedStatuses,
   onCategoryChange,
   onSchoolChange,
   onYearToggle,
+  onStatusToggle,
   onReset,
-  buttonRef
-}: { 
+  buttonRef,
+}: {
   isOpen: boolean;
   onClose: () => void;
   categories: Category[];
@@ -28,9 +27,11 @@ function FilterPopup({
   selectedCategory: string;
   selectedSchool: string;
   selectedYears: number[];
+  selectedStatuses: string[];
   onCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onSchoolChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onYearToggle: (year: number) => void;
+  onStatusToggle: (status: string) => void;
   onReset: () => void;
   buttonRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -41,24 +42,31 @@ function FilterPopup({
       if (buttonRef.current && buttonRef.current.contains(event.target as Node)) {
         return;
       }
-      
+
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         onClose();
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose, buttonRef]);
+
+  const statuses = [
+    { value: "accepted", label: "Accepted", color: "bg-green-100 text-green-800" },
+    { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
+    { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800" },
+    { value: "archived", label: "Archived", color: "bg-gray-100 text-gray-800" },
+  ];
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={popupRef}
       className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
     >
@@ -73,6 +81,40 @@ function FilterPopup({
       </div>
 
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
+            Status
+          </label>
+          <div className="space-y-2">
+            {statuses.map((status) => (
+              <label
+                key={status.value}
+                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+              >
+                <div className="relative flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedStatuses.includes(status.value)}
+                    onChange={() => onStatusToggle(status.value)}
+                    className="peer appearance-none w-4 h-4 border-2 border-black rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-transparent"
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                    ♠
+                  </span>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${status.color}`}>
+                  {status.label}
+                </span>
+              </label>
+            ))}
+          </div>
+          {selectedStatuses.length > 0 && (
+            <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
+              {selectedStatuses.length} status{selectedStatuses.length > 1 ? "es" : ""} selected
+            </p>
+          )}
+        </div>
+
         <div>
           <label
             htmlFor="category"
@@ -117,7 +159,6 @@ function FilterPopup({
           </select>
         </div>
 
-        {/* Year Filter */}
         <div>
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
             Publication Years
@@ -139,7 +180,7 @@ function FilterPopup({
                         ♠
                       </span>
                     </div>
-                    <label 
+                    <label
                       htmlFor={`year-${year}`}
                       className="text-sm font-ubuntu-mono text-[#475569] cursor-pointer hover:text-[#011638]"
                     >
@@ -156,7 +197,7 @@ function FilterPopup({
           </div>
           {selectedYears.length > 0 && (
             <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
-              {selectedYears.length} year{selectedYears.length > 1 ? 's' : ''} selected
+              {selectedYears.length} year{selectedYears.length > 1 ? "s" : ""} selected
             </p>
           )}
         </div>
@@ -177,7 +218,6 @@ function FilterPopup({
   );
 }
 
-// Live search suggestions
 function LiveSuggestions({
   query,
   onSelect,
@@ -194,36 +234,32 @@ function LiveSuggestions({
   const [filteredKeywords, setFilteredKeywords] = useState<string[]>([]);
   const suggestionRef = useRef<HTMLDivElement>(null);
 
-  // Filter keywords based on query
   useEffect(() => {
     if (!isOpen) return;
 
     if (!query.trim()) {
-      // Show all keywords when query is empty
-      setFilteredKeywords(allKeywords.slice(0, 50)); // Limit to first 50
+      setFilteredKeywords(allKeywords.slice(0, 50));
     } else {
-      // Filter keywords that start with the query & case insensitive
       const lowerQuery = query.toLowerCase();
       const filtered = allKeywords
-        .filter(keyword => keyword.toLowerCase().startsWith(lowerQuery))
-        .slice(0, 50); // Limit results
+        .filter((keyword) => keyword.toLowerCase().startsWith(lowerQuery))
+        .slice(0, 50);
       setFilteredKeywords(filtered);
     }
   }, [query, allKeywords, isOpen]);
 
-  // Click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
-        onClose(); //closes still
+        onClose();
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -232,11 +268,11 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto"
+      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
     >
       <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#1e4db7] sticky top-0">
         <span className="text-xs font-oswald text-[#fbfaf8]">
-          {query.trim() ? 'SUGGESTED KEYWORDS' : 'ALL KEYWORDS'}
+          {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
         </span>
       </div>
       {filteredKeywords.map((keyword, index) => (
@@ -250,7 +286,12 @@ function LiveSuggestions({
         >
           <span className="flex items-center gap-2">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+              />
             </svg>
             <span className="truncate">{keyword}</span>
           </span>
@@ -270,7 +311,7 @@ interface School {
   school_name: string;
 }
 
-interface ThesisHeaderProps {
+interface AdminThesisHeaderProps {
   initialQuery?: string;
   categories: Category[];
   schools: School[];
@@ -278,10 +319,19 @@ interface ThesisHeaderProps {
   initialCategory?: string;
   initialSchool?: string;
   initialYears?: number[];
+  initialStatuses?: string[];
   availableKeywords?: string[];
+  pendingCount: number;
+  onFilterChange: (filters: {
+    query?: string;
+    category?: string;
+    school?: string;
+    years?: number[];
+    statuses?: string[];
+  }) => void;
 }
 
-export default function ThesisHeader({
+export default function AdminThesisHeader({
   initialQuery = "",
   categories = [],
   schools = [],
@@ -289,83 +339,60 @@ export default function ThesisHeader({
   initialCategory = "",
   initialSchool = "",
   initialYears = [],
+  initialStatuses = [],
   availableKeywords = [],
-}: ThesisHeaderProps) {
+  pendingCount = 0,
+  onFilterChange,
+}: AdminThesisHeaderProps) {
   const [query, setQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSchool, setSelectedSchool] = useState(initialSchool);
   const [selectedYears, setSelectedYears] = useState<number[]>(initialYears);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialStatuses);
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-      if (typeof window !== 'undefined') {
-        return sessionStorage.getItem("isAuthenticated") === "true";
-      }
-      return false;
-  });
-  const [isMounted, setIsMounted] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-  const isUpdatingRef = useRef(false);
-
-  const updateUrl = useCallback((searchQuery: string, category: string, school: string, years: number[], page: number = 1) => {
-    isUpdatingRef.current = true;
-    
-    const params = new URLSearchParams();
-    if (searchQuery) params.append("query", searchQuery);
-    if (category) params.append("category", category);
-    if (school) params.append("school", school);
-    
-    years.forEach(year => {
-      params.append("year", year.toString());
-    });
-
-    params.append("page", page.toString());
-
-    const queryString = params.toString();
-    router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
-    
-    // Reset the flag after a short delay
-    setTimeout(() => {
-      isUpdatingRef.current = false;
-    }, 100);
-  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
     setShowSuggestions(true);
-    updateUrl(value, selectedCategory, selectedSchool, selectedYears, 1);
+    onFilterChange({ query: value });
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
-    updateUrl(suggestion, selectedCategory, selectedSchool, selectedYears, 1);
+    onFilterChange({ query: suggestion });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedCategory(value);
-    updateUrl(query, value, selectedSchool, selectedYears, 1);
+    onFilterChange({ category: value });
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedSchool(value);
-    updateUrl(query, selectedCategory, value, selectedYears, 1);
+    onFilterChange({ school: value });
+  };
+
+  const handleStatusToggle = (status: string) => {
+    const newStatuses = selectedStatuses.includes(status)
+      ? selectedStatuses.filter((s) => s !== status)
+      : [...selectedStatuses, status];
+    setSelectedStatuses(newStatuses);
+    onFilterChange({ statuses: newStatuses });
   };
 
   const handleYearToggle = (year: number) => {
-    setSelectedYears(prev => {
-      const newYears = prev.includes(year)
-        ? prev.filter(y => y !== year)
-        : [...prev, year].sort((a, b) => b - a);
-      
-      updateUrl(query, selectedCategory, selectedSchool, newYears, 1);
-      return newYears;
-    });
+    const newYears = selectedYears.includes(year)
+      ? selectedYears.filter((y) => y !== year)
+      : [...selectedYears, year].sort((a, b) => b - a);
+    setSelectedYears(newYears);
+    onFilterChange({ years: newYears });
   };
 
   const resetFilters = () => {
@@ -373,15 +400,47 @@ export default function ThesisHeader({
     setSelectedCategory("");
     setSelectedSchool("");
     setSelectedYears([]);
-    updateUrl("", "", "", [], 1);
+    setSelectedStatuses([]);
+    onFilterChange({
+      query: "",
+      category: "",
+      school: "",
+      years: [],
+      statuses: [],
+    });
   };
+
+  const handlePendingClick = () => {
+    setSelectedStatuses(["pending"]);
+    onFilterChange({ statuses: ["pending"] });
+  };
+
+  const totalFilters = (selectedCategory ? 1 : 0) + 
+                      (selectedSchool ? 1 : 0) + 
+                      selectedYears.length + 
+                      selectedStatuses.length;
 
   return (
     <div className="mb-8">
-      <h1 className="text-3xl font-oswald font-bold text-[#011638]">
-        Scholar Theses Collection
-      </h1>
-      <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">Browse all available theses</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+            Admin Thesis Management
+          </h1>
+          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+            Manage and moderate all thesis submissions
+          </p>
+        </div>
+
+        {pendingCount > 0 && (
+          <button
+            onClick={handlePendingClick}
+            className="bg-[#eec643] text-[#011638] px-4 py-2 rounded-full font-oswald font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md"
+          >
+            {pendingCount} Pending {pendingCount === 1 ? "Work" : "Works"}
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-col gap-1">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -393,16 +452,21 @@ export default function ThesisHeader({
               } text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
               </svg>
               Filters
-              {(selectedCategory || selectedSchool || selectedYears.length > 0) && (
+              {totalFilters > 0 && (
                 <span className="bg-[#eec643] text-[#011638] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {(selectedCategory ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length}
+                  {totalFilters}
                 </span>
               )}
             </button>
-            
+
             <FilterPopup
               isOpen={showFilters}
               onClose={() => setShowFilters(false)}
@@ -413,9 +477,11 @@ export default function ThesisHeader({
               selectedCategory={selectedCategory}
               selectedSchool={selectedSchool}
               selectedYears={selectedYears}
+              selectedStatuses={selectedStatuses}
               onCategoryChange={handleCategoryChange}
               onSchoolChange={handleSchoolChange}
               onYearToggle={handleYearToggle}
+              onStatusToggle={handleStatusToggle}
               onReset={resetFilters}
             />
           </div>
@@ -431,10 +497,20 @@ export default function ThesisHeader({
                 value={query}
                 className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
               />
-              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
-              
+
               <LiveSuggestions
                 query={query}
                 onSelect={handleSuggestionSelect}
@@ -444,19 +520,6 @@ export default function ThesisHeader({
               />
             </div>
           </div>
-
-          {isMounted && isAuthenticated && (
-          <Link
-            href="/thesis/add"
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
-            onClick={() => sessionStorage.removeItem("thesisDraft")}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Thesis
-          </Link>
-          )}
         </div>
       </div>
     </div>

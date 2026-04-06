@@ -9,6 +9,7 @@ import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 import MemdirSuper from "@/components/memdirsuper";
 import MemdirAdmin from "@/components/memdiradmin";
 import { createClient } from "@/lib/supabase/client";
+import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 
 
 export default function Dashboard() {
@@ -82,13 +83,19 @@ useEffect(() => {
           }
 
       case "thesis":
-        return (
-          <div className="h-[400px] overflow-y-auto">
-            <div className="flex h-full w-full items-center justify-center">
-              <p className="text-gray-500 italic">Thesis archive coming soon...</p>
+        // if admin or super admin
+        if (userRole === "admin" || userRole === "superadmin") {
+          return <ThesisAdminWrapper />; //show the RUD for thesis
+        } else {
+          // if member
+          return (
+            <div className="h-[400px] overflow-y-auto">
+              <div className="flex h-full w-full items-center justify-center">
+                <p className="text-gray-500 italic">Thesis archive coming soon...</p>
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       case "survey":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
