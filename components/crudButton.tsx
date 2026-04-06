@@ -14,7 +14,8 @@ export default function CrudButton() {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         crudRef.current &&
-        !crudRef.current.contains(event.target as Node)
+        !crudRef.current.contains(event.target as Node) &&
+        crudOpen
       ) {
         setCrudOpen(false);
       }
