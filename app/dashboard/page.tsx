@@ -1,18 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 import Announcements from "@/components/announcements";
-// import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
+import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
+import MemdirSuper from "@/components/memdirsuper";
+import MemdirAdmin from "@/components/memdiradmin";
+import { createClient } from "@/lib/supabase/client";
+
 
 export default function Dashboard() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("announcements");
   
   // Get user role
-  const userRole = user?.user_metadata?.role || user?.role || "user";
+  //const userRole = user?.user_metadata?.role || user?.role || "user";
+  const supabase = createClient();
+
+const fetchUserRole = async (email: string) => {
+  const { data, error } = await supabase
+    .from("member")
+    .select("role")
+    .eq("mem_email", email)
+    .single();
+
+  if (error) {
+    console.error(error);
+    return "user";
+  }
+
+  return data.role;
+};
+
+const [userRole, setUserRole] = useState("user");
+
+useEffect(() => {
+  if (user?.email) {
+    fetchUserRole(user.email).then(setUserRole);
+  }
+}, [user]);
+
+
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
@@ -34,14 +64,23 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      case "members":
-        return (
-          <div className="h-[400px] overflow-y-auto">
-            <div className="flex h-full w-full items-center justify-center">
-              <p className="text-gray-500 italic">Member directory coming soon...</p>
-            </div>
-          </div>
-        );
+        case "members":
+          if (userRole === "superadmin") {
+            return <MemdirSuper />;
+          } else if (userRole === "admin") {
+            return <MemdirAdmin />;
+          } else {
+            return (
+              <div className="h-[400px] overflow-y-auto">
+                <div className="flex h-full w-full items-center justify-center">
+                  <p className="text-gray-500 italic">
+                    testing
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
       case "thesis":
         return (
           <div className="h-[400px] overflow-y-auto">
@@ -53,7 +92,7 @@ export default function Dashboard() {
       case "survey":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
-          // return <SurveyAdminWrapper />; //show the RUD for survey
+          return <SurveyAdminWrapper />; //show the RUD for survey
         } else {
           // if member
           return (
