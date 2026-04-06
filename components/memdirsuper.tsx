@@ -453,43 +453,49 @@ const getCommName = (comm: number | string) => {
             </div>
 
             <div className="space-y-4">
-              {paginatedMembers.map((member) => {
+            {paginatedMembers.length === 0 ? (
+                <p className="text-center text-gray-500 text-lg py-6">
+                No members in this committee yet 👀
+                </p>
+            ) : (
+                paginatedMembers.map((member) => {
                 const commName =
-                  typeof member.comm === "number"
+                    typeof member.comm === "number"
                     ? committees.find((c) => c.id === member.comm)?.comm_name || ""
                     : member.comm;
 
                 return (
-                  <div
+                    <div
                     key={member.id}
                     className="grid grid-cols-3 items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-2xl hover:shadow-xl transition"
-                  >
+                    >
                     <span className="font-medium text-[#141414]">
-                      {member.mem_lname}, {member.mem_fname}
+                        {member.mem_lname}, {member.mem_fname}
                     </span>
                     <div className={`${getCommitteeStyle(commName)} rounded-xl`}>
-                      <CommitteeDropdown
+                        <CommitteeDropdown
                         value={member.comm}
                         options={committees.map((c) => ({
-                          label: c.comm_name,
-                          value: c.id,
+                            label: c.comm_name,
+                            value: c.id,
                         }))}
                         onChange={(val) => handleCommitteeChange(member.id, val)}
-                      />
+                        />
                     </div>
                     <Dropdown
-                      value={member.role}
-                      options={[
+                        value={member.role}
+                        options={[
                         { label: "Member", value: "member" },
                         { label: "Admin", value: "admin" },
                         { label: "Superadmin", value: "superadmin" },
-                      ]}
-                      onChange={(val) => handleRoleChange(member.id, val as string)}
-                      styleClass={getRoleStyle(member.role)}
+                        ]}
+                        onChange={(val) => handleRoleChange(member.id, val as string)}
+                        styleClass={getRoleStyle(member.role)}
                     />
-                  </div>
+                    </div>
                 );
-              })}
+                })
+            )}
             </div>
 
             {/* pagination */}
