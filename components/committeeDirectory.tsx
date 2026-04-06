@@ -5,9 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
 
+const STORAGE_URL =
+  "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
+
 export default function CommitteeDirectory() {
   const commTabs = [
-    { label: "EXECUTIVES", key: "EXECUTIVES" }, //to be changed kasi i dont know the term
+    { label: "EXECUTIVES", key: "EXECUTIVES" },
     { label: "INTERNALS", key: "INTERNALS" },
     { label: "EXTERNALS", key: "EXTERNALS" },
     { label: "FINANCE AND BUSINESS", key: "FINANCE" },
@@ -15,18 +18,9 @@ export default function CommitteeDirectory() {
     { label: "EDUCATION AND RESEARCH", key: "EDUCATION" },
     { label: "EVENTS AND LOGISTICS", key: "EVENTS" },
   ];
+
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("EXECUTIVES");
-
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const month = now.getMonth();
-  const currentAcadYear =
-    month >= 7
-      ? `${currentYear}-${currentYear + 1}`
-      : `${currentYear - 1}-${currentYear}`;
-
-  const ACADYEAR = `AY ${currentAcadYear}`; // Result: "AY 2025-2026"a
 
   useEffect(() => {
     async function getMembers() {
@@ -34,11 +28,8 @@ export default function CommitteeDirectory() {
         const { data, error } = await supabase
           .from("member")
           .select(
-            `*,
-            committee:committee (comm_name),
-            school:school (school_name)`,
+            `*, committee:committee (comm_name), school:school (school_name)`,
           )
-          .eq("acadyear", ACADYEAR)
           .order("id", { ascending: true });
 
         if (error) throw error;
@@ -52,7 +43,6 @@ export default function CommitteeDirectory() {
 
   const filteredMembers = members.filter((person) => {
     const role = person.committee?.comm_name;
-
     switch (activeTab) {
       case "EXECUTIVES":
         return [
@@ -61,9 +51,9 @@ export default function CommitteeDirectory() {
           "Assistant Secretary",
         ].includes(role);
       case "INTERNALS":
-        return role?.includes("Internal");
+        return role?.includes("Internal Affairs");
       case "EXTERNALS":
-        return role?.includes("External");
+        return role?.includes("External Affairs");
       case "FINANCE":
         return role?.includes("Finance and Business");
       case "PUBLICITY":
@@ -97,44 +87,47 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Member */}
-      {filteredMembers.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((person) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredMembers.map((person) => {
+          const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
+            /\s+/g,
+            "",
+          );
+          const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
+
+          const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
+
+          return (
             <div
               key={person.id}
-              className="bg-white p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+              className="bg-white p-6 flex flex-col items-center text-center"
             >
-              <div className="w-20 h-20 bg-slate-100 rounded-full mb-4 flex items-center justify-center text-2xl overflow-hidden border-2 border-gray-50">
-                {person.image_url ? (
-                  <img
-                    src={person.image_url}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-gray-400 text-sm">:P</span>
-                )}
+              <div className="w-24 h-24 bg-slate-100 rounded-full mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-inner">
+                <img
+                  src={photoUrl}
+                  alt={`${person.mem_fname} ${person.mem_lname}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== fallbackUrl) {
+                      target.src = fallbackUrl;
+                    }
+                  }}
+                />
               </div>
-              <h3 className="font-bold text-[#011638] font-2xl">
+              <h3 className="font-bold text-[#011638] text-lg">
                 {person.mem_fname} {person.mem_lname}
               </h3>
-              <p className="text-sm text-[#0d21a1] font-medium">
+              <p className="text-sm text-[#0d21a1] tracking-tight">
                 {person.committee?.comm_name}
               </p>
-              <p className="text-xs text-slate-500 mt-2 font-medium">
+              <p className="text-xs text-[#475569] font-medium italic">
                 {person.school?.school_name}
               </p>
             </div>
-          ))}
-        </div>
-      ) : (
-        // Empty
-        <div className="py-20 text-center">
-          <p className="text-gray-400 italic">
-            No members found in this committee.
-          </p>
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
