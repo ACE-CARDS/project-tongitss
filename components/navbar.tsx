@@ -220,14 +220,15 @@ export default function NavBar() {
               )}
             </ul>
           </div>
-<div className="flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm">
+          
+          <div className="flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm">
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
               className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "hidden" : ""}`}
             >
@@ -244,7 +245,7 @@ export default function NavBar() {
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
               className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "" : "hidden"}`}
             >
