@@ -353,7 +353,7 @@ useEffect(() => {
           className="fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl border border-white/40 px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
         >
           <img
-            src="/assets/logos/up.png"
+            src="/assets/logos/up1.png"
             alt="Back to hero"
             className="w-5 h-5 object-contain"
           />
@@ -735,7 +735,7 @@ useEffect(() => {
                       className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md hover:bg-white shadow-lg p-3 rounded-full border border-white/50 hover:scale-110 transition-all duration-200 z-50"
                     >
                       <img
-                        src="/assets/logos/homeicon.png"
+                        src="/assets/logos/homeicon1.png"
                         alt="Home"
                         className="w-6 h-6 object-contain"
                       />
