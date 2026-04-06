@@ -53,7 +53,7 @@ export default function Dashboard() {
       case "survey":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
-          return <SurveyAdminWrapper />; //show the RUD for survey
+          // return <SurveyAdminWrapper />; //show the RUD for survey
         } else {
           // if member
           return (
