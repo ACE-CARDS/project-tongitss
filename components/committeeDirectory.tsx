@@ -24,12 +24,26 @@ export default function CommitteeDirectory() {
 
   useEffect(() => {
     async function getMembers() {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const month = now.getMonth();
+
+      // 2. Calculate the string and add "AY " to match your DB
+      const currentAcadYear =
+        month >= 7
+          ? `${currentYear}-${currentYear + 1}`
+          : `${currentYear - 1}-${currentYear}`;
+
+      const ACADYEAR = `AY ${currentAcadYear}`; // Result: "AY 2025-2026"
+
       try {
         const { data, error } = await supabase
           .from("member")
           .select(
             `*, committee:committee (comm_name), school:school (school_name)`,
           )
+          .eq("acadyear", ACADYEAR)
+          .eq("is_active", "TRUE")
           .order("id", { ascending: true });
 
         if (error) throw error;
