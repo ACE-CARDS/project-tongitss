@@ -19,12 +19,12 @@ export default function DashboardLayout({ children }) {
         error,
       } = await supabase.auth.getSession();
 
-      if (error || !session) {
-        console.log("No session found, redirecting...");
-        router.push("/auth/login");
-      } else {
-        setIsAuthenticated(true);
-      }
+      // if (error || !session) {
+      //   console.log("No session found, redirecting...");
+      //   router.push("/auth/login");
+      // } else {
+      //   setIsAuthenticated(true);
+      // }
       setIsLoading(false);
     };
 
@@ -40,5 +40,7 @@ export default function DashboardLayout({ children }) {
       </div>
     );
   }
-  return isAuthenticated ? <>{children}</> : null;
+
+  // return isAuthenticated ? <>{children}</> : null;
+  return <>{children}</>;
 }

@@ -16,6 +16,8 @@ const routeTitles: Record<string, string> = {
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
+  "/dashboard/add": "DASHBOARD",
+  "/dashboard/add/sucess": "DASHBOARD",
   "/executives": "EXECUTIVES",
 };
 

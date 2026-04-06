@@ -5,6 +5,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 import Announcements from "@/components/announcements";
+import CrudButton from "@/components/crudButton";
 // import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 
 export default function Dashboard() {
@@ -13,6 +14,14 @@ export default function Dashboard() {
   
   // Get user role
   const userRole = user?.user_metadata?.role || user?.role || "user";
+
+  if(!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Please log in to view the dashboard.</p>
+      </div>
+    );
+  }
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
@@ -126,6 +135,7 @@ export default function Dashboard() {
         </main>
       </div>
 
+      {userRole === "admin" || userRole === "superadmin" && <CrudButton />}
       <Footer />
     </div>
   );
