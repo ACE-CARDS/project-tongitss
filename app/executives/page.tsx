@@ -49,6 +49,7 @@ export default function Executives() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavBar />
+<<<<<<< Updated upstream
       <div className="container mx-auto py-8 px-4 max-w-7xl">
         <BackButton />
       </div>
@@ -61,6 +62,25 @@ export default function Executives() {
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Meet the visionary leaders shaping our organization across academic
             years
+=======
+
+      <main className="px-6 sm:px-10 lg:px-20 py-24">
+      <div className=" justify mb-4">
+                            <BackButton />
+                  </div>
+        {/* title */}
+        <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <span className="text-5xl text-[#eec643]">♠</span>
+          <h1 className="text-5xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent mb-3">
+            Our Executives
+          </h1>
+          <span className="text-5xl text-[#eec643]">♠</span>
+        </div>
+          
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+            Meet the visionary leaders shaping our organization across academic years
+>>>>>>> Stashed changes
           </p>
         </div>
 
