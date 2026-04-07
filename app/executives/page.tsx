@@ -4,10 +4,30 @@ import { useState, useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
+import BackButton from "@/components/backButton";
 
 export default function Executives() {
   const [executives, setExecutives] = useState([]);
   const [selectedAY, setSelectedAY] = useState("AY 2025-2026");
+
+  const roleOrder = [
+    "Regional Director",
+    "Director for Internal Affairs",
+    "Deputy Director for Internal Affairs",
+    "Director for External Affairs",
+    "Deputy Director for External Affairs",
+    "Secretary",
+    "Assistant Secretary",
+    "Finance and Business Committee Head",
+    "Finance and Business Committee Deputy",
+    "Publicity and Media Committee Head",
+    "Publicity and Media Committee Deputy",
+    "Education and Research Committee Head",
+    "Education and Research Committee Deputy",
+    "Events and Logistics Committee Head",
+    "Events and Logistics Committee Deputy",
+    "Member"
+  ];
 
   useEffect(() => {
     const fetchExecutives = async () => {
@@ -61,7 +81,9 @@ export default function Executives() {
           return orderA - orderB;
         });
 
-      setExecutives(formatted);
+      setExecutives(
+        formatted.sort((a, b) => roleOrder.indexOf(a.position) - roleOrder.indexOf(b.position))
+      );
     };
 
     fetchExecutives();

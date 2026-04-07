@@ -297,6 +297,13 @@ export default function ThesisHeader({
   const [selectedYears, setSelectedYears] = useState<number[]>(initialYears);
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+      if (typeof window !== 'undefined') {
+        return sessionStorage.getItem("isAuthenticated") === "true";
+      }
+      return false;
+  });
+  const [isMounted, setIsMounted] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -438,6 +445,7 @@ export default function ThesisHeader({
             </div>
           </div>
 
+          {isMounted && isAuthenticated && (
           <Link
             href="/thesis/add"
             className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
@@ -448,6 +456,7 @@ export default function ThesisHeader({
             </svg>
             Add Thesis
           </Link>
+          )}
         </div>
       </div>
     </div>

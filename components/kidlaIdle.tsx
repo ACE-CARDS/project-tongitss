@@ -33,7 +33,7 @@ export default function KidlaTalk({ isParentOpen }: { isParentOpen: boolean }) {
       timeoutId = setTimeout(showPhrase, nextDelay);
     };
 
-    let timeoutId = setTimeout(showPhrase, 5000);
+    let timeoutId = setTimeout(showPhrase, 4000);
     return () => clearTimeout(timeoutId);
   }, [isParentOpen]);
 
