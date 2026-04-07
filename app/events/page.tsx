@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import EventsTimeline from "./events-timeline";
-import BackButton from "@/components/backButton";
+import BackButton from "@/components/backButton1";
 
 export default function EventsPage() {
   const router = useRouter();
