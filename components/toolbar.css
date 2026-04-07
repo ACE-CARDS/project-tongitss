@@ -83,7 +83,7 @@
 
 /*Day Names*/
 .month_default_header_inner {
-  background-color: #0b1763 !important;
+  background-color: #011638 !important;
   color: #f7f7f9 !important;
   border-bottom: 1px solid #ccc;
   font-weight: 0;
@@ -133,7 +133,7 @@
 }
 
 .month_default_header_inner {
-  background-color: #0b1763 !important;
+  background-color: #011638 !important;
   color: #f7f7f9 !important;
   font-size: 12px;
   padding: 5px 0;

@@ -196,7 +196,7 @@ export default function Dashboard() {
                     onClick={() => setActiveTab(tab.key)}
                     className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap ${
                       activeTab === tab.key
-                        ? "bg-[#0b1763] text-white shadow-lg"
+                        ? "bg-[#011638] text-white shadow-lg"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                   >
