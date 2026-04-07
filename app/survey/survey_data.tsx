@@ -50,8 +50,7 @@ export default async function SurveyData({
 
   const { data: keywordsData } = await supabase
     .from("survey")
-    .select("survey_keyword")
-    .eq("survey_status", "accepted");
+    .select("survey_keyword");
 
   const allKeywords = keywordsData
     ?.flatMap(s => s.survey_keyword?.split(',').map((k: string) => k.trim()).filter(Boolean) || [])
@@ -95,12 +94,12 @@ export default async function SurveyData({
           author_fname,
           author_lname,
           author_minit,
+          author_contact,
           author_email
         )
       )
     `
     )
-    .eq("survey_status", "accepted")  // Show ongoing survyes
     .order("survey_start", { ascending: false });
 
   if (categoryId) {

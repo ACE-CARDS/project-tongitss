@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import ThesisHeader from "./thesis_header";
-import ClientPagination from './client-pagination'; 
+import ClientPagination from './client-pagination'; // Make sure path is correct
 
 // Main export
 export default async function ThesisData({
@@ -107,7 +107,6 @@ export default async function ThesisData({
       )
     `
     )
-    .eq("thesis_status", "accepted") 
     .order("thesis_date", { ascending: false }); // Sort
 
   // If filter selected

@@ -23,9 +23,7 @@ export default function Calendar() {
   }, []);
 
   const [events, setEvents] = useState<any[]>([]);
-  const [startDate, setStartDate] = useState(
-    DayPilot.Date.today().firstDayOfMonth(),
-  );
+  const [startDate, setStartDate] = useState(new DayPilot.Date("2026-03-01"));
   const [calendar, setCalendar] = useState<DayPilot.Month>();
 
   const prevMonth = () => {

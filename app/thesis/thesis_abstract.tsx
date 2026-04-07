@@ -18,7 +18,7 @@ export default function ThesisAbstract({ abstract }: { abstract: string | null }
   // CASE 2: Short Abstract
   if (abstract.length <= 200) {
     return (
-      <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed min-h-[63px] break-words overflow-wrap-anywhere"> {/* Display normally all */}
+      <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed min-h-[63px]"> {/* Display normally all */}
         {abstract}
       </p>
     );
@@ -31,7 +31,7 @@ export default function ThesisAbstract({ abstract }: { abstract: string | null }
       {!isOpen ? (
         // COLLAPSED
         <div>
-          <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-3 break-words overflow-wrap-anywhere"> {/* Display first 3 lines */}
+          <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-3"> {/* Display first 3 lines */}
             {abstract}
           </p>
           <button
@@ -44,7 +44,7 @@ export default function ThesisAbstract({ abstract }: { abstract: string | null }
       ) : (
         // EXPANDED
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2 break-words overflow-wrap-anywhere custom-scrollbar"> {/* Scroll full abstract */}
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2"> {/* Scroll full abstract */}
             {abstract}
           </div>
           

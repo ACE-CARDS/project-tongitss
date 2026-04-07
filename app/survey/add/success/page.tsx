@@ -24,7 +24,7 @@ export default function SuccessPage() {
           </h1>
           
           <p className="text-[#475569] font-ubuntu-mono mb-6">
-            Your survey will be reviewed and published shortly.
+            Your survey has been added to the collection.
           </p>
           
           <div className="flex gap-4 justify-center">

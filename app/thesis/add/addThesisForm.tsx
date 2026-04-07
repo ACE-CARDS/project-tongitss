@@ -435,7 +435,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     name="abstract"
                     required
                     rows={4}
-                    maxLength={1500}
+                    maxLength={1000}
                     placeholder="Enter thesis abstract"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
@@ -450,7 +450,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     id="keywords"
                     name="keywords"
                     required
-                    maxLength={100}
+                    maxLength={50}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
@@ -726,7 +726,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     id="digital"
                     name="digital"
                     maxLength={200}
-                    placeholder="Enter thesis URL"
+                    placeholder="e.g., https://www.researchgate.com/..."
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
                 </div>

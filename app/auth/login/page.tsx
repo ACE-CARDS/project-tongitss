@@ -8,12 +8,7 @@ export default function LoginPage() {
     <div>
       <main>
         <div className="flex md:flex-row flex-col">
-          <section id="welcome" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-[#fbfaf8]"
-            style={{
-            backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-            backgroundSize: "20px 20px"
-            }}
-          >
+          <section id="welcome" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-white">
             <div className="flex flex-col my-auto mx-auto w-sm">
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
@@ -36,12 +31,7 @@ export default function LoginPage() {
             </div>
           </section>
 
-          <section id="login-form" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-blue-500 text-white"
-            style={{
-            backgroundImage: 'radial-gradient(#011638 1px, transparent 1px)',
-            backgroundSize: "20px 20px"
-            }}
-          >
+          <section id="login-form" className="flex w-full lg:h-screen md:h-screen h-[30rem] bg-blue-500 text-white">
             <div className="flex flex-col my-auto mx-auto w-sm justify-center items-center">
               <span className="text-2xl font-medium text-center">
                 Let's stay connected!<br/>

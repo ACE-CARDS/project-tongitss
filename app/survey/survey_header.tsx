@@ -4,7 +4,6 @@
 import Link from "next/link";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 function FilterPopup({
   isOpen, 
@@ -297,31 +296,10 @@ export default function SurveyHeader({
   const [selectedYears, setSelectedYears] = useState<number[]>(initialYears);
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem("isAuthenticated") === "true";
-    }
-    return false;
-  });
-  const [isMounted, setIsMounted] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isUpdatingRef = useRef(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const authenticated = !!user;
-      setIsAuthenticated(authenticated);
-      sessionStorage.setItem("isAuthenticated", authenticated.toString());
-    };
-    
-    checkAuth();
-  }, []);
 
   const updateUrl = useCallback((searchQuery: string, category: string, school: string, years: number[], page: number = 1) => {
     isUpdatingRef.current = true;
@@ -458,7 +436,6 @@ export default function SurveyHeader({
             </div>
           </div>
 
-          {isMounted && isAuthenticated && (
           <Link
             href="/survey/add"
             className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
@@ -469,7 +446,6 @@ export default function SurveyHeader({
             </svg>
             Add Survey
           </Link>
-        )}
         </div>
       </div>
     </div>
