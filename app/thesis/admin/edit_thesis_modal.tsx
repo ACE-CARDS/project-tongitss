@@ -456,7 +456,7 @@ export default function EditThesisModal({ thesis, onClose, onUpdate }: EditThesi
       if (linkError) throw linkError;
 
       onUpdate(updatedThesis);
-      router.push('/thesis/admin/success')
+      // router.push('/thesis/admin/success')
       
     } catch (error) {
       console.error("Error updating thesis:", error);

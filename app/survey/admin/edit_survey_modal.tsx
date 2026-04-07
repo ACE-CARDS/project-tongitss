@@ -652,7 +652,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
       if (linkError) throw linkError;
 
       onUpdate(updatedSurvey);
-      router.push('/survey/admin/success') // redirect to success page
+      // router.push('/survey/admin/success') // redirect to success page
       
     } catch (error) {
       console.error("Error updating survey:", error);
