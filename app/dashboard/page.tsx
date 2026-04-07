@@ -10,11 +10,8 @@ import MemdirSuper from "@/components/memdirsuper";
 import MemdirAdmin from "@/components/memdiradmin";
 import { createClient } from "@/lib/supabase/client";
 import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
-
-// import SurveyAdmin from "@/components/surveyAdmin";\
 import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";
-// import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -24,30 +21,28 @@ export default function Dashboard() {
   //const userRole = user?.user_metadata?.role || user?.role || "user";
   const supabase = createClient();
 
-const fetchUserRole = async (email: string) => {
-  const { data, error } = await supabase
-    .from("member")
-    .select("role")
-    .eq("mem_email", email)
-    .single();
+  const fetchUserRole = async (email: string) => {
+    const { data, error } = await supabase
+      .from("member")
+      .select("role")
+      .eq("mem_email", email)
+      .single();
 
-  if (error) {
-    console.error(error);
-    return "user";
-  }
+    if (error) {
+      console.error(error);
+      return "user";
+    }
 
-  return data.role;
-};
+    return data.role;
+  };
 
-const [userRole, setUserRole] = useState("user");
+  const [userRole, setUserRole] = useState("user");
 
-useEffect(() => {
-  if (user?.email) {
-    fetchUserRole(user.email).then(setUserRole);
-  }
-}, [user]);
-
-
+  useEffect(() => {
+    if (user?.email) {
+      fetchUserRole(user.email).then(setUserRole);
+    }
+  }, [user]);
 
   if(!user) {
     return (
