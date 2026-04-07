@@ -238,7 +238,7 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
                           href={survey.survey_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
+                          className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
                         >
                           Take Survey
                           <svg

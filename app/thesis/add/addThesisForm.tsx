@@ -42,6 +42,39 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
 
+  // Check duplicate authors
+  const checkDuplicateAuthors = () => {
+    const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
+    const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
+    const middleInitialInputs = document.querySelectorAll('input[name="middleInitial[]"]') as NodeListOf<HTMLInputElement>;
+    const emailInputs = document.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
+    
+    for (let i = 0; i < emailInputs.length; i++) {
+      for (let j = i + 1; j < emailInputs.length; j++) {
+        // Check duplicate emails
+        if (emailInputs[i]?.value && emailInputs[j]?.value && 
+            emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
+          return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
+        }
+        
+        // Check duplicate names
+        if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
+            firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
+            firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
+            lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+          
+          const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
+          const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
+          
+          if (middleI === middleJ) {
+            return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("thesisDraft");
     if (savedDraft) {
@@ -310,6 +343,12 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
       const lastNameInputs = form.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
       const emailInputs = form.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
 
+      // Check duplicate authors
+      const duplicateError = checkDuplicateAuthors();
+      if (duplicateError) {
+        throw new Error(duplicateError);
+      }
+
       let validAuthors = 0;
       for (let i = 0; i < firstNameInputs.length; i++) {
         if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && emailInputs[i]?.value) {
@@ -405,6 +444,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
       <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
               <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
@@ -423,7 +463,21 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     maxLength={100}
                     placeholder="Enter thesis title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('title-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'Title is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 5) {
+                        errorSpan!.textContent = 'Title must be at least 5 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
                   />
+                  <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -438,7 +492,21 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     maxLength={1500}
                     placeholder="Enter thesis abstract"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('abstract-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'Abstract is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 10) {
+                        errorSpan!.textContent = 'Abstract must be at least 10 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
                   />
+                  <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -453,12 +521,35 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     maxLength={100}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        return;
+                      }
+                      if (!/[A-Za-z\s\-'.,]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('keywords-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'At least 1 keyword is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 2) {
+                        errorSpan!.textContent = 'Keywords must be at least 2 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
                   />
+                  <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Authors Section */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
               <h2 className="text-lg font-oswald font-semibold">Authors</h2>
@@ -491,8 +582,37 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                           maxLength={20}
                           placeholder="First Name"
                           className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+                            if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onInput={(e) => {
+                            const input = e.target as HTMLInputElement;
+                            const errorSpan = document.getElementById(`firstname-error-${index}`);
+                            if (input.value.length === 0) {
+                              if (errorSpan) {
+                                errorSpan.textContent = 'First Name is required.';
+                                errorSpan.style.display = 'block';
+                              }
+                            } else if (input.value.length < 2) {
+                              if (errorSpan) {
+                                errorSpan.textContent = 'First Name must be at least 2 characters.';
+                                errorSpan.style.display = 'block';
+                              }
+                            } else {
+                              if (errorSpan) {
+                                errorSpan.style.display = 'none';
+                              }
+                            }
+                          }}
                         />
+                        <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       </div>
+
                       <div>
                         <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                           Middle Initial
@@ -503,6 +623,14 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                           maxLength={4}
                           placeholder="M.I."
                           className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+                            if (!/[A-Za-z\s.]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -517,8 +645,74 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         maxLength={20}
                         placeholder="Last Name"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`lastname-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          
+                          if (input.value.length === 0) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Last Name is required.';
+                              errorSpan.style.display = 'block';
+                            }
+                            return;
+                          } else if (input.value.length < 2) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Last Name must be at least 2 characters.';
+                              errorSpan.style.display = 'block';
+                            }
+                            return;
+                          }
+
+                          // Check duplicate authors
+                          const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
+                          const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
+                          const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
+
+                          const currentFirstName = firstNameInput?.value?.trim();
+                          const currentLastName = input.value?.trim();
+                          const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
+                          const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
+
+                          for (let i = 0; i < allFirstNames.length; i++) {
+                            if (i !== index) {
+                              const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
+                              const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
+                              const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
+                              const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
+                              
+                              if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
+                                const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
+                                const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
+                                
+                                if (firstNameMatch && lastNameMatch && normalizedCurrentMiddle === normalizedOtherMiddle) {
+                                  if (errorSpan) {
+                                    const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
+                                    errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
+                                    errorSpan.style.display = 'block';
+                                  }
+                                  return;
+                                }
+                              }
+                            }
+                          }
+
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }}
                       />
+                      <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
+                    
                     <div>
                       <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Email <span className="text-[#eec643]">*</span>
@@ -530,7 +724,79 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         maxLength={30}
                         placeholder="Email"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        onKeyUp={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const char = e.key;
+                          const value = input.value;
+                          const atCount = (value.match(/@/g) || []).length;
+                          
+                          if (char === '@' && atCount >= 1) {
+                            e.preventDefault();
+                            return;
+                          }
+                          
+                          if (!value.includes('@')) {
+                            if (!/[a-zA-Z0-9.]/.test(char) && char !== '@') {
+                              e.preventDefault();
+                            }
+                          }
+                        }}
+                        onInput={async (e) => {
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`email-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                          if (input.value.length === 0) {
+                            errorSpan!.textContent = 'Email is required.';
+                            errorSpan!.style.display = 'block';
+                            return;
+                          }
+                          
+                          if (!emailRegex.test(input.value)) {
+                            errorSpan!.textContent = 'Please enter a valid email address.';
+                            errorSpan!.style.display = 'block';
+                            return;
+                          }
+
+                          // Check duplicate emails
+                          const allEmails = document.querySelectorAll('input[name="email[]"]');
+                          for (let i = 0; i < allEmails.length; i++) {
+                            if (i !== index) {
+                              const otherEmail = (allEmails[i] as HTMLInputElement).value;
+                              if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
+                                errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                                errorSpan!.style.display = 'block';
+                                return;
+                              }
+                            }
+                          }
+
+                          // Check existing author
+                          const supabase = createClient();
+                          const { data: existing } = await supabase
+                            .from("author")
+                            .select("id, author_fname, author_lname")
+                            .eq("author_email", input.value)
+                            .maybeSingle();
+                          
+                          if (existing) {
+                            const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
+                            const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                            
+                            if (firstNameMatch && lastNameMatch) {
+                              errorSpan!.style.display = 'none';
+                            } else {
+                              errorSpan!.textContent = 'This email is already registered to a different author.';
+                              errorSpan!.style.display = 'block';
+                            }
+                          } else {
+                            errorSpan!.style.display = 'none';
+                          }
+                        }}
                       />
+                      <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
@@ -547,6 +813,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
             </div>
           </div>
 
+          {/* Classification */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
               <h2 className="text-lg font-oswald font-semibold">Classification</h2>
@@ -565,6 +832,19 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         required
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         defaultValue=""
+                        onChange={(e) => {
+                          const errorSpan = document.getElementById('category-error');
+                          if (!e.target.value) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Please select a category.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else {
+                            if (errorSpan) {
+                              errorSpan.style.display = 'none';
+                            }
+                          }
+                        }}
                       >
                         <option value="" disabled>Select a category</option>
                         {availableCategories.map((category) => (
@@ -591,6 +871,34 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         maxLength={30}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById('category-error');
+                          
+                          if (!input.value.trim()) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Category name is required.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else if (input.value.length < 2) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Category name must be at least 2 characters.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else {
+                            if (errorSpan) {
+                              errorSpan.style.display = 'none';
+                            }
+                          }
+                        }}
                       />
                       <button
                         type="button"
@@ -604,6 +912,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         onClick={() => {
                           setShowNewCategory(false);
                           setNewCategoryName("");
+                          const errorSpan = document.getElementById('category-error');
+                          if (errorSpan) errorSpan.style.display = 'none';
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -611,6 +921,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       </button>
                     </div>
                   )}
+                  <span id="category-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -625,6 +936,19 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         required
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         defaultValue=""
+                        onChange={(e) => {
+                          const errorSpan = document.getElementById('school-error');
+                          if (!e.target.value) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Please select a school.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else {
+                            if (errorSpan) {
+                              errorSpan.style.display = 'none';
+                            }
+                          }
+                        }}
                       >
                         <option value="" disabled>Select a school</option>
                         {availableSchools.map((school) => (
@@ -651,6 +975,34 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         maxLength={34}
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         required
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById('school-error');
+                          
+                          if (!input.value.trim()) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'School name is required.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else if (input.value.length < 2) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'School name must be at least 2 characters.';
+                              errorSpan.style.display = 'block';
+                            }
+                          } else {
+                            if (errorSpan) {
+                              errorSpan.style.display = 'none';
+                            }
+                          }
+                        }}
                       />
                       <button
                         type="button"
@@ -664,6 +1016,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         onClick={() => {
                           setShowNewSchool(false);
                           setNewSchoolName("");
+                          const errorSpan = document.getElementById('school-error');
+                          if (errorSpan) errorSpan.style.display = 'none';
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -671,11 +1025,13 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       </button>
                     </div>
                   )}
+                  <span id="school-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Date */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
               <h2 className="text-lg font-oswald font-semibold">Date</h2>
@@ -692,11 +1048,23 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                   required
                   max={new Date().toISOString().split('T')[0]}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                  onInput={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    const errorSpan = document.getElementById('date-error');
+                    if (!input.value) {
+                      errorSpan!.textContent = 'Date is required.';
+                      errorSpan!.style.display = 'block';
+                    } else {
+                      errorSpan!.style.display = 'none';
+                    }
+                  }}
                 />
+                <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
             </div>
           </div>
 
+          {/* Location */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
               <h2 className="text-lg font-oswald font-semibold">Location</h2>
@@ -728,12 +1096,24 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     maxLength={200}
                     placeholder="Enter thesis URL"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('digital-error');
+                      if (input.value && !input.value.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i)) {
+                        errorSpan!.textContent = 'Please enter a valid URL.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
                   />
+                  <span id="digital-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Privacy Consent */}
           <div className="flex items-start gap-2">
             <div className="relative flex items-center justify-center mt-1">
               <input
@@ -755,6 +1135,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
             </label>
           </div>
 
+          {/* Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
             <Link
               href="/thesis"
@@ -767,7 +1148,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50"
+              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Submitting..." : "Submit Thesis"}
             </button>

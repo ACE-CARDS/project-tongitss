@@ -383,7 +383,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           </span>
                         ) : (
                           <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                            No physical copy available
+                            Not Available
                           </span>
                         )}
                       </div>
@@ -419,7 +419,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           </a>
                         ) : (
                           <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                            No digital copy available
+                            Not Available
                           </span>
                         )}
                       </div>
