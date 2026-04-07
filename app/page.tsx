@@ -64,10 +64,9 @@ export default function Home() {
   //Counts poexcz for events and members separate si province kasi wait lang iiyaq aq dyan
   const [eventCount, setEventCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
+  const [selectedAY, setSelectedAY] = useState("AY 2025-2026"); //here ichchange po yung current year thnx
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [provinceMembers, setProvinceMembers] = useState(0);
-  const [selectedAYMembers, setSelectedAYMembers] = useState("AY 2025-2026");
-  const [selectedAYProvince, setSelectedAYProvince] = useState("AY 2025-2026");
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -78,19 +77,19 @@ export default function Home() {
       const { count: memberTotal } = await supabase
         .from("member")
         .select("*", { count: "exact", head: true })
-        .eq("acadyear", selectedAYMembers);
+        .eq("acadyear", selectedAY);
   
       setEventCount(eventTotal || 0);
       setMemberCount(memberTotal || 0);
     };
   
     fetchCounts();
-  }, [selectedAYMembers]); 
+  }, [selectedAY]); 
 
   useEffect(() => {
     setMemberDisplayCount(0);
     setHasMemberAnimated(false);
-  }, [selectedAYMembers]);
+  }, [selectedAY]);
 
   useEffect(() => {
     const fetchProvinceMembers = async () => {
@@ -100,7 +99,7 @@ export default function Home() {
         .from("member")
         .select("*", { count: "exact", head: true })
         .eq("province", selectedProvince)
-        .eq("acadyear", selectedAYProvince);
+        .eq("acadyear", selectedAY);
   
       if (!error) {
         setProvinceMembers(count || 0);
@@ -108,7 +107,7 @@ export default function Home() {
     };
   
     fetchProvinceMembers();
-  }, [selectedProvince, selectedAYProvince]);
+  }, [selectedProvince, selectedAY]);
 
   //awa nalang cguro (province count)
   const [provinceSchools, setProvinceSchools] = useState([]);
@@ -146,7 +145,7 @@ export default function Home() {
             .from("member")
             .select("*", { count: "exact", head: true })
             .eq("school", school.id)
-            .eq("acadyear", selectedAYProvince); 
+            .eq("acadyear", selectedAY); 
   
           return {
             id: school.id,
@@ -166,7 +165,7 @@ export default function Home() {
     };
   
     fetchProvinceData();
-  }, [selectedProvince, selectedAYProvince]); 
+  }, [selectedProvince, selectedAY]); 
 
   const [provinces, setProvinces] = useState([]);
 
@@ -340,7 +339,7 @@ useEffect(() => {
 useEffect(() => {
   setProvinceDisplayCount(0);
   setProvinceAnimKey(prev => prev + 1); 
-}, [selectedProvince, selectedAYProvince]);
+}, [selectedProvince, selectedAY]);
 
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
@@ -650,8 +649,8 @@ useEffect(() => {
                 <div className="flex items-center justify-between mb-4 sm:mb-8 bg-white/50 px-6 py-4 rounded-2xl shadow-lg backdrop-blur-md">
 
                 <select
-                  value={selectedAYProvince}
-                  onChange={(e) => setSelectedAYProvince(e.target.value)}
+                  value={selectedAY}
+                  onChange={(e) => setSelectedAY(e.target.value)}
                   className="border-2 border-gray-200/50 rounded-2xl px-6 py-3 bg-white/80 font-semibold text-[#011638] shadow-md focus:ring-4 focus:ring-[#eec643]/30 focus:border-[#eec643] transition-all duration-200"
                 >
                   <option value="AY 2025-2026">AY 2025-2026</option>

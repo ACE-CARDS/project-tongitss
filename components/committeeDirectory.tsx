@@ -135,6 +135,9 @@ export default function CommitteeDirectory() {
               <p className="text-sm text-[#0d21a1] tracking-tight">
                 {person.committee?.comm_name}
               </p>
+              <p className="text-xs text-[#475569] font-medium ">
+                {person.mem_schol_year} {person.mem_schol_type}
+              </p>
               <p className="text-xs text-[#475569] font-medium italic">
                 {person.school?.school_name}
               </p>
