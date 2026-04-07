@@ -38,6 +38,30 @@ export default function Dashboard() {
 
   const [userRole, setUserRole] = useState("user");
 
+  // para sa tab
+  useEffect(() => {
+    if (user?.email) {
+      // load saved tab for user
+      const savedTab = sessionStorage.getItem(`tab_${user.email}`);
+      if (savedTab) {
+        setActiveTab(savedTab);
+      } else {
+        // new user, reset to announcements
+        setActiveTab("announcements");
+      }
+    } else {
+      // user log out, reset to announcements
+      setActiveTab("announcements");
+    }
+  }, [user?.email]);
+
+  // save current tab for user
+  useEffect(() => {
+    if (user?.email && activeTab) {
+      sessionStorage.setItem(`tab_${user.email}`, activeTab);
+    }
+  }, [activeTab, user?.email]);
+
   useEffect(() => {
     if (user?.email) {
       fetchUserRole(user.email).then(setUserRole);
