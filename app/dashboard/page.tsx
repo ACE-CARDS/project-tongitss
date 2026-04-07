@@ -16,7 +16,7 @@ import CrudButton from "@/components/crudButton";
 export default function Dashboard() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("announcements");
-  
+
   // Get user role
   //const userRole = user?.user_metadata?.role || user?.role || "user";
   const supabase = createClient();
@@ -68,7 +68,7 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  if(!user) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Please log in to view the dashboard.</p>
@@ -81,7 +81,7 @@ export default function Dashboard() {
     { label: "COMMITTEE", key: "committee" },
     { label: "MEMBERS", key: "members" },
     { label: "THESIS", key: "thesis" },
-    { label: "SURVEY", key: "survey" }, 
+    { label: "SURVEY", key: "survey" },
   ];
 
   const renderTabContent = () => {
@@ -96,22 +96,20 @@ export default function Dashboard() {
             </div>
           </div>
         );
-        case "members":
-          if (userRole === "superadmin") {
-            return <MemdirSuper />;
-          } else if (userRole === "admin") {
-            return <MemdirAdmin />;
-          } else {
-            return (
-              <div className="h-[400px] overflow-y-auto">
-                <div className="flex h-full w-full items-center justify-center">
-                  <p className="text-gray-500 italic">
-                    testing
-                  </p>
-                </div>
+      case "members":
+        if (userRole === "superadmin") {
+          return <MemdirSuper />;
+        } else if (userRole === "admin") {
+          return <MemdirAdmin />;
+        } else {
+          return (
+            <div className="h-[400px] overflow-y-auto">
+              <div className="flex h-full w-full items-center justify-center">
+                <p className="text-gray-500 italic">testing</p>
               </div>
-            );
-          }
+            </div>
+          );
+        }
 
       case "thesis":
         // if admin or super admin
@@ -122,7 +120,9 @@ export default function Dashboard() {
           return (
             <div className="h-[400px] overflow-y-auto">
               <div className="flex h-full w-full items-center justify-center">
-                <p className="text-gray-500 italic">Thesis archive coming soon...</p>
+                <p className="text-gray-500 italic">
+                  Thesis archive coming soon...
+                </p>
               </div>
             </div>
           );
@@ -136,7 +136,9 @@ export default function Dashboard() {
           return (
             <div className="h-[400px] overflow-y-auto">
               <div className="flex h-full w-full items-center justify-center">
-                <p className="text-gray-500 italic">Survey archive coming soon...</p>
+                <p className="text-gray-500 italic">
+                  Survey archive coming soon...
+                </p>
               </div>
             </div>
           );
@@ -150,9 +152,9 @@ export default function Dashboard() {
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
       style={{
-        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
-        backgroundAttachment: 'fixed'
+        backgroundAttachment: "fixed",
       }}
     >
       <NavBar />
@@ -181,19 +183,27 @@ export default function Dashboard() {
         <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
           <div className="w-full">
             <div className="flex gap-1 mb-0 overflow-x-auto">
-              {mainTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-3 px-4 rounded-t-lg font-bold text-sm md:text-base transition-all whitespace-nowrap ${
-                    activeTab === tab.key
-                      ? "bg-[#0b1763] text-white shadow-lg"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              {mainTabs
+                .filter((tab) => {
+                  if (userRole === "superadmin") return true;
+                  if (userRole === "admin") {
+                    return tab.key !== "members";
+                  }
+                  return tab.key === "announcements" || tab.key === "committee";
+                })
+                .map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex-1 py-3 px-4 rounded-t-lg font-bold text-sm md:text-base transition-all whitespace-nowrap ${
+                      activeTab === tab.key
+                        ? "bg-[#0b1763] text-white shadow-lg"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
             </div>
 
             <div className="bg-white rounded-b-lg border border-gray-200 p-6 shadow-md min-h-[500px]">
@@ -203,7 +213,8 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {userRole === "admin" || userRole === "superadmin" && <CrudButton />}
+      {(userRole === "admin" && <CrudButton />) ||
+        (userRole === "superadmin" && <CrudButton />)}
       <Footer />
     </div>
   );
