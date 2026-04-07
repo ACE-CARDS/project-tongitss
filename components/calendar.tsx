@@ -78,7 +78,7 @@ export default function Calendar() {
     <div style={styles.wrap}>
       <div>
         {/*Toolbar*/}
-        <div className="toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
+        <div className="rounded-xl toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
           <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
             {startDate.toString("MMMM yyyy")}
           </h2>

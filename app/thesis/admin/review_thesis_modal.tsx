@@ -11,33 +11,43 @@ interface ReviewThesisModalProps {
   onReject: (id: string, reason: string) => void;
 }
 
-export default function ReviewThesisModal({ thesis, onClose, onApprove, onReject }: ReviewThesisModalProps) {
+export default function ReviewThesisModal({
+  thesis,
+  onClose,
+  onApprove,
+  onReject,
+}: ReviewThesisModalProps) {
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = 'unset'; };
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, []);
 
   const handleApprove = () => onApprove(thesis.id);
-  
+
   const handleReject = () => {
     if (rejectionReason.trim()) {
       onReject(thesis.id, rejectionReason.trim());
     }
   };
 
-  const keywords = thesis.thesis_keyword 
-    ? thesis.thesis_keyword.split(',').map((k: string) => k.trim()).filter((k: string) => k) 
+  const keywords = thesis.thesis_keyword
+    ? thesis.thesis_keyword
+        .split(",")
+        .map((k: string) => k.trim())
+        .filter((k: string) => k)
     : [];
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 bg-[#fbfaf8] overflow-y-auto"
       style={{
-        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-        backgroundSize: "20px 20px"
+        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
       }}
     >
       <NavBar />
@@ -50,47 +60,63 @@ export default function ReviewThesisModal({ thesis, onClose, onApprove, onReject
             >
               ← Back to List
             </button>
-            <h1 className="text-2xl font-oswald font-bold text-[#011638]">Review Thesis</h1>
+            <h1 className="text-2xl font-oswald font-bold text-[#011638]">
+              Review Thesis
+            </h1>
           </div>
 
-          <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
-
+          <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6 space-y-6">
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
+                <h2 className="text-lg font-oswald font-semibold">
+                  Basic Information
+                </h2>
               </div>
               <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Thesis Title</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Thesis Title
+                  </label>
                   <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 break-words">
                     {thesis.thesis_title}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Abstract</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Abstract
+                  </label>
                   <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 whitespace-pre-wrap break-words min-h-[100px]">
                     {thesis.thesis_abstract}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">Keywords</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
+                    Keywords
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {keywords.length > 0 ? (
                       keywords.map((word: string, i: number) => (
-                        <span key={i} className="bg-[#eef2ff] text-[#1e4db7] border border-[#1e4db7] px-2 py-1 rounded text-xs font-ubuntu-mono">
+                        <span
+                          key={i}
+                          className="bg-[#eef2ff] text-[#1e4db7] border border-[#1e4db7] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                        >
                           {word}
                         </span>
                       ))
                     ) : (
-                      <span className="text-gray-400 font-ubuntu-mono text-sm italic">No keywords</span>
+                      <span className="text-gray-400 font-ubuntu-mono text-sm italic">
+                        No keywords
+                      </span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Research Category</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Research Category
+                  </label>
                   <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 break-words">
                     {thesis.r_category?.r_category_name || "Not specified"}
                   </div>
@@ -100,25 +126,39 @@ export default function ReviewThesisModal({ thesis, onClose, onApprove, onReject
 
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                <h2 className="text-lg font-oswald font-semibold">Author(s) & School</h2>
+                <h2 className="text-lg font-oswald font-semibold">
+                  Author(s) & School
+                </h2>
               </div>
               <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">School</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    School
+                  </label>
                   <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 break-words">
                     {thesis.school?.school_name || "No School Listed"}
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">Author(s)</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
+                    Author(s)
+                  </label>
                   <div className="grid grid-cols-1 gap-3">
                     {thesis.thesis_author?.map((ta: any, index: number) => (
-                      <div key={index} className="px-3 py-2 border border-[#94a3b8] rounded bg-white">
+                      <div
+                        key={index}
+                        className="px-3 py-2 border border-[#94a3b8] rounded bg-white"
+                      >
                         <p className="font-ubuntu-mono text-[#475569] break-words">
-                          {ta.author?.author_fname} {ta.author?.author_minit && `${ta.author.author_minit}. `}{ta.author?.author_lname}
+                          {ta.author?.author_fname}{" "}
+                          {ta.author?.author_minit &&
+                            `${ta.author.author_minit}. `}
+                          {ta.author?.author_lname}
                         </p>
-                        <p className="text-xs text-[#1e4db7] font-ubuntu-mono break-words">{ta.author?.author_email}</p>
+                        <p className="text-xs text-[#1e4db7] font-ubuntu-mono break-words">
+                          {ta.author?.author_email}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -128,41 +168,53 @@ export default function ReviewThesisModal({ thesis, onClose, onApprove, onReject
 
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                <h2 className="text-lg font-oswald font-semibold">Thesis Details</h2>
+                <h2 className="text-lg font-oswald font-semibold">
+                  Thesis Details
+                </h2>
               </div>
               <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Publication Date</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Publication Date
+                  </label>
                   <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">
                     {new Date(thesis.thesis_date).toLocaleDateString()}
                   </div>
                 </div>
-                
-                <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Physical Copy</label>
-                <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">
-                  {thesis.thesis_phys ? (
-                    thesis.thesis_phys
-                  ) : (
-                    <span className="text-[#475569]">No physical copy available</span>
-                  )}
-                </div>
-              </div>
 
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Digital Copy Link</label>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Physical Copy
+                  </label>
+                  <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">
+                    {thesis.thesis_phys ? (
+                      thesis.thesis_phys
+                    ) : (
+                      <span className="text-[#475569]">
+                        No physical copy available
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Digital Copy Link
+                  </label>
                   <div className="text-[#1e4db7] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">
                     {thesis.thesis_digi ? (
-                      <a 
-                        href={thesis.thesis_digi} 
-                        target="_blank" 
+                      <a
+                        href={thesis.thesis_digi}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="hover:underline break-all"
                       >
                         {thesis.thesis_digi}
                       </a>
                     ) : (
-                      <span className="text-[#475569]">No digital copy link provided</span>
+                      <span className="text-[#475569]">
+                        No digital copy link provided
+                      </span>
                     )}
                   </div>
                 </div>

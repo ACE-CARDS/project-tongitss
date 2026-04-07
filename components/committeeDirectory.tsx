@@ -89,7 +89,7 @@ export default function CommitteeDirectory() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 min-w-[120px] py-2 px-3 rounded-lg font-bold text-[10px] md:text-xs transition-all border ${
+            className={`flex-1 min-w-[120px] py-2 px-3 rounded-xl font-bold text-[10px] md:text-xs transition-all border ${
               activeTab === tab.key
                 ? "bg-[#0b1763] text-white border-[#0b1763] shadow-md"
                 : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"

@@ -163,7 +163,7 @@ export default function Dashboard() {
         <div className="w-full h-1 bg-[#0b1763] my-4"></div>
         <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
 
-        <div className="rounded-xl bg-[#f9f9f9] flex flex-col items-center justify-between md:flex-row mx-auto mt-8 mb-8 max-w-[1400px] px-4">
+        <div className="rounded-xl flex flex-col items-center justify-between md:flex-row mx-auto mt-8 mb-8 max-w-[1400px] px-4">
           <div className="m-3">
             <h2 className="text-lg font-bold text-center md:text-left md:text-5xl">
               {user ? `${user.user_metadata.name}` : "Welcome, Guest"}
@@ -194,7 +194,7 @@ export default function Dashboard() {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 py-3 px-4 rounded-t-lg font-bold text-sm md:text-base transition-all whitespace-nowrap ${
+                    className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap ${
                       activeTab === tab.key
                         ? "bg-[#0b1763] text-white shadow-lg"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -205,7 +205,7 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            <div className="bg-white rounded-b-lg border border-gray-200 p-6 shadow-md min-h-[500px]">
+            <div className="bg-white rounded-b-xl border border-gray-200 p-6 shadow-md min-h-[500px]">
               {renderTabContent()}
             </div>
           </div>

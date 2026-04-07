@@ -21,10 +21,6 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsModalShowing(true);
-  }, []);
-
-  useEffect(() => {
     setIsDialogueShowing(false);
   }, []);
 

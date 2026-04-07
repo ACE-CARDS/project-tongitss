@@ -39,11 +39,17 @@ function FilterPopup({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (buttonRef.current && buttonRef.current.contains(event.target as Node)) {
+      if (
+        buttonRef.current &&
+        buttonRef.current.contains(event.target as Node)
+      ) {
         return;
       }
 
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
@@ -57,10 +63,22 @@ function FilterPopup({
   }, [isOpen, onClose, buttonRef]);
 
   const statuses = [
-    { value: "accepted", label: "Accepted", color: "bg-green-100 text-green-800" },
-    { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
+    {
+      value: "accepted",
+      label: "Accepted",
+      color: "bg-green-100 text-green-800",
+    },
+    {
+      value: "pending",
+      label: "Pending",
+      color: "bg-yellow-100 text-yellow-800",
+    },
     { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800" },
-    { value: "archived", label: "Archived", color: "bg-gray-100 text-gray-800" },
+    {
+      value: "archived",
+      label: "Archived",
+      color: "bg-gray-100 text-gray-800",
+    },
   ];
 
   if (!isOpen) return null;
@@ -68,7 +86,7 @@ function FilterPopup({
   return (
     <div
       ref={popupRef}
-      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
+      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-xl shadow-xl p-4 z-40"
     >
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-oswald font-bold text-[#011638]">Filter Theses</h3>
@@ -102,7 +120,9 @@ function FilterPopup({
                     ♠
                   </span>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-bold ${status.color}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-bold ${status.color}`}
+                >
                   {status.label}
                 </span>
               </label>
@@ -110,7 +130,8 @@ function FilterPopup({
           </div>
           {selectedStatuses.length > 0 && (
             <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
-              {selectedStatuses.length} status{selectedStatuses.length > 1 ? "es" : ""} selected
+              {selectedStatuses.length} status
+              {selectedStatuses.length > 1 ? "es" : ""} selected
             </p>
           )}
         </div>
@@ -197,7 +218,8 @@ function FilterPopup({
           </div>
           {selectedYears.length > 0 && (
             <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
-              {selectedYears.length} year{selectedYears.length > 1 ? "s" : ""} selected
+              {selectedYears.length} year{selectedYears.length > 1 ? "s" : ""}{" "}
+              selected
             </p>
           )}
         </div>
@@ -250,7 +272,10 @@ function LiveSuggestions({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+      if (
+        suggestionRef.current &&
+        !suggestionRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
@@ -285,7 +310,12 @@ function LiveSuggestions({
           className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#1e4db7] border-opacity-20"
         >
           <span className="flex items-center gap-2">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -348,7 +378,8 @@ export default function AdminThesisHeader({
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSchool, setSelectedSchool] = useState(initialSchool);
   const [selectedYears, setSelectedYears] = useState<number[]>(initialYears);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialStatuses);
+  const [selectedStatuses, setSelectedStatuses] =
+    useState<string[]>(initialStatuses);
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
@@ -356,20 +387,20 @@ export default function AdminThesisHeader({
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setQuery(value);
-  setShowSuggestions(true);
-  
-  // clear previous timer
-  if (debounceTimer.current) {
-    clearTimeout(debounceTimer.current);
-  }
-  
-  // set new timer
-  debounceTimer.current = setTimeout(() => {
-    onFilterChange({ query: value });
-  }, 500);
-};
+    const value = e.target.value;
+    setQuery(value);
+    setShowSuggestions(true);
+
+    // clear previous timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // set new timer
+    debounceTimer.current = setTimeout(() => {
+      onFilterChange({ query: value });
+    }, 500);
+  };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
@@ -432,11 +463,12 @@ export default function AdminThesisHeader({
       }
     };
   }, []);
-  
-  const totalFilters = (selectedCategory ? 1 : 0) + 
-                      (selectedSchool ? 1 : 0) + 
-                      selectedYears.length + 
-                      selectedStatuses.length;
+
+  const totalFilters =
+    (selectedCategory ? 1 : 0) +
+    (selectedSchool ? 1 : 0) +
+    selectedYears.length +
+    selectedStatuses.length;
 
   return (
     <div className="mb-8">
@@ -469,7 +501,12 @@ export default function AdminThesisHeader({
                 showFilters ? "bg-[#011638]" : "bg-[#011638]"
               } text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
