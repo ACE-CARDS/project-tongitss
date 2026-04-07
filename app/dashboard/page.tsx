@@ -11,6 +11,8 @@ import MemdirAdmin from "@/components/memdiradmin";
 import { createClient } from "@/lib/supabase/client";
 import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 
+// import SurveyAdmin from "@/components/surveyAdmin";\
+import CommitteeDirectory from "@/components/committeeDirectory";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -59,9 +61,9 @@ useEffect(() => {
         return <Announcements />;
       case "committee":
         return (
-          <div className="h-[400px] overflow-y-auto">
+          <div className="">
             <div className="flex h-full w-full items-center justify-center">
-              <p className="text-gray-500 italic">Committee directory coming soon...</p>
+              <CommitteeDirectory />
             </div>
           </div>
         );
@@ -116,7 +118,7 @@ useEffect(() => {
   };
 
   return (
-    <div 
+    <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
@@ -131,14 +133,14 @@ useEffect(() => {
         <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
 
         <div className="rounded-xl bg-[#f9f9f9] flex flex-col items-center justify-between md:flex-row mx-auto mt-8 mb-8 max-w-[1400px] px-4">
-          <div className="m-3 p-2">
+          <div className="m-3">
             <h2 className="text-lg font-bold text-center md:text-left md:text-5xl">
               {user ? `${user.user_metadata.name}` : "Welcome, Guest"}
             </h2>
-            <p className="text-xs text-center md:text-left md:text-2xl md:mt-3">
+            <p className="text-xs text-center md:text-left md:text-2xl md:mt-3 text-[#475569]">
               Internals Committee
             </p>
-            <div className="mt-3 flex w-full justify-center md:justify-start md:w-auto md:text-xl">
+            <div className=" flex w-full justify-center md:justify-start md:w-auto md:text-lg text-[#475569]">
               <p>University of the Philippines Baguio</p>
             </div>
           </div>
