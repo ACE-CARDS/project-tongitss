@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link"; 
 import { createClient } from '@/lib/supabase/client';
 
-// Define types for news media posts
+// Types for news media posts
 interface NewsMedia {
   id: number;              
   title: string;           
@@ -17,27 +17,28 @@ interface NewsMedia {
 
 // Main export
 export default function NewsMedia() {
-  const [newsPosts, setNewsPosts] = useState<NewsMedia[]>([]); // For storinh fetched news posts, initially an empty array
-  const [loading, setLoading] = useState(true); // For loading status, initially 'true'
-  const scrollRef = useRef<HTMLDivElement>(null); // For scrolling
+  const [newsPosts, setNewsPosts] = useState<NewsMedia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // state for scroll buttons
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Data fetch
   useEffect(() => {
-    const fetchNews = async () => { // Fetch news from Supabase
+    const fetchNews = async () => {
       try {
-        const supabase = createClient(); // New Supabase client for request
+        const supabase = createClient();
         
         const { data, error } = await supabase
-          .from('news_media') // Query 'news_media' table
-          .select('*') // All cols (*)
-          .order('fb_post_date', { ascending: false }); // To order by fb_post_date to display newest first
+          .from('news_media')
+          .select('*')
+          .order('fb_post_date', { ascending: false });
 
-        // If Supabase returns an error, throw it to be caught below
         if (error) throw error;
         
-        // Update with fetched data, or empty array if no data
         setNewsPosts(data || []);
-
       } catch (error) {
         console.error('Error fetching news:', error);
       } finally {
@@ -45,18 +46,48 @@ export default function NewsMedia() {
       }
     };
 
-    // Fetch function
     fetchNews();
-  }, []); // Run only when component loads
+  }, []);
+
+  // ROW MANAGEMENT
+  const latestPosts = newsPosts.slice(0, 3);
+  const carouselPosts = newsPosts.slice(3);
+
+  // Check scroll position and update button states
+  const checkScrollPosition = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+    }
+  };
+
+  // Scroll event listener
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (scrollElement && carouselPosts.length > 0) {
+      // Delay to ensure DOM is rendered
+      setTimeout(() => {
+        checkScrollPosition();
+      }, 100);
+      
+      // Add scroll event listener
+      scrollElement.addEventListener('scroll', checkScrollPosition);
+      
+      // Cleanup
+      return () => {
+        scrollElement.removeEventListener('scroll', checkScrollPosition);
+      };
+    }
+  }, [carouselPosts]); //defined carouselPosts
 
   // Horizontal scrolling for carousel
   const scroll = (dir: 'left' | 'right') => {
     if (scrollRef.current) {
-      const amount = 400; // To scroll px
-      // ScrollBy for smooth scrolling
+      const amount = 1000;
       scrollRef.current.scrollBy({
-        left: dir === 'left' ? -amount : amount, 
-        behavior: 'smooth' 
+        left: dir === 'left' ? -amount : amount,
+        behavior: 'smooth'
       });
     }
   };
@@ -65,34 +96,28 @@ export default function NewsMedia() {
   if (loading) {
     return (
       <div 
-        className="w-full bg-[#fbfaf8] min-h-screen flex items-center justify-center" //default bg
+        className="w-full bg-[#fbfaf8] max-w-[1920px] min-h-screen flex items-center justify-center"
         style={{
-          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', //dotted
-          backgroundSize: "20px 20px" //distance between dots
+          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+          backgroundSize: "20px 20px"
         }}
       >
-        {/* Animated spinner */}
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d21a1]"></div>
       </div>
     );
   }
 
-  // ROW MANAGEMENT
-  const latestPosts = newsPosts.slice(0, 3); // First 3 posts for static and newest posts
-  const carouselPosts = newsPosts.slice(3); // Others posts
-
   return (
     <div 
-      className="w-full bg-[#fbfaf8] py-16 px-4 md:px-8 lg:px-16" //default bg 
+      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 justify-center"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-        backgroundSize: "20px 20px"
+        backgroundSize: "20px 20px",
+        backgroundAttachment: 'fixed'
       }}
     >
       {/* Heading */}
-      <div className="text-center mb-12">
-
-        {/* Title & Sub */}
+      <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
           <span className="text-5xl text-[#eec643]">♠</span>
           <h1 className="text-4xl md:text-5xl font-bold text-[#011638]">NEWS & MEDIA</h1>
@@ -106,62 +131,68 @@ export default function NewsMedia() {
 
       {/* 1st ROW: Latest Posts */}
       {latestPosts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Map through latest posts & render each NewsCard */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"> 
           {latestPosts.map(post => (
             <NewsCard key={post.id} post={post} />
           ))}
         </div>
       )}
 
-      {/* 2nd ROW:Carousel Section/Additional Posts */}
+      {/* 2nd ROW: Carousel Section/Additional Posts */}
       {carouselPosts.length > 0 && (
         <div className="relative">
-
-          {/* Sub */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-3xl text-[#eec643]">♠</span>
-            <h1 className="text-3xl md:text-2xl font-bold text-[#011638]">More Updates</h1>
+          {/* Sub heading */}
+          <div className="flex items-center justify-center gap-3 mb-7">
+            <span className="text-4xl text-[#eec643]">♠</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#011638]">More Updates</h2>
+            <span className="text-4xl text-[#eec643]">♠</span>
           </div>
 
           {/* Carousel Container */}
           <div className="relative">
-
-            {/* Scroll Button */}
-            {/* Left Scroll */}
+            {/* Left Scroll Button */}
             <button
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all"
+              disabled={!canScrollLeft}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md transition-all ${
+                canScrollLeft 
+                  ? 'hover:shadow-lg cursor-pointer' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
               aria-label="Scroll left"
             >
-              {/* Left arrow */}
-              <svg className="w-5 h-5 text-[#0d21a1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${canScrollLeft ? 'text-[#0d21a1]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
-            {/* Right Scroll */}
+            {/* Right Scroll Button */}
             <button
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all"
+              disabled={!canScrollRight}
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md transition-all ${
+                canScrollRight 
+                  ? 'hover:shadow-lg cursor-pointer' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
               aria-label="Scroll right"
             >
-              {/* Right arrow */}
-              <svg className="w-5 h-5 text-[#0d21a1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${canScrollRight ? 'text-[#0d21a1]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
 
             {/* Scrollable Cards Container */}
             <div
-              ref={scrollRef} // Ref for scroll control
-              className="flex overflow-x-auto gap-6 pb-2 px-10 scrollbar-hide" // Hide scrollbar (aesthetic-wise)
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              ref={scrollRef}
+              className="flex overflow-x-auto gap-6 pb-5 px-10 hide-scrollbar"
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none', 
+              }}
             >
-
-              {/* Map through carousel posts and render each */}
               {carouselPosts.map(post => (
-                <div key={post.id} className="flex-none w-80">
+                <div key={post.id} className="flex-none w-80 py-2">
                   <NewsCard post={post} />
                 </div>
               ))}
@@ -175,7 +206,9 @@ export default function NewsMedia() {
 
 // For each news cards
 function NewsCard({ post }: { post: NewsMedia }) {
-  const formatDate = (date: string) => { //format date as "MMM D, YYYY"
+  const [imgError, setImgError] = useState(false);
+
+  const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',  
       day: 'numeric', 
@@ -184,50 +217,45 @@ function NewsCard({ post }: { post: NewsMedia }) {
   };
 
   return (
-    // Link posts to their url, open in new tab
     <Link href={post.post_url} target="_blank" rel="noopener noreferrer">
-
-      {/* Card */}
-      <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
-        {/* Image */}
+      <div className="rounded-lg overflow-hidden transition-all duration-300 bg-white flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm">
         <div className="h-48 rounded-t-lg overflow-hidden bg-gray-100 relative">
-          {/* Show if image exists */}
-          {post.image_url ? (
+          {(!post.image_url || imgError) ? (
+            <div className="w-full h-full flex items-center justify-center bg-[#011638]">
+              <img
+                src="/assets/logos/ACE CARDS logo.png"
+                alt="ACE CARDS Logo"
+                className="w-24 h-24 object-contain opacity-80"
+              />
+            </div>
+          ) : (
             <img
               src={post.image_url}
               alt={post.title}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              onError={() => setImgError(true)}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <span className="text-gray-400">No image</span> {/* placeholder if no image */}
-            </div>
           )}
-          {/* Date */}
           <div className="absolute top-3 right-3">
-            <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#0d21a1] shadow-sm">
+            <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#0d21a1] shadow-lg">
               {formatDate(post.fb_post_date)}
             </span>
           </div>
         </div>
 
         <div className="p-4 flex-1 flex flex-col">
-          {/* Title */}
           <h3 className="font-bold text-lg text-[#011638] mb-2 line-clamp-2 hover:text-[#0d21a1] transition-colors">
             {post.title}
           </h3>
           
-          {/* Content preview */}
           {post.content && (
             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
               {post.content}
             </p>
           )}
 
-          {/* Read More */}
           <div className="mt-auto flex items-center text-[#eec643] font-medium text-sm group">
             <span>Read more</span>
-            {/* Arrow */}
             <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

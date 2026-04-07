@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "./context/userContext";
 
-
 const siteName = "ACE CARDS";
 
 const routeTitles: Record<string, string> = {
@@ -17,12 +16,14 @@ const routeTitles: Record<string, string> = {
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
+  "/dashboard/add": "DASHBOARD",
+  "/dashboard/add/sucess": "DASHBOARD",
   "/executives": "EXECUTIVES",
 };
 
 export default function NavBar() {
   const { user } = useUser();
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
 
@@ -32,7 +33,7 @@ export default function NavBar() {
   const isActive = (path: string) => pathname === path;
 
   const toggleMenu = () => {
-    setIsOpen((o) => !o);
+    setMenuisOpen(!menuOpen);
   };
 
   const toggleDropdown = () => {
@@ -46,29 +47,35 @@ export default function NavBar() {
         !academicsRef.current.contains(event.target as Node)
       ) {
         setAcademicsOpen(false);
+        setMenuisOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("wheel", handleClickOutside);
+    document.addEventListener("scroll", handleClickOutside);
+    return () => {
+        document.removeEventListener("wheel", handleClickOutside);
+        document.removeEventListener("scroll", handleClickOutside);
+    };
   }, []);
-  
+
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
-    <div className="fixed w-full top-0 z-50">
+    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50 inset-0`}>
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
 
       {/* Navbar */}
-      <nav className="relative w-full mx-auto my-auto max-w-[1400px] top-3 h-16">
+      <nav className="relative w-full mx-auto my-auto max-w-[1250px] top-3 h-14">
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
-          {/* <div className="flex flex-row bg-red-500"> */}
-          <a className="shadow-[0_5px_10px_#011638]/80 flex flex-row items-center h-full w-fit gap-2 rounded-[50px] px-4 pr-6 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
+
+          {/* Title */}
+          <a title="Go back to Home Page?" className="flex flex-row items-center h-full w-fit gap-2 rounded-full px-1 pr-4 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
-              className="w-10 h-10 flex-shrink-0"
+              className="w-11 h-11 shrink-0"
               width={40}
               height={40}
             ></Image>
@@ -83,12 +90,12 @@ export default function NavBar() {
               </div>
             </div>
           </a>
-          {/* </div> */}
-
-          <div className={`absolute text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[13px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 duration-200 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"} xl:opacity-100 xl:visible`}>
-            <ul className="gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap">
+          
+          {/* Navigation   */}
+          <div className={`fixed text-lg lg:right-[30px] right-[10px] top-[80px] flex flex-row xl:flex-row text-right xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full w-fit justify-end bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] pl-2 xl:gap-4 gap-2 ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"} origin-top-right transition-all duration-300 ease-in-out`}>
+            <ul className={`relative gap-2 flex xl:flex-row flex-col xl:h-full xl:items-center py-6 xl:py-0 px-4 xl:px-0 whitespace-nowrap xl:opacity-100 xl:visible`}>
               <Link href="/">
-                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                <li className={`px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/") 
                   ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                   : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
@@ -98,7 +105,7 @@ export default function NavBar() {
               </Link>
 
               <Link href="/about-us">
-                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                <li className={`px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/about-us") 
                   ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                   : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
@@ -108,7 +115,7 @@ export default function NavBar() {
               </Link>
 
               <Link href="/events">
-                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                <li className={`px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/events") 
                   ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                   : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
@@ -118,7 +125,7 @@ export default function NavBar() {
               </Link>
 
               <Link href="/executives">
-                <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                <li className={`px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/executives") 
                   ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                   : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
@@ -127,11 +134,10 @@ export default function NavBar() {
                 </li>
               </Link>
 
-
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex-row flex gap-1 cursor-pointer px-[15px] py-[4px] rounded-[50px] border-2 duration-200 transition-all
+                className={`z-20 group relative flex-row flex gap-1 cursor-pointer px-[10px] py-[2px] rounded-full border-2 duration-200 transition-all
                 ${isActive("/thesis") || isActive("/survey")
                   ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                   : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
@@ -154,7 +160,7 @@ export default function NavBar() {
                   />
                 </svg>
                 <ul
-                  className={`${academicsOpen ? "visible" : "invisible"} absolute shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm ease-in-out text-white p-4 rounded-[30px] xl:-left-10 -left-10 xl:top-8 top-10 w-50 gap-4 flex flex-col text-center`}
+                  className={`${academicsOpen ? "visible" : "invisible"} absolute shadow-[0_5px_10px_#011638]/80 bg-[#011638]/90 border-[#011638]/34 border-3 backdrop-blur-sm ease-in-out text-white p-4 rounded-[30px] xl:-left-10 -left-10 xl:top-8 top-10 w-50 gap-4 flex flex-col text-center`}
                 >
                   <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
@@ -165,12 +171,11 @@ export default function NavBar() {
                 </ul>
               </li>
 
-              
               {/* 1. If NO user is found, show Login and Join buttons */}
               {!user ? (
                 <>
                   <Link href="/member-appli">
-                    <li className={`w-[140px] py-[8px] rounded-[50px] border-white/50 border-2 duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
+                    <li className={`w-[140px] py-[6px] rounded-full border-white/50 border-2 duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
                         ${isActive("/member-appli") 
                           ? "shadow-[0_0_15px_white] border-[#a6a6a6]/10 bg-white/100 scale-[1.04]"
                           : "hover:shadow-[0_0_15px_white] border-[#a6a6a6]/0 hover:border-[#a6a6a6]/10 hover:bg-white/100 hover:scale-[1.04]"
@@ -180,27 +185,31 @@ export default function NavBar() {
                   </Link>
 
                   <Link href="/auth/login" >
-                    <li className="w-[140px] py-[8px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center ">
+                    <li className="w-[140px] py-[6px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] hover:bg-[#d9b237] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs border-[#d9b237] border-2 cursor-pointer items-center justify-center ">
                       Login
                     </li>
                   </Link>
                 </>
               ) : (
                 /* 2. If user IS found, show Dashboard and Logout */
-                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[4px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
+                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[1px] xl:px-[4px] rounded-[50px] bg-white/0 xl:bg-white/80 xl:border-white/50 xl:border-2 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs  xl:hover:border-[#a6a6a6]/10 xl:hover:bg-white/100 xl:hover:scale-[1.04]">
                   <Link href="/dashboard">
-                    <li className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all xl:text-black text-white
-                      ${isActive("/dashboard") 
-                        ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
-                        : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
-                      }`}>
+                    <li
+                      className={`px-[13px] py-[4px] rounded-[50px] border-2 duration-200 transition-all xl:text-black text-white
+                      ${
+                        isActive("/dashboard")
+                          ? "bg-[#a6a6a6]/35 border-[#a6a6a6]/15 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                          : "border-[#a6a6a6]/0 hover:bg-[#a6a6a6]/30 hover:border-[#a6a6a6]/10 hover:scale-[1.04]"
+                      }`}
+                    >
                       Dashboard
                     </li>
                   </Link>
 
-                  <li 
+                  <li
                     onClick={async () => {
-                      const { createClient } = await import('@/lib/supabase/client');
+                      const { createClient } =
+                        await import("@/lib/supabase/client");
                       const supabase = createClient();
                       await supabase.auth.signOut();
                       window.location.href = "/"; // Refresh to clear state
@@ -213,17 +222,17 @@ export default function NavBar() {
               )}
             </ul>
           </div>
-
-          <div className="flex items-center gap-4 shadow-[0_5px_10px_#011638]/80 bg-[#011638]/70 border-[#011638]/34 border-3 backdrop-blur-sm rounded-[50px] w-[70px] h-16 justify-center xl:hidden">
+          
+          <div className="flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm">
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
-              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "hidden" : ""}`}
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "hidden" : ""}`}
             >
               <path
                 strokeLinecap="round"
@@ -238,9 +247,9 @@ export default function NavBar() {
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
-              className={`duration-200 size-8 xl:hidden cursor-pointer ${isOpen ? "" : "hidden"}`}
+              className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "" : "hidden"}`}
             >
               <path
                 strokeLinecap="round"
@@ -250,12 +259,9 @@ export default function NavBar() {
             </svg>
           </div>
 
-          
-
-
-          {/*shadow-[0_0_0px_#eec643] hover:shadow-[0_5px_20px_#eec643] ease-in-out duration-100 transition-all */}
         </div>
       </nav>
+
     </div>
   );
 }

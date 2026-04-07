@@ -64,15 +64,6 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-        <p className="text-[#475569] font-ubuntu-mono text-sm">
-          Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} surveys
-        </p>
-        <p className="text-[#475569] font-ubuntu-mono text-sm">
-          Page {validCurrentPage} of {totalPages || 1}
-        </p>
-      </div>
-
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
         <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
           No surveys found.
@@ -276,6 +267,15 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
             ))}
           </div>
 
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
+            <p className="text-[#475569] font-ubuntu-mono text-sm">
+              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} surveys
+            </p>
+            <p className="text-[#475569] font-ubuntu-mono text-sm">
+              Page {validCurrentPage} of {totalPages || 1}
+            </p>
+          </div>
+          
           <Pagination 
             currentPage={validCurrentPage} 
             totalPages={totalPages || 1} 
