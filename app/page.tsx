@@ -502,6 +502,7 @@ useEffect(() => {
 
         {/* EVENTS SECTION */}
         <section
+        id="events-section"
         ref={sectionRef}
           className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
           style={{
@@ -523,6 +524,7 @@ useEffect(() => {
               </h2>
               <Link
                     href="/events"
+                    onClick={() => sessionStorage.setItem("returnToHomeSection", "events-section")}
                     className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
                   >
                     View Events →
@@ -585,6 +587,7 @@ useEffect(() => {
 
         {/* MEMBERS SECTION */}
         <section
+          id="members-section"
           ref={memberSectionRef}
           className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
           style={{
@@ -625,6 +628,7 @@ useEffect(() => {
                 <div className="flex justify-center lg:justify-start gap-6 mt-12">
                   <Link
                     href="/committee"
+                    onClick={() => sessionStorage.setItem("returnToHomeSection", "members-section")}
                     className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Committees →
@@ -632,6 +636,7 @@ useEffect(() => {
 
                   <Link
                     href="/executives"
+                    onClick={() => sessionStorage.setItem("returnToHomeSection", "members-section")}
                     className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Executives →
@@ -826,6 +831,7 @@ useEffect(() => {
 
         {/* ACADEMICS SECTION */}
         <section
+         id="academics-section"
          className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8] relative"
           style={{
             backgroundImage: `radial-gradient(#cbd5e1 1px, transparent 1px)`,
@@ -863,12 +869,14 @@ useEffect(() => {
                 <div className="flex justify-center lg:justify-start gap-6 mt-6">
                 <Link
                     href="/survey"
+                    onClick={() => sessionStorage.setItem("returnToHomeSection", "academics-section")}
                     className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Survey →
                   </Link>
                   <Link
                     href="/thesis"
+                    onClick={() => sessionStorage.setItem("returnToHomeSection", "academics-section")}
                     className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Thesis →

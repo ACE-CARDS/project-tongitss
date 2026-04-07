@@ -104,9 +104,13 @@ export default function Executives() {
 
         {/* title */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent mb-3">
-            Our Executives
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <span className="text-5xl text-[#eec643]">♠</span>
+            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent mb-3 uppercase tracking-tight">
+              OUR EXECUTIVES
+            </h1>
+            <span className="text-5xl text-[#eec643]">♠</span>
+          </div>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
             Meet the visionary leaders shaping our organization across academic years
           </p>
