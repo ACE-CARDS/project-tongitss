@@ -70,7 +70,6 @@ export default function EventsTimeline() {
   return (
     <section className="relative w-full max-w-7xl mx-auto px-4 lg:px-6 flex flex-col">
       
-      {/* 1. SEARCH & FILTER BAR (Moved to top, less dead space) */}
       <div className="flex flex-col md:flex-row gap-4 w-full bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-white shadow-md mb-8 z-20">
         <input
           type="text"
@@ -80,7 +79,7 @@ export default function EventsTimeline() {
             setSearchQuery(e.target.value);
             setActiveIndex(0);
           }}
-          className="flex-grow px-6 py-3 rounded-xl bg-gray-100/50 font-bold text-[#011638] placeholder:text-gray-400 focus:ring-2 focus:ring-[#eec643] outline-none"
+          className="flex-grow px-6 py-3 rounded-xl bg-gray-100/50 font-bold text-[#011638] placeholder:text-gray-400 focus:ring-2 focus:ring-[#eec643] outline-none transition-all"
         />
         <select
           value={activeFilter}
@@ -99,9 +98,8 @@ export default function EventsTimeline() {
         </select>
       </div>
 
-      {/* 2. EVENT COUNTER & TITLE HEADER */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-4 px-2">
-        <div>
+        <div className="text-center md:text-left">
           <h2 className="text-3xl md:text-5xl font-black text-[#011638] uppercase">
             {sectionTitle} <span className="text-[#eec643]">Events</span>
           </h2>
@@ -109,30 +107,10 @@ export default function EventsTimeline() {
             Showing {filteredEvents.length > 0 ? activeIndex + 1 : 0} / {filteredEvents.length} Events
           </p>
         </div>
-
-        {/* HIGHLY OBVIOUS NAVIGATION BUTTONS */}
-        <div className="flex gap-4 mt-4 md:mt-0">
-          <button
-            onClick={() => scroll("left")}
-            disabled={activeIndex === 0}
-            className="w-14 h-14 flex items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:-translate-y-1 hover:shadow-lg disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed cursor-pointer transition-all"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            disabled={activeIndex === filteredEvents.length - 1 || filteredEvents.length === 0}
-            className="w-14 h-14 flex items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:-translate-y-1 hover:shadow-lg disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed cursor-pointer transition-all"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
-        </div>
       </div>
 
-  {/* 3. TIMELINE DOTS (Shadows removed for a clean, flat look) */}
       {filteredEvents.length > 0 && (
         <div className="relative w-full py-8 mb-4 border-b border-gray-200/50">
-          {/* Background Line */}
           <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-200 -translate-y-1/2"></div>
           
           <div className="relative flex justify-between items-center px-4 overflow-x-auto hide-scrollbar">
@@ -142,96 +120,112 @@ export default function EventsTimeline() {
                 onClick={() => scrollToCard(index)}
                 className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[60px] shrink-0"
               >
-                
                 <div className="relative flex items-center justify-center h-8 w-8 shrink-0 z-10">
                   {index === activeIndex ? (
-                    // ACTIVE DOT (Removed shadow-lg)
                     <div className="w-6 h-6 bg-[#011638] rounded-full flex items-center justify-center transition-all duration-300">
                       <div className="w-3 h-3 bg-[#eec643] rounded-full"></div>
                     </div>
                   ) : (
-                    // INACTIVE DOT
                     <div className="w-4 h-4 bg-white border-[3px] border-gray-300 rounded-full group-hover:border-[#0d21a1] transition-all duration-300"></div>
                   )}
                 </div>
                 
-                {/* Pop-up Tooltip on Hover (Removed shadow-xl) */}
                 <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
                   <div className="bg-[#011638] text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
                     {node.shortTitle}
                   </div>
-                  {/* Tooltip triangle pointer */}
                   <div className="w-2 h-2 bg-[#011638] rotate-45 -mt-1"></div>
                 </div>
-
               </div>
             ))}
           </div>
         </div>
       )}
-      {/* 4. CAROUSEL */}
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="flex gap-8 overflow-x-auto snap-x snap-mandatory py-8 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth items-center"
-      >
-        {filteredEvents.length === 0 ? (
-          <div className="w-full text-center py-20 text-gray-500 font-bold text-xl">
-            No events found.
-          </div>
-        ) : (
-          filteredEvents.map((event, index) => (
-            <div
-              key={event.id}
-              onClick={() => {
-                if (index === activeIndex) {
-                  router.push(`/events/${event.id}`);
-                } else {
-                  scrollToCard(index);
-                }
-              }}
-              className={`w-[320px] h-[460px] rounded-[2.5rem] p-8 flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${
-                index === activeIndex 
-                  ? "bg-white border-2 border-[#eec643] shadow-[0_20px_50px_-12px_rgba(1,22,56,0.3)] z-10 scale-100" 
-                  : "bg-white/60 border border-gray-200 scale-90 opacity-60 hover:opacity-100"
-              }`}
-            >
-              <div className="relative z-10 flex justify-between items-start mb-4">
-                <div className="flex flex-col">
-                  <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-gray-400"}`}>Date</span>
-                  <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-gray-500"}`}>{event.date}</span>
-                </div>
-              </div>
 
-              <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2">
-                {event.title}
-              </h3>
-              <p className="relative z-10 text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
-                {event.location}
-              </p>
+      <div className="w-full flex items-center justify-between gap-4 lg:gap-8 mt-4">
+        
+        <button
+          onClick={() => scroll("left")}
+          disabled={activeIndex === 0}
+          className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-xl disabled:opacity-0 disabled:cursor-not-allowed transition-all duration-300"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
 
-              <p className="relative z-10 text-gray-600 text-sm font-medium leading-relaxed flex-grow line-clamp-5">
-                {event.description}
-              </p>
-
-              <div className="relative z-10 mt-6 pt-6 border-t border-gray-100">
-                <div
-                  className={`w-full py-4 rounded-xl font-black text-xs tracking-widest transition-all text-center uppercase cursor-pointer ${
-                    event.status === "COMPLETED" 
-                      ? "bg-gray-100 text-gray-600 group-hover:bg-gray-200" 
-                      : "bg-[#011638] text-white shadow-md group-hover:bg-[#0d21a1]"
-                  }`}
-                >
-                  {event.status === "COMPLETED" ? "VIEW RECAP" : event.status === "RSVP OPEN" ? "LEARN MORE" : "COMING SOON"}
-                </div>
-              </div>
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 flex gap-8 overflow-x-auto snap-x snap-mandatory py-12 px-4 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth items-center"
+        >
+          {filteredEvents.length === 0 ? (
+            <div className="w-full text-center py-20 text-gray-500 font-bold text-xl">
+              No events found.
             </div>
-          ))
-        )}
-        {/* Invisible spacer to allow last item to scroll to center */}
-        <div className="min-w-[50vw] shrink-0"></div>
-      </div>
+          ) : (
+            filteredEvents.map((event, index) => (
+              <div
+                key={event.id}
+                onClick={() => {
+                  if (index === activeIndex) {
+                    router.push(`/events/${event.id}`);
+                  } else {
+                    scrollToCard(index);
+                  }
+                }}
+                className={`w-[320px] h-[460px] rounded-[2.5rem] p-8 flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${
+                  index === activeIndex 
+                    ? "bg-white border-2 border-[#eec643] shadow-[0_20px_50px_-12px_rgba(1,22,56,0.3)] z-10 scale-100" 
+                    : "bg-white/60 border border-gray-200 scale-90 opacity-60 hover:opacity-100"
+                }`}
+              >
+                <div className="relative z-10 flex justify-between items-start mb-4">
+                  <div className="flex flex-col">
+                    <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-gray-400"}`}>Date</span>
+                    <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-gray-500"}`}>{event.date}</span>
+                  </div>
+                </div>
 
+                <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2">
+                  {event.title}
+                </h3>
+                <p className="relative z-10 text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+                  {event.location}
+                </p>
+
+                <p className="relative z-10 text-gray-600 text-sm font-medium leading-relaxed flex-grow line-clamp-5">
+                  {event.description}
+                </p>
+
+                <div className="relative z-10 mt-6 pt-6 border-t border-gray-100">
+                  <div
+                    className={`w-full py-4 rounded-xl font-black text-xs tracking-widest transition-all text-center uppercase cursor-pointer ${
+                      event.status === "COMPLETED" 
+                        ? "bg-gray-100 text-gray-600 group-hover:bg-gray-200" 
+                        : "bg-[#011638] text-white shadow-md group-hover:bg-[#0d21a1]"
+                    }`}
+                  >
+                    {event.status === "COMPLETED" ? "VIEW RECAP" : event.status === "RSVP OPEN" ? "LEARN MORE" : "COMING SOON"}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+          <div className="min-w-[50vw] shrink-0"></div>
+        </div>
+
+        <button
+          onClick={() => scroll("right")}
+          disabled={activeIndex === filteredEvents.length - 1 || filteredEvents.length === 0}
+          className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-xl disabled:opacity-0 disabled:cursor-not-allowed transition-all duration-300"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+
+      </div>
     </section>
   );
 }
