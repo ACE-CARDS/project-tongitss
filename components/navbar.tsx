@@ -175,7 +175,7 @@ export default function NavBar() {
               {!user ? (
                 <>
                   <Link href="/member-appli">
-                    <li className={`w-[140px] py-[6px] rounded-full duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
+                    <li className={`px-[13px] py-[6px] rounded-full duration-200 transition-all ease-in-out bg-white/80 text-center text-black backdrop-blur-xs
                         ${isActive("/member-appli") 
                           ? "shadow-[0_0_15px_white] bg-white/100 scale-[1.04]"
                           : "hover:shadow-[0_0_15px_white] hover:bg-white/100 hover:scale-[1.04]"
@@ -185,14 +185,14 @@ export default function NavBar() {
                   </Link>
 
                   <Link href="/auth/login" >
-                    <li className="w-[140px] py-[6px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] hover:bg-[#d9b237] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs cursor-pointer items-center justify-center ">
+                    <li className="px-[13px] py-[6px] mr-[4px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] hover:bg-[#d9b237] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs cursor-pointer items-center justify-center ">
                       Login
                     </li>
                   </Link>
                 </>
               ) : (
                 /* 2. If user IS found, show Dashboard and Logout */
-                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right py-[4.5px] p-[4px] mr-0.5 rounded-[50px] bg-white/0 xl:bg-white/80 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs xl:hover:bg-white/100 xl:hover:scale-[1.04]">
+                <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right p-[4px] pl-[6px] mr-0.5 rounded-[50px] bg-white/0 xl:bg-white/80 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs xl:hover:bg-white/100 xl:hover:scale-[1.04]">
                   <Link href="/dashboard">
                     <li
                       className={`px-[13px] py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-white
