@@ -227,7 +227,7 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto"
+      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
     >
       <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#1e4db7] sticky top-0">
         <span className="text-xs font-oswald text-[#fbfaf8]">
