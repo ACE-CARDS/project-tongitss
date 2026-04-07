@@ -364,13 +364,23 @@ export default function AdminSurveyHeader({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setShowSuggestions(true);
+  const value = e.target.value;
+  setQuery(value);
+  setShowSuggestions(true);
+  
+  // clear prev timer
+  if (debounceTimer.current) {
+    clearTimeout(debounceTimer.current);
+  }
+  
+  // set new timer
+  debounceTimer.current = setTimeout(() => {
     onFilterChange({ query: value });
-  };
+  }, 500);
+};
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
@@ -425,6 +435,14 @@ export default function AdminSurveyHeader({
     setSelectedStatuses(["pending"]);
     onFilterChange({ statuses: ["pending"] });
   };
+
+  useEffect(() => {
+  return () => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+  };
+}, []);
 
   const totalFilters = (selectedCategory ? 1 : 0) + 
                       (selectedSchool ? 1 : 0) + 
