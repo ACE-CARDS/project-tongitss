@@ -16,6 +16,8 @@ const routeTitles: Record<string, string> = {
   "/thesis": "THESIS REPOSITORY",
   "/member-appli": "BE A MEMBER",
   "/dashboard": "DASHBOARD",
+  "/dashboard/add": "DASHBOARD",
+  "/dashboard/add/sucess": "DASHBOARD",
   "/executives": "EXECUTIVES",
 };
 
@@ -228,7 +230,7 @@ export default function NavBar() {
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
               className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "hidden" : ""}`}
             >
@@ -245,7 +247,7 @@ export default function NavBar() {
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2"
               stroke="currentColor"
               className={`duration-200 size-8 xl:hidden cursor-pointer ${menuOpen ? "" : "hidden"}`}
             >

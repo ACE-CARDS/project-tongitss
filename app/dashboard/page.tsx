@@ -13,6 +13,8 @@ import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 
 // import SurveyAdmin from "@/components/surveyAdmin";\
 import CommitteeDirectory from "@/components/committeeDirectory";
+import CrudButton from "@/components/crudButton";
+// import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -46,6 +48,14 @@ useEffect(() => {
 }, [user]);
 
 
+
+  if(!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Please log in to view the dashboard.</p>
+      </div>
+    );
+  }
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
@@ -174,6 +184,7 @@ useEffect(() => {
         </main>
       </div>
 
+      {userRole === "admin" || userRole === "superadmin" && <CrudButton />}
       <Footer />
     </div>
   );
