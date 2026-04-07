@@ -185,10 +185,9 @@ export default function Dashboard() {
             <div className="flex gap-1 mb-0 overflow-x-auto">
               {mainTabs
                 .filter((tab) => {
-                  if (userRole === "superadmin") return true;
-                  if (userRole === "admin") {
-                    return tab.key !== "members";
-                  }
+                  if (userRole === "superadmin" || userRole === "admin")
+                    return true;
+
                   return tab.key === "announcements" || tab.key === "committee";
                 })
                 .map((tab) => (

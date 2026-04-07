@@ -87,7 +87,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
             id="scrollbar"
             className="content relative z-10 max-h-[80vh] w-[92%] lg:w-full max-w-6xl overflow-y-auto custom-scrollbar pr-4 shadow-3xl"
           >
-            <div className="min-h-full rounded-md border-1 border-white/30 bg-gradient-to-r from-[#011638] via-[#0b1763] to-[#011638] p-4 lg:p-8 text-white flex flex-col">
+            <div className="min-h-full rounded-md border-1 border-white/30 bg-[#011638] p-4 lg:p-8 text-white flex flex-col">
               <div className="absolute right-4 top-4 z-20 lg:pr-4 pl-2 pr-4">
                 <button
                   type="button"
