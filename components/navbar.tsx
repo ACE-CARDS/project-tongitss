@@ -71,11 +71,11 @@ export default function NavBar() {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
 
           {/* Title */}
-          <a title="Go back to Home Page?" className="flex flex-row items-center h-full w-fit gap-2 rounded-full pl-1.5 pr-4 bg-[#011638]/70  backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
+          <a title="Go back to Home Page?" className="flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70  backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
-              className="w-11 h-11 shrink-0"
+              className="w-11 h-11 shrink-0 "
               width={40}
               height={40}
             ></Image>
