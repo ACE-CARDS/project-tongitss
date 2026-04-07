@@ -142,7 +142,7 @@ export default function NewsMedia() {
       {carouselPosts.length > 0 && (
         <div className="relative">
           {/* Sub heading */}
-          <div className="flex items-center justify-center gap-3 mb-7">
+          <div className="flex items-center justify-center gap-3 mb-6">
             <span className="text-4xl text-[#eec643]">♠</span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#011638]">More Updates</h2>
             <span className="text-4xl text-[#eec643]">♠</span>

@@ -61,14 +61,13 @@ export default function NavBar() {
 
   return (
     // class="w-full  mx-auto mb-10 max-w-[1920px]
-    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50 inset-0`}>
+    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50`}>
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
 
       {/* Navbar */}
-      <nav className="relative w-full mx-auto my-auto max-w-[1250px] top-3 h-14">
-        <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
+      <nav className="relative w-full mx-auto my-auto max-w-[1250px] top-3 h-14">        <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
 
           {/* Title */}
           <a title="Go back to Home Page?" className="flex flex-row items-center h-full w-fit gap-2 rounded-full px-1 pr-4 bg-[#011638]/70 border-[#011638]/35 border-3 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04]" href="/">
