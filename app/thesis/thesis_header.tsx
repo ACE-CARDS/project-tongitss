@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 //filter popup
 function FilterPopup({
@@ -309,6 +310,20 @@ export default function ThesisHeader({
   const router = useRouter();
   const isUpdatingRef = useRef(false);
 
+  useEffect(() => {
+      setIsMounted(true);
+      const checkAuth = async () => {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const authenticated = !!user;
+        setIsAuthenticated(authenticated);
+        sessionStorage.setItem("isAuthenticated", authenticated.toString());
+      };
+      
+      checkAuth();
+    }, []);
+    
   const updateUrl = useCallback((searchQuery: string, category: string, school: string, years: number[], page: number = 1) => {
     isUpdatingRef.current = true;
     

@@ -1,29 +1,29 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-// Main export
-export default function BackButton() {
+export default function BackButton({ className = "" }: { className?: string }) {
+  const router = useRouter();
+
   return (
-    <Link
-      href="/" // Home page
-      className="inline-flex items-center gap-2 text-[#011638] hover:text-[#1e4db7] font-ubuntu-mono transition-colors"
+    <button
+      onClick={() => router.back()}
+      className={`bg-white/90 p-3 sm:p-4 rounded-2xl shadow-sm border border-white hover:scale-105 hover:shadow-md transition-all text-[#011638] flex items-center justify-center backdrop-blur-md w-fit ${className}`}
+      aria-label="Go back"
     >
-      {/* Arrow SVG */}
       <svg
-        className="w-5 h-5"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M10 19l-7-7m0 0l7-7m-7 7h18"
-        />
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
       </svg>
-      <span>Home</span>
-    </Link>
+    </button>
   );
 }
