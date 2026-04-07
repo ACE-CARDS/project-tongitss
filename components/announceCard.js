@@ -5,7 +5,7 @@ const AnnounceCard = ({ announce_landing }) => {
         {announce_landing.announce_landing_title}
       </h3>
       <div className="opacity-85">
-        <p className="text-[#eff0f2] text-justify ">
+        <p className="text-[#eff0f2] text-justify hyphens-auto break-words">
           {announce_landing.announce_landing_desc}
         </p>
       </div>
