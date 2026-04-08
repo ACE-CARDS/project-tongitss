@@ -1532,7 +1532,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                     value={formData.survey_status}
                     onChange={handleStatusChange}
                     required
-                    className="w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] focus:ring-1 focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono transition-colors"
+                    className="w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono transition-colors uppercase"
                   >
                     {statusOptions.map((option) => {
                       const { disabled } = isStatusDisabled(option.value);

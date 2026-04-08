@@ -149,7 +149,7 @@ export default function NewsMedia() {
           </div>
 
           {/* Carousel Container */}
-          <div className="relative">
+          <div className="relative px-11">
             {/* Left Scroll Button */}
             <button
               onClick={() => scroll('left')}
@@ -185,7 +185,7 @@ export default function NewsMedia() {
             {/* Scrollable Cards Container */}
             <div
               ref={scrollRef}
-              className="flex overflow-x-auto gap-6 pb-5 px-10 hide-scrollbar"
+              className="flex overflow-x-auto gap-6 pb-5 hide-scrollbar"
               style={{ 
                 scrollbarWidth: 'none', 
                 msOverflowStyle: 'none', 

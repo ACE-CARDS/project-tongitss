@@ -209,7 +209,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
             {paginatedSurveys.map((survey: any) => (
               <SpotlightCard
                 key={survey.id}
-                className="border border-[#011638] rounded-lg overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
+                className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
                 spotlightColor="rgba(239, 240, 242, 0.16)"
               >
                 

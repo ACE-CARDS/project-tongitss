@@ -23,10 +23,10 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
   }, []);
 
   const statuses = [
-    { value: "accepted", label: "Accepted", color: "bg-green-100 text-green-800", pingColor: "bg-green-500" },
-    { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800", pingColor: "bg-yellow-500" },
-    { value: "archived", label: "Archived", color: "bg-gray-100 text-gray-800", pingColor: "bg-gray-500" },
-    { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800", pingColor: "bg-red-500" },
+    { value: "accepted", label: "ACCEPTED", color: "bg-green-100 text-green-800", pingColor: "bg-green-500" },
+    { value: "pending", label: "PENDING", color: "bg-yellow-100 text-yellow-800", pingColor: "bg-yellow-500" },
+    { value: "archived", label: "ARCHIVED", color: "bg-gray-100 text-gray-800", pingColor: "bg-gray-500" },
+    { value: "rejected", label: "REJECTED", color: "bg-red-100 text-red-800", pingColor: "bg-red-500" },
   ];
 
   // define which status can be moved to another

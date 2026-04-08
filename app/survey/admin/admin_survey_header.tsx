@@ -59,10 +59,10 @@ function FilterPopup({
 
   // status options
   const statuses = [
-    { value: "accepted", label: "Accepted", color: "bg-green-100 text-green-800" },
-    { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
-    { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800" },
-    { value: "archived", label: "Archived", color: "bg-gray-100 text-gray-800" },
+    { value: "accepted", label: "ACCEPTED", color: "bg-green-100 text-green-800" },
+    { value: "pending", label: "PENDING", color: "bg-yellow-100 text-yellow-800" },
+    { value: "rejected", label: "REJECTED", color: "bg-red-100 text-red-800" },
+    { value: "archived", label: "ARCHIVED", color: "bg-gray-100 text-gray-800" },
   ];
 
   if (!isOpen) return null;
@@ -70,7 +70,7 @@ function FilterPopup({
   return (
     <div
       ref={popupRef}
-      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
+      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] shadow-xl p-4 z-40"
     >
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-oswald font-bold text-[#011638]">Filter Surveys</h3>
@@ -88,11 +88,11 @@ function FilterPopup({
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
             Status
           </label>
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-1"> {/* 2 columns */}
             {statuses.map((status) => (
               <label
                 key={status.value}
-                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
               >
                 <div className="relative flex items-center justify-center">
                   <input
@@ -130,7 +130,7 @@ function FilterPopup({
             id="category"
             value={selectedCategory}
             onChange={onCategoryChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -152,7 +152,7 @@ function FilterPopup({
             id="school"
             value={selectedSchool}
             onChange={onSchoolChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors"
           >
             <option value="">All Universities</option>
             {schools.map((school) => (
@@ -168,7 +168,7 @@ function FilterPopup({
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
             Publication Years
           </label>
-          <div className="border border-[#1e4db7] rounded-lg p-3 max-h-48 overflow-y-auto">
+          <div className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors">
             {years.length > 0 ? (
               <div className="space-y-2">
                 {years.map((year) => (
@@ -274,13 +274,15 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
-    >
-      <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#1e4db7] sticky top-0">
-        <span className="text-xs font-oswald text-[#fbfaf8]">
-          {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
-        </span>
-      </div>
+    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl"
+  >
+    <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
+      <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
+        {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
+      </span>
+    </div>
+
+    <div className="max-h-60 overflow-y-auto custom-scrollbar">
       {filteredKeywords.map((keyword, index) => (
         <button
           key={index}
@@ -288,7 +290,7 @@ function LiveSuggestions({
             onSelect(keyword);
             onClose();
           }}
-          className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#1e4db7] border-opacity-20"
+          className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
         >
           <span className="flex items-center gap-2">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,6 +310,7 @@ function LiveSuggestions({
           Showing first 50 keywords. Type to filter more specifically.
         </div>
       )}
+    </div>
     </div>
   );
 }
@@ -466,9 +469,14 @@ export default function AdminSurveyHeader({
         {pendingCount > 0 && (
           <button
             onClick={handlePendingClick}
-            className="bg-[#eec643] text-[#011638] px-4 py-2 rounded-full font-oswald font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md"
+            className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full font-ubuntu-mono font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md flex items-center gap-2"
           >
-            {pendingCount} Pending {pendingCount === 1 ? "Work" : "Works"}
+            {/* pinggg */}
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
+              <span className="relative inline-flex size-2 rounded-full bg-yellow-500"></span>
+            </span>
+            {pendingCount} PENDING {pendingCount === 1 ? "WORK" : "WORKS"}
           </button>
         )}
       </div>
@@ -527,10 +535,10 @@ export default function AdminSurveyHeader({
                 onChange={handleChange}
                 onFocus={() => setShowSuggestions(true)}
                 value={query}
-                className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
               />
               <svg
-                className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -543,17 +551,46 @@ export default function AdminSurveyHeader({
                 />
               </svg>
 
-              <LiveSuggestions
-                query={query}
-                onSelect={handleSuggestionSelect}
-                isOpen={showSuggestions}
-                onClose={() => setShowSuggestions(false)}
-                allKeywords={availableKeywords}
-              />
+              {/* clear/X button */}
+              {(query || showSuggestions) && (
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setShowSuggestions(false);
+                    onFilterChange({ query: "" });
+                    searchInputRef.current?.focus();
+                  }}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
+                  aria-label="Clear search"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
+            
+            {/* LiveSuggestions */}
+            <LiveSuggestions
+              query={query}
+              onSelect={handleSuggestionSelect}
+              isOpen={showSuggestions}
+              onClose={() => setShowSuggestions(false)}
+              allKeywords={availableKeywords}
+            />
+          </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

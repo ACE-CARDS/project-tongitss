@@ -442,14 +442,14 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         <h1 className="text-2xl font-oswald font-bold text-[#011638]">Add New Thesis</h1>
       </div>
 
-      <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
+      <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
             </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">
                 <div>
                   <label htmlFor="title" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -551,10 +551,10 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
           {/* Authors Section */}
           <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Authors</h2>
             </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               {authors.map((author, index) => (
                 <div key={author.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
@@ -815,10 +815,10 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
           {/* Classification */}
           <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Classification</h2>
             </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">
                 <div>
                   <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -1033,10 +1033,10 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
           {/* Date */}
           <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Date</h2>
             </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div>
                 <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                   Thesis Date <span className="text-[#eec643]">*</span>

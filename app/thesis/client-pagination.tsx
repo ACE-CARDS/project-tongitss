@@ -88,7 +88,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
             {paginatedTheses.map((thesis: any) => (
               <SpotlightCard
                 key={thesis.id} 
-                className="border border-[#011638] rounded-lg overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
+                className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
                 spotlightColor="rgba(239, 240, 242, 0.16)" 
               >
                 {/* Card Header */}
