@@ -67,7 +67,7 @@ export default function NavBar() {
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
 
       {/* Navbar */}
-      <nav className="relative w-full mx-auto my-auto max-w-[1250px] top-3 h-14">
+      <nav className="relative w-full mx-auto my-auto max-w-[1150px] top-3 h-14">
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white ">
 
           {/* Title */}
