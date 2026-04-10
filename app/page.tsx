@@ -679,18 +679,7 @@ export default function Home() {
           <div className="w-full mx-auto mb-10 max-w-[1920px] relative">
             <div className="flex flex-col lg:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
               <div className="flex-1 w-full text-center lg:text-left">
-                <div className="flex items-center justify-between mb-4 sm:mb-8 bg-white/50 px-6 py-4 rounded-2xl shadow-lg backdrop-blur-md">
-                  <select
-                    value={selectedAY}
-                    onChange={(e) => setSelectedAY(e.target.value)}
-                    className="border-2 border-gray-200/50 rounded-2xl px-6 py-3 bg-white/80 font-semibold text-[#011638] shadow-md focus:ring-4 focus:ring-[#eec643]/30 focus:border-[#eec643] transition-all duration-200"
-                  >
-                    <option value="AY 2025-2026">AY 2025-2026</option>
-                    <option value="AY 2024-2025">AY 2024-2025</option>
-                    <option value="AY 2023-2024">AY 2023-2024</option>
-                    <option value="AY 2022-2023">AY 2022-2023</option>
-                  </select>
-                </div>
+
 
                 {/* Province label (smaller, secondary) */}
                 <p className="text-lg sm:text-xl tracking-[0.3em] uppercase text-gray-500 font-semibold mb-2">
@@ -725,7 +714,7 @@ export default function Home() {
                   </h2>
 
                   {/* uni list */}
-                  <div className="space-y-4 w-full max-w-lg max-h-[250px] sm:max-h-[400px] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-4 w-full max-w-lg max-h-[250px] sm:max-h-[495px] overflow-y-auto custom-scrollbar">
                     {provinceSchools.length > 0 ? (
                       provinceSchools.map((school) => (
                         <div
@@ -752,6 +741,18 @@ export default function Home() {
               {/* img */}
               <div className="hidden lg:block relative z-10 flex-1 mt-10 lg:mt-0">
                 <div className="relative">
+                <div className="absolute top-4 left-4 z-50">
+                  <select
+                    value={selectedAY}
+                    onChange={(e) => setSelectedAY(e.target.value)}
+                    className="border-2 border-gray-200/50 rounded-2xl px-5 py-2 bg-white/80 font-semibold text-[#011638] shadow-lg backdrop-blur-md focus:ring-4 focus:ring-[#eec643]/30 focus:border-[#eec643] transition-all duration-200"
+                  >
+                    <option value="AY 2025-2026">AY 2025-2026</option>
+                    <option value="AY 2024-2025">AY 2024-2025</option>
+                    <option value="AY 2023-2024">AY 2023-2024</option>
+                    <option value="AY 2022-2023">AY 2022-2023</option>
+                  </select>
+                </div>
                   <img
                     src="/assets/logos/webcarmap.png"
                     alt="CAR map"
