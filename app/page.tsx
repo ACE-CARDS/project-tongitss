@@ -463,7 +463,7 @@ export default function Home() {
                 <div className="absolute inset-0 rounded-3xl bg-[#eec643]/25 blur-2xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
               </div>
 
-              {/* TOP OUTLINE TEXT (ONE LINE) */}
+              {/* TOP OUTLINE TEXT */}
               <h1
                 className="absolute text-[90px] sm:text-[130px] lg:text-[200px] font-black tracking-tight pointer-events-none select-none leading-none whitespace-nowrap z-[20] translate-y-39"
                 style={{
