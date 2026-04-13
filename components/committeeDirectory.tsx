@@ -159,9 +159,19 @@ export default function CommitteeDirectory() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col">
+      {/* Header */}
+      <div className="">
+        <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+          Committee Directory
+        </h1>
+        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+          Meet the members of the organization and their committees.
+        </p>
+      </div>
+
       {/* Committee Dropdown*/}
-      <div className="w-full max-w-sm mb-8">
+      <div className=" w-full mb-8 max-w-sm">
         <CommitteeDropdown
           value={activeTab}
           options={commTabs.map((tab) => ({
@@ -172,7 +182,7 @@ export default function CommitteeDirectory() {
         />
       </div>
       {/* Member */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-20">
         {filteredMembers.map((person) => {
           const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
             /\s+/g,
@@ -185,7 +195,7 @@ export default function CommitteeDirectory() {
           return (
             <div
               key={person.id}
-              className="bg-white p-6 flex flex-col items-center text-center"
+              className="bg-white p-20 flex flex-col items-center text-center border border-[#0b1763] rounded-xl"
             >
               <div className="w-24 h-24 bg-slate-100 rounded-full mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-inner">
                 <img

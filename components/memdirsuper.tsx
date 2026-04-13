@@ -42,12 +42,12 @@ export default function MembersPage() {
         .select("*")
         .order("id", { ascending: true });
 
-        if (memberData) {
-            const cloned = structuredClone(memberData);
-          
-            setMembers(cloned);
-            setOriginalMembers(structuredClone(cloned));
-          }
+      if (memberData) {
+        const cloned = structuredClone(memberData);
+
+        setMembers(cloned);
+        setOriginalMembers(structuredClone(cloned));
+      }
       if (committeeData) setCommittees(committeeData);
     };
     fetchData();
@@ -71,13 +71,13 @@ export default function MembersPage() {
         ? committees.find((c) => c.id === m.comm)?.comm_name || ""
         : m.comm;
 
-        const committeeMatch =
-  selectedFilter === "all"
-    ? true
-    : selectedFilter === "regional"
-      ? commName.toLowerCase().includes("regional") ||
-        commName.toLowerCase().includes("secretary")
-      : commName.toLowerCase().includes(selectedFilter);
+    const committeeMatch =
+      selectedFilter === "all"
+        ? true
+        : selectedFilter === "regional"
+          ? commName.toLowerCase().includes("regional") ||
+            commName.toLowerCase().includes("secretary")
+          : commName.toLowerCase().includes(selectedFilter);
 
     const nameMatch = `${m.mem_fname} ${m.mem_lname}`
       .toLowerCase()
@@ -155,36 +155,35 @@ export default function MembersPage() {
   //saving roles sa supabase
   const handleRoleChange = (id: number, newRole: string) => {
     setMembers((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, role: String(newRole) } : m
-      )
+      prev.map((m) => (m.id === id ? { ...m, role: String(newRole) } : m)),
     );
   };
-  
-  const handleCommitteeChange = (id: number, newCommitteeId: number | string) => {
+
+  const handleCommitteeChange = (
+    id: number,
+    newCommitteeId: number | string,
+  ) => {
     setMembers((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, comm: newCommitteeId } : m
-      )
+      prev.map((m) => (m.id === id ? { ...m, comm: newCommitteeId } : m)),
     );
   };
 
   const handleSave = async () => {
     setShowConfirm(false);
-  
+
     try {
       const updates = members.map((m) =>
         supabase
           .from("member")
           .update({ role: m.role, comm: m.comm })
-          .eq("id", m.id)
+          .eq("id", m.id),
       );
-  
+
       await Promise.all(updates);
-  
+
       setMembers((prev) => structuredClone(prev));
       setOriginalMembers(structuredClone(members));
-  
+
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2500);
     } catch (error) {
@@ -366,11 +365,11 @@ export default function MembersPage() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-oswald font-bold text-[#011638]">
-            Member Directory
-          </h1>
-          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-            Meet the members of the organization and their committees.
-          </p>
+              Member Directory
+            </h1>
+            <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+              Assign members their committees and roles
+            </p>
           </div>
 
           {/* committee tabs */}
@@ -378,19 +377,14 @@ export default function MembersPage() {
             {committeeCategories.map((cat) => {
               const getTabColor = (key: string) => {
                 const name = key.toLowerCase();
-                if (name.includes("internal"))
-                  return "text-purple-800";
-                if (name.includes("external"))
-                  return "text-green-800";
+                if (name.includes("internal")) return "text-purple-800";
+                if (name.includes("external")) return "text-green-800";
                 if (name.includes("education")) return "text-red-800";
-                if (name.includes("finance"))
-                  return "text-blue-900";
-                if (name.includes("publicity"))
-                  return "text-pink-800";
-                if (name.includes("logistics"))
-                  return "text-yellow-600";
+                if (name.includes("finance")) return "text-blue-900";
+                if (name.includes("publicity")) return "text-pink-800";
+                if (name.includes("logistics")) return "text-yellow-600";
                 if (name.includes("regional") || name.includes("secretary"))
-                    return "text-gray-800";
+                  return "text-gray-800";
                 return "text-gray-600";
               };
               const colorClass = getTabColor(cat.key);
@@ -411,65 +405,76 @@ export default function MembersPage() {
           </div>
 
           {/* Members Table */}
-            <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-xxl p-6 pt-4 space-y-6">
+          <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-xxl p-6 pt-4 space-y-6">
             <div className="flex items-center justify-between gap-4 mb-4">
-                
-                {/* Name Search */}
-                <div className="flex-1 relative">
+              {/* Name Search */}
+              <div className="flex-1 relative">
                 <input
-                    type="text"
-                    placeholder="Search member..."
-                    value={searchName}
-                    onChange={(e) => setSearchName(e.target.value)}
-                    className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                  type="text"
+                  placeholder="Search member..."
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
-                <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
-                </div>
+              </div>
 
-                {/* Buttons */}
-                <div className="flex gap-4">
+              {/* Buttons */}
+              <div className="flex gap-4">
                 {/* import */}
                 <label
-                    htmlFor="import-members"
-                    className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap"
+                  htmlFor="import-members"
+                  className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap"
                 >
-                    Import Members
+                  Import Members
                 </label>
                 <input
-                    type="file"
-                    id="import-members"
-                    accept=".csv"
-                    className="hidden"
-                    onChange={async (e) => {
+                  type="file"
+                  id="import-members"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     const text = await file.text();
                     const rows = text.split("\n").filter(Boolean);
                     const headers = rows[0].split(",");
-                    const importedMembers: Member[] = rows.slice(1).map((row) => {
+                    const importedMembers: Member[] = rows
+                      .slice(1)
+                      .map((row) => {
                         const values = row.split(",");
                         const memberObj: any = {};
                         headers.forEach((h, i) => {
-                        memberObj[h.trim()] = values[i]?.trim();
+                          memberObj[h.trim()] = values[i]?.trim();
                         });
                         return memberObj as Member;
-                    });
+                      });
                     setMembers(importedMembers);
-                    }}
+                  }}
                 />
 
                 {/* export */}
                 <button
-                    onClick={() => {
+                  onClick={() => {
                     if (!members.length) return;
                     const headers = Object.keys(members[0]);
                     const csvContent = [
-                        headers.join(","),
-                        ...members.map((m) =>
+                      headers.join(","),
+                      ...members.map((m) =>
                         headers.map((h) => (m as any)[h]).join(","),
-                        ),
+                      ),
                     ].join("\n");
                     const blob = new Blob([csvContent], { type: "text/csv" });
                     const url = URL.createObjectURL(blob);
@@ -478,12 +483,12 @@ export default function MembersPage() {
                     a.download = "members.csv";
                     a.click();
                     URL.revokeObjectURL(url);
-                    }}
-                    className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap"
+                  }}
+                  className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap"
                 >
-                    Export Members
+                  Export Members
                 </button>
-                </div>
+              </div>
             </div>
 
             {/* grid start */}
@@ -547,79 +552,80 @@ export default function MembersPage() {
             </div>
 
             {/* pagination */}
-{totalPages > 1 && (
-  <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
+            {totalPages > 1 && (
+              <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
+                {/* Prev button */}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-lg text-sm transition ${
+                    currentPage === 1
+                      ? "text-[#94a3b8]"
+                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                  }`}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
 
-    {/* Prev button */}
-    <button
-      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-      disabled={currentPage === 1}
-      className={`px-3 py-2 rounded-lg text-sm transition ${
-        currentPage === 1
-          ? "text-[#94a3b8]"
-          : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-      }`}
-    >
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M15 19l-7-7 7-7"
-        />
-      </svg>
-    </button>
+                {/* Page numbers */}
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                          page === currentPage
+                            ? "bg-[#011638] text-white font-bold"
+                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                </div>
 
-    {/* Page numbers */}
-    <div className="flex items-center space-x-1">
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
-            page === currentPage
-              ? "bg-[#011638] text-white font-bold"
-              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-    </div>
-
-    {/* Next button */}
-    <button
-      onClick={() =>
-        setCurrentPage((p) => Math.min(p + 1, totalPages))
-      }
-      disabled={currentPage === totalPages}
-      className={`px-3 py-2 rounded-lg text-sm transition ${
-        currentPage === totalPages
-          ? "text-[#94a3b8]"
-          : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-      }`}
-    >
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 5l7 7-7 7"
-        />
-      </svg>
-    </button>
-  </nav>
-)}
+                {/* Next button */}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-lg text-sm transition ${
+                    currentPage === totalPages
+                      ? "text-[#94a3b8]"
+                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                  }`}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </nav>
+            )}
 
             {/* save Changes  */}
             <div className="flex justify-end pt-4">
