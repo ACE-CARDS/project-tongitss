@@ -483,7 +483,7 @@ export default function EditThesisModal({ thesis, onClose, onUpdate }: EditThesi
               onClick={onClose}
               className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
             >
-              ← Back to List
+              ← Back
             </button>
             <h1 className="text-2xl font-oswald font-bold text-[#011638]">Edit Thesis</h1>
           </div>

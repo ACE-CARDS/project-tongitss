@@ -227,13 +227,15 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
-    >
-      <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#1e4db7] sticky top-0">
-        <span className="text-xs font-oswald text-[#fbfaf8]">
-          {query.trim() ? 'SUGGESTED KEYWORDS' : 'ALL KEYWORDS'}
-        </span>
-      </div>
+    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl"
+  >
+    <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
+      <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
+        {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
+      </span>
+    </div>
+
+    <div className="max-h-60 overflow-y-auto custom-scrollbar">
       {filteredKeywords.map((keyword, index) => (
         <button
           key={index}
@@ -241,11 +243,16 @@ function LiveSuggestions({
             onSelect(keyword);
             onClose();
           }}
-          className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#1e4db7] border-opacity-20"
+          className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
         >
           <span className="flex items-center gap-2">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+              />
             </svg>
             <span className="truncate">{keyword}</span>
           </span>
@@ -256,6 +263,7 @@ function LiveSuggestions({
           Showing first 50 keywords. Type to filter more specifically.
         </div>
       )}
+    </div>
     </div>
   );
 }
