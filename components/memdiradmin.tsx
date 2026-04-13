@@ -412,7 +412,7 @@ export default function MembersPage() {
                 {/* import */}
                 <label
                   htmlFor="import-members"
-                  className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap"
+                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
                 >
                   Import Members
                 </label>
@@ -473,7 +473,7 @@ export default function MembersPage() {
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="px-4 py-2 bg-white border-2 border-[#011638] text-[#011638] rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap"
+                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
                 >
                   Export Members
                 </button>
