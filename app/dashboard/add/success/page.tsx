@@ -1,19 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 
-export default function AnnouncementSuccessPage() {
+export default function AddSuccessPage() {
   const { user } = useUser();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const type = searchParams.get("type"); // Content type from query parameters
 
-  if (user.role == "admin" || user.role == "superadmin") {
+  // If not admin or superadmin, show unauthorized message
+  if (user?.role !== "admin" && user?.role !== "superadmin"){
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>You are not authorized to add announcements.</p>
+        <p>You are not authorized to add content.</p>
       </div>
     );
+  }
+
+  // Redirect if no valid type is provided
+  useEffect(() => {
+    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events")) {
+      router.push("/dashboard");
+    }
+  }, [type, router]);
+
+  // Success page content based on type
+  const getContentDetails = () => {
+    if (type === "announcement") {
+      return {
+        title: "Announcement Posted!",
+        message: "Your announcement has been successfully saved to the database and is now live based on your scheduled dates.",
+        buttonText: "Create Another Announcement",
+        buttonLink: "/dashboard/add/announcement"
+      };
+    }
+
+    if (type === "news-media") {
+      return {
+        title: "News & Media Posted!",
+        message: "Your news post has been successfully saved.",
+        buttonText: "Add Another News",
+        buttonLink: "/dashboard/add/news-media"
+      };
+    }
+    
+    if (type === "events") {
+      return {
+        title: "Event Posted!",
+        message: "Your event has been successfully saved.",
+        buttonText: "Add Another Event",
+        buttonLink: "/dashboard/add/events"
+      };
+    }
+    return null;
+
+  };
+
+  const content = getContentDetails();
+
+  // Don't render if no type
+  if (!content) {
+    return null;
   }
 
   return (
@@ -28,11 +80,9 @@ export default function AnnouncementSuccessPage() {
 
       <main className="flex-1 container mx-auto py-16 px-4 max-w-2xl text-center">
         <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] overflow-hidden">
-          {/* Header Accent */}
           <div className="h-2 bg-[#011638]" />
 
           <div className="p-10">
-            {/* Success Icon */}
             <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
               <svg
                 className="w-10 h-10 text-green-600"
@@ -50,12 +100,11 @@ export default function AnnouncementSuccessPage() {
             </div>
 
             <h1 className="text-3xl font-oswald font-bold text-[#011638] mb-3 uppercase tracking-tight">
-              Announcement Posted!
+              {content.title}
             </h1>
 
             <p className="text-[#475569] font-ubuntu-mono mb-8 max-w-md mx-auto">
-              Your update has been successfully saved to the database and is now
-              live based on your scheduled dates.
+              {content.message}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -67,10 +116,10 @@ export default function AnnouncementSuccessPage() {
               </Link>
 
               <Link
-                href="/dashboard/add"
+                href={content.buttonLink}
                 className="px-8 py-3 text-[#011638] border-2 border-[#011638] rounded-md hover:bg-[#011638] hover:text-[#fbfaf8] transition-all font-oswald text-lg"
               >
-                Create Another
+                {content.buttonText}
               </Link>
             </div>
           </div>

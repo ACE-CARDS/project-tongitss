@@ -1,18 +1,18 @@
-// Much general, not for Announcements only
+// Specific for announcements
 "use client";
 
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import AddAnnouncementForm from "../addAnnouncementForm";
 import { useUser } from "@/components/context/userContext";
 
-export default function AddPage() {
+export default function AddAnnouncementPage() {
   const { user } = useUser();
   
-  // If not admin or superadmin
   if (user?.role !== "admin" && user?.role !== "superadmin") {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>You are not authorized to add content.</p>
+        <p>You are not authorized to add announcements.</p>
       </div>
     );
   }
@@ -27,6 +27,7 @@ export default function AddPage() {
       }}
     >
       <NavBar />
+      <AddAnnouncementForm />
       <Footer />
     </div>
   );
