@@ -28,13 +28,12 @@ export default function CommitteeDirectory() {
       const currentYear = now.getFullYear();
       const month = now.getMonth();
 
-      // 2. Calculate the string and add "AY " to match your DB
       const currentAcadYear =
         month >= 7
           ? `${currentYear}-${currentYear + 1}`
           : `${currentYear - 1}-${currentYear}`;
 
-      const ACADYEAR = `AY ${currentAcadYear}`; // Result: "AY 2025-2026"
+      const ACADYEAR = `AY ${currentAcadYear}`;
 
       try {
         const { data, error } = await supabase
@@ -82,75 +81,60 @@ export default function CommitteeDirectory() {
   });
 
   //ginaya ko lang to from mem directory hehehe
-  const CommitteeDropdown = ({
-    value,
-    options,
-    onChange,
-  }: {
-    value: string | number;
-    options: { label: string; value: string | number }[];
-    onChange: (val: string | number) => void;
-  }) => {
+  const CommitteeDropdown = ({ value, options, onChange }: any) => {
     const [open, setOpen] = useState(false);
-    const [search, setSearch] = useState("");
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       const handleClickOutside = (e: MouseEvent) => {
-        if (ref.current && !ref.current.contains(e.target as Node)) {
+        if (ref.current && !ref.current.contains(e.target as Node))
           setOpen(false);
-          setSearch("");
-        }
       };
       document.addEventListener("mousedown", handleClickOutside);
       return () =>
         document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const filteredOptions = options.filter((o) =>
-      o.label.toLowerCase().includes(search.toLowerCase()),
-    );
-
     const selectedLabel =
-      options.find((o) => o.value === value)?.label || "Select";
+      options.find((o: any) => o.value === value)?.label || "Select";
 
     return (
-      <div ref={ref} className="relative w-[60%] max-w-md font-sans">
+      <div ref={ref} className="relative w-full max-w-xs font-sans">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="w-full px-3 py-2 border-[#0b1763] border rounded-xl text-left shadow-sm font-semibold relative text-[#0b1763]"
+          className="w-full bg-white/70 backdrop-blur-xl px-6 py-3 border border-[#0b1763] rounded-xl text-[#0b1763] font-medium font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center"
         >
           {selectedLabel}
-          <span
-            className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45 transition-transform ${
-              open ? "rotate-225" : "rotate-45"
-            }`}
-          />
+          <svg
+            className={`w-5 h-5 text-slate-600 transition-transform ${open ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
         </button>
-
         {open && (
-          <div className="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-100 border-[#0b1763]">
-            <ul className="custom-scrollbar py-2">
-              {filteredOptions.length > 0 ? (
-                filteredOptions.map((o) => (
-                  <li
-                    key={o.value}
-                    onClick={() => {
-                      onChange(o.value);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                    className={`px-5 py-3 cursor-pointer hover:opacity-50 transition-colors text-md font-medium`}
-                  >
-                    {o.label}
-                  </li>
-                ))
-              ) : (
-                <li className="px-5 py-3 text-gray-400 text-sm">
-                  No results found
+          <div className="absolute z-50 mt-2 w-full bg-white border rounded-xl shadow-lg max-h-100 border-[#0b1763] overflow-hidden">
+            <ul className="py-2">
+              {options.map((o: any) => (
+                <li
+                  key={o.value}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                  }}
+                  className="px-5 py-3 cursor-pointer hover:opacity-50 transition-colors text-sm font-medium"
+                >
+                  {o.label}
                 </li>
-              )}
+              ))}
             </ul>
           </div>
         )}
@@ -160,67 +144,95 @@ export default function CommitteeDirectory() {
 
   return (
     <div className="w-full flex flex-col">
+      {/*If no members*/}
+      {filteredMembers.length === 0 && (
+        <p className="text-center text-slate-500 text-lg mt-10">
+          No members found 👀
+        </p>
+      )}
+
       {/* Header */}
-      <div className="">
+      <div className="mb-8">
         <h1 className="text-3xl font-oswald font-bold text-[#011638]">
           Committee Directory
         </h1>
-        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+        <p className="text-[#475569] font-ubuntu-mono mt-2">
           Meet the members of the organization and their committees.
         </p>
       </div>
 
       {/* Committee Dropdown*/}
-      <div className=" w-full mb-8 max-w-sm">
+      <div className="flex justify-center w-full mb-12">
         <CommitteeDropdown
           value={activeTab}
           options={commTabs.map((tab) => ({
             label: tab.label,
             value: tab.key,
           }))}
-          onChange={(val) => setActiveTab(val as string)}
+          onChange={(val: string) => setActiveTab(val)}
         />
       </div>
-      {/* Member */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-20">
-        {filteredMembers.map((person) => {
+
+      {/* Members etc */}
+      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
+        {filteredMembers.map((person, index) => {
           const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
             /\s+/g,
             "",
           );
           const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
-
           const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
           return (
             <div
-              key={person.id}
-              className="bg-white p-20 flex flex-col items-center text-center border border-[#0b1763] rounded-xl"
+              key={index}
+              className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
+                  transition-all duration-300 ease-out
+                  hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
+                  aspect-[3/4]
+                  w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
+                  min-h-[180px] sm:min-h-[240px]"
             >
-              <div className="w-24 h-24 bg-slate-100 rounded-full mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-inner">
-                <img
-                  src={photoUrl}
-                  alt={`${person.mem_fname} ${person.mem_lname}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (target.src !== fallbackUrl) {
-                      target.src = fallbackUrl;
-                    }
-                  }}
-                />
+              {/*<div
+                className="absolute inset-0 opacity-10 pointer-events-none"
+                style={{
+                  backgroundImage: 'url("/assets/logos/ACE CARDS logo.png")',
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                }}
+              />*/}
+
+              <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#0b1763]/4 to-transparent" />
+              <div className="relative flex justify-center mt-2">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
+                  <img
+                    src={photoUrl}
+                    alt={person.mem_fname}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = fallbackUrl;
+                    }}
+                  />
+                </div>
               </div>
-              <h3 className="font-bold text-[#011638] text-lg">
+
+              <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight">
                 {person.mem_fname} {person.mem_lname}
-              </h3>
-              <p className="text-sm text-[#0d21a1] tracking-tight">
-                {person.committee?.comm_name}
-              </p>
-              <p className="text-xs text-[#475569] font-medium ">
-                {person.mem_schol_year} {person.mem_schol_type}
-              </p>
-              <p className="text-xs text-[#475569] font-medium italic">
+              </h2>
+
+              <div className="flex justify-center mt-1">
+                <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-1 rounded-full bg-[#0d21a1]/10 font-medium text-center">
+                  {person.committee?.comm_name}
+                </span>
+              </div>
+
+              <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
                 {person.school?.school_name}
+              </p>
+
+              <p className="relative z-10 text-center text-xs text-slate-300 mt-4 uppercase tracking-widest">
+                {person.acadyear}
               </p>
             </div>
           );
