@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
@@ -10,13 +10,13 @@ const STORAGE_URL =
 
 export default function CommitteeDirectory() {
   const commTabs = [
-    { label: "EXECUTIVES", key: "EXECUTIVES" },
-    { label: "INTERNALS", key: "INTERNALS" },
-    { label: "EXTERNALS", key: "EXTERNALS" },
-    { label: "FINANCE AND BUSINESS", key: "FINANCE" },
-    { label: "PUBLICITY AND MEDIA", key: "PUBLICITY" },
-    { label: "EDUCATION AND RESEARCH", key: "EDUCATION" },
-    { label: "EVENTS AND LOGISTICS", key: "EVENTS" },
+    { label: "Executives", key: "EXECUTIVES" },
+    { label: "Internals", key: "INTERNALS" },
+    { label: "Externals", key: "EXTERNALS" },
+    { label: "Finance and Business", key: "FINANCE" },
+    { label: "Publicity and Media", key: "PUBLICITY" },
+    { label: "Education and Research", key: "EDUCATION" },
+    { label: "Events and Logistics", key: "EVENTS" },
   ];
 
   const [members, setMembers] = useState<any[]>([]);
@@ -65,9 +65,9 @@ export default function CommitteeDirectory() {
           "Assistant Secretary",
         ].includes(role);
       case "INTERNALS":
-        return role?.includes("Internal Affairs");
+        return role?.includes("Internal");
       case "EXTERNALS":
-        return role?.includes("External Affairs");
+        return role?.includes("External");
       case "FINANCE":
         return role?.includes("Finance and Business");
       case "PUBLICITY":
@@ -81,25 +81,96 @@ export default function CommitteeDirectory() {
     }
   });
 
+  //ginaya ko lang to from mem directory hehehe
+  const CommitteeDropdown = ({
+    value,
+    options,
+    onChange,
+  }: {
+    value: string | number;
+    options: { label: string; value: string | number }[];
+    onChange: (val: string | number) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpen(false);
+          setSearch("");
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const filteredOptions = options.filter((o) =>
+      o.label.toLowerCase().includes(search.toLowerCase()),
+    );
+
+    const selectedLabel =
+      options.find((o) => o.value === value)?.label || "Select";
+
+    return (
+      <div ref={ref} className="relative w-[60%] max-w-md font-sans">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="w-full px-3 py-2 border-[#0b1763] border rounded-xl text-left shadow-sm font-semibold relative text-[#0b1763]"
+        >
+          {selectedLabel}
+          <span
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45 transition-transform ${
+              open ? "rotate-225" : "rotate-45"
+            }`}
+          />
+        </button>
+
+        {open && (
+          <div className="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-100 border-[#0b1763]">
+            <ul className="custom-scrollbar py-2">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((o) => (
+                  <li
+                    key={o.value}
+                    onClick={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`px-5 py-3 cursor-pointer hover:opacity-50 transition-colors text-md font-medium`}
+                  >
+                    {o.label}
+                  </li>
+                ))
+              ) : (
+                <li className="px-5 py-3 text-gray-400 text-sm">
+                  No results found
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full">
-      {/* Tab Bar */}
-      <div className="flex flex-wrap gap-1 mb-6">
-        {commTabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 min-w-[120px] py-2 px-3 rounded-xl font-bold text-[10px] md:text-xs transition-all border ${
-              activeTab === tab.key
-                ? "bg-[#0b1763] text-white border-[#0b1763] shadow-md"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Committee Dropdown*/}
+      <div className="w-full max-w-sm mb-8">
+        <CommitteeDropdown
+          value={activeTab}
+          options={commTabs.map((tab) => ({
+            label: tab.label,
+            value: tab.key,
+          }))}
+          onChange={(val) => setActiveTab(val as string)}
+        />
       </div>
-
       {/* Member */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMembers.map((person) => {
