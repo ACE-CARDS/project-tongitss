@@ -1565,7 +1565,7 @@ export default function EditSurveyModal({ survey, onClose, onUpdate }: EditSurve
                   disabled={isSubmitting}
                   className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "Saving..." : "SAVE CHANGES"}
+                  {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

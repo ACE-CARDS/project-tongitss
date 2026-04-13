@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { createClient } from "@/lib/supabase/client";
 
 // prop types
 interface MoveSurveyModalProps {
@@ -120,17 +121,25 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
   };
 
   // call onMove
-  const handleMove = () => {
+  const handleMove = async () => {
     if (selectedStatus !== survey.survey_status) {
-      const { allowed, reason } = canMoveToStatus(selectedStatus);
-      if (allowed) {
-        onMove(selectedStatus); // move
-      } else if (reason) {
-        setErrorMessage(reason);
-        setTimeout(() => setErrorMessage(null), 5000);
+  
+      // If moving from rejected to another, 
+      if (survey.survey_status === "rejected" && selectedStatus !== "rejected") {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from("survey")
+          .update({ rejection_reason: null }) // Clear rejection_reason first
+          .eq("id", survey.id);
+          
+        if (error) {
+          console.error("Error clearing rejection reason:", error);
+        }
       }
+      
+      onMove(selectedStatus);
     } else {
-      onClose(); // no change, close modal
+      onClose();
     }
   };
 
@@ -277,13 +286,9 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
             <button
               onClick={handleMove}
               disabled={selectedStatus === survey.survey_status}
-              className={`px-6 py-2 text-[#fbfaf8] rounded transition-colors font-oswald font-bold shadow-md ${
-                selectedStatus === survey.survey_status
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#1e4db7] hover:bg-[#0d21a1]"
-              }`}
-            >
-              MOVE SURVEY
+              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+              Move Survey
             </button>
           </div>
         </div>
