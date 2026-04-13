@@ -1,3 +1,4 @@
+//Ctrl+F niyo nalang "CHANGE AY" to know where mga ichchange ay kasi naka filter yan based don
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -8,6 +9,7 @@ type Member = {
   id: number;
   mem_fname: string;
   mem_lname: string;
+  mem_minit: string;
   role: string;
   comm: number | string;
 };
@@ -21,7 +23,7 @@ export default function MembersPage() {
   const supabase = createClient();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
   const [members, setMembers] = useState<Member[]>([]);
   const [originalMembers, setOriginalMembers] = useState<Member[]>([]);
   const [committees, setCommittees] = useState<Committee[]>([]);
@@ -29,13 +31,14 @@ export default function MembersPage() {
   const [searchName, setSearchName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [importedMembers, setImportedMembers] = useState<Member[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: memberData } = await supabase
         .from("member")
         .select("*")
-        .eq("acadyear", "AY 2025-2026"); //change here yung year thnx
+        .eq("acadyear", "AY 2025-2026"); //CHANGE AY here yung year thnx
 
       const { data: committeeData } = await supabase
         .from("committee")
@@ -147,7 +150,9 @@ export default function MembersPage() {
     startIndex + ITEMS_PER_PAGE,
   );
 
-  const hasChanges = members.some((m, i) => {
+  const hasChanges =
+  importedMembers.length > 0 ||
+  members.some((m, i) => {
     const o = originalMembers[i];
     return !o || m.role !== o.role || m.comm !== o.comm;
   });
@@ -170,20 +175,70 @@ export default function MembersPage() {
 
   const handleSave = async () => {
     setShowConfirm(false);
-
+  
     try {
-      const updates = members.map((m) =>
-        supabase
-          .from("member")
-          .update({ role: m.role, comm: m.comm })
-          .eq("id", m.id),
-      );
+      const importedNew = members.filter((m: any) => m.isImported);
+      const existing = members.filter((m: any) => !m.isImported); 
+  
+      if (importedNew.length > 0) {
+        const insertPayload = importedNew.map((m, index) => ({
+            mem_fname: m.mem_fname,
+            mem_lname: m.mem_lname,
+            mem_minit: m.mem_minit,
+            role: m.role,
+            comm: m.comm || 23, // default committee (members ean)
+          
+            // default palang sha sorry ayusin ko after promise
+            mem_schol_type: "Merit", 
+            mem_schol_year: 2023,
+            school: 1, 
+            is_active: true,
+            mem_email: `temp${Date.now()}${index}@example.com`, //temp email po hhe need kasi unique 
+          
+            acadyear: "AY 2025-2026", //CHANGE AY 
+          }));
+      
+        const { data, error } = await supabase
+        .from("member")
+        .insert(insertPayload)
+        .select();
 
-      await Promise.all(updates);
+        console.log("INSERT DATA:", data);
+        console.log("INSERT ERROR:", error);
+      
+        if (error) {
+          console.error("Insert error:", error);
+          return;
+        }
+      }
+  
+      if (existing.length > 0) {
+        const updates = existing.map((m) =>
+          supabase
+            .from("member")
+            .update({
+              role: m.role,
+              comm: m.comm,
+            })
+            .eq("id", m.id)
+        );
+      
+        await Promise.all(updates);
+      }
+  
 
-      setMembers((prev) => structuredClone(prev));
-      setOriginalMembers(structuredClone(members));
+        const { data } = await supabase
+        .from("member")
+        .select("*")
+        .eq("acadyear", "AY 2025-2026");
 
+        if (data) {
+        const cloned = structuredClone(data);
+        setMembers(cloned);
+        setOriginalMembers(structuredClone(cloned));
+        setImportedMembers([]); 
+        }
+  
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2500);
     } catch (error) {
@@ -448,20 +503,34 @@ export default function MembersPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                  
                     const text = await file.text();
                     const rows = text.split("\n").filter(Boolean);
                     const headers = rows[0].split(",");
-                    const importedMembers: Member[] = rows
-                      .slice(1)
-                      .map((row) => {
-                        const values = row.split(",");
-                        const memberObj: any = {};
-                        headers.forEach((h, i) => {
-                          memberObj[h.trim()] = values[i]?.trim();
-                        });
-                        return memberObj as Member;
+                  
+                    const parsed = rows.slice(1).map((row, index) => {
+                      const values = row.split(",");
+                      const obj: any = {};
+                  
+                      headers.forEach((h, i) => {
+                        obj[h.trim()] = values[i]?.trim();
                       });
-                    setMembers(importedMembers);
+                  
+                      return {
+                        id: Date.now() + index,
+                        mem_fname: obj.mem_fname,
+                        mem_lname: obj.mem_lname,
+                        mem_minit: obj.mem_minit || "",
+                        role: obj.role || "member",
+                        comm: obj.comm ? Number(obj.comm) : null,
+                        acadyear: obj.acadyear || "AY 2025-2026", //CHANGE AY 
+                        isImported: true,
+                      };
+                    });
+                  
+                    setImportedMembers(parsed);
+
+                    setMembers((prev) => [...prev, ...parsed]);
                   }}
                 />
 
@@ -517,7 +586,7 @@ export default function MembersPage() {
                       className="grid grid-cols-3 items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
                       <span className="font-bold text-[#141414]">
-                        {member.mem_lname}, {member.mem_fname}
+                        {member.mem_lname}, {member.mem_fname} {member.mem_minit}
                       </span>
                       <div
                         className={`${getCommitteeStyle(commName)} font-normal rounded-xl`}

@@ -90,7 +90,7 @@ export default function Executives() {
   }, [selectedAY]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
@@ -99,7 +99,7 @@ export default function Executives() {
     >
       <NavBar />
 
-      <main className="px-6 sm:px-10 lg:px-20 py-24">
+      <main className="px-6 sm:px-10 lg:px-28 py-8">
       <BackButton />
 
         {/* title */}
@@ -186,12 +186,12 @@ export default function Executives() {
                     {exec.name}
                   </h2>
 
-                  {/* position */}
-                  <div className="flex justify-center mt-1">
-                    <span className="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium text-center">
-                      {exec.position}
-                    </span>
-                  </div>
+                 {/* position */}
+                <div className="flex justify-center mt-1">
+                  <span className="text-xs px-3 py-1 rounded-full bg-[#0d21a1] text-white font-medium text-center inline-block">
+                    {exec.position}
+                  </span>
+                </div>
 
                   {/* ay */}
                   <p className="text-center text-xs text-slate-400 mt-2">
