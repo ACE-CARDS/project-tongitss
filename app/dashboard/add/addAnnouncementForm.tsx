@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { useUser } from "@/components/context/userContext";
 
 export default function AddAnnouncementForm() {
   const router = useRouter();
@@ -254,7 +253,7 @@ export default function AddAnnouncementForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#011638] text-[#fbfaf8] font-oswald px-8 py-2 rounded-md hover:bg-[#1a2a4f] transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting
                 ? "Posting..."
