@@ -7,12 +7,12 @@ import BackButton from "@/components/backButton";
 
 export default function EventsPage() {
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"
+    <div
+      className="min-h-screen bg-[#fbfaf8]"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed"
+        backgroundAttachment: "fixed",
       }}
     >
       <NavBar />

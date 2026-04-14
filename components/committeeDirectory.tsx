@@ -144,13 +144,6 @@ export default function CommitteeDirectory() {
 
   return (
     <div className="w-full flex flex-col">
-      {/*If no members*/}
-      {filteredMembers.length === 0 && (
-        <p className="text-center text-slate-500 text-lg mt-10">
-          No members found 👀
-        </p>
-      )}
-
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-oswald font-bold text-[#011638]">
@@ -237,6 +230,12 @@ export default function CommitteeDirectory() {
             </div>
           );
         })}
+        {/*If no members*/}
+        {filteredMembers.length === 0 && (
+          <p className="text-center text-slate-500 text-lg mt-10">
+            No members found 👀
+          </p>
+        )}
       </div>
     </div>
   );

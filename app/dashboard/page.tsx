@@ -44,13 +44,13 @@ function DashboardContent() {
 
   // Check for URL parameters first, then fall back to session storage
   useEffect(() => {
-  if (user?.email) {
-    const savedTab = sessionStorage.getItem(`tab_${user.email}`);
-    setActiveTab(savedTab || "announcements");
-  } else if (!user) {
-    setActiveTab("announcements");
-  }
-}, [user?.email]);
+    if (user?.email) {
+      const savedTab = sessionStorage.getItem(`tab_${user.email}`);
+      setActiveTab(savedTab || "announcements");
+    } else if (!user) {
+      setActiveTab("announcements");
+    }
+  }, [user?.email]);
 
   // Save current tab for user
   useEffect(() => {
@@ -67,18 +67,18 @@ function DashboardContent() {
 
   // Reset saved tab when logged out
   useEffect(() => {
-  if (!user && activeTab !== null) {
-    setActiveTab("announcements");
-  }
+    if (!user && activeTab !== null) {
+      setActiveTab("announcements");
+    }
   }, [user]);
 
   if (activeTab === null) {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p>Loading...</p>
-    </div>
-  );
-}
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -111,11 +111,17 @@ function DashboardContent() {
         if (userRole === "admin" || userRole === "superadmin") {
           return <EventsAdmin />;
         }
-        return <p className="text-center py-10 italic text-gray-500">Not authorized.</p>;
+        return (
+          <p className="text-center py-10 italic text-gray-500">
+            Not authorized.
+          </p>
+        );
       case "members":
         if (userRole === "superadmin") return <MemdirSuper />;
         if (userRole === "admin") return <MemdirAdmin />;
-        return <p className="text-center py-10 italic text-gray-500">Testing</p>;
+        return (
+          <p className="text-center py-10 italic text-gray-500">Testing</p>
+        );
       case "thesis":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
@@ -175,15 +181,17 @@ function DashboardContent() {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
 
-                  return tab.key !== "members";
+                  return tab.key !== "members" && tab.key !== "events";
                 })
                 .map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => {
-                        setActiveTab(tab.key);
-                        // Update URL without reloading to keep it clean
-                        router.push(`/dashboard?tab=${tab.key}`, { scroll: false });
+                      setActiveTab(tab.key);
+                      // Update URL without reloading to keep it clean
+                      router.push(`/dashboard?tab=${tab.key}`, {
+                        scroll: false,
+                      });
                     }}
                     className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
                       activeTab === tab.key
@@ -210,9 +218,15 @@ function DashboardContent() {
 
 // Next.js requires Suspense when using useSearchParams in client components
 export default function Dashboard() {
-    return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold uppercase">Loading Dashboard...</div>}>
-            <DashboardContent />
-        </Suspense>
-    );
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center font-bold uppercase">
+          Loading Dashboard...
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
+  );
 }

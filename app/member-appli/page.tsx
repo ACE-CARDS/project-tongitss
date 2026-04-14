@@ -24,15 +24,21 @@ export default function MembershipApplication() {
 
   useEffect(() => {
     const fetchContent = async () => {
-      const { data, error } = await supabase.from("page_content").select("*").order("id", { ascending: true });
+      const { data, error } = await supabase
+        .from("page_content")
+        .select("*")
+        .order("id", { ascending: true });
       if (data && !error) {
-        const fetchedDeadline = data.find(row => row.id === 5)?.content;
-        const fetchedReminders = data.filter((row) => [1, 2, 3, 4].includes(row.id)).map((row) => row.content);
-        
-        setPageContent((prev) => ({ 
-          ...prev, 
+        const fetchedDeadline = data.find((row) => row.id === 5)?.content;
+        const fetchedReminders = data
+          .filter((row) => [1, 2, 3, 4].includes(row.id))
+          .map((row) => row.content);
+
+        setPageContent((prev) => ({
+          ...prev,
           deadline: fetchedDeadline || prev.deadline,
-          reminders: fetchedReminders.length > 0 ? fetchedReminders : prev.reminders 
+          reminders:
+            fetchedReminders.length > 0 ? fetchedReminders : prev.reminders,
         }));
       }
       setIsLoadingContent(false);
@@ -41,12 +47,12 @@ export default function MembershipApplication() {
   }, [supabase]);
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col"
+    <div
+      className="min-h-screen bg-[#fbfaf8] flex flex-col"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed"
+        backgroundAttachment: "fixed",
       }}
     >
       <NavBar />
@@ -57,9 +63,8 @@ export default function MembershipApplication() {
         </div>
 
         <div className="max-w-7xl mx-auto w-full">
-          
           {/* 1. HORIZONTAL HEADER BANNER */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -75,7 +80,9 @@ export default function MembershipApplication() {
               </div>
               <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-green-100 border border-green-200 shadow-sm">
                 <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                <span className="text-sm font-black text-green-700 tracking-widest uppercase">Status: Open</span>
+                <span className="text-sm font-black text-green-700 tracking-widest uppercase">
+                  Status: Open
+                </span>
               </div>
             </div>
 
@@ -91,9 +98,8 @@ export default function MembershipApplication() {
 
           {/* 2. Reminders & Instructions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            
             {/* Reminders Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -101,9 +107,15 @@ export default function MembershipApplication() {
             >
               <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
                 <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shadow-sm shrink-0">
-                  <img src="/assets/logos/reminders.png" alt="Reminders Icon" className="w-7 h-7 object-contain opacity-80" />
+                  <img
+                    src="/assets/logos/reminders.png"
+                    alt="Reminders Icon"
+                    className="w-7 h-7 object-contain opacity-80"
+                  />
                 </div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-wide">Reminders</h3>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-wide">
+                  Reminders
+                </h3>
               </div>
 
               {isLoadingContent ? (
@@ -114,16 +126,22 @@ export default function MembershipApplication() {
               ) : (
                 <ul className="space-y-4 text-slate-700 font-medium list-disc ml-6 marker:text-red-500 text-lg">
                   {pageContent.reminders.length > 0 ? (
-                    pageContent.reminders.map((reminder, idx) => <li key={idx} className="pl-2 leading-relaxed">{reminder}</li>)
+                    pageContent.reminders.map((reminder, idx) => (
+                      <li key={idx} className="pl-2 leading-relaxed">
+                        {reminder}
+                      </li>
+                    ))
                   ) : (
-                    <p className="italic text-slate-500 list-none -ml-6">No reminders posted.</p>
+                    <p className="italic text-slate-500 list-none -ml-6">
+                      No reminders posted.
+                    </p>
                   )}
                 </ul>
               )}
             </motion.div>
 
             {/* Instructions Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -131,18 +149,25 @@ export default function MembershipApplication() {
             >
               <div className="relative z-10 flex items-center gap-4 mb-6 pb-5 border-b border-slate-700">
                 <div className="w-12 h-12 rounded-xl bg-[#eec643] flex items-center justify-center shadow-sm shrink-0">
-                  <img src="/assets/logos/instructions.png" alt="Instructions Icon" className="w-7 h-7 object-contain opacity-90" />
+                  <img
+                    src="/assets/logos/instructions.png"
+                    alt="Instructions Icon"
+                    className="w-7 h-7 object-contain opacity-90"
+                  />
                 </div>
-                <h3 className="text-2xl font-black text-white uppercase tracking-wide">Instructions</h3>
+                <h3 className="text-2xl font-black text-white uppercase tracking-wide">
+                  Instructions
+                </h3>
               </div>
 
               <ol className="relative z-10 space-y-4 text-slate-300 font-medium list-decimal ml-6 marker:text-[#eec643] marker:font-black text-lg marker:text-xl">
                 {pageContent.instructions.map((instruction, idx) => (
-                  <li key={idx} className="pl-2 leading-relaxed">{instruction}</li>
+                  <li key={idx} className="pl-2 leading-relaxed">
+                    {instruction}
+                  </li>
                 ))}
               </ol>
             </motion.div>
-
           </div>
 
           {/* 3. TESTIMONIES */}
@@ -154,7 +179,7 @@ export default function MembershipApplication() {
               </h2>
               <span className="text-3xl lg:text-4xl text-[#eec643]">♠</span>
             </div>
-            
+
             <div className="relative w-full aspect-video bg-white/50 backdrop-blur-md border-4 border-white shadow-2xl rounded-[2.5rem] overflow-hidden z-10">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
@@ -167,10 +192,13 @@ export default function MembershipApplication() {
 
             {/* MASCOT */}
             <div className="absolute -bottom-10 -right-8 w-44 h-44 lg:w-48 lg:h-48 drop-shadow-2xl z-20 pointer-events-none hidden md:block">
-              <img src="/assets/logos/mascot.png" alt="Ace Cards Mascot" className="w-full h-full object-contain" />
+              <img
+                src="/assets/logos/mascot.png"
+                alt="Ace Cards Mascot"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
-
         </div>
       </main>
 
