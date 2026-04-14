@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
@@ -12,6 +14,7 @@ export default function CrudButton() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Close if clicking outside both the button AND the menu
       if (
         crudRef.current &&
         !crudRef.current.contains(event.target as Node) &&

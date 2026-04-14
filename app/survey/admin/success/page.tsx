@@ -14,11 +14,23 @@ export default function SuccessPage() {
       <NavBar />
       
       <main className="flex-1 container mx-auto py-16 px-4 max-w-2xl text-center">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-8">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] overflow-hidden">
+            <div className="h-2 bg-[#011638]" />
+
+            <div className="p-10">
+            <svg
+                className="w-10 h-10 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
           </div>
           
           <h1 className="text-2xl font-oswald font-bold text-[#011638] mb-2">

@@ -18,7 +18,7 @@ export default function AboutMascot() {
             <span className="text-xs font-bold text-[#0d21a1] tracking-widest uppercase">The Face of the Org</span>
           </div>
 
-          {/* CONSISTENT TITLE */}
+          {/* TITLE */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-8">
             <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
             <h1 className="text-5xl md:text-6xl leading-none font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
