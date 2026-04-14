@@ -14,6 +14,7 @@ export default function CrudButton() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Close if clicking outside both the button AND the menu
       if (
         crudRef.current &&
         !crudRef.current.contains(event.target as Node) &&
@@ -64,14 +65,14 @@ export default function CrudButton() {
       >
         <Link
           href="/dashboard/add/event"
-          className="bg-[#0b1763] text-white py-2 px-4 rounded-full hover:bg-[#2f3f61] text-center whitespace-nowrap"
+          className="bg-[#0b1763] text-white py-2 px-6 rounded-full hover:bg-[#2f3f61] text-left whitespace-nowrap"
         >
           New Event
         </Link>
         
         <Link
           href="/dashboard/add"
-          className="bg-[#0b1763] text-white py-2 px-4 rounded-full hover:bg-[#2f3f61] text-center whitespace-nowrap"
+          className="bg-[#0b1763] text-white py-2 px-6 rounded-full hover:bg-[#2f3f61] text-left whitespace-nowrap"
         >
           New Announcement
         </Link>
