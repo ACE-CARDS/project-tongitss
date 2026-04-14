@@ -56,7 +56,7 @@ export default function CrudButton() {
           viewBox="0 0 24 24"
           strokeWidth="2"
           stroke="currentColor"
-          className={`duration-200 ease-in-out size-10 3xl:size-15 text-white cursor-pointer ${crudOpen ? "rotate-0" : "rotate-45"}`}
+          className={`duration-200 ease-in-out size-8 3xl:size-15 text-white cursor-pointer ${crudOpen ? "rotate-0" : "rotate-45"}`}
         >
           <path
             strokeLinecap="round"

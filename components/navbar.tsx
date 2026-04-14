@@ -266,7 +266,8 @@ export default function NavBar({ isOverHero = false }) {
             </ul>
           </div>
 
-          <div className="flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 backdrop-blur-sm">
+          <div className={`flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 backdrop-blur-sm  ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
+`}>
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
