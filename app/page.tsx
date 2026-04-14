@@ -422,84 +422,107 @@ export default function Home() {
         {/* HERO SECTION */}
         <section
           id="hero"
-          className="relative min-h-[100vh] flex items-center justify-center overflow-hidden px-6 lg:px-20"
-        >
+          className="relative min-h-[75vh] sm:min-h-screen flex items-center overflow-hidden px-6 lg:px-20 pt-20 sm:pt-28 lg:pt-0"
+          >
           {/* background */}
           <div
             className="absolute inset-0 bg-cover bg-center scale-105"
             style={{ backgroundImage: "url('/assets/logos/hero-bg.png')" }}
           />
 
+
           {/* overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/90" />
+
 
           {/* glow blobs */}
-          <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#eec643]/30 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-[#0d21a1]/30 rounded-full blur-[120px]" />
+          <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#eec643]/20 rounded-full blur-[160px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#0d21a1]/20 rounded-full blur-[160px]" />
 
-          {/* CONTENT */}
-          <div className="relative z-10 max-w-7xl mx-auto text-center flex flex-col items-center gap-8">
-            {/* TITLE LAYER WRAPPER */}
-            <div className="translate-y-6  relative flex items-center justify-center">
-              {/* BOTTOM SOLID TEXT (ONE LINE) */}
-              <h1
-                className="absolute text-[90px] sm:text-[130px] lg:text-[200px] font-black tracking-tight text-white select-none leading-none whitespace-nowrap translate-y-39"
-                style={{
-                  color: "white",
-                  WebkitTextStroke: "3px rgba(238, 198, 67, 1)",
-                }}
-              >
-                ACE CARDS
-              </h1>
+
+          {/* CONTENT WRAPPER */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+
+            {/* LEFT SIDE - TEXT */}
+            <div className="flex flex-col gap-6 text-left">
+
+
+              <div>
+                <p className="text-white/60 tracking-widest uppercase text-sm">
+                  DOST-SEI Scholars • CAR
+                </p>
+
+
+                <h1 className="text-white font-black leading-[0.85] text-6xl sm:text-7xl lg:text-8xl xl:text-9xl">
+                  ACE <span className="text-[#eec643]">CARDS</span>
+                </h1>
+
+
+                <h1 className="absolute -z-10 text-[120px] sm:text-[160px] lg:text-[220px] xl:text-[260px] font-black text-transparent select-none opacity-20"
+                  style={{
+                    WebkitTextStroke: "2px rgba(238, 198, 67, 0.25)",
+                  }}
+                >
+                  ACE CARDS
+                </h1>
+
+
+                <div className="w-24 h-[2px] bg-[#eec643] mt-4" />
+              </div>
+
+
+              <p className="text-white/75 text-base sm:text-lg leading-relaxed max-w-xl">
+                A unified organization of DOST-SEI scholars in the Cordillera
+                      Administrative Region that aims to develop scholars in excellence,
+                      leadership, and service through science, innovation, and
+                      volunteerism.
+              </p>
+
+
+              {/* CORE VALUES */}
+              <div className="flex flex-wrap gap-3 mt-2">
+                {[
+                  "Professional Excellence",
+                  "Social Responsibility",
+                  "Servant Leadership",
+                ].map((val) => (
+                  <span
+                    key={val}
+                    className="px-4 py-2 text-sm rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md"
+                  >
+                    {val}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+
+            {/* RIGHT SIDE - LOGO */}
+            <div className="relative flex items-center justify-center min-h-[500px]">
+
+
+              {/* glow */}
+              <div className="absolute w-[500px] h-[500px] bg-[#eec643]/25 blur-[140px] rounded-full" />
+
 
               {/* LOGO */}
-              <div className="relative z-20 group bg-white/0">
+              <div className="relative z-10 group flex items-center justify-center">
+                <div className="absolute inset-0 bg-[#eec643]/20 blur-2xl rounded-3xl opacity-0 group-hover:opacity-100 transition" />
+
+
                 <img
                   src="/assets/logos/ACE CARDS logo.png"
                   alt="Ace Cards Logo"
-                  className="w-52 lg:w-72 rounded-3xl shadow-5xl transition-all duration-500 group-hover:scale-105"
+                  className="hidden lg:block w-72 sm:w-80 lg:w-[420px] rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-105"
                 />
-
-                <div className="absolute inset-0 rounded-3xl bg-[#eec643]/25 blur-2xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
               </div>
-
-              {/* TOP OUTLINE TEXT */}
-              <h1
-                className="absolute text-[90px] sm:text-[130px] lg:text-[200px] font-black tracking-tight pointer-events-none select-none leading-none whitespace-nowrap z-[20] translate-y-39"
-                style={{
-                  color: "transparent",
-                  WebkitTextStroke: "3px rgba(238, 198, 67, 0.5)",
-                }}
-              >
-                ACE CARDS
-              </h1>
             </div>
 
-            {/* SUBTEXT */}
-            <p className="max-w-2xl text-white/80 text-lg lg:text-xl leading-relaxed bg-[#011638]/0 px-6 py-4 rounded-2xl shadow-xl border border-white/0 z-[1001] mt-27">
-              A unified organization of DOST-SEI scholars in the Cordillera
-              Administrative Region that aims to develop scholars in excellence,
-              leadership, and service through science, innovation, and
-              volunteerism.
-            </p>
 
-            {/* CORE VALUES */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {[
-                "Professional Excellence",
-                "Social Responsibility",
-                "Servant Leadership",
-              ].map((val) => (
-                <span
-                  key={val}
-                  className="px-4 py-2 text-sm bg-[#011638]/10 backdrop-blur-md text-white rounded-xl border border-white/20 hover:bg-white/20 transition"
-                >
-                  {val}
-                </span>
-              ))}
-            </div>
           </div>
-        </section>
+          </section>
+
 
         <NewsMedia />
 
