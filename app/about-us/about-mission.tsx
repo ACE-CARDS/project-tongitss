@@ -13,7 +13,7 @@ export default function AboutMission() {
         transition={{ duration: 0.8 }}
         className="max-w-5xl px-8 py-16 lg:py-20 z-30 rounded-[3rem] backdrop-blur-2xl bg-[#011638]/95 border border-white/20 shadow-2xl mx-6"
       >
-        {/* CONSISTENT TITLE */}
+        {/* TITLE */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
           <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
           <h1 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase">
