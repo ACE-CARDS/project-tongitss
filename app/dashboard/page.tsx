@@ -12,6 +12,8 @@ import { createClient } from "@/lib/supabase/client";
 import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";
+import MemberSurveyView from "@/components/memberSurveyView";
+import MemberThesisView from "@/components/memberThesisView";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -116,32 +118,15 @@ export default function Dashboard() {
         if (userRole === "admin" || userRole === "superadmin") {
           return <ThesisAdminWrapper />; //show the RUD for thesis
         } else {
-          // if member
-          return (
-            <div className="h-[400px] overflow-y-auto">
-              <div className="flex h-full w-full items-center justify-center">
-                <p className="text-gray-500 italic">
-                  Thesis archive coming soon...
-                </p>
-              </div>
-            </div>
-          );
+          return <MemberThesisView />;
         }
       case "survey":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
-          return <SurveyAdminWrapper />; //show the RUD for survey
+          return <SurveyAdminWrapper />;
         } else {
           // if member
-          return (
-            <div className="h-[400px] overflow-y-auto">
-              <div className="flex h-full w-full items-center justify-center">
-                <p className="text-gray-500 italic">
-                  Survey archive coming soon...
-                </p>
-              </div>
-            </div>
-          );
+          return <MemberSurveyView />;
         }
       default:
         return null;
@@ -188,7 +173,7 @@ export default function Dashboard() {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
 
-                  return tab.key === "announcements" || tab.key === "committee";
+                  return tab.key !== "members";
                 })
                 .map((tab) => (
                   <button

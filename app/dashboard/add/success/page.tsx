@@ -44,7 +44,7 @@ export default function AddSuccessPage() {
       return {
         title: "News & Media Posted!",
         message: "Your news post has been successfully saved.",
-        buttonText: "Add Another News",
+        buttonText: "Add Another",
         buttonLink: "/dashboard/add/news-media"
       };
     }
@@ -53,7 +53,7 @@ export default function AddSuccessPage() {
       return {
         title: "Event Posted!",
         message: "Your event has been successfully saved.",
-        buttonText: "Add Another Event",
+        buttonText: "Add Another",
         buttonLink: "/dashboard/add/events"
       };
     }
@@ -99,25 +99,25 @@ export default function AddSuccessPage() {
               </svg>
             </div>
 
-            <h1 className="text-3xl font-oswald font-bold text-[#011638] mb-3 uppercase tracking-tight">
+            <h1 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
               {content.title}
             </h1>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-8 max-w-md mx-auto">
+            <p className="text-[#475569] font-ubuntu-mono mb-6">
               {content.message}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex gap-4 justify-center">
               <Link
                 href="/dashboard"
-                className="px-8 py-3 text-[#fbfaf8] bg-[#011638] rounded-md hover:bg-[#1a2a4f] transition-all font-oswald text-lg shadow-md"
+                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
               >
                 Go back to Dashboard
               </Link>
 
               <Link
                 href={content.buttonLink}
-                className="px-8 py-3 text-[#011638] border-2 border-[#011638] rounded-md hover:bg-[#011638] hover:text-[#fbfaf8] transition-all font-oswald text-lg"
+                className="px-6 py-2 text-[#011638] border border-[#011638] rounded-lg hover:bg-[#f0f0f0] transition-colors font-oswald"
               >
                 {content.buttonText}
               </Link>

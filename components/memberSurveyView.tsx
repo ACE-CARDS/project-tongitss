@@ -63,6 +63,7 @@ function ExtendableSurveyCard({ survey }: { survey: any }) {
       </div>
 
       <div className="px-6 py-4 flex flex-col flex-1">
+
         {/* STATUS Section */}
         <div className="mb-4">
           <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
@@ -77,7 +78,7 @@ function ExtendableSurveyCard({ survey }: { survey: any }) {
           </div>
         </div>
 
-        {/* REJECTION REASON Section - Always takes up space */}
+        {/* REJECTION REASON Section */}
         <div className="mb-4 min-h-[80px]">
           {survey.survey_status === 'rejected' && survey.rejection_reason ? (
             <>
@@ -147,7 +148,7 @@ function ExtendableSurveyCard({ survey }: { survey: any }) {
           </div>
         </div>
 
-        {/* Keywords - Display all in preview */}
+        {/* Keywords */}
         <div className="mb-4">
           <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
             Keywords
@@ -254,7 +255,7 @@ function ExtendableSurveyCard({ survey }: { survey: any }) {
           </>
         )}
 
-        {/* View More / View Less Button */}
+        {/* View More & View Less Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-4 text-[#1e4db7] hover:text-[#011638] text-sm transition-colors flex items-center gap-1 self-start font-normal"
@@ -397,7 +398,7 @@ export default function MemberSurveyView() {
           </p>
         </div>
 
-        {/* Search Bar and Add Button - Side by side */}
+        {/* Search Bar and Add Button */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1 relative">
             <input
