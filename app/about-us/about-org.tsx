@@ -8,7 +8,7 @@ export default function AboutOrg() {
       
       <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
         
-        {/* CONSISTENT TITLE (Tighter Bottom Margin) */}
+        {/* CONSISTENT TITLE */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -24,7 +24,7 @@ export default function AboutOrg() {
           </div>
         </motion.div>
 
-        {/* PROPORTIONAL IMAGE (Slightly shorter to pull the bottom content up) */}
+        {/* PROPORTIONAL IMAGE */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
