@@ -17,7 +17,7 @@ import MemberThesisView from "@/components/memberThesisView";
 
 export default function Dashboard() {
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState("announcements");
+  const [activeTab, setActiveTab] = useState<string | null>(null); //default null
 
   // Get user role
   //const userRole = user?.user_metadata?.role || user?.role || "user";
@@ -42,20 +42,13 @@ export default function Dashboard() {
 
   // para sa tab
   useEffect(() => {
-    if (user?.email) {
-      // load saved tab for user
-      const savedTab = sessionStorage.getItem(`tab_${user.email}`);
-      if (savedTab) {
-        setActiveTab(savedTab);
-      } else {
-        // new user, reset to announcements
-        setActiveTab("announcements");
-      }
-    } else {
-      // user log out, reset to announcements
-      setActiveTab("announcements");
-    }
-  }, [user?.email]);
+  if (user?.email) {
+    const savedTab = sessionStorage.getItem(`tab_${user.email}`);
+    setActiveTab(savedTab || "announcements");
+  } else if (!user) {
+    setActiveTab("announcements");
+  }
+}, [user?.email]);
 
   // save current tab for user
   useEffect(() => {
@@ -69,6 +62,21 @@ export default function Dashboard() {
       fetchUserRole(user.email).then(setUserRole);
     }
   }, [user]);
+
+  // Reset saved tab when logged out
+  useEffect(() => {
+  if (!user && activeTab !== null) {
+    setActiveTab("announcements");
+  }
+  }, [user]);
+
+  if (activeTab === null) {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Loading...</p>
+    </div>
+  );
+}
 
   if (!user) {
     return (
@@ -197,8 +205,7 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {(userRole === "admin" && <CrudButton />) ||
-        (userRole === "superadmin" && <CrudButton />)}
+      {(userRole === "admin" || userRole === "superadmin") && <CrudButton />}
       <Footer />
     </div>
   );
