@@ -5,8 +5,8 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#011638]/80 border-t-4 border-[#011638]/35 text-white py-8 backdrop-blur-sm">
-      <div className="max-w-[1450px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
+    <footer className="w-full bg-[#011638]/80 text-white py-8 backdrop-blur-sm">
+      <div className="max-w-[1350px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
 
         {/* Logo and Title */}
         <div className="container flex lg:flex-row flex-col items-center gap-5">
