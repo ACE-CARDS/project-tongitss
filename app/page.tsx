@@ -291,6 +291,7 @@ export default function Home() {
   const [provinceDisplayCount, setProvinceDisplayCount] = useState(0);
   const provinceSectionRef = useRef(null);
   const [provinceAnimKey, setProvinceAnimKey] = useState(0);
+  const [isOverHero, setIsOverHero] = useState(true);
 
   useEffect(() => {
     const el = provinceSectionRef.current;
@@ -340,6 +341,19 @@ export default function Home() {
     setProvinceAnimKey((prev) => prev + 1);
   }, [selectedProvince, selectedAY]);
 
+  useEffect(() => {
+  const handleScroll = () => {
+    const heroHeight = document.getElementById("hero")?.offsetHeight || 0;
+
+    setShowBackToHero(window.scrollY > heroHeight - 50);
+
+    // 👇 ADD THIS
+    setIsOverHero(window.scrollY < heroHeight - 80);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
       {showBackToHero && (
@@ -372,7 +386,7 @@ export default function Home() {
         </button>
       )}
 
-      <NavBar />
+      <NavBar isOverHero={isOverHero} />
       <div className="relative z-[10000]">
         <Popup
           isShowing={isModalShowing}
