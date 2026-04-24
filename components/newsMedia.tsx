@@ -96,28 +96,37 @@ export default function NewsMedia() {
   if (loading) {
     return (
       <div 
-        className="w-full bg-[#fbfaf8] max-w-[1920px] min-h-screen flex items-center justify-center"
+        className="w-full bg-[#fbfaf8] max-w-[1920px] min-h-screen flex items-center justify-center relative overflow-hidden"
         style={{
           backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
           backgroundSize: "20px 20px"
         }}
       >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d21a1]"></div>
+        
+        {/* Decorative blurs for loading state */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#0d21a1]/10 rounded-full blur-3xl" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d21a1] z-10"></div>
       </div>
     );
   }
 
   return (
     <div 
-      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 justify-center"
+      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 relative overflow-hidden"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px",
         backgroundAttachment: 'fixed'
       }}
     >
+
+     {/* Decorative blur elements at the sides */}
+    <div className="absolute top-1/2 -translate-y-1/2 -left-48 w-96 h-96 bg-[#eec643]/30 rounded-full blur-3xl animate-pulse pointer-events-none" />
+    <div className="absolute top-1/2 -translate-y-1/2 -right-48 w-96 h-96 bg-[#0d21a1]/50 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
+      
       {/* Heading */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 relative z-10">
         <div className="flex items-center justify-center gap-3 mb-2">
           <span className="text-5xl text-[#eec643]">♠</span>
           <h1 className="text-4xl md:text-5xl font-bold text-[#011638]">NEWS & MEDIA</h1>
@@ -131,7 +140,7 @@ export default function NewsMedia() {
 
       {/* 1st ROW: Latest Posts */}
       {latestPosts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"> 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 relative z-10"> 
           {latestPosts.map(post => (
             <NewsCard key={post.id} post={post} />
           ))}
@@ -140,7 +149,7 @@ export default function NewsMedia() {
 
       {/* 2nd ROW: Carousel Section/Additional Posts */}
       {carouselPosts.length > 0 && (
-        <div className="relative">
+        <div className="relative z-10">
           {/* Sub heading */}
           <div className="flex items-center justify-center gap-3 mb-6">
             <span className="text-4xl text-[#eec643]">♠</span>
@@ -154,7 +163,7 @@ export default function NewsMedia() {
             <button
               onClick={() => scroll('left')}
               disabled={!canScrollLeft}
-              className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md transition-all ${
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-2 shadow-md transition-all ${
                 canScrollLeft 
                   ? 'hover:shadow-lg cursor-pointer' 
                   : 'opacity-50 cursor-not-allowed'
@@ -170,7 +179,7 @@ export default function NewsMedia() {
             <button
               onClick={() => scroll('right')}
               disabled={!canScrollRight}
-              className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md transition-all ${
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-2 shadow-md transition-all ${
                 canScrollRight 
                   ? 'hover:shadow-lg cursor-pointer' 
                   : 'opacity-50 cursor-not-allowed'
@@ -200,6 +209,30 @@ export default function NewsMedia() {
           </div>
         </div>
       )}
+
+      {/* Decorative line */}
+      <div className="w-100 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mx-auto rounded-full shadow-lg my-12 relative z-10" />
+      
+      {/* CSS */}
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.05;
+          }
+          50% {
+            opacity: 0.15;
+          }
+        }
+        .animate-pulse {
+          animation: pulse 3s ease-in-out infinite;
+        }
+        .delay-1000 {
+          animation-delay: 1s;
+        }
+      `}</style>
     </div>
   );
 }
@@ -218,7 +251,7 @@ function NewsCard({ post }: { post: NewsMedia }) {
 
   return (
     <Link href={post.post_url} target="_blank" rel="noopener noreferrer">
-      <div className="rounded-lg overflow-hidden transition-all duration-300 bg-white flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm">
+      <div className="rounded-lg overflow-hidden transition-all duration-300 bg-white flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative">
         <div className="h-48 rounded-t-lg overflow-hidden bg-gray-100 relative">
           {(!post.image_url || imgError) ? (
             <div className="w-full h-full flex items-center justify-center bg-[#011638]">
