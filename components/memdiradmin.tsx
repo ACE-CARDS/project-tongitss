@@ -333,6 +333,97 @@ export default function MembersPage() {
     setCurrentPage(1);
   }, [selectedFilter, searchName]);
 
+    const [deleteMember, setDeleteMember] = useState<Member | null>(null);
+  
+    const handleDeleteConfirm = async () => {
+      if (!deleteMember) return;
+    
+      try {
+        const { error } = await supabase
+          .from("member")
+          .delete()
+          .eq("id", deleteMember.id);
+    
+        if (error) throw error;
+    
+        setMembers((prev) =>
+          prev.filter((m) => m.id !== deleteMember.id)
+        );
+    
+        setOriginalMembers((prev) =>
+          prev.filter((m) => m.id !== deleteMember.id)
+        );
+    
+        setDeleteMember(null);
+      } catch (err) {
+        console.error("Delete error:", err);
+        alert("Failed to delete member.");
+      }
+    };
+  
+    //for edit
+    const [editMember, setEditMember] = useState<Member | null>(null);
+    const [editForm, setEditForm] = useState({
+      mem_fname: "",
+      mem_lname: "",
+      mem_minit: "",
+    });
+  
+    const handleEditSave = async () => {
+      if (!editMember) return;
+    
+      try {
+        if ((editMember as any).isImported) {
+          setMembers((prev) =>
+            prev.map((m) =>
+              m.id === editMember.id
+                ? { ...m, ...editForm }
+                : m
+            )
+          );
+          setEditMember(null);
+          return;
+        }
+    
+        const { error } = await supabase
+          .from("member")
+          .update({
+            mem_fname: editForm.mem_fname,
+            mem_lname: editForm.mem_lname,
+            mem_minit: editForm.mem_minit,
+          })
+          .eq("id", editMember.id);
+    
+        if (error) {
+          console.error("Edit error:", error);
+          alert(error.message);
+          return;
+        }
+    
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === editMember.id
+              ? { ...m, ...editForm }
+              : m
+          )
+        );
+    
+        setOriginalMembers((prev) =>
+          prev.map((m) =>
+            m.id === editMember.id
+              ? { ...m, ...editForm }
+              : m
+          )
+        );
+    
+        setEditMember(null);
+    
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -481,9 +572,10 @@ export default function MembersPage() {
             </div>
 
             {/* grid start */}
-            <div className="grid grid-cols-2 font-semibold text-[#011638]/70 px-4">
-              <span>Name</span>
-              <span>Committee</span>
+            <div className="grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
+              <span className="text-center">Name</span>
+              <span className="text-center">Committee</span>
+              <span className="text-center">Actions</span>
             </div>
 
             <div className="space-y-4">
@@ -502,13 +594,13 @@ export default function MembersPage() {
                   return (
                     <div
                       key={member.id}
-                      className="grid grid-cols-2 items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
+                      className="grid grid-cols-[1.5fr_1.5fr_0.5fr] items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-medium text-[#141414]">
+                      <span className="font-bold text-[#141414]">
                       {member.mem_lname}, {member.mem_fname} {member.mem_minit}
                       </span>
                       <div
-                        className={`${getCommitteeStyle(commName)} rounded-xl`}
+                        className={`${getCommitteeStyle(commName)} font-normal rounded-xl`}
                       >
                         <CommitteeDropdown
                           value={member.comm}
@@ -520,6 +612,37 @@ export default function MembersPage() {
                             handleCommitteeChange(member.id, val)
                           }
                         />
+        
+                      </div>
+                      <div className="flex justify-center gap-3">
+                      <button
+                        onClick={() => {
+                          setEditMember(member);
+                          setEditForm({
+                            mem_fname: member.mem_fname,
+                            mem_lname: member.mem_lname,
+                            mem_minit: member.mem_minit || "",
+                          });
+                        }}
+                        className="text-[#011638] hover:scale-110 transition-transform"
+                      >
+                          {/* edit icon */}
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </button>
+
+                        <button
+                          onClick={() => setDeleteMember(member)}
+                          className="text-red-500 hover:scale-110 transition-transform"
+                        >
+                          {/* delete icon */}
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   );
@@ -620,6 +743,100 @@ export default function MembersPage() {
           </div>
         </div>
       </main>
+
+      {deleteMember && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Delete Member?
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-[#011638]">
+              {deleteMember.mem_fname} {deleteMember.mem_lname}
+            </span>
+            ?
+          </p>
+
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setDeleteMember(null)}
+              className="px-4 py-2 rounded-xl border"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={() => handleDeleteConfirm()}
+              className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {editMember && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[400px]">
+
+          <h2 className="text-xl font-bold text-[#011638] mb-4">
+            Edit Member
+          </h2>
+
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="First Name"
+              value={editForm.mem_fname}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, mem_fname: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={editForm.mem_lname}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, mem_lname: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+
+            <input
+              type="text"
+              placeholder="Middle Initial"
+              value={editForm.mem_minit}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, mem_minit: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setEditMember(null)}
+              className="px-4 py-2 border rounded-xl"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleEditSave}
+              className="px-4 py-2 bg-[#011638] text-white rounded-xl"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
       {/* confirm  */}
       {showConfirm && (
