@@ -528,7 +528,7 @@ export default function Home() {
                 <img
                   src="/assets/logos/ACE CARDS logo.png"
                   alt="Ace Cards Logo"
-                  className="hidden lg:block w-72 sm:w-80 lg:w-[420px] rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                  className="hidden lg:block w-72 sm:w-80 lg:w-[420px] rounded-3xl shadow-5xl transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
             </div>
