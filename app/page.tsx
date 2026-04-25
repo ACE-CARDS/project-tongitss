@@ -60,9 +60,10 @@ export default function Home() {
   //Counts poexcz for events and members separate si province kasi wait lang iiyaq aq dyan
   const [eventCount, setEventCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
-  const [selectedAY, setSelectedAY] = useState("AY 2025-2026"); //here ichchange po yung current year thnx
+  const [selectedAY, setSelectedAY] = useState("AY 2025-2026"); //here ichchange po yung current year thnx for province  section
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [provinceMembers, setProvinceMembers] = useState(0);
+  const FIXED_MEMBER_AY = "AY 2025-2026"; //here ichchange current year for member section
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -73,14 +74,14 @@ export default function Home() {
       const { count: memberTotal } = await supabase
         .from("member")
         .select("*", { count: "exact", head: true })
-        .eq("acadyear", selectedAY);
+        .eq("acadyear", FIXED_MEMBER_AY);
 
       setEventCount(eventTotal || 0);
       setMemberCount(memberTotal || 0);
     };
 
     fetchCounts();
-  }, [selectedAY]);
+  }, []);
 
   useEffect(() => {
     setMemberDisplayCount(0);
