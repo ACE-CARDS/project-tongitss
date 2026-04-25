@@ -289,7 +289,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="w-full px-3 py-2 border rounded-xl text-left shadow-sm font-semibold relative"
+          className="w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative"
         >
           {selectedLabel}
           <span
@@ -459,7 +459,7 @@ export default function MembersPage() {
                 <button
                   key={cat.key}
                   onClick={() => setSelectedFilter(cat.key)}
-                  className={`flex-shrink-0 px-5 py-2 rounded-t-xl font-semibold transition-all border ${
+                  className={`flex-shrink-0 px-5 py-2 rounded-t-xl font-normal transition-all border ${
                     selectedFilter === cat.key
                       ? `bg-white shadow-md border-gray-300 border-b-white text-[#011638]`
                       : `${colorClass} border-gray-500 hover:shadow-sm hover:opacity-50`
