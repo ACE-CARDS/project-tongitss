@@ -26,8 +26,8 @@ export default function LoginPage() {
                 height={1000}
               />
               <h1 className="font-extrabold text-black text-2xl lg:text-3xl">Welcome to the<br/>
-                <span className="text-4xl lg:text-6xl"><span className="text-blue-600 text-6xl">ACE CARDS</span> <br/>
-                User Login Area</span>
+                <span className="text-[#011638]/80 text-6xl">ACE CARDS</span> <br/>
+                <span className="text-4xl lg:text-5xl">User Login Area</span>
               </h1>
               <p className="mt-6 text-slate-600 text-lg max-w-sm w-full mx-auto lg:mx-0">
                 Access your personalized dashboard, manage your submissions, and stay connected with the organization.
@@ -35,7 +35,7 @@ export default function LoginPage() {
             </div>
           </section>
 
-          <section id="login-form" className="flex w-full xl:w-1/2 lg:h-screen xl:h-screen h-[30rem] bg-blue-500 text-slate-600">
+          <section id="login-form" className="flex w-full xl:w-1/2 lg:h-screen xl:h-screen h-[30rem] bg-[#011638]/80 text-slate-600">
             <div className="flex flex-col my-auto mx-auto w-sm justify-center items-center rounded-3xl bg-white p-10 shadow-lg">
               <span className="text-2xl font-medium text-center">
                 <span className="text-3xl font-bold text-slate-900"> Let's stay connected!</span> <br/>
