@@ -15,7 +15,7 @@ import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";
 import MemberSurveyView from "@/components/memberSurveyView";
 import MemberThesisView from "@/components/memberThesisView";
-import EventsAdmin from "@/components/eventsAdmin";
+import ManagePage from "./manage/page"; 
 
 // Internal component to handle search params
 function DashboardContent() {
@@ -90,7 +90,7 @@ function DashboardContent() {
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
-    { label: "EVENTS", key: "events" },
+    { label: "MANAGE POSTS", key: "manage" },
     { label: "COMMITTEE", key: "committee" },
     { label: "MEMBERS", key: "members" },
     { label: "THESIS", key: "thesis" },
@@ -107,14 +107,11 @@ function DashboardContent() {
             <CommitteeDirectory />
           </div>
         );
-      case "events":
-        if (userRole === "admin" || userRole === "superadmin") {
-          return <EventsAdmin />;
-        }
+      case "manage":
         return (
-          <p className="text-center py-10 italic text-gray-500">
-            Not authorized.
-          </p>
+          <div className="flex h-full w-full items-center justify-center">
+            <ManagePage />
+          </div>
         );
       case "members":
         if (userRole === "superadmin") return <MemdirSuper />;
@@ -181,7 +178,7 @@ function DashboardContent() {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
 
-                  return tab.key !== "members" && tab.key !== "events";
+                  return tab.key !== "members" && tab.key !== "events" && tab.key !== "manage";
                 })
                 .map((tab) => (
                   <button
