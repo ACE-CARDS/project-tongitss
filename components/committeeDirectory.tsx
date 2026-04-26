@@ -2,13 +2,30 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Pagination from "./pagination";
 
 const supabase = createClient();
 
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
 
-export default function CommitteeDirectory() {
+//thanks saffi
+interface ClientPaginationProps {
+  currentPage: number;
+}
+
+const getItemsPerPage = () => {
+  if (typeof window === "undefined") return 6; // Default: 6 items per page
+
+  const width = window.innerWidth; // Get window width
+  if (width < 640) return 4; // Mobile: 2 items per page
+  if (width < 1024) return 6; // Tablet: 4 items per page
+  return 8; // Desktop: 6 items per page
+};
+
+export default function CommitteeDirectory({
+  currentPage,
+}: ClientPaginationProps) {
   const commTabs = [
     { label: "Executives", key: "EXECUTIVES" },
     { label: "Internals", key: "INTERNALS" },
@@ -182,9 +199,9 @@ export default function CommitteeDirectory() {
               className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
                   transition-all duration-300 ease-out
                   hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
-                  aspect-[3/4]
                   w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
-                  min-h-[180px] sm:min-h-[240px]"
+                  min-h-[180px] sm:min-h-[240px]
+                  flex flex-col"
             >
               {/*<div
                 className="absolute inset-0 opacity-10 pointer-events-none"
@@ -210,20 +227,21 @@ export default function CommitteeDirectory() {
                 </div>
               </div>
 
-              <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight">
-                {person.mem_fname} {person.mem_lname}
-              </h2>
+              <div className="flex-grow flex flex-col items-center justify-center">
+                <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight break-words">
+                  {person.mem_fname} {person.mem_lname}
+                </h2>
 
-              <div className="flex justify-center mt-1">
-                <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-1 rounded-full bg-[#0d21a1]/10 font-medium text-center">
-                  {person.committee?.comm_name}
-                </span>
+                <div className="flex justify-center mt-1">
+                  <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-2 rounded-[10px] md:rounded-full bg-[#0d21a1]/10 font-medium text-center">
+                    {person.committee?.comm_name}
+                  </span>
+                </div>
+
+                <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
+                  {person.school?.school_name}
+                </p>
               </div>
-
-              <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
-                {person.school?.school_name}
-              </p>
-
               <p className="relative z-10 text-center text-xs text-slate-300 mt-4 uppercase tracking-widest">
                 {person.acadyear}
               </p>
