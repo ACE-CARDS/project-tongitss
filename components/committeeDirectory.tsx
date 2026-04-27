@@ -57,7 +57,7 @@ export default function CommitteeDirectory() {
             `*, committee:committee (comm_name), school:school (school_name)`,
           )
           .eq("acadyear", ACADYEAR)
-          .eq("is_active", "TRUE")
+          .eq("is_active", true)
           .order("id", { ascending: true });
 
         if (error) throw error;
