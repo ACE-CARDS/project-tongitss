@@ -545,38 +545,46 @@ export default function Home() {
         <section
           id="events-section"
           ref={sectionRef}
-          className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
-          style={{
-            backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", //dotted
-            backgroundSize: "20px 20px",
-            backgroundAttachment: "fixed",
-          }}
+          className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638]"
         >
-          <div className="w-full mx-auto mb-10 max-w-[1920px] relative">
-            <div className="text-center mb-20 relative z-10 flex flex-col items-center">
-              <h1 className="text-7xl sm:text-8xl lg:text-[200px] font-black text-[#011638] drop-shadow-2xl leading-none">
-                {displayCount}
-              </h1>
-              <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-[#011638]/90 mt-4 drop-shadow-xl">
-                Total
-              </h3>
-              <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-[#011638]/90 mt-1 drop-shadow-xl">
-                Events
-              </h2>
-              <Link
-                href="/events"
-                onClick={() =>
-                  sessionStorage.setItem(
-                    "returnToHomeSection",
-                    "events-section",
-                  )
-                }
-                className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
-              >
-                View Events →
-              </Link>
-            </div>
+
+        <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `radial-gradient(#eec643 1px, transparent 1px)`,
+              backgroundSize: "20px 20px",
+            }}
+          />
+
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
+
+          <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
+          <div className="text-center mb-20 flex flex-col items-center">
+            <h1 className="text-7xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
+              {displayCount}
+            </h1>
+            <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
+              Total
+            </h3>
+            <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-white/90 mt-1">
+              Events
+            </h2>
+
+            <Link
+              href="/events"
+              onClick={() =>
+                sessionStorage.setItem(
+                  "returnToHomeSection",
+                  "events-section",
+                )
+              }
+              className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] text-[#eec643] font-bold text-lg hover:bg-[#eec643] hover:text-[#011638] shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
+            >
+              View Events →
+            </Link>
           </div>
+        </div>
 
           {/* Mobile */}
           <div className="grid grid-cols-2 gap-6 lg:hidden">
