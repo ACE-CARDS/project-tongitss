@@ -20,7 +20,7 @@ export default function EventsTimeline() {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq("is_deleted", false) // Soft delete filter
+        .eq("is_deleted", false)
         .order("start_date", { ascending: true });
 
       if (data && !error) {
@@ -82,6 +82,14 @@ export default function EventsTimeline() {
     }
   };
 
+  // Helper to format date into (MMM, YYYY)
+  const formatTimelineDate = (dateString: string) => {
+    if (!dateString) return "";
+    const d = new Date(dateString);
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    return `(${months[d.getMonth()]}, ${d.getFullYear()})`;
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col">
       <div className="text-center mb-6">
@@ -94,7 +102,7 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto mb-8">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto mb-10">
         <input
           type="text"
           placeholder="Search events..."
@@ -129,11 +137,7 @@ export default function EventsTimeline() {
               strokeWidth={2.5}
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 9l-7 7-7-7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
         </div>
@@ -151,30 +155,46 @@ export default function EventsTimeline() {
       ) : (
         <>
           {filteredEvents.length > 0 && (
-            <div className="relative w-full py-4 mb-2 border-b border-gray-300/50">
+            <div className="relative w-full mb-8 border-b border-gray-300/50">
+              
+              {/* Horizontal Line centered vertically */}
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-slate-300/50 -translate-y-1/2"></div>
-              <div className="relative flex justify-between items-center px-4 overflow-x-auto hide-scrollbar">
+              
+              {/* Timeline Container (Added py-10 so the absolute text isn't clipped) */}
+              <div className="relative flex justify-between items-center px-4 py-10 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {filteredEvents.map((node, index) => (
                   <div
                     key={node.id}
                     onClick={() => scrollToCard(index)}
-                    className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[60px] shrink-0"
+                    className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[80px] shrink-0"
                   >
+                    
+                    {/* Date Label: Above the dot */}
+                    <div className={`absolute bottom-full mb-3 text-[10px] font-black tracking-widest uppercase whitespace-nowrap transition-colors duration-300 ${
+                      index === activeIndex ? "text-[#011638]" : "text-slate-400 group-hover:text-[#0d21a1]"
+                    }`}>
+                      {formatTimelineDate(node.start_date)}
+                    </div>
+
+                    {/* Timeline Dot */}
                     <div className="relative flex items-center justify-center h-8 w-8 shrink-0 z-10">
                       {index === activeIndex ? (
-                        <div className="w-6 h-6 bg-[#011638] rounded-full flex items-center justify-center transition-all duration-300">
+                        <div className="w-6 h-6 bg-[#011638] rounded-full flex items-center justify-center transition-all duration-300 shadow-md shadow-[#011638]/40">
                           <div className="w-3 h-3 bg-[#eec643] rounded-full"></div>
                         </div>
                       ) : (
                         <div className="w-4 h-4 bg-white border-[3px] border-slate-300 rounded-full group-hover:border-[#0d21a1] transition-all duration-300"></div>
                       )}
                     </div>
-                    <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
-                      <div className="bg-[#011638] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
+                    
+                    {/* Short Title Tooltip: Below the dot */}
+                    <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
+                      <div className="w-2 h-2 bg-[#011638] rotate-45 -mb-1.5 z-0"></div>
+                      <div className="bg-[#011638] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap relative z-10">
                         {node.short_title}
                       </div>
-                      <div className="w-2 h-2 bg-[#011638] rotate-45 -mt-1"></div>
                     </div>
+
                   </div>
                 ))}
               </div>
@@ -187,16 +207,7 @@ export default function EventsTimeline() {
               disabled={activeIndex === 0}
               className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-lg disabled:opacity-0 transition-all duration-300"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
@@ -223,14 +234,10 @@ export default function EventsTimeline() {
                   >
                     <div className="relative z-10 flex justify-between items-start mb-4">
                       <div className="flex flex-col">
-                        <span
-                          className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}
-                        >
+                        <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
                           Date
                         </span>
-                        <span
-                          className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}
-                        >
+                        <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
                           {event.date}
                         </span>
                       </div>
@@ -245,9 +252,7 @@ export default function EventsTimeline() {
                       {event.description}
                     </p>
                     <div className="relative z-10 mt-6 pt-6 border-t border-slate-100 text-center">
-                      <div
-                        className={`w-full py-4 rounded-xl font-black text-xs tracking-widest uppercase ${event.status === "COMPLETED" ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white shadow-md"}`}
-                      >
+                      <div className={`w-full py-4 rounded-xl font-black text-xs tracking-widest uppercase ${event.status === "COMPLETED" ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white shadow-md"}`}>
                         {event.status === "COMPLETED"
                           ? "VIEW RECAP"
                           : event.status === "RSVP OPEN"
@@ -269,16 +274,7 @@ export default function EventsTimeline() {
               }
               className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-lg disabled:opacity-0 transition-all duration-300"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
