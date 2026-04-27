@@ -56,6 +56,19 @@ export default function NavBar({ isOverHero = false }) {
     };
   }, []);
 
+   // Clear saved tab before logout
+  const handleLogout = async () => {
+    if (user?.email) {
+      localStorage.removeItem(`dashboard_tab_${user.email}`);
+    }
+    
+    // Logout
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50`}>
 
@@ -251,12 +264,7 @@ export default function NavBar({ isOverHero = false }) {
                   </Link>
 
                   <li
-                    onClick={async () => {
-                      const { createClient } = await import("@/lib/supabase/client");
-                      const supabase = createClient();
-                      await supabase.auth.signOut();
-                      window.location.href = "/";
-                    }}
+                    onClick={handleLogout}
                     className="cursor-pointer rounded-[50px] bg-red-500/60 xl:text-white text-white xl:text-red-500 duration-200 transition-all px-[13px] py-[4px] xl:hover:bg-red-500/90 xl:hover:scale-[1.04]"
                   >
                     Logout

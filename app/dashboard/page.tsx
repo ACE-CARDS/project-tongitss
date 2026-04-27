@@ -25,6 +25,7 @@ function DashboardContent() {
   // Get user role
   //const userRole = user?.user_metadata?.role || user?.role || "user";
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState("user");
   const supabase = createClient();
   const [memberData, setMemberData] = useState<{
@@ -58,33 +59,67 @@ function DashboardContent() {
     return data.role;
   };
 
+  // Get tab from URL
+  const getInitialTab = () => {
+    // Check URL parameter
+    const urlTab = searchParams.get("tab");
+    if (urlTab && isValidTab(urlTab)) {
+      return urlTab;
+    }
+    
+    // Check saved
+    if (user?.email) {
+      const savedTab = localStorage.getItem(`dashboard_tab_${user.email}`);
+      if (savedTab && isValidTab(savedTab)) {
+        return savedTab;
+      }
+    }
+    
+    // Default tab: announcements
+    return "announcements";
+  };
+
+  // If tab is valid
+  const isValidTab = (tab: string): boolean => {
+    const validTabs = ["announcements", "manage", "committee", "members", "thesis", "survey"];
+    return validTabs.includes(tab);
+  };
+
+  // Save tab
+  const saveTab = (tab: string) => {
+    if (user?.email) {
+      localStorage.setItem(`dashboard_tab_${user.email}`, tab);
+    }
+  };
+
   // Check for URL parameters first, then fall back to session storage
   useEffect(() => {
-    if (user?.email) {
-      const savedTab = sessionStorage.getItem(`tab_${user.email}`);
-      setActiveTab(savedTab || "announcements");
-    } else if (!user) {
-      setActiveTab("announcements");
+    if (user === undefined) return; 
+    
+    const initialTab = getInitialTab();
+    setActiveTab(initialTab);
+    
+    if (!searchParams.get("tab")) {
+      router.push(`/dashboard?tab=${initialTab}`, { scroll: false });
     }
-  }, [user?.email]);
+  }, [user?.email, searchParams]);
 
   // Save current tab for user
   useEffect(() => {
     if (user?.email && activeTab) {
-      sessionStorage.setItem(`tab_${user.email}`, activeTab);
+      saveTab(activeTab);
+      
+      // Update URL
+      const currentUrlTab = searchParams.get("tab");
+      if (currentUrlTab !== activeTab) {
+        router.push(`/dashboard?tab=${activeTab}`, { scroll: false });
+      }
     }
-  }, [activeTab, user?.email]);
+  }, [activeTab, user?.email, searchParams]);
 
   useEffect(() => {
     if (user?.email) {
       fetchMemberData(user.email).then(setUserRole);
-    }
-  }, [user]);
-
-  // Reset saved tab when logged out
-  useEffect(() => {
-    if (!user && activeTab !== null) {
-      setActiveTab("announcements");
     }
   }, [user]);
 
@@ -180,7 +215,6 @@ function DashboardContent() {
                     : user.user_metadata.name || "User"}
                 </h2>
               </div>
-
               {/*Committee Name*/}
               <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
                 <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
@@ -188,7 +222,6 @@ function DashboardContent() {
                 </p>
 
                 <span className="hidden md:block h-6 w-px bg-gray-300"></span>
-
                 {/*University*/}
                 <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
                   {memberData ? `${memberData.school}` : "Member"}
@@ -208,7 +241,6 @@ function DashboardContent() {
                 .filter((tab) => {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
-
                   return (
                     tab.key !== "members" &&
                     tab.key !== "events" &&
@@ -220,10 +252,6 @@ function DashboardContent() {
                     key={tab.key}
                     onClick={() => {
                       setActiveTab(tab.key);
-                      // Update URL without reloading to keep it clean
-                      router.push(`/dashboard?tab=${tab.key}`, {
-                        scroll: false,
-                      });
                     }}
                     className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
                       activeTab === tab.key
