@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { DayPilot, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { createClient } from "@/lib/supabase/client";
-import "./toolbar.css";
+
 import CalendarEvent from "./calendarEvent";
 import Image from "next/image";
+
+// @ts-ignore: Cannot find module or type declarations for side-effect import of './toolbar.css'.
+import "./toolbar.css";
 
 const supabase = createClient();
 
@@ -50,7 +53,7 @@ export default function Calendar() {
       } else {
         const listEvents = data.map((item) => ({
           id: item.id,
-          text: item.title,
+          text: item.short_title || item.title,
           start: item.start_date,
           end: new DayPilot.Date(item.end_date).addDays(1),
           data: item,
