@@ -85,7 +85,6 @@ export default function NavBar({ isOverHero = false }) {
               ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"}
               origin-top-right transition-all duration-300 ease-in-out
               ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-        
             `}
           >
             <ul
@@ -245,8 +244,14 @@ export default function NavBar({ isOverHero = false }) {
             </ul>
           </div>
 
-          <div className={`flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 backdrop-blur-sm  ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-`}>
+          <div className={`
+          flex flex-row 
+          items-center justify-center 
+          xl:hidden 
+          rounded-full p-3 max-h-full max-w-fit
+          bg-[#011638]/70 backdrop-blur-sm  
+          ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
+          `}>
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
