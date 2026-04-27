@@ -3,11 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { DayPilot, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { createClient } from "@/lib/supabase/client";
-
 import CalendarEvent from "./calendarEvent";
 import Image from "next/image";
 
-// @ts-ignore: Cannot find module or type declarations for side-effect import of './toolbar.css'.
+// @ts-ignore
 import "./toolbar.css";
 
 const supabase = createClient();
