@@ -182,30 +182,42 @@ export default function MembersPage() {
     try {
       const importedNew = members.filter((m: any) => m.isImported);
       const existing = members.filter((m: any) => !m.isImported); 
-  
+      const DEFAULT_ACADYEAR = "AY 2025-2026";
+      const DEFAULT_COMM = 23;
+      const DEFAULT_SCHOL_TYPE = "Merit";
+      const DEFAULT_SCHOL_YEAR = 2023;
+      const DEFAULT_SCHOOL = 1;
+      
       if (importedNew.length > 0) {
         const insertPayload = importedNew.map((m, index) => ({
-            mem_fname: m.mem_fname,
-            mem_lname: m.mem_lname,
-            mem_minit: m.mem_minit,
-            role: m.role,
-            comm: m.comm || 23, // default committee (members ean)
-          
-            // default palang sha sorry ayusin ko after promise
-            mem_schol_type: "Merit", 
-            mem_schol_year: 2023,
-            school: 1, 
-            is_active: true,
-            mem_email: `temp${Date.now()}${index}@example.com`, //temp email po hhe need kasi unique 
-          
-            acadyear: "AY 2025-2026", //CHANGE AY 
-          }));
+          mem_fname: m.mem_fname,
+          mem_lname: m.mem_lname,
+          mem_minit: m.mem_minit,
+          role: m.role,
+      
+          // ✅ CSV priority, fallback if missing/invalid
+          comm: m.comm ?? DEFAULT_COMM,
+      
+          mem_schol_type: m.mem_schol_type?.trim() || DEFAULT_SCHOL_TYPE,
+          mem_schol_year: m.mem_schol_year ?? DEFAULT_SCHOL_YEAR,
+          school: m.school ?? DEFAULT_SCHOOL,
+      
+          is_active: m.is_active ?? true,
+      
+          // ❗ better fallback email logic (still temp but safer)
+          mem_email:
+            m.mem_email?.trim() ||
+            `temp_${Date.now()}_${index}@example.com`,
+      
+          // ✅ CSV overrides default if present
+          acadyear: m.acadyear?.trim() || DEFAULT_ACADYEAR,
+        }));
       
         const { data, error } = await supabase
-        .from("member")
-        .insert(insertPayload)
-        .select();
-
+          .from("member")
+          .insert(insertPayload)
+          .select();
+      
         console.log("INSERT DATA:", data);
         console.log("INSERT ERROR:", error);
       
@@ -299,11 +311,11 @@ export default function MembersPage() {
       options.find((o) => o.value === value)?.label || "Select";
 
     return (
-      <div ref={ref} className="relative w-full">
+      <div ref={ref} className="relative w-full min-w-0">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative ${styleClass}`}
+          className={`w-full px-2 sm:px-3 py-2 text-sm truncate border rounded-xl text-left shadow-sm font-normal relative ${styleClass}`}
         >
           {selectedLabel}
           <span
@@ -760,7 +772,7 @@ export default function MembersPage() {
   
     URL.revokeObjectURL(url);
   };
-  
+
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -807,18 +819,18 @@ export default function MembersPage() {
               );
             })}
           </div>
-
+          
           {/* Members Table */}
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-xxl p-6 pt-4 space-y-6">
-            <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               {/* Name Search */}
-              <div className="flex-1 relative">
+              <div className="w-full sm:flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search member..."
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                  className="w-full px-4 py-2.5 pl-10 text-sm sm:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
                 <svg
                   className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -836,11 +848,11 @@ export default function MembersPage() {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-4 ">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                 {/* import */}
                 <label
                   htmlFor="import-members"
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
+                  className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-[#011638] border-2 border-[#011638] text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638] text-center"
                 >
                   Import Members
                 </label>
@@ -852,33 +864,71 @@ export default function MembersPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                  
+
                     const text = await file.text();
-                    const rows = text.split("\n").filter(Boolean);
-                    const headers = rows[0].split(",");
-                  
+
+                    const parseCSV = (text: string) => {
+                      const rows: string[][] = [];
+                      let current: string[] = [];
+                      let value = "";
+                      let insideQuotes = false;
+
+                      for (let i = 0; i < text.length; i++) {
+                        const char = text[i];
+                        const next = text[i + 1];
+
+                        if (char === '"' && insideQuotes && next === '"') {
+                          value += '"';
+                          i++;
+                        } else if (char === '"') {
+                          insideQuotes = !insideQuotes;
+                        } else if (char === "," && !insideQuotes) {
+                          current.push(value);
+                          value = "";
+                        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+                          if (value || current.length) {
+                            current.push(value);
+                            rows.push(current);
+                            current = [];
+                            value = "";
+                          }
+                        } else {
+                          value += char;
+                        }
+                      }
+
+                      if (value || current.length) {
+                        current.push(value);
+                        rows.push(current);
+                      }
+
+                      return rows.filter((r) => r.length > 1);
+                    };
+
+                    const rows = parseCSV(text);
+
+                    const headers = rows[0].map((h) => h.trim());
+
                     const parsed = rows.slice(1).map((row, index) => {
-                      const values = row.split(",");
                       const obj: any = {};
-                  
+
                       headers.forEach((h, i) => {
-                        obj[h.trim()] = values[i]?.trim();
+                        obj[h] = row[i]?.trim() ?? "";
                       });
-                  
+
                       return {
                         id: Date.now() + index,
-                        mem_fname: obj.mem_fname,
-                        mem_lname: obj.mem_lname,
+                        mem_fname: obj.mem_fname || "",
+                        mem_lname: obj.mem_lname || "",
                         mem_minit: obj.mem_minit || "",
                         role: obj.role || "member",
                         comm: obj.comm ? Number(obj.comm) : null,
-                        acadyear: obj.acadyear || "AY 2025-2026", //CHANGE AY 
+                        acadyear: obj.acadyear || "AY 2025-2026",
                         isImported: true,
                       };
                     });
-                  
-                    setImportedMembers(parsed);
 
+                    setImportedMembers(parsed);
                     setMembers((prev) => [...prev, ...parsed]);
                   }}
                 />
@@ -886,15 +936,16 @@ export default function MembersPage() {
                 {/* export */}
                 <button
                   onClick={() => setShowExportOptions(true)}
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
+                  className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-[#011638] border-2 border-[#011638] text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
                 >
                   Export Members
                 </button>
               </div>
             </div>
 
+            <div className="overflow-x-auto">
             {/* grid start */}
-            <div className="grid grid-cols-[1.5fr_1.5fr_1fr_0.5fr] font-semibold text-[#011638]/70 px-4 mb-1">
+            <div className="hidden sm:grid grid-cols-[minmax(140px,1.5fr)_minmax(140px,1.5fr)_minmax(110px,1fr)_minmax(70px,0.5fr)] font-semibold text-[#011638]/70 px-4 mb-2">
               <span className="text-center">Name</span>
               <span className="text-center">Committee</span>
               <span className="text-center">Role</span>
@@ -917,9 +968,13 @@ export default function MembersPage() {
                   return (
                     <div
                       key={member.id}
-                      className="grid grid-cols-[1.5fr_1.5fr_1fr_0.5fr] items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
+                      className="
+                        flex flex-col gap-3
+                        sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
+                        bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition
+                      "
                     >
-                      <span className="font-bold text-[#141414]">
+                      <span className="font-bold text-[#141414] break-words">
                         {member.mem_lname}, {member.mem_fname} {member.mem_minit}
                       </span>
                       <div
@@ -948,7 +1003,7 @@ export default function MembersPage() {
                         }
                         styleClass={getRoleStyle(member.role)}
                       />
-                      <div className="flex justify-center gap-3">
+                      <div className="flex flex-wrap justify-center gap-2 min-w-[70px]">
                       <button
                         onClick={() => {
                           setEditMember(member);
@@ -958,7 +1013,7 @@ export default function MembersPage() {
                             mem_minit: member.mem_minit || "",
                           });
                         }}
-                        className="text-[#011638] hover:scale-110 transition-transform"
+                        className="text-[#011638] hover:scale-110 transition-transform p-1 sm:p-0"
                       >
                           {/* edit icon */}
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -982,6 +1037,7 @@ export default function MembersPage() {
                   );
                 })
               )}
+              </div>
             </div>
 
             {/* pagination */}
