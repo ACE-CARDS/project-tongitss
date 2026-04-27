@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import NavBar from "@/components/navbar";
@@ -60,6 +60,8 @@ export default function Home() {
   //Counts poexcz for events and members separate si province kasi wait lang iiyaq aq dyan
   const [eventCount, setEventCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
+  const [surveyCount, setSurveyCount] = useState(0);
+  const [thesesCount, setThesesCount] = useState(0);
   const [selectedAY, setSelectedAY] = useState("AY 2025-2026"); //here ichchange po yung current year thnx for province  section
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [provinceMembers, setProvinceMembers] = useState(0);
@@ -77,8 +79,20 @@ export default function Home() {
         .select("*", { count: "exact", head: true })
         .eq("acadyear", FIXED_MEMBER_AY);
 
+      const { count: surveyTotal } = await supabase
+        .from("survey")
+        .select("*", { count: "exact", head: true })
+        .eq("survey_status", "accepted");
+
+      const { count: thesesTotal } = await supabase
+        .from("thesis")
+        .select("*", { count: "exact", head: true })
+        .eq("thesis_status", "accepted");
+
       setEventCount(eventTotal || 0);
       setMemberCount(memberTotal || 0);
+      setSurveyCount(surveyTotal || 0);
+      setThesesCount(thesesTotal || 0);
     };
 
     fetchCounts();
@@ -234,6 +248,74 @@ export default function Home() {
 
     return () => observer.disconnect();
   }, [eventCount]);
+
+  //count animation for thesis
+  const [displayThesesCount, setDisplayThesesCount] = useState(0);
+  const thesesSectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          let start = 0;
+          const target = thesesCount;
+          const duration = 500;
+          const increment = target / (duration / 16);
+
+          const interval = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+              setDisplayThesesCount(target);
+              clearInterval(interval);
+            } else {
+              setDisplayThesesCount(Math.floor(start));
+            }
+          }, 16);
+        } else {
+          setDisplayThesesCount(0);
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (thesesSectionRef.current) observer.observe(thesesSectionRef.current);
+
+    return () => observer.disconnect();
+  }, [thesesCount]);
+
+  //count animation for survey
+  const [displaySurveyCount, setDisplaySurveyCount] = useState(0);
+  const surveySectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          let start = 0;
+          const target = surveyCount;
+          const duration = 500;
+          const increment = target / (duration / 16);
+
+          const interval = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+              setDisplaySurveyCount(target);
+              clearInterval(interval);
+            } else {
+              setDisplaySurveyCount(Math.floor(start));
+            }
+          }, 16);
+        } else {
+          setDisplaySurveyCount(0);
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (surveySectionRef.current) observer.observe(surveySectionRef.current);
+
+    return () => observer.disconnect();
+  }, [surveyCount]);
 
   //button pataas hi
 
@@ -1031,19 +1113,24 @@ export default function Home() {
                 {/* Stats Counter */}
                 <div className="w-full">
                   <div className="flex flex-wrap justify-center gap-6 mt-12 pt-8">
-                    <div className="text-center group cursor-pointer">
+                    <div
+                      ref={surveySectionRef}
+                      className="text-center group cursor-pointer"
+                    >
                       <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
-                        20+ {/* Placeholder count */}
+                        {displaySurveyCount}
                       </div>
                       <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
                         Research Surveys
                       </div>
                     </div>
 
-                    <div className="text-center group cursor-pointer">
+                    <div
+                      ref={thesesSectionRef}
+                      className="text-center group cursor-pointer"
+                    >
                       <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
-                        15+{" "}
-                        {/* Placeholder count at di ko po alam paano AHAHAHAH */}
+                        {displayThesesCount}
                       </div>
                       <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
                         Research Thesis
