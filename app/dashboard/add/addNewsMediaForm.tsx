@@ -233,11 +233,7 @@ export default function AddNewsMediaForm() {
       sessionStorage.removeItem("newsMediaDraft");
 
       // Redirect
-      if (from === 'admin') {
-        router.push('/dashboard?tab=manage&section=news');
-      } else {
-        router.push("/dashboard/add/success?type=news-media");
-      }
+      router.push("/dashboard/add/success?type=news-media");
       router.refresh();
       
     } catch (err) {

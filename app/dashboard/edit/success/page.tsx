@@ -7,7 +7,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
 
-export default function AddSuccessPage() {
+export default function EditSuccessPage() {
   const { user } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function AddSuccessPage() {
   if (user?.role !== "admin" && user?.role !== "superadmin"){
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>You are not authorized to add content.</p>
+        <p>You are not authorized to edit content.</p>
       </div>
     );
   }
@@ -34,28 +34,28 @@ export default function AddSuccessPage() {
   const getContentDetails = () => {
     if (type === "announcement") {
       return {
-        title: "Announcement Posted!",
-        message: "Your announcement has been successfully saved to the database and is now live based on your scheduled dates.",
-        buttonText: "Create Another Announcement",
-        buttonLink: "/dashboard/add/announcement"
+        title: "Announcement Updated!",
+        message: "Your announcement has been successfully updated in the database.",
+        buttonText: "Edit Another Announcement",
+        buttonLink: "/dashboard/edit/announcement"
       };
     }
 
     if (type === "news-media") {
       return {
-        title: "News & Media Posted!",
-        message: "Your news post has been successfully saved.",
-        buttonText: "Add Another",
-        buttonLink: "/dashboard/add/news-media"
+        title: "News & Media Updated!",
+        message: "Your news post has been successfully updated.",
+        buttonText: "Edit Another",
+        buttonLink: "/dashboard/edit/news-media"
       };
     }
     
     if (type === "events") {
       return {
-        title: "Event Posted!",
-        message: "Your event has been successfully saved.",
-        buttonText: "Add Another",
-        buttonLink: "/dashboard/add/events"
+        title: "Event Updated!",
+        message: "Your event has been successfully updated.",
+        buttonText: "Edit Another",
+        buttonLink: "/dashboard/edit/events"
       };
     }
     return null;
@@ -116,12 +116,6 @@ export default function AddSuccessPage() {
                 Go back to Dashboard
               </Link>
 
-              <Link
-                href={from === 'admin' ? `/dashboard/add/news-media?from=admin` : content.buttonLink}
-                className="px-6 py-2 text-[#011638] border border-[#011638] rounded-lg hover:bg-[#f0f0f0] transition-colors font-oswald"
-              >
-                {content.buttonText}
-              </Link>
             </div>
           </div>
         </div>
