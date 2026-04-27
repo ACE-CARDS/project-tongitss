@@ -156,7 +156,7 @@ function DashboardContent() {
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
-    { label: "MANAGE POSTS", key: "manage" },
+    { label: "POSTINGS", key: "manage" },
     { label: "COMMITTEE", key: "committee" },
     { label: "MEMBERS", key: "members" },
     { label: "THESIS", key: "thesis" },
