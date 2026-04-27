@@ -3,79 +3,211 @@
 import { motion } from "framer-motion";
 
 export default function AboutMission() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+  };
+
+  const objectives = [
+    "Promote Student leadership, Nation-building, and Empowerment to the youth.",
+    "Bring more recognition to Scholarships offered by the Department of Science and Technology.",
+    "Establish a network among DOST scholars in and out of the Cordillera Administrative Region.",
+    "To encourage exchange of ideas and cooperation among its members.",
+    "To promote awareness on the cultural background of the region and strengthen the attachment of its members to CAR.",
+    "To render service to the people of CAR.",
+    "To give due recognition to its members for meritorious and outstanding achievements or contributions."
+  ];
+
   return (
-    <section id="about-mission" className="relative flex flex-col justify-center items-center text-center pt-8 pb-24 min-h-screen overflow-hidden z-10">
-      
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.8 }}
-        className="max-w-5xl px-8 py-16 lg:py-20 z-30 rounded-[3rem] backdrop-blur-2xl bg-[#011638]/95 border border-white/20 shadow-2xl mx-6"
-      >
-        {/* TITLE */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-          <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase">
-            Our Mission
-          </h1>
-          <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
+    <section id="about-mission" className="relative flex flex-col pt-10 pb-8 px-6 lg:px-20 z-10">
+      <div className="max-w-7xl mx-auto w-full space-y-10 lg:space-y-16">
+        
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:h-[480px]">
+          
+          {/* Vision Text Card */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="w-full lg:w-[60%] h-full"
+          >
+            <div className="bg-[#011638] p-10 lg:p-14 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-center h-full group border border-white/10 transition-transform duration-500 hover:scale-[1.02]">
+              <div className="absolute -bottom-4 -right-4 text-[100px] lg:text-[140px] font-black text-white/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
+                VISION
+              </div>
+
+              <div className="relative z-10">
+                <div className="mb-8">
+                  <h2 className="text-[#eec643] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
+                    Our Vision
+                  </h2>
+                </div>
+                <div className="relative w-full">
+
+                  <span className="absolute -top-6 -left-6 text-6xl text-[#eec643]/30 font-serif leading-none select-none">
+                    &ldquo;
+                  </span>
+                  
+                  <p className="text-white text-3xl lg:text-5xl font-black leading-tight z-10 relative">
+                    Building the next generation of S&T professionals committed to the well-being of every Filipino.
+                  </p>
+                  
+
+                  <span className="absolute -bottom-8 right-0 lg:-right-4 text-6xl text-[#eec643]/30 font-serif leading-none select-none">
+                    &rdquo;
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Vision Images Stack */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="w-full lg:w-[40%] flex flex-col sm:flex-row lg:flex-col gap-6 h-[400px] sm:h-[300px] lg:h-full"
+          >
+            <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
+              <img 
+                src="/assets/logos/mission-1.jpg" 
+                alt="ACE CARDS Vision Action 1" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-[#011638]/10 group-hover:bg-transparent transition-colors duration-500"></div>
+            </div>
+            <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
+              <img 
+                src="/assets/logos/mission-2.jpg" 
+                alt="ACE CARDS Vision Action 2" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-[#011638]/10 group-hover:bg-transparent transition-colors duration-500"></div>
+            </div>
+          </motion.div>
+
         </div>
 
-        <p className="text-white/90 text-xl lg:text-3xl leading-relaxed font-medium px-4">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scelerisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa.
-        </p>
-      </motion.div>
+        <div className="flex flex-col lg:flex-row-reverse gap-6 lg:gap-8 lg:h-[480px]">
+          
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="w-full lg:w-[60%] h-full"
+          >
+            <div className="bg-white/95 backdrop-blur-2xl border-2 border-white p-10 lg:p-14 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-center relative overflow-hidden group transition-transform duration-500 hover:scale-[1.02]">
+              <div className="absolute -bottom-4 -left-4 text-[100px] lg:text-[140px] font-black text-[#011638]/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
+                MISSION
+              </div>
 
-      {/* FLOATING IMAGES */}
-      <motion.div 
-        initial={{ opacity: 0, x: -50, y: -50 }}
-        whileInView={{ opacity: 1, x: 0, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="absolute top-20 left-10 -rotate-12 transition-transform duration-500 hover:-translate-y-6 hover:scale-105 hover:z-40 hidden lg:block"
-      >
-        <div className="w-72 h-96 bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl border-4 border-white p-2">
-          <img src="/placeholder1.jpg" className="w-full h-full object-cover rounded-[1.5rem]" alt="Mission Card 1" />
+              <div className="relative z-10">
+                <div className="mb-8">
+                  <h2 className="text-[#011638] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
+                    Our Mission
+                  </h2>
+                </div>
+                <div className="relative mb-8 w-full">
+                  <span className="absolute -top-6 -left-6 text-6xl text-[#011638]/10 font-serif leading-none select-none">
+                    &ldquo;
+                  </span>
+                  
+                  <p className="text-slate-700 text-xl lg:text-3xl font-medium leading-relaxed relative z-10">
+                    To develop the country&apos;s S&T human resource and improve science education through responsive scholarships and innovative programs.
+                  </p>
+                  
+                  <span className="absolute -bottom-8 right-0 lg:-right-4 text-6xl text-[#011638]/10 font-serif leading-none select-none">
+                    &rdquo;
+                  </span>
+                </div>
+                <div className="pt-6 border-t-2 border-slate-100 flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-[#eec643]"></div>
+                   <p className="text-sm text-slate-500 font-medium">
+                     <strong className="text-[#011638] uppercase tracking-wider">Established Sep 2022</strong>
+                   </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="w-full lg:w-[40%] flex flex-col sm:flex-row lg:flex-col gap-6 h-[400px] sm:h-[300px] lg:h-full"
+          >
+            <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
+              <img 
+                src="/assets/logos/mission-3.jpg" 
+                alt="ACE CARDS Mission Action 1" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-[#011638]/5 group-hover:bg-transparent transition-colors duration-500"></div>
+            </div>
+            <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
+              <img 
+                src="/assets/logos/mission-4.jpg" 
+                alt="ACE CARDS Mission Action 2" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-[#011638]/5 group-hover:bg-transparent transition-colors duration-500"></div>
+            </div>
+          </motion.div>
+
         </div>
-      </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0, x: -50, y: 50 }}
-        whileInView={{ opacity: 1, x: 0, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="absolute bottom-10 left-24 rotate-6 transition-transform duration-500 hover:-translate-y-6 hover:scale-105 hover:z-40 hidden lg:block"
-      >
-        <div className="w-72 h-96 bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl border-4 border-white p-2">
-          <img src="/placeholder1.jpg" className="w-full h-full object-cover rounded-[1.5rem]" alt="Mission Card 2" />
+        <div className="pt-10 lg:pt-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <div className="inline-flex items-center justify-center gap-4">
+              <span className="w-10 lg:w-16 h-[3px] bg-gradient-to-r from-transparent to-[#eec643] rounded-full"></span>
+              <h2 className="text-3xl lg:text-4xl font-black text-[#011638] uppercase tracking-tight">
+                Core Objectives
+              </h2>
+              <span className="w-10 lg:w-16 h-[3px] bg-gradient-to-l from-transparent to-[#eec643] rounded-full"></span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {objectives.map((obj, i) => (
+              <motion.div
+                key={i}
+                variants={itemVariants}
+                whileHover={{ scale: 1.03, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
+                className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex gap-4 ${
+                  i === 6 ? "md:col-span-2 lg:col-span-3 lg:w-2/3 mx-auto" : ""
+                }`}
+              >
+                <div className="size-8 rounded-full bg-[#011638] text-[#eec643] flex items-center justify-center shrink-0 font-black text-sm shadow-inner">
+                  {i + 1}
+                </div>
+                <p className="text-slate-600 font-medium text-sm leading-relaxed">{obj}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0, x: 50, y: -50 }}
-        whileInView={{ opacity: 1, x: 0, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-        className="absolute top-20 right-10 rotate-12 transition-transform duration-500 hover:-translate-y-6 hover:scale-105 hover:z-40 hidden lg:block"
-      >
-        <div className="w-72 h-96 bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl border-4 border-white p-2">
-          <img src="/placeholder1.jpg" className="w-full h-full object-cover rounded-[1.5rem]" alt="Mission Card 3" />
-        </div>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, x: 50, y: 50 }}
-        whileInView={{ opacity: 1, x: 0, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-        className="absolute bottom-10 right-24 -rotate-6 transition-transform duration-500 hover:-translate-y-6 hover:scale-105 hover:z-40 hidden lg:block"
-      >
-        <div className="w-72 h-96 bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl border-4 border-white p-2">
-          <img src="/placeholder1.jpg" className="w-full h-full object-cover rounded-[1.5rem]" alt="Mission Card 4" />
-        </div>
-      </motion.div>
-
+      </div>
     </section>
   );
 }
