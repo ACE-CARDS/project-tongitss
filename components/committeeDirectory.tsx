@@ -247,7 +247,7 @@ export default function CommitteeDirectory() {
                 {/* Name */}
                 <h2
                   className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight 
-                   line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center"
+                   line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words hyphens-auto overflow-hidden"
                 >
                   {person.mem_fname} {person.mem_lname}
                 </h2>
