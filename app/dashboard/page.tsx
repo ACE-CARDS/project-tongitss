@@ -15,7 +15,7 @@ import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";
 import MemberSurveyView from "@/components/memberSurveyView";
 import MemberThesisView from "@/components/memberThesisView";
-import EventsAdmin from "@/components/eventsAdmin";
+import ManagePage from "./manage/page";
 
 // Internal component to handle search params
 function DashboardContent() {
@@ -27,11 +27,15 @@ function DashboardContent() {
   const router = useRouter();
   const [userRole, setUserRole] = useState("user");
   const supabase = createClient();
+  const [memberData, setMemberData] = useState<{
+    fname: string;
+    lname: string;
+  } | null>(null);
 
-  const fetchUserRole = async (email: string) => {
+  const fetchMemberData = async (email: string) => {
     const { data, error } = await supabase
       .from("member")
-      .select("role")
+      .select("role, mem_fname, mem_lname")
       .eq("mem_email", email)
       .single();
 
@@ -39,6 +43,8 @@ function DashboardContent() {
       console.error(error);
       return "user";
     }
+
+    setMemberData({ fname: data.mem_fname, lname: data.mem_lname });
     return data.role;
   };
 
@@ -61,7 +67,7 @@ function DashboardContent() {
 
   useEffect(() => {
     if (user?.email) {
-      fetchUserRole(user.email).then(setUserRole);
+      fetchMemberData(user.email).then(setUserRole);
     }
   }, [user]);
 
@@ -90,7 +96,7 @@ function DashboardContent() {
 
   const mainTabs = [
     { label: "ANNOUNCEMENTS", key: "announcements" },
-    { label: "EVENTS", key: "events" },
+    { label: "MANAGE POSTS", key: "manage" },
     { label: "COMMITTEE", key: "committee" },
     { label: "MEMBERS", key: "members" },
     { label: "THESIS", key: "thesis" },
@@ -107,14 +113,11 @@ function DashboardContent() {
             <CommitteeDirectory />
           </div>
         );
-      case "events":
-        if (userRole === "admin" || userRole === "superadmin") {
-          return <EventsAdmin />;
-        }
+      case "manage":
         return (
-          <p className="text-center py-10 italic text-gray-500">
-            Not authorized.
-          </p>
+          <div className="flex h-full w-full items-center justify-center">
+            <ManagePage />
+          </div>
         );
       case "members":
         if (userRole === "superadmin") return <MemdirSuper />;
@@ -153,25 +156,38 @@ function DashboardContent() {
     >
       <NavBar />
       <div className="pt-10">
-        <div className="w-full h-1 bg-[#0b1763] my-4"></div>
-        <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
+        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
 
-        <div className="rounded-xl flex flex-col items-center justify-between md:flex-row mx-auto mt-8 mb-8 max-w-[1400px] px-4">
-          <div className="m-3">
-            <h2 className="text-lg font-bold text-center md:text-left md:text-5xl uppercase font-oswald">
-              {user.user_metadata.name || "User"}
-            </h2>
-            <p className="text-xs text-center md:text-left md:text-2xl md:mt-3 text-[#475569] font-ubuntu-mono">
-              Internals Committee
-            </p>
-            <div className="flex w-full justify-center md:justify-start md:w-auto md:text-lg text-[#475569]">
-              <p>University of the Philippines Baguio</p>
+        <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
+            {/*User Name*/}
+            <div className="w-full md:w-auto">
+              <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
+                {memberData
+                  ? `${memberData.fname} ${memberData.lname}`
+                  : user.user_metadata.name || "User"}
+              </h2>
+            </div>
+
+            {/*Committee Name*/}
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+              <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
+                Internals Committee
+              </p>
+
+              <span className="hidden md:block h-6 w-px bg-gray-300"></span>
+
+              {/*University*/}
+              <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                University of the Philippines Baguio
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
-        <div className="w-full h-1 bg-[#0b1763] my-4"></div>
+        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
 
         <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
           <div className="w-full">
@@ -181,7 +197,11 @@ function DashboardContent() {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
 
-                  return tab.key !== "members" && tab.key !== "events";
+                  return (
+                    tab.key !== "members" &&
+                    tab.key !== "events" &&
+                    tab.key !== "manage"
+                  );
                 })
                 .map((tab) => (
                   <button

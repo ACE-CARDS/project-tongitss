@@ -83,15 +83,15 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
             {eventDetail && (
               <div>
                 <h2 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4">
-                  {eventDetail.event_name}
+                  {eventDetail.title}
                 </h2>
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs uppercase opacity-50">
                       Description
                     </label>
-                    <p className="opacity-80">
-                      {eventDetail.event_desc || "No description available."}
+                    <p className="opacity-80 text-justify">
+                      {eventDetail.description || "No description available."}
                     </p>
                   </div>
                   <div className=" grid grid-cols-2 gap-4">
@@ -99,13 +99,19 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
                       <label className="text-xs uppercase opacity-50">
                         Start
                       </label>
-                      <p>{eventDetail.event_start}</p>
+                      <p>{eventDetail.start_date}</p>
                     </div>
                     <div>
                       <label className="text-xs uppercase opacity-50">
                         End
                       </label>
-                      <p>{eventDetail.event_end}</p>
+                      <p>{eventDetail.end_date}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase opacity-50">
+                        Location
+                      </label>
+                      <p>{eventDetail.location}</p>
                     </div>
                   </div>
                 </div>

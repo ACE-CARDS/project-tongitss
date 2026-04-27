@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Pagination from "./pagination";
 
 const supabase = createClient();
 
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
+
+
+const getItemsPerPage = () => {
+  if (typeof window === "undefined") return 8;
+
+  const width = window.innerWidth; 
+  if (width < 640) return 4; 
+  if (width < 1024) return 6; 
+  return 8; 
+};
 
 export default function CommitteeDirectory() {
   const commTabs = [
@@ -21,6 +32,10 @@ export default function CommitteeDirectory() {
 
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("EXECUTIVES");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function getMembers() {
@@ -42,7 +57,7 @@ export default function CommitteeDirectory() {
             `*, committee:committee (comm_name), school:school (school_name)`,
           )
           .eq("acadyear", ACADYEAR)
-          .eq("is_active", "TRUE")
+          .eq("is_active", true)
           .order("id", { ascending: true });
 
         if (error) throw error;
@@ -53,6 +68,17 @@ export default function CommitteeDirectory() {
     }
     getMembers();
   }, []);
+
+  useEffect(() => {
+    const handleResize = () => setItemsPerPage(getItemsPerPage());
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const filteredMembers = members.filter((person) => {
     const role = person.committee?.comm_name;
@@ -79,6 +105,11 @@ export default function CommitteeDirectory() {
         return false;
     }
   });
+
+  const totalItems = filteredMembers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedMembers = filteredMembers.slice(startIndex, startIndex + itemsPerPage);
 
   //ginaya ko lang to from mem directory hehehe
   const CommitteeDropdown = ({ value, options, onChange }: any) => {
@@ -155,7 +186,7 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Committee Dropdown*/}
-      <div className="flex justify-center w-full mb-12">
+      <div className="flex justify-center w-full mb-12" ref={headerRef}>
         <CommitteeDropdown
           value={activeTab}
           options={commTabs.map((tab) => ({
@@ -167,8 +198,8 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Members etc */}
-      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
-        {filteredMembers.map((person, index) => {
+      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full" >
+        {paginatedMembers.map((person, index) => {
           const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
             /\s+/g,
             "",
@@ -182,9 +213,9 @@ export default function CommitteeDirectory() {
               className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
                   transition-all duration-300 ease-out
                   hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
-                  aspect-[3/4]
                   w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
-                  min-h-[180px] sm:min-h-[240px]"
+                  min-h-[180px] sm:min-h-[240px]
+                  flex flex-col"
             >
               {/*<div
                 className="absolute inset-0 opacity-10 pointer-events-none"
@@ -210,20 +241,21 @@ export default function CommitteeDirectory() {
                 </div>
               </div>
 
-              <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight">
-                {person.mem_fname} {person.mem_lname}
-              </h2>
+              <div className="flex-grow flex flex-col items-center justify-center">
+                <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight break-words">
+                  {person.mem_fname} {person.mem_lname}
+                </h2>
 
-              <div className="flex justify-center mt-1">
-                <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-1 rounded-full bg-[#0d21a1]/10 font-medium text-center">
-                  {person.committee?.comm_name}
-                </span>
+                <div className="flex justify-center mt-1">
+                  <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-2 rounded-[10px] md:rounded-full bg-[#0d21a1]/10 font-medium text-center">
+                    {person.committee?.comm_name}
+                  </span>
+                </div>
+
+                <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
+                  {person.school?.school_name}
+                </p>
               </div>
-
-              <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
-                {person.school?.school_name}
-              </p>
-
               <p className="relative z-10 text-center text-xs text-slate-300 mt-4 uppercase tracking-widest">
                 {person.acadyear}
               </p>
@@ -231,12 +263,28 @@ export default function CommitteeDirectory() {
           );
         })}
         {/*If no members*/}
-        {filteredMembers.length === 0 && (
+        {paginatedMembers.length === 0 && (
           <p className="text-center text-slate-500 text-lg mt-10">
             No members found 👀
           </p>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <p className="text-sm text-slate-500 font-ubuntu-mono">
+            Showing {startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems} members
+          </p>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

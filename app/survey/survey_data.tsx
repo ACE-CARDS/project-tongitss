@@ -17,6 +17,8 @@ export default async function SurveyData({
 }) {
   const supabase = await createClient();
   
+  await supabase.rpc('archive_expired_surveys');
+  
   const currentPage = parseInt(searchParams?.page || "1");
   
   const q = searchParams?.query?.trim();
