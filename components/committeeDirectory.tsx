@@ -9,23 +9,17 @@ const supabase = createClient();
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
 
-//thanks saffi
-interface ClientPaginationProps {
-  currentPage: number;
-}
 
 const getItemsPerPage = () => {
-  if (typeof window === "undefined") return 6; // Default: 6 items per page
+  if (typeof window === "undefined") return 8;
 
-  const width = window.innerWidth; // Get window width
-  if (width < 640) return 4; // Mobile: 2 items per page
-  if (width < 1024) return 6; // Tablet: 4 items per page
-  return 8; // Desktop: 6 items per page
+  const width = window.innerWidth; 
+  if (width < 640) return 4; 
+  if (width < 1024) return 6; 
+  return 8; 
 };
 
-export default function CommitteeDirectory({
-  currentPage,
-}: ClientPaginationProps) {
+export default function CommitteeDirectory() {
   const commTabs = [
     { label: "Executives", key: "EXECUTIVES" },
     { label: "Internals", key: "INTERNALS" },
@@ -38,6 +32,10 @@ export default function CommitteeDirectory({
 
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("EXECUTIVES");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function getMembers() {
@@ -71,6 +69,17 @@ export default function CommitteeDirectory({
     getMembers();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => setItemsPerPage(getItemsPerPage());
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
   const filteredMembers = members.filter((person) => {
     const role = person.committee?.comm_name;
     switch (activeTab) {
@@ -96,6 +105,11 @@ export default function CommitteeDirectory({
         return false;
     }
   });
+
+  const totalItems = filteredMembers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedMembers = filteredMembers.slice(startIndex, startIndex + itemsPerPage);
 
   //ginaya ko lang to from mem directory hehehe
   const CommitteeDropdown = ({ value, options, onChange }: any) => {
@@ -172,7 +186,7 @@ export default function CommitteeDirectory({
       </div>
 
       {/* Committee Dropdown*/}
-      <div className="flex justify-center w-full mb-12">
+      <div className="flex justify-center w-full mb-12" ref={headerRef}>
         <CommitteeDropdown
           value={activeTab}
           options={commTabs.map((tab) => ({
@@ -184,8 +198,8 @@ export default function CommitteeDirectory({
       </div>
 
       {/* Members etc */}
-      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
-        {filteredMembers.map((person, index) => {
+      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full" >
+        {paginatedMembers.map((person, index) => {
           const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
             /\s+/g,
             "",
@@ -249,12 +263,28 @@ export default function CommitteeDirectory({
           );
         })}
         {/*If no members*/}
-        {filteredMembers.length === 0 && (
+        {paginatedMembers.length === 0 && (
           <p className="text-center text-slate-500 text-lg mt-10">
             No members found 👀
           </p>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <p className="text-sm text-slate-500 font-ubuntu-mono">
+            Showing {startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems} members
+          </p>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
