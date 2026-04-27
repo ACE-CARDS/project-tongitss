@@ -27,11 +27,15 @@ function DashboardContent() {
   const router = useRouter();
   const [userRole, setUserRole] = useState("user");
   const supabase = createClient();
+  const [memberData, setMemberData] = useState<{
+    fname: string;
+    lname: string;
+  } | null>(null);
 
-  const fetchUserRole = async (email: string) => {
+  const fetchMemberData = async (email: string) => {
     const { data, error } = await supabase
       .from("member")
-      .select("role")
+      .select("role, mem_fname, mem_lname")
       .eq("mem_email", email)
       .single();
 
@@ -39,6 +43,8 @@ function DashboardContent() {
       console.error(error);
       return "user";
     }
+
+    setMemberData({ fname: data.mem_fname, lname: data.mem_lname });
     return data.role;
   };
 
@@ -61,7 +67,7 @@ function DashboardContent() {
 
   useEffect(() => {
     if (user?.email) {
-      fetchUserRole(user.email).then(setUserRole);
+      fetchMemberData(user.email).then(setUserRole);
     }
   }, [user]);
 
@@ -158,7 +164,9 @@ function DashboardContent() {
             {/*User Name*/}
             <div className="w-full md:w-auto">
               <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
-                {user.user_metadata.name || "User"}
+                {memberData
+                  ? `${memberData.fname} ${memberData.lname}`
+                  : user.user_metadata.name || "User"}
               </h2>
             </div>
 
