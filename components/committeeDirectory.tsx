@@ -9,14 +9,13 @@ const supabase = createClient();
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
 
-
 const getItemsPerPage = () => {
   if (typeof window === "undefined") return 8;
 
-  const width = window.innerWidth; 
-  if (width < 640) return 4; 
-  if (width < 1024) return 6; 
-  return 8; 
+  const width = window.innerWidth;
+  if (width < 640) return 4;
+  if (width < 1024) return 6;
+  return 8;
 };
 
 export default function CommitteeDirectory() {
@@ -109,7 +108,10 @@ export default function CommitteeDirectory() {
   const totalItems = filteredMembers.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedMembers = filteredMembers.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedMembers = filteredMembers.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   //ginaya ko lang to from mem directory hehehe
   const CommitteeDropdown = ({ value, options, onChange }: any) => {
@@ -198,7 +200,7 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Members etc */}
-      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full" >
+      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
         {paginatedMembers.map((person, index) => {
           const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
             /\s+/g,
@@ -241,18 +243,27 @@ export default function CommitteeDirectory() {
                 </div>
               </div>
 
-              <div className="flex-grow flex flex-col items-center justify-center">
-                <h2 className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight break-words">
+              <div className="flex-grow flex flex-col items-center justify-start">
+                {/* Name: Fixed height for 2 lines */}
+                <h2
+                  className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight 
+                 line-clamp-2 min-h-[3rem] flex items-center justify-center"
+                >
                   {person.mem_fname} {person.mem_lname}
                 </h2>
 
-                <div className="flex justify-center mt-1">
-                  <span className="text-sm text-[#0d21a1] tracking-tight px-3 py-2 rounded-[10px] md:rounded-full bg-[#0d21a1]/10 font-medium text-center">
+                {/* Committee: Fixed height for 2 lines */}
+                <div className="flex justify-center mt-1 min-h-[3.5rem] items-center">
+                  <span
+                    className="text-sm text-[#0d21a1] tracking-tight px-3 py-2 rounded-[10px] md:rounded-full 
+                     bg-[#0d21a1]/10 font-medium text-center line-clamp-2"
+                  >
                     {person.committee?.comm_name}
                   </span>
                 </div>
 
-                <p className="text-center text-xs text-slate-400 mt-2 italic px-2">
+                {/* School: Fixed height for 2 lines */}
+                <p className="text-center text-xs text-slate-400 mt-2 italic px-2 line-clamp-2 min-h-[2rem]">
                   {person.school?.school_name}
                 </p>
               </div>
@@ -273,14 +284,19 @@ export default function CommitteeDirectory() {
       {totalPages > 1 && (
         <div className="mt-12 flex flex-col items-center gap-4">
           <p className="text-sm text-slate-500 font-ubuntu-mono">
-            Showing {startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems} members
+            Showing {startIndex + 1} -{" "}
+            {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}{" "}
+            members
           </p>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={(page) => {
               setCurrentPage(page);
-              headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              headerRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
             }}
           />
         </div>
