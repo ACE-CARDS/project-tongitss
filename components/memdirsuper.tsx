@@ -195,7 +195,6 @@ export default function MembersPage() {
           mem_minit: m.mem_minit,
           role: m.role,
       
-          // ✅ CSV priority, fallback if missing/invalid
           comm: m.comm ?? DEFAULT_COMM,
       
           mem_schol_type: m.mem_schol_type?.trim() || DEFAULT_SCHOL_TYPE,
@@ -204,12 +203,10 @@ export default function MembersPage() {
       
           is_active: m.is_active ?? true,
       
-          // ❗ better fallback email logic (still temp but safer)
           mem_email:
             m.mem_email?.trim() ||
             `temp_${Date.now()}_${index}@example.com`,
       
-          // ✅ CSV overrides default if present
           acadyear: m.acadyear?.trim() || DEFAULT_ACADYEAR,
         }));
       
@@ -729,7 +726,7 @@ export default function MembersPage() {
             );
           }
   
-          doc.save("Member_Directory_2025-2026.pdf");
+          doc.save("Membership Directory (2025-2026).pdf");
         });
     };
   };
@@ -738,15 +735,21 @@ export default function MembersPage() {
     const { data, error } = await supabase
       .from("member")
       .select("*")
-      .eq("acadyear", "AY 2025-2026"); 
+      .eq("acadyear", "AY 2025-2026");
   
     if (error || !data) return;
   
-    const allKeys = Object.keys(data[0]);
+    const sorted = [...data].sort((a: any, b: any) => {
+      const nameA = `${a.mem_lname} ${a.mem_fname}`.toLowerCase();
+      const nameB = `${b.mem_lname} ${b.mem_fname}`.toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  
+    const allKeys = Object.keys(sorted[0]);
   
     const headers = allKeys;
   
-    const rows = data.map((m: any) =>
+    const rows = sorted.map((m: any) =>
       allKeys.map((key) => {
         const value = m[key];
   
@@ -754,7 +757,7 @@ export default function MembersPage() {
         if (typeof value === "object") return JSON.stringify(value);
   
         return value;
-      })
+      }),
     );
   
     const csvContent = [
@@ -762,16 +765,55 @@ export default function MembersPage() {
       ...rows.map((row) => row.join(",")),
     ].join("\n");
   
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+  
     const url = URL.createObjectURL(blob);
   
     const a = document.createElement("a");
     a.href = url;
-    a.download = "members_full_export.csv";
+    a.download = "Membership Directory (2025-2026).csv";
     a.click();
   
     URL.revokeObjectURL(url);
   };
+
+  const [pendingImport, setPendingImport] = useState<any[]>([]);
+const [showImportConfirm, setShowImportConfirm] = useState(false);
+
+const handleConfirmImport = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("member")
+      .upsert(pendingImport, {
+        onConflict: "mem_email",
+      })
+      .select();
+
+    if (error) {
+      console.error(error);
+      alert("Import failed");
+      return;
+    }
+
+    const { data: refreshed } = await supabase
+      .from("member")
+      .select("*")
+      .eq("acadyear", "AY 2025-2026")
+      .eq("is_active", true);
+
+    if (refreshed) {
+      setMembers(structuredClone(refreshed));
+      setOriginalMembers(structuredClone(refreshed));
+    }
+
+    setPendingImport([]);
+    setShowImportConfirm(false);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -864,19 +906,19 @@ export default function MembersPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-
+                  
                     const text = await file.text();
-
+                  
                     const parseCSV = (text: string) => {
                       const rows: string[][] = [];
                       let current: string[] = [];
                       let value = "";
                       let insideQuotes = false;
-
+                  
                       for (let i = 0; i < text.length; i++) {
                         const char = text[i];
                         const next = text[i + 1];
-
+                  
                         if (char === '"' && insideQuotes && next === '"') {
                           value += '"';
                           i++;
@@ -896,40 +938,54 @@ export default function MembersPage() {
                           value += char;
                         }
                       }
-
+                  
                       if (value || current.length) {
                         current.push(value);
                         rows.push(current);
                       }
-
+                  
                       return rows.filter((r) => r.length > 1);
                     };
-
+                  
                     const rows = parseCSV(text);
-
                     const headers = rows[0].map((h) => h.trim());
-
-                    const parsed = rows.slice(1).map((row, index) => {
+                  
+                    const DEFAULT_ACADYEAR = "AY 2025-2026";
+                    const DEFAULT_COMM = 23;
+                    const DEFAULT_SCHOL_TYPE = "Merit";
+                    const DEFAULT_SCHOL_YEAR = 2023;
+                    const DEFAULT_SCHOOL = 1;
+                  
+                    const parsed = rows.slice(1).map((row) => {
                       const obj: any = {};
-
+                  
                       headers.forEach((h, i) => {
                         obj[h] = row[i]?.trim() ?? "";
                       });
-
+                  
                       return {
-                        id: Date.now() + index,
                         mem_fname: obj.mem_fname || "",
                         mem_lname: obj.mem_lname || "",
                         mem_minit: obj.mem_minit || "",
                         role: obj.role || "member",
-                        comm: obj.comm ? Number(obj.comm) : null,
-                        acadyear: obj.acadyear || "AY 2025-2026",
-                        isImported: true,
+                        comm: obj.comm ? Number(obj.comm) : DEFAULT_COMM,
+                        mem_schol_type: obj.mem_schol_type || DEFAULT_SCHOL_TYPE,
+                        mem_schol_year: obj.mem_schol_year
+                          ? Number(obj.mem_schol_year)
+                          : DEFAULT_SCHOL_YEAR,
+                        school: obj.school ? Number(obj.school) : DEFAULT_SCHOOL,
+                        is_active: true,
+                        mem_email:
+                          obj.mem_email?.trim() ||
+                          `temp_${Date.now()}_${Math.random().toString(16).slice(2)}@example.com`,
+                        acadyear: obj.acadyear || DEFAULT_ACADYEAR,
                       };
                     });
-
-                    setImportedMembers(parsed);
-                    setMembers((prev) => [...prev, ...parsed]);
+                  
+                    setPendingImport(parsed);
+                    setShowImportConfirm(true);
+                  
+                    e.target.value = ""; 
                   }}
                 />
 
@@ -1135,6 +1191,45 @@ export default function MembersPage() {
       </main>
 
       {/* mowdals */}
+      {showImportConfirm && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[380px] text-center">
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Confirm Import
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            You are about to import{" "}
+            <span className="font-semibold text-[#011638]">
+              {pendingImport.length}
+            </span>{" "}
+            members into the database.
+            <br />
+          </p>
+
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => {
+                setPendingImport([]);
+                setShowImportConfirm(false);
+              }}
+              className="px-4 py-2 rounded-xl border"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleConfirmImport}
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+            >
+              Confirm Import
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
       {showExportOptions && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-[320px] text-center">

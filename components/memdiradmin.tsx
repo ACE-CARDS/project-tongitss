@@ -175,30 +175,39 @@ export default function MembersPage() {
     try {
       const importedNew = members.filter((m: any) => m.isImported);
       const existing = members.filter((m: any) => !m.isImported); 
-  
+      const DEFAULT_ACADYEAR = "AY 2025-2026";
+      const DEFAULT_COMM = 23;
+      const DEFAULT_SCHOL_TYPE = "Merit";
+      const DEFAULT_SCHOL_YEAR = 2023;
+      const DEFAULT_SCHOOL = 1;
+      
       if (importedNew.length > 0) {
         const insertPayload = importedNew.map((m, index) => ({
-            mem_fname: m.mem_fname,
-            mem_lname: m.mem_lname,
-            mem_minit: m.mem_minit,
-            comm: m.comm || 23, // default committee (members ean)
-          
-            // default palang sha sorry ayusin ko after promise
-            mem_schol_type: "Merit", 
-            mem_schol_year: 2023,
-            school: 1, 
-            is_active: true,
-            mem_email: `temp${Date.now()}${index}@example.com`, //temp email po hhe need kasi unique 
-          
-            acadyear: "AY 2025-2026", //CHANGE AY 
-          }));
+          mem_fname: m.mem_fname,
+          mem_lname: m.mem_lname,
+          mem_minit: m.mem_minit,
+          role: m.role,
+      
+          comm: m.comm ?? DEFAULT_COMM,
+      
+          mem_schol_type: m.mem_schol_type?.trim() || DEFAULT_SCHOL_TYPE,
+          mem_schol_year: m.mem_schol_year ?? DEFAULT_SCHOL_YEAR,
+          school: m.school ?? DEFAULT_SCHOOL,
+      
+          is_active: m.is_active ?? true,
+      
+          mem_email:
+            m.mem_email?.trim() ||
+            `temp_${Date.now()}_${index}@example.com`,
+      
+          acadyear: m.acadyear?.trim() || DEFAULT_ACADYEAR,
+        }));
       
         const { data, error } = await supabase
-        .from("member")
-        .insert(insertPayload)
-        .select();
-
-        //mga testing po nung ayaw gumana huhu dyan na yan kbye
+          .from("member")
+          .insert(insertPayload)
+          .select();
+      
         console.log("INSERT DATA:", data);
         console.log("INSERT ERROR:", error);
       
@@ -207,7 +216,7 @@ export default function MembersPage() {
           return;
         }
       }
-  
+
       if (existing.length > 0) {
         const updates = existing.map((m) =>
           supabase
@@ -639,7 +648,7 @@ export default function MembersPage() {
                 );
               }
       
-              doc.save("Member_Directory_2025-2026.pdf");
+              doc.save("Membership Directory (2025-2026).pdf");
             });
         };
       };
@@ -648,15 +657,21 @@ export default function MembersPage() {
         const { data, error } = await supabase
           .from("member")
           .select("*")
-          .eq("acadyear", "AY 2025-2026"); 
+          .eq("acadyear", "AY 2025-2026");
       
         if (error || !data) return;
       
-        const allKeys = Object.keys(data[0]);
+        const sorted = [...data].sort((a: any, b: any) => {
+          const nameA = `${a.mem_lname} ${a.mem_fname}`.toLowerCase();
+          const nameB = `${b.mem_lname} ${b.mem_fname}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      
+        const allKeys = Object.keys(sorted[0]);
       
         const headers = allKeys;
       
-        const rows = data.map((m: any) =>
+        const rows = sorted.map((m: any) =>
           allKeys.map((key) => {
             const value = m[key];
       
@@ -664,7 +679,7 @@ export default function MembersPage() {
             if (typeof value === "object") return JSON.stringify(value);
       
             return value;
-          })
+          }),
         );
       
         const csvContent = [
@@ -672,18 +687,56 @@ export default function MembersPage() {
           ...rows.map((row) => row.join(",")),
         ].join("\n");
       
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+      
         const url = URL.createObjectURL(blob);
       
         const a = document.createElement("a");
         a.href = url;
-        a.download = "members_full_export.csv";
+        a.download = "Membership Directory (2025-2026).csv";
         a.click();
       
         URL.revokeObjectURL(url);
       };
     
-  
+    const [pendingImport, setPendingImport] = useState<any[]>([]);
+const [showImportConfirm, setShowImportConfirm] = useState(false);
+
+const handleConfirmImport = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("member")
+      .upsert(pendingImport, {
+        onConflict: "mem_email",
+      })
+      .select();
+
+    if (error) {
+      console.error(error);
+      alert("Import failed");
+      return;
+    }
+
+    const { data: refreshed } = await supabase
+      .from("member")
+      .select("*")
+      .eq("acadyear", "AY 2025-2026")
+      .eq("is_active", true);
+
+    if (refreshed) {
+      setMembers(structuredClone(refreshed));
+      setOriginalMembers(structuredClone(refreshed));
+    }
+
+    setPendingImport([]);
+    setShowImportConfirm(false);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -778,31 +831,84 @@ export default function MembersPage() {
                     if (!file) return;
                   
                     const text = await file.text();
-                    const rows = text.split("\n").filter(Boolean);
-                    const headers = rows[0].split(",");
                   
-                    const parsed = rows.slice(1).map((row, index) => {
-                      const values = row.split(",");
+                    const parseCSV = (text: string) => {
+                      const rows: string[][] = [];
+                      let current: string[] = [];
+                      let value = "";
+                      let insideQuotes = false;
+                  
+                      for (let i = 0; i < text.length; i++) {
+                        const char = text[i];
+                        const next = text[i + 1];
+                  
+                        if (char === '"' && insideQuotes && next === '"') {
+                          value += '"';
+                          i++;
+                        } else if (char === '"') {
+                          insideQuotes = !insideQuotes;
+                        } else if (char === "," && !insideQuotes) {
+                          current.push(value);
+                          value = "";
+                        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+                          if (value || current.length) {
+                            current.push(value);
+                            rows.push(current);
+                            current = [];
+                            value = "";
+                          }
+                        } else {
+                          value += char;
+                        }
+                      }
+                  
+                      if (value || current.length) {
+                        current.push(value);
+                        rows.push(current);
+                      }
+                  
+                      return rows.filter((r) => r.length > 1);
+                    };
+                  
+                    const rows = parseCSV(text);
+                    const headers = rows[0].map((h) => h.trim());
+                  
+                    const DEFAULT_ACADYEAR = "AY 2025-2026";
+                    const DEFAULT_COMM = 23;
+                    const DEFAULT_SCHOL_TYPE = "Merit";
+                    const DEFAULT_SCHOL_YEAR = 2023;
+                    const DEFAULT_SCHOOL = 1;
+                  
+                    const parsed = rows.slice(1).map((row) => {
                       const obj: any = {};
                   
                       headers.forEach((h, i) => {
-                        obj[h.trim()] = values[i]?.trim();
+                        obj[h] = row[i]?.trim() ?? "";
                       });
                   
                       return {
-                        id: Date.now() + index,
-                        mem_fname: obj.mem_fname,
-                        mem_lname: obj.mem_lname,
+                        mem_fname: obj.mem_fname || "",
+                        mem_lname: obj.mem_lname || "",
                         mem_minit: obj.mem_minit || "",
-                        comm: obj.comm ? Number(obj.comm) : null,
-                        acadyear: obj.acadyear || "AY 2025-2026", //CHANGE AY
-                        isImported: true,
+                        role: obj.role || "member",
+                        comm: obj.comm ? Number(obj.comm) : DEFAULT_COMM,
+                        mem_schol_type: obj.mem_schol_type || DEFAULT_SCHOL_TYPE,
+                        mem_schol_year: obj.mem_schol_year
+                          ? Number(obj.mem_schol_year)
+                          : DEFAULT_SCHOL_YEAR,
+                        school: obj.school ? Number(obj.school) : DEFAULT_SCHOOL,
+                        is_active: true,
+                        mem_email:
+                          obj.mem_email?.trim() ||
+                          `temp_${Date.now()}_${Math.random().toString(16).slice(2)}@example.com`,
+                        acadyear: obj.acadyear || DEFAULT_ACADYEAR,
                       };
                     });
                   
-                    setImportedMembers(parsed);
-
-                    setMembers((prev) => [...prev, ...parsed]);
+                    setPendingImport(parsed);
+                    setShowImportConfirm(true);
+                  
+                    e.target.value = ""; 
                   }}
                 />
 
@@ -990,6 +1096,46 @@ export default function MembersPage() {
       </main>
 
       {/* mowdals */}
+      {showImportConfirm && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[380px] text-center">
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Confirm Import
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            You are about to import{" "}
+            <span className="font-semibold text-[#011638]">
+              {pendingImport.length}
+            </span>{" "}
+            members into the database.
+            <br />
+          </p>
+
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => {
+                setPendingImport([]);
+                setShowImportConfirm(false);
+              }}
+              className="px-4 py-2 rounded-xl border"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleConfirmImport}
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+            >
+              Confirm Import
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+
       {showExportOptions && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-[320px] text-center">
