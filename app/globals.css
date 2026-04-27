@@ -198,7 +198,7 @@ p {
   }
 
   #kidla.modal-open {
-    background-image: url("/images/Body1.png") !important;
+    background-image: url("/images/D2.png") !important;
     transform: translateY(0);
     animation: jello-vertical 0.4s;
   }
@@ -228,4 +228,3 @@ p {
 .bounce {
   animation: bounce 1s infinite;
 }
-

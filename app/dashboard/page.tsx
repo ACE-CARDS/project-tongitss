@@ -15,7 +15,7 @@ import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";
 import MemberSurveyView from "@/components/memberSurveyView";
 import MemberThesisView from "@/components/memberThesisView";
-import ManagePage from "./manage/page"; 
+import ManagePage from "./manage/page";
 
 // Internal component to handle search params
 function DashboardContent() {
@@ -150,25 +150,36 @@ function DashboardContent() {
     >
       <NavBar />
       <div className="pt-10">
-        <div className="w-full h-1 bg-[#0b1763] my-4"></div>
-        <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
+        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
 
-        <div className="rounded-xl flex flex-col items-center justify-between md:flex-row mx-auto mt-8 mb-8 max-w-[1400px] px-4">
-          <div className="m-3">
-            <h2 className="text-lg font-bold text-center md:text-left md:text-5xl uppercase font-oswald">
-              {user.user_metadata.name || "User"}
-            </h2>
-            <p className="text-xs text-center md:text-left md:text-2xl md:mt-3 text-[#475569] font-ubuntu-mono">
-              Internals Committee
-            </p>
-            <div className="flex w-full justify-center md:justify-start md:w-auto md:text-lg text-[#475569]">
-              <p>University of the Philippines Baguio</p>
+        <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
+            {/*User Name*/}
+            <div className="w-full md:w-auto">
+              <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
+                {user.user_metadata.name || "User"}
+              </h2>
+            </div>
+
+            {/*Committee Name*/}
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+              <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
+                Internals Committee
+              </p>
+
+              <span className="hidden md:block h-6 w-px bg-gray-300"></span>
+
+              {/*University*/}
+              <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                University of the Philippines Baguio
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="w-full h-0.5 bg-[#eec643] my-4"></div>
-        <div className="w-full h-1 bg-[#0b1763] my-4"></div>
+        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
 
         <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
           <div className="w-full">
@@ -178,7 +189,11 @@ function DashboardContent() {
                   if (userRole === "superadmin" || userRole === "admin")
                     return true;
 
-                  return tab.key !== "members" && tab.key !== "events" && tab.key !== "manage";
+                  return (
+                    tab.key !== "members" &&
+                    tab.key !== "events" &&
+                    tab.key !== "manage"
+                  );
                 })
                 .map((tab) => (
                   <button

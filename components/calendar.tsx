@@ -41,18 +41,18 @@ export default function Calendar() {
   useEffect(() => {
     async function getEvents() {
       const { data, error } = await supabase
-        .from("event")
+        .from("events")
         .select("*")
-        .eq("is_active", true);
+        .eq("is_deleted", false);
 
       if (error) {
         console.error("Error fetching events:", error);
       } else {
         const listEvents = data.map((item) => ({
           id: item.id,
-          text: item.event_name,
-          start: item.event_start,
-          end: new DayPilot.Date(item.event_end).addDays(1),
+          text: item.title,
+          start: item.start_date,
+          end: new DayPilot.Date(item.end_date).addDays(1),
           data: item,
         }));
         setEvents(listEvents);

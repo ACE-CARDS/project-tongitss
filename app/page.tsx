@@ -68,8 +68,9 @@ export default function Home() {
   useEffect(() => {
     const fetchCounts = async () => {
       const { count: eventTotal } = await supabase
-        .from("event")
-        .select("*", { count: "exact", head: true });
+        .from("events")
+        .select("*", { count: "exact", head: true })
+        .eq("is_deleted", false);
 
       const { count: memberTotal } = await supabase
         .from("member")
@@ -343,18 +344,18 @@ export default function Home() {
   }, [selectedProvince, selectedAY]);
 
   useEffect(() => {
-  const handleScroll = () => {
-    const heroHeight = document.getElementById("hero")?.offsetHeight || 0;
+    const handleScroll = () => {
+      const heroHeight = document.getElementById("hero")?.offsetHeight || 0;
 
-    setShowBackToHero(window.scrollY > heroHeight - 50);
+      setShowBackToHero(window.scrollY > heroHeight - 50);
 
-    // 👇 ADD THIS
-    setIsOverHero(window.scrollY < heroHeight - 80);
-  };
+      // 👇 ADD THIS
+      setIsOverHero(window.scrollY < heroHeight - 80);
+    };
 
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
       {showBackToHero && (
@@ -438,43 +439,35 @@ export default function Home() {
         <section
           id="hero"
           className="relative min-h-[75vh] sm:min-h-screen flex items-center overflow-hidden px-6 lg:px-20 pt-20 sm:pt-28 lg:pt-0"
-          >
+        >
           {/* background */}
           <div
             className="absolute inset-0 bg-cover bg-center scale-105"
             style={{ backgroundImage: "url('/assets/logos/hero-bg.png')" }}
           />
 
-
           {/* overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/90" />
-
 
           {/* glow blobs */}
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#eec643]/20 rounded-full blur-[160px]" />
           <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#0d21a1]/20 rounded-full blur-[160px]" />
 
-
           {/* CONTENT WRAPPER */}
           <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-
             {/* LEFT SIDE - TEXT */}
             <div className="flex flex-col gap-6 text-left">
-
-
               <div>
                 <p className="text-white/60 tracking-widest uppercase text-sm">
                   DOST-SEI Scholars • CAR
                 </p>
 
-
                 <h1 className="text-white font-black leading-[0.85] text-6xl sm:text-7xl lg:text-8xl xl:text-9xl">
                   ACE <span className="text-[#eec643]">CARDS</span>
                 </h1>
 
-
-                <h1 className="absolute -z-10 text-[120px] sm:text-[160px] lg:text-[220px] xl:text-[260px] font-black text-transparent select-none opacity-20"
+                <h1
+                  className="absolute -z-10 text-[120px] sm:text-[160px] lg:text-[220px] xl:text-[260px] font-black text-transparent select-none opacity-20"
                   style={{
                     WebkitTextStroke: "2px rgba(238, 198, 67, 0.25)",
                   }}
@@ -482,18 +475,15 @@ export default function Home() {
                   ACE CARDS
                 </h1>
 
-
                 <div className="w-24 h-[2px] bg-[#eec643] mt-4" />
               </div>
 
-
               <p className="text-white/75 text-base sm:text-lg leading-relaxed max-w-xl">
                 A unified organization of DOST-SEI scholars in the Cordillera
-                      Administrative Region that aims to develop scholars in excellence,
-                      leadership, and service through science, innovation, and
-                      volunteerism.
+                Administrative Region that aims to develop scholars in
+                excellence, leadership, and service through science, innovation,
+                and volunteerism.
               </p>
-
 
               {/* CORE VALUES */}
               <div className="flex flex-wrap gap-3 mt-2">
@@ -512,19 +502,14 @@ export default function Home() {
               </div>
             </div>
 
-
             {/* RIGHT SIDE - LOGO */}
             <div className="relative flex items-center justify-center min-h-[500px]">
-
-
               {/* glow */}
               <div className="absolute w-[500px] h-[500px] bg-[#eec643]/25 blur-[140px] rounded-full" />
-
 
               {/* LOGO */}
               <div className="relative z-10 group flex items-center justify-center">
                 <div className="absolute inset-0 bg-[#eec643]/20 blur-2xl rounded-3xl opacity-0 group-hover:opacity-100 transition" />
-
 
                 <img
                   src="/assets/logos/ACE CARDS logo.png"
@@ -533,11 +518,8 @@ export default function Home() {
                 />
               </div>
             </div>
-
-
           </div>
-          </section>
-
+        </section>
 
         <NewsMedia />
 
@@ -710,21 +692,22 @@ export default function Home() {
           className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
         >
           {/* Background */}
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: `radial-gradient(#eec643 1px, transparent 1px)`,
-            backgroundSize: "20px 20px",
-          }} />
-          
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `radial-gradient(#eec643 1px, transparent 1px)`,
+              backgroundSize: "20px 20px",
+            }}
+          />
+
           {/* Decorative blur elements */}
           <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
           <div className="w-full mx-auto max-w-[1920px] relative z-10">
             <div className="flex flex-col lg:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
-              
               {/* LEFT COLUMN */}
               <div className="flex-1 w-full text-center lg:text-left">
-                
                 {/* Province label */}
                 <div className="inline-block lg:inline-block">
                   <p className="text-sm sm:text-base tracking-[0.3em] uppercase text-[#eec643] font-semibold mb-2">
@@ -734,7 +717,9 @@ export default function Home() {
 
                 {/* Province name */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-none mb-6">
-                  {selectedProvince ? selectedProvince.toUpperCase() : "CORDILLERA ADMINISTRATIVE REGION"}
+                  {selectedProvince
+                    ? selectedProvince.toUpperCase()
+                    : "CORDILLERA ADMINISTRATIVE REGION"}
                 </h1>
 
                 {/* Total count and school list */}
@@ -744,12 +729,20 @@ export default function Home() {
                     <select
                       className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
                       value={selectedProvince || ""}
-                      onChange={(e) => setSelectedProvince(e.target.value || null)}
-                      style={{ colorScheme: 'dark' }}
+                      onChange={(e) =>
+                        setSelectedProvince(e.target.value || null)
+                      }
+                      style={{ colorScheme: "dark" }}
                     >
-                      <option value="" className="bg-[#0a1a3a] text-white">All Provinces</option>
+                      <option value="" className="bg-[#0a1a3a] text-white">
+                        All Provinces
+                      </option>
                       {provinces.map((prov) => (
-                        <option key={prov} value={prov} className="bg-[#0a1a3a] text-white">
+                        <option
+                          key={prov}
+                          value={prov}
+                          className="bg-[#0a1a3a] text-white"
+                        >
                           {prov}
                         </option>
                       ))}
@@ -761,7 +754,9 @@ export default function Home() {
                     <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl">
                       {provinceDisplayCount}
                     </h2>
-                    <p className="text-[#eec643] font-semibold mt-2">Total Members</p>
+                    <p className="text-[#eec643] font-semibold mt-2">
+                      Total Members
+                    </p>
                   </div>
 
                   {/* School List*/}
@@ -783,7 +778,9 @@ export default function Home() {
                         ))
                       ) : (
                         <div className="text-center py-8 text-white/60">
-                          {selectedProvince ? "No schools found in this province" : "Select a province to view schools"}
+                          {selectedProvince
+                            ? "No schools found in this province"
+                            : "Select a province to view schools"}
                         </div>
                       )}
                     </div>
@@ -801,10 +798,18 @@ export default function Home() {
                       onChange={(e) => setSelectedAY(e.target.value)}
                       className="border border-white/20 rounded-xl px-4 py-2 bg-white/10 backdrop-blur-md font-semibold text-white text-sm shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer hover:bg-white/20"
                     >
-                      <option value="AY 2025-2026" className="text-[#011638]">AY 2025-2026</option>
-                      <option value="AY 2024-2025" className="text-[#011638]">AY 2024-2025</option>
-                      <option value="AY 2023-2024" className="text-[#011638]">AY 2023-2024</option>
-                      <option value="AY 2022-2023" className="text-[#011638]">AY 2022-2023</option>
+                      <option value="AY 2025-2026" className="text-[#011638]">
+                        AY 2025-2026
+                      </option>
+                      <option value="AY 2024-2025" className="text-[#011638]">
+                        AY 2024-2025
+                      </option>
+                      <option value="AY 2023-2024" className="text-[#011638]">
+                        AY 2023-2024
+                      </option>
+                      <option value="AY 2022-2023" className="text-[#011638]">
+                        AY 2022-2023
+                      </option>
                     </select>
                   </div>
 
@@ -815,26 +820,35 @@ export default function Home() {
                       alt="CAR map"
                       className="w-full max-w-2xl mx-auto lg:mx-0 object-contain transition-all duration-700 group-hover:scale-105"
                     />
-                  
+
                     {/* Reset Button */}
-                  {selectedProvince && (
-                    <button
-                      onClick={() => {
-                        setSelectedProvince(null);
-                        setProvinceMembers(0);
-                        setProvinceSchools([]);
-                      }}
-                      className="absolute bottom-4 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50"
-                    >
-                      {/* https://heroicons.com/outline */}
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                        <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clip-rule="evenodd" />
-                      </svg>
-                      <span className="max-w-0 overflow-hidden whitespace-nowrap text-[#011638] font-semibold text-sm group-hover:max-w-xs transition-all duration-300 ease-in-out">
-                        Reset
-                      </span>
-                    </button>
-                  )}
+                    {selectedProvince && (
+                      <button
+                        onClick={() => {
+                          setSelectedProvince(null);
+                          setProvinceMembers(0);
+                          setProvinceSchools([]);
+                        }}
+                        className="absolute bottom-4 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50"
+                      >
+                        {/* https://heroicons.com/outline */}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          class="size-6"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        <span className="max-w-0 overflow-hidden whitespace-nowrap text-[#011638] font-semibold text-sm group-hover:max-w-xs transition-all duration-300 ease-in-out">
+                          Reset
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Map Markers */}
@@ -844,7 +858,9 @@ export default function Home() {
                     className={`absolute left-[35%] top-[40%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Abra" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Abra" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -858,7 +874,9 @@ export default function Home() {
                     className={`absolute left-[52%] top-[20%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Apayao" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Apayao" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -872,7 +890,9 @@ export default function Home() {
                     className={`absolute left-[58%] top-[43%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Kalinga" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Kalinga" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -886,7 +906,9 @@ export default function Home() {
                     className={`absolute left-[31%] top-[75%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Benguet" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Benguet" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -900,7 +922,9 @@ export default function Home() {
                     className={`absolute left-[50%] top-[65%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Ifugao" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Ifugao" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -914,7 +938,9 @@ export default function Home() {
                     className={`absolute left-[53%] top-[56.5%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
                   >
                     <div className="relative">
-                      <div className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Mountain Province" ? "ring-[#eec643]/50" : ""}`} />
+                      <div
+                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Mountain Province" ? "ring-[#eec643]/50" : ""}`}
+                      />
                       <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
@@ -932,12 +958,11 @@ export default function Home() {
           id="academics-section"
           className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8] overflow-hidden"
           style={{
-            backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+            backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
             backgroundSize: "20px 20px",
             backgroundAttachment: "fixed",
           }}
         >
-
           {/* Decorative blurs */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0d21a1]/10 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -1001,7 +1026,8 @@ export default function Home() {
                   <div className="grid grid-cols-2 gap-0.5 mt-12 pt-8">
                     <div className="text-center group cursor-pointer">
                       <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
-                        15+ {/* Placeholder count at di ko po alam paano AHAHAHAH */}
+                        15+{" "}
+                        {/* Placeholder count at di ko po alam paano AHAHAHAH */}
                       </div>
                       <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors">
                         Research Thesis
@@ -1017,7 +1043,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                   {/* Buttons */}
+                  {/* Buttons */}
                   <div className="flex flex-wrap justify-center gap-6 mt-12">
                     <Link
                       href="/survey"
