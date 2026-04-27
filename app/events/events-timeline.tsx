@@ -82,12 +82,23 @@ export default function EventsTimeline() {
     }
   };
 
-  // Helper to format date into (MMM, YYYY)
   const formatTimelineDate = (dateString: string) => {
     if (!dateString) return "";
     const d = new Date(dateString);
     const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
     return `(${months[d.getMonth()]}, ${d.getFullYear()})`;
+  };
+
+  const isEventCompleted = (event: any) => {
+    if (event.status === "COMPLETED") return true;
+    
+    const eventEndDate = new Date(event.end_date || event.start_date);
+    const currentDate = new Date();
+    
+    eventEndDate.setHours(0,0,0,0);
+    currentDate.setHours(0,0,0,0);
+    
+    return currentDate > eventEndDate;
   };
 
   return (
@@ -157,10 +168,8 @@ export default function EventsTimeline() {
           {filteredEvents.length > 0 && (
             <div className="relative w-full mb-8 border-b border-gray-300/50">
               
-              {/* Horizontal Line centered vertically */}
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-slate-300/50 -translate-y-1/2"></div>
               
-              {/* Timeline Container (Added py-10 so the absolute text isn't clipped) */}
               <div className="relative flex justify-between items-center px-4 py-10 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {filteredEvents.map((node, index) => (
                   <div
@@ -169,7 +178,7 @@ export default function EventsTimeline() {
                     className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[80px] shrink-0"
                   >
                     
-                    {/* Date Label: Above the dot */}
+                    {/* Date Label */}
                     <div className={`absolute bottom-full mb-3 text-[10px] font-black tracking-widest uppercase whitespace-nowrap transition-colors duration-300 ${
                       index === activeIndex ? "text-[#011638]" : "text-slate-400 group-hover:text-[#0d21a1]"
                     }`}>
@@ -187,7 +196,7 @@ export default function EventsTimeline() {
                       )}
                     </div>
                     
-                    {/* Short Title Tooltip: Below the dot */}
+                    {/* Short Title Tooltip */}
                     <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
                       <div className="w-2 h-2 bg-[#011638] rotate-45 -mb-1.5 z-0"></div>
                       <div className="bg-[#011638] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap relative z-10">
@@ -222,46 +231,53 @@ export default function EventsTimeline() {
                   No events found.
                 </div>
               ) : (
-                filteredEvents.map((event, index) => (
-                  <div
-                    key={event.id}
-                    onClick={() => {
-                      if (index === activeIndex)
-                        router.push(`/events/${event.id}`);
-                      else scrollToCard(index);
-                    }}
-                    className={`w-[320px] h-[460px] rounded-[2.5rem] p-8 flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${index === activeIndex ? "bg-white border-2 border-[#eec643] shadow-xl z-10 scale-100" : "bg-white/60 border border-slate-200 scale-90 opacity-60 hover:opacity-100"}`}
-                  >
-                    <div className="relative z-10 flex justify-between items-start mb-4">
-                      <div className="flex flex-col">
-                        <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
-                          Date
-                        </span>
-                        <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
-                          {event.date}
-                        </span>
+                filteredEvents.map((event, index) => {
+                  
+                  const completed = isEventCompleted(event);
+
+                  return (
+                    <div
+                      key={event.id}
+                      onClick={() => {
+                        if (index === activeIndex)
+                          router.push(`/events/${event.id}`);
+                        else scrollToCard(index);
+                      }}
+                      className={`w-[320px] h-[460px] rounded-[2.5rem] p-8 flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${index === activeIndex ? "bg-white border-2 border-[#eec643] shadow-xl z-10 scale-100" : "bg-white/60 border border-slate-200 scale-90 opacity-60 hover:opacity-100"}`}
+                    >
+                      <div className="relative z-10 flex justify-between items-start mb-4">
+                        <div className="flex flex-col">
+                          <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
+                            Date
+                          </span>
+                          <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
+                            {event.date}
+                          </span>
+                        </div>
+                      </div>
+                      <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2">
+                        {event.title}
+                      </h3>
+                      <p className="relative z-10 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+                        📍 {event.location}
+                      </p>
+                      <p className="relative z-10 text-slate-600 text-sm font-medium leading-relaxed flex-grow line-clamp-5">
+                        {event.description}
+                      </p>
+                      
+                      {/* Dynamic Status Button */}
+                      <div className="relative z-10 mt-6 pt-6 border-t border-slate-100 text-center">
+                        <div className={`w-full py-4 rounded-xl font-black text-xs tracking-widest uppercase ${completed ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white shadow-md"}`}>
+                          {completed
+                            ? "VIEW RECAP"
+                            : event.status === "RSVP OPEN"
+                              ? "LEARN MORE"
+                              : "COMING SOON"}
+                        </div>
                       </div>
                     </div>
-                    <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2">
-                      {event.title}
-                    </h3>
-                    <p className="relative z-10 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-                      📍 {event.location}
-                    </p>
-                    <p className="relative z-10 text-slate-600 text-sm font-medium leading-relaxed flex-grow line-clamp-5">
-                      {event.description}
-                    </p>
-                    <div className="relative z-10 mt-6 pt-6 border-t border-slate-100 text-center">
-                      <div className={`w-full py-4 rounded-xl font-black text-xs tracking-widest uppercase ${event.status === "COMPLETED" ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white shadow-md"}`}>
-                        {event.status === "COMPLETED"
-                          ? "VIEW RECAP"
-                          : event.status === "RSVP OPEN"
-                            ? "LEARN MORE"
-                            : "COMING SOON"}
-                      </div>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
               <div className="min-w-[50vw] shrink-0"></div>
             </div>
