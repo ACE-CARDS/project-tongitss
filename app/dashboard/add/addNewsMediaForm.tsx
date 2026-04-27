@@ -24,6 +24,7 @@ export default function AddNewsMediaForm() {
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const postUrlRef = useRef<HTMLInputElement>(null);
   const fbPostDateRef = useRef<HTMLInputElement>(null);
+  const titleContentErrorRef = useRef<HTMLDivElement>(null);
 
   // Load draft from session storage (same as Announcement Form)
   useEffect(() => {
@@ -92,6 +93,12 @@ export default function AddNewsMediaForm() {
     
     if (!title && !content) {
       setTitleContentError("Either Title or Content must be provided.");
+      setTimeout(() => {
+      titleContentErrorRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 100);
       return false;
     } else {
       setTitleContentError("");
@@ -299,11 +306,13 @@ export default function AddNewsMediaForm() {
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     onInput={() => validateTitleContent()}
                   />
+                  <div ref={titleContentErrorRef}>
                   {titleContentError && (
                     <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
                       {titleContentError}
                     </span>
                   )}
+                </div>
                 </div>
 
                 {/* Image Upload */}

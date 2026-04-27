@@ -88,13 +88,22 @@ export default function EditNewsMedia() {
   // on input change do validation
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+
+    const updatedFormData = { ...formData, [name]: value };
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Validate title/content on change
     if (name === 'title' || name === 'content') {
-      validateTitleContent();
+      const title = name === 'title' ? value : updatedFormData.title;
+    const content = name === 'content' ? value : updatedFormData.content;
+    
+    if (!title?.trim() && !content?.trim()) {
+      setTitleContentError("Either Title or Content must be provided.");
+    } else {
+      setTitleContentError("");
     }
-  };
+  }
+};
 
   // same validation as add news
   const validateTitleContent = () => {
@@ -428,7 +437,7 @@ export default function EditNewsMedia() {
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="post_url" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Facebook Post URL <span className="text-[#eec643]">*</span>
+                        Post URL <span className="text-[#eec643]">*</span>
                       </label>
                       <input
                         type="url"
@@ -444,7 +453,7 @@ export default function EditNewsMedia() {
                           }
                         }}
                         required
-                        placeholder="https://facebook.com/post/..."
+                        placeholder="https://facebook.com/..."
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                       />
                       {postUrlError && (
@@ -456,7 +465,7 @@ export default function EditNewsMedia() {
 
                     <div>
                       <label htmlFor="fb_post_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Facebook Post Date <span className="text-[#eec643]">*</span>
+                        Post Date <span className="text-[#eec643]">*</span>
                       </label>
                       <input
                         type="date"
