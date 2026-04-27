@@ -16,6 +16,7 @@ import CrudButton from "@/components/crudButton";
 import MemberSurveyView from "@/components/memberSurveyView";
 import MemberThesisView from "@/components/memberThesisView";
 import ManagePage from "./manage/page";
+import LoadingState from "@/components/mainLoadingState";
 
 // Internal component to handle search params
 function DashboardContent() {
@@ -26,7 +27,8 @@ function DashboardContent() {
   //const userRole = user?.user_metadata?.role || user?.role || "user";
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [userRole, setUserRole] = useState("user");
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoadingRole, setIsLoadingRole] = useState(true);
   const supabase = createClient();
   const [memberData, setMemberData] = useState<{
     fname: string;
@@ -34,8 +36,10 @@ function DashboardContent() {
     comm: string;
     school: string;
   } | null>(null);
+  const [isDataLoading, setIsDataLoading] = useState(true); // Track loading state
 
   const fetchMemberData = async (email: string) => {
+    setIsLoadingRole(true);
     const { data, error } = await supabase
       .from("member")
       .select(
@@ -46,9 +50,10 @@ function DashboardContent() {
 
     if (error) {
       console.error(error);
+      setUserRole("user"); 
+      setIsLoadingRole(false); 
       return "user";
     }
-
     //it works trust me
     setMemberData({
       fname: data.mem_fname,
@@ -56,6 +61,8 @@ function DashboardContent() {
       comm: data.committee?.comm_name || "Member",
       school: data.school?.school_name || "No School",
     });
+    setUserRole(data.role); 
+    setIsLoadingRole(false); 
     return data.role;
   };
 
@@ -92,9 +99,26 @@ function DashboardContent() {
     }
   };
 
+  // Fetch data
+  useEffect(() => {
+    if (user?.email) {
+      setIsDataLoading(true);
+      fetchMemberData(user.email).then(() => {
+        // Minimum delay: 1.5s for ellipsis
+        setTimeout(() => {
+          setIsDataLoading(false);
+        }, 1500);
+      });
+    } else if (user === null) {
+      // If not logged in, stop loading
+      setIsDataLoading(false);
+    }
+  }, [user]);
+
   // Check for URL parameters first, then fall back to session storage
   useEffect(() => {
     if (user === undefined) return; 
+    if (isDataLoading) return; // Wait for data to load before setting up tabs
     
     const initialTab = getInitialTab();
     setActiveTab(initialTab);
@@ -102,11 +126,11 @@ function DashboardContent() {
     if (!searchParams.get("tab")) {
       router.push(`/dashboard?tab=${initialTab}`, { scroll: false });
     }
-  }, [user?.email, searchParams]);
+  }, [user?.email, searchParams, isDataLoading]);
 
   // Save current tab for user
   useEffect(() => {
-    if (user?.email && activeTab) {
+    if (user?.email && activeTab && !isDataLoading) {
       saveTab(activeTab);
       
       // Update URL
@@ -115,20 +139,11 @@ function DashboardContent() {
         router.push(`/dashboard?tab=${activeTab}`, { scroll: false });
       }
     }
-  }, [activeTab, user?.email, searchParams]);
+  }, [activeTab, user?.email, searchParams, isDataLoading]);
 
-  useEffect(() => {
-    if (user?.email) {
-      fetchMemberData(user.email).then(setUserRole);
-    }
-  }, [user]);
-
-  if (activeTab === null) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
-      </div>
-    );
+  // Show loading state while fetching
+  if (isDataLoading || activeTab === null) {
+    return <LoadingState />;
   }
 
   if (!user) {
@@ -280,11 +295,7 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center font-bold uppercase">
-          Loading Dashboard...
-        </div>
-      }
+      fallback={<LoadingState/>}
     >
       <DashboardContent />
     </Suspense>

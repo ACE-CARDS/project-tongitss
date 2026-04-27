@@ -31,15 +31,16 @@ export default function DashboardLayout({ children }) {
     checkUser();
   }, [router, supabase]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#011638]">
-          <p>wait lang...</p>
-        </div>
-      </div>
-    );
-  }
+  // Loading state now on components
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#011638]">
+  //         <p>wait lang...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // return isAuthenticated ? <>{children}</> : null;
   return <>{children}</>;
