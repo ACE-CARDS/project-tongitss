@@ -12,7 +12,6 @@ export default function ManagePage() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const section = searchParams.get('section'); // Get Section to get which card is open
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {

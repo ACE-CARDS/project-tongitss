@@ -240,7 +240,7 @@ export default function EditNewsMedia() {
         imageUrl = newImageUrl;
       }
 
-      // Update datavase
+      // Update database
       const { error } = await supabase
         .from('news_media')
         .update({
@@ -254,11 +254,11 @@ export default function EditNewsMedia() {
 
       if (error) throw error;
       
-      // Redirect back to admin page or news-media
+      // Redirect to success page after editing
       if (from === 'admin') {
-        router.push('/dashboard?tab=manage&section=news');
+        router.push('/dashboard/edit/success?type=news-media&from=admin');
       } else {
-        router.push('/dashboard/news-media');
+        router.push('/dashboard/edit/success?type=news-media');
       }
     } catch (err) {
       console.error('Error updating news:', err);
@@ -270,7 +270,19 @@ export default function EditNewsMedia() {
 
   if (loading) {
     return (
-              <p className="text-gray-500">Loading news articles...</p>
+      <div 
+        className="fixed inset-0 z-50 bg-[#fbfaf8] overflow-y-auto"
+        style={{
+          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+          backgroundSize: "20px 20px"
+        }}
+      >
+        <NavBar/>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-500">Loading news articles...</p>
+        </div>
+        <Footer />
+      </div>
     );
   }
 
