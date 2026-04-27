@@ -8,19 +8,6 @@ import { useUser } from "./context/userContext";
 
 const siteName = "ACE CARDS";
 
-const routeTitles: Record<string, string> = {
-  "/": "HOME",
-  "/about-us": "ABOUT US",
-  "/events": "EVENTS",
-  "/survey": "RESEARCH SURVEYS",
-  "/thesis": "THESIS REPOSITORY",
-  "/member-appli": "BE A MEMBER",
-  "/dashboard": "DASHBOARD",
-  "/dashboard/add": "DASHBOARD",
-  "/dashboard/add/sucess": "DASHBOARD",
-  "/executives": "EXECUTIVES",
-};
-
 export default function NavBar({ isOverHero = false }) {
   const { user } = useUser();
   const [menuOpen, setMenuisOpen] = useState(false);
@@ -28,7 +15,6 @@ export default function NavBar({ isOverHero = false }) {
   const academicsRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
-  const title = pathname && pathname !== "/" ? routeTitles[pathname] || "" : "";
   const isActive = (path: string) => pathname === path;
 
   const toggleMenu = () => {
@@ -83,7 +69,7 @@ export default function NavBar({ isOverHero = false }) {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
 
           {/* Title */}
-          <a title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
+          <a title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
         `} href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
@@ -92,15 +78,8 @@ export default function NavBar({ isOverHero = false }) {
               width={40}
               height={40}
             />
-            <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap">
-              {title && title !== siteName && (
-                <div className="text-sm opacity-75 font-bold leading-none title">
-                  {siteName}
-                </div>
-              )}
-              <div className="md:text-3xl sm:text-2xl text-xl font-bold leading-none whitespace-nowrap font-oswald">
-                {title || siteName}
-              </div>
+            <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap md:text-3xl sm:text-2xl text-xl font-bold leading-none font-oswald">
+                {siteName}
             </div>
           </a>
 
@@ -118,8 +97,7 @@ export default function NavBar({ isOverHero = false }) {
               overflow-hidden xl:overflow-visible
               ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"}
               origin-top-right transition-all duration-300 ease-in-out
-              ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-        
+              ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
             `}
           >
             <ul
@@ -274,8 +252,14 @@ export default function NavBar({ isOverHero = false }) {
             </ul>
           </div>
 
-          <div className={`flex items-center gap-4 justify-center xl:hidden flex flex-row items-center h-full w-fit gap-2 rounded-full px-2 bg-[#011638]/70 backdrop-blur-sm  ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-`}>
+          <div className={`
+          flex flex-row 
+          items-center justify-center 
+          xl:hidden 
+          rounded-full p-3 max-h-full max-w-fit
+          bg-[#011638]/70 backdrop-blur-sm  
+          ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
+          `}>
             {/* hamburger */}
             <svg
               onClick={toggleMenu}
