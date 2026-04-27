@@ -36,7 +36,7 @@ export default function Dashboard() {
   console.log(user);
 
   return (
-    <div className="text-[#141414] min-h-screen">
+    <div className="text-[#141414]">
       <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Calendar */}
