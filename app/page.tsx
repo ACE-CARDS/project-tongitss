@@ -529,8 +529,7 @@ export default function Home() {
           ref={sectionRef}
           className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638]"
         >
-
-        <div
+          <div
             className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: `radial-gradient(#eec643 1px, transparent 1px)`,
@@ -538,35 +537,35 @@ export default function Home() {
             }}
           />
 
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
           <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
-          <div className="text-center mb-20 flex flex-col items-center">
-            <h1 className="text-7xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
-              {displayCount}
-            </h1>
-            <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
-              Total
-            </h3>
-            <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-white/90 mt-1">
-              Events
-            </h2>
+            <div className="text-center mb-20 flex flex-col items-center">
+              <h1 className="text-7xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
+                {displayCount}
+              </h1>
+              <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
+                Total
+              </h3>
+              <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-white/90 mt-1">
+                Events
+              </h2>
 
-            <Link
-              href="/events"
-              onClick={() =>
-                sessionStorage.setItem(
-                  "returnToHomeSection",
-                  "events-section",
-                )
-              }
-              className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] text-[#eec643] font-bold text-lg hover:bg-[#eec643] hover:text-[#011638] shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
-            >
-              View Events →
-            </Link>
+              <Link
+                href="/events"
+                onClick={() =>
+                  sessionStorage.setItem(
+                    "returnToHomeSection",
+                    "events-section",
+                  )
+                }
+                className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] text-[#eec643] font-bold text-lg hover:bg-[#eec643] hover:text-[#011638] shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
+              >
+                View Events →
+              </Link>
+            </div>
           </div>
-        </div>
 
           {/* Mobile */}
           <div className="grid grid-cols-2 gap-6 lg:hidden">
@@ -1031,22 +1030,23 @@ export default function Home() {
 
                 {/* Stats Counter */}
                 <div className="w-full">
-                  <div className="grid grid-cols-2 gap-0.5 mt-12 pt-8">
+                  <div className="flex flex-wrap justify-center gap-6 mt-12 pt-8">
+                    <div className="text-center group cursor-pointer">
+                      <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
+                        20+ {/* Placeholder count */}
+                      </div>
+                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
+                        Research Surveys
+                      </div>
+                    </div>
+
                     <div className="text-center group cursor-pointer">
                       <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
                         15+{" "}
                         {/* Placeholder count at di ko po alam paano AHAHAHAH */}
                       </div>
-                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors">
+                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
                         Research Thesis
-                      </div>
-                    </div>
-                    <div className="text-center group cursor-pointer">
-                      <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
-                        20+ {/* Placeholder count */}
-                      </div>
-                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors">
-                        Research Surveys
                       </div>
                     </div>
                   </div>
