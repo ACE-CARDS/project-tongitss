@@ -18,11 +18,11 @@ export default function LoginPage() {
           <div className="
           flex flex-col md:flex-row 
           my-auto mx-auto 
-          md:w-[600px] sm:w-[450px] w-[300px]
+          md:w-[700px] sm:w-[450px] w-[300px]
           justify-center items-center 
           rounded-3xl bg-white shadow-lg 
           overflow-hidden">
-            <section className="md:w-1/2 w-full flex flex-col 
+            <section className="md:w-[400px] w-full flex flex-col 
             items-center text-center md:items-start md:text-left
             bg-[#011638]/80 h-full md:p-10 p-8">
               <Image
@@ -41,7 +41,7 @@ export default function LoginPage() {
               </p>
             </section>
 
-            <section className="md:w-1/2 w-full h-full md:p-10 p-8 flex flex-col items-center justify-center md:justify-start md:items-start md:text-left">
+            <section className="md:w-[300px] w-full h-full md:p-10 p-8 flex flex-col items-center justify-center md:justify-start md:items-start md:text-left">
               <span className="md:text-2xl text-xl font-medium">
                 <span className="md:text-3xl text-2xl font-bold text-slate-900">
                   Let's stay connected!
