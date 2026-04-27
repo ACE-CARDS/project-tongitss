@@ -734,15 +734,15 @@ export default function MembersPage() {
 
           {/* Members Table */}
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-xxl p-6 pt-4 space-y-6">
-            <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               {/* Name Search */}
-              <div className="flex-1 relative">
+              <div className="w-full sm:flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search member..."
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                  className="w-full px-4 py-2.5 pl-10 text-sm sm:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
                 <svg
                   className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -760,11 +760,11 @@ export default function MembersPage() {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                 {/* import */}
                 <label
                   htmlFor="import-members"
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
+                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638] text-center"
                 >
                   Import Members
                 </label>
@@ -817,7 +817,7 @@ export default function MembersPage() {
             </div>
 
             {/* grid start */}
-            <div className="grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
+            <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
               <span className="text-center">Name</span>
               <span className="text-center">Committee</span>
               <span className="text-center">Actions</span>
@@ -839,9 +839,9 @@ export default function MembersPage() {
                   return (
                     <div
                       key={member.id}
-                      className="grid grid-cols-[1.5fr_1.5fr_0.5fr] items-center gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
+                      className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-bold text-[#141414]">
+                      <span className="font-bold text-[#141414] text-sm sm:text-base">
                       {member.mem_lname}, {member.mem_fname} {member.mem_minit}
                       </span>
                       <div
