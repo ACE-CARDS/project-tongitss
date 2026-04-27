@@ -23,9 +23,7 @@ function NewsDescription({ description }: { description: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!description) {
-    return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed">
-      No description available
-    </p>;
+    return 
   }
 
   if (description.length <= 100) {
@@ -107,7 +105,7 @@ function DeleteConfirmPopup({
         {/* Body */}
         <div className="px-6 py-6">
           <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-            Are you sure you want to delete "{title}"? This action cannot be undone.
+            Are you sure you want to delete this news article? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
             <button
@@ -260,14 +258,14 @@ export default function NewsAdmin() {
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         <Link
-          href="/dashboard/add/news-media"
-          className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add News
-        </Link>
+        href="/dashboard/add/news-media?from=admin"
+        className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Add News
+      </Link>
       </div>
 
       {/* If empty */}
@@ -400,19 +398,34 @@ export default function NewsAdmin() {
                   </td>
 
                   {/* Title & description column */}
-                    <td className="px-4 py-4">
-                      <div className="text-sm font-oswald font-semibold mb-2">
-                        <a 
-                          href={item.post_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#011638] hover:text-[#0d21a1] hover:underline transition-all duration-200 inline-block hover:scale-[1.01]"
-                        >
-                          {item.title || 'Untitled'}
-                        </a>
+                  <td className="px-4 py-4 align-top">
+                    <div className="flex flex-col h-full">
+                      {/* Title */}
+                      <div className="text-sm font-oswald font-semibold mb-1 min-h-[1.75rem]">
+                        {item.title ? (
+                          <a 
+                            href={item.post_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#011638] hover:text-[#0d21a1] hover:underline transition-all duration-200 inline-block hover:scale-[1.01]"
+                          >
+                            {item.title}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 italic text-xs">No title</span>
+                        )}
                       </div>
-                      <NewsDescription description={item.content} />
-                    </td>
+                      
+                      {/* Description */}
+                      <div>
+                        {item.content ? (
+                          <NewsDescription description={item.content} />
+                        ) : (
+                          <p className="text-sm text-gray-400 italic font-ubuntu-mono">No description</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
 
                     {/* Date column */}
                     <td className="px-4 py-4 text-center">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
 import AnnouncementsAdmin from "@/components/announcementsAdmin";
 import EventsAdmin from "@/components/eventsAdmin";
@@ -11,14 +11,23 @@ import SpotlightCard from "@/components/SpotlightCard";
 export default function ManagePage() {
   const { user } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const section = searchParams.get('section'); // Get Section to get which card is open
   const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section && ['announcements', 'news', 'events'].includes(section)) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
 
   // Redirect if not logged in
   if (!user) {
     router.push("/dashboard");
     return null;
   }
-
+  
   // Card options
   const manageOptions = [
     { 

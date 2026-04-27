@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import Link from "next/link";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -170,9 +171,9 @@ export default function EditNewsMedia() {
       }
       
       // Fle types
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert("Only JPEG, PNG, GIF, and WEBP images are allowed");
+        alert("Only JPEG, PNG, and GIF images are allowed");
         return;
       }
       
@@ -246,7 +247,7 @@ export default function EditNewsMedia() {
       
       // Redirect back to admin page or news-media
       if (from === 'admin') {
-        router.push('/dashboard/news-media');
+        router.push('/dashboard?tab=manage&section=news');
       } else {
         router.push('/dashboard/news-media');
       }
@@ -278,11 +279,17 @@ export default function EditNewsMedia() {
         <main className="container mx-auto py-8 px-4 max-w-3xl">
           <div className="mb-6">
             <button
-              onClick={() => router.back()}
-              className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-            >
-              ← Back
-            </button>
+            onClick={() => {
+              if (from === 'admin') {
+                router.push('/dashboard?tab=manage&section=news');
+              } else {
+                router.back();
+              }
+            }}
+            className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
+          >
+            ← Back
+          </button>
             <h1 className="text-2xl font-oswald font-bold text-[#011638]">Edit News Article</h1>
           </div>
 
@@ -392,7 +399,7 @@ export default function EditNewsMedia() {
                                 <p className="pl-1">or drag and drop</p>
                               </div>
                               <p className="text-xs text-[#475569]">
-                                PNG, JPG, GIF, WEBP up to 10MB
+                                PNG, JPG, GIF up to 10MB
                               </p>
                             </>
                           )}
@@ -403,7 +410,7 @@ export default function EditNewsMedia() {
                         name="image"
                         type="file"
                         className="hidden"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        accept="image/jpeg,image/png,image/gif"
                         onChange={handleImageChange}
                       />
                       <span id="image-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -468,13 +475,13 @@ export default function EditNewsMedia() {
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
-                >
-                  Cancel
-                </button>
+                <Link
+              href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
+              className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
+              onClick={() => sessionStorage.removeItem("newsMediaDraft")}
+            >
+              Cancel
+            </Link>
 
                 <button
                   type="submit"

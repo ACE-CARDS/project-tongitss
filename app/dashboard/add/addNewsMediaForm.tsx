@@ -1,20 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AddNewsMediaForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   // Other Needs
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [postUrlError, setPostUrlError] = useState("");
   const [titleContentError, setTitleContentError] = useState("");
+
+  // For form fields
+  const titleRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const postUrlRef = useRef<HTMLInputElement>(null);
+  const fbPostDateRef = useRef<HTMLInputElement>(null);
 
   // Load draft from session storage (same as Announcement Form)
   useEffect(() => {
@@ -23,34 +32,43 @@ export default function AddNewsMediaForm() {
       try {
         const draft = JSON.parse(savedDraft);
         
-        const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement | null;
-        const contentInput = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement | null;
-        const postUrlInput = document.querySelector('input[name="post_url"]') as HTMLInputElement | null;
-        const fbPostDateInput = document.querySelector('input[name="fb_post_date"]') as HTMLInputElement | null;
-
-        if (titleInput) titleInput.value = draft.title || "";
-        if (contentInput) contentInput.value = draft.content || "";
-        if (postUrlInput) postUrlInput.value = draft.post_url || "";
-        if (fbPostDateInput) fbPostDateInput.value = draft.fb_post_date || "";
+        if (titleRef.current) titleRef.current.value = draft.title || "";
+        if (contentRef.current) contentRef.current.value = draft.content || "";
+        if (postUrlRef.current) postUrlRef.current.value = draft.post_url || "";
+        if (fbPostDateRef.current) fbPostDateRef.current.value = draft.fb_post_date || "";
+        
+        // Trigger validation
+        if (titleRef.current || contentRef.current) {
+          validateTitleContent();
+        }
       } catch (err) {
         console.error("Error loading draft:", err);
       }
     }
   }, []);
 
+  // Clean image preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const saveDraft = () => {
     const draft = {
-      title: (document.querySelector('input[name="title"]') as HTMLInputElement)?.value,
-      content: (document.querySelector('textarea[name="content"]') as HTMLTextAreaElement)?.value,
-      post_url: (document.querySelector('input[name="post_url"]') as HTMLInputElement)?.value,
-      fb_post_date: (document.querySelector('input[name="fb_post_date"]') as HTMLInputElement)?.value,
+      title: titleRef.current?.value || "",
+      content: contentRef.current?.value || "",
+      post_url: postUrlRef.current?.value || "",
+      fb_post_date: fbPostDateRef.current?.value || "",
     };
     sessionStorage.setItem("newsMediaDraft", JSON.stringify(draft));
   };
 
   // Check if link is duplicated
-  const checkDuplicatePostUrl = async (url: string) => {
-    if (!url) return;
+  const checkDuplicatePostUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
     
     const { data, error } = await supabase
       .from("news_media")
@@ -60,18 +78,17 @@ export default function AddNewsMediaForm() {
     
     if (data) {
       setPostUrlError("This post URL is already in use. Please provide a unique URL.");
+      return true;
     } else {
       setPostUrlError("");
+      return false;
     }
   };
 
-  // Check Title and Content (1 of them must be filled out)
-  const validateTitleContent = () => {
-    const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
-    const contentInput = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
-    
-    const title = titleInput?.value?.trim() || "";
-    const content = contentInput?.value?.trim() || "";
+  // Check Title and Content (1 must be filled out)
+  const validateTitleContent = (): boolean => {
+    const title = titleRef.current?.value?.trim() || "";
+    const content = contentRef.current?.value?.trim() || "";
     
     if (!title && !content) {
       setTitleContentError("Either Title or Content must be provided.");
@@ -79,6 +96,16 @@ export default function AddNewsMediaForm() {
     } else {
       setTitleContentError("");
       return true;
+    }
+  };
+
+  // Validate URL format
+  const validateUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   };
 
@@ -106,24 +133,28 @@ export default function AddNewsMediaForm() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size (max 10MB)
+      // File sizes (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         alert("File size must be less than 10MB");
         return;
       }
       
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      // File types
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert("Only JPEG, PNG, GIF, and WEBP images are allowed");
+        alert("Only JPEG, PNG, and GIF images are allowed");
         return;
+      }
+      
+      // Clean old preview
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
       }
       
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
       
-      // Clear any existing image error
       const errorSpan = document.getElementById('image-error');
       if (errorSpan) errorSpan.style.display = 'none';
     }
@@ -131,8 +162,9 @@ export default function AddNewsMediaForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError(""); 
     
-    // Validate title/content before submission
+    // Validate title/content
     if (!validateTitleContent()) {
       return;
     }
@@ -140,38 +172,24 @@ export default function AddNewsMediaForm() {
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const title = (formData.get("title") as string)?.trim();
-      const content = (formData.get("content") as string)?.trim();
-      const postUrl = formData.get("post_url") as string;
-      const fbPostDate = formData.get("fb_post_date") as string;
+      const title = titleRef.current?.value?.trim() || "";
+      const content = contentRef.current?.value?.trim() || "";
+      const postUrl = postUrlRef.current?.value?.trim();
+      const fbPostDate = fbPostDateRef.current?.value;
 
       // Validate post URL
       if (!postUrl) {
         throw new Error("Post URL is required.");
       }
 
-      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-      let isValidUrl = false;
-      try {
-        new URL(postUrl);
-        isValidUrl = true;
-      } catch {
-        isValidUrl = false;
-      }
-      
-      if (!isValidUrl && !urlRegex.test(postUrl)) {
-        throw new Error("Please enter a valid URL.");
+      // Validate URL format
+      if (!validateUrl(postUrl)) {
+        throw new Error("Please enter a valid URL (e.g., https://example.com).");
       }
 
-      // Check for duplicate post URL
-      const { data: existingNews } = await supabase
-        .from("news_media")
-        .select("id")
-        .eq("post_url", postUrl)
-        .maybeSingle();
-      
-      if (existingNews) {
+      // Check duplicate post URL
+      const isDuplicate = await checkDuplicatePostUrl(postUrl);
+      if (isDuplicate) {
         throw new Error("This post URL is already in use. Please provide a unique URL.");
       }
 
@@ -197,19 +215,29 @@ export default function AddNewsMediaForm() {
         created_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase.from("news_media").insert(payload);
+      const { error: insertError } = await supabase.from("news_media").insert(payload);
 
-      if (error) {
-        console.error("Supabase Error Details:", error);
-        throw new Error(error.message);
+      if (insertError) {
+        console.error("Supabase Error Details:", insertError);
+        throw new Error(insertError.message);
       }
 
+      // Clear draft on success
       sessionStorage.removeItem("newsMediaDraft");
-      router.push("/dashboard/add/success?type=news-media");
+
+      // Redirect
+      if (from === 'admin') {
+        router.push('/dashboard?tab=manage&section=news');
+      } else {
+        router.push("/dashboard/add/success?type=news-media");
+      }
       router.refresh();
-    } catch (error) {
-      console.error("Submission error:", error);
-      alert(error instanceof Error ? error.message : "Failed to add news/media");
+      
+    } catch (err) {
+      // Handle error
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setSubmitError(errorMessage);
+      console.error("Submission error:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +247,7 @@ export default function AddNewsMediaForm() {
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-6">
         <Link
-          href="/dashboard"
+          href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
           className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
           onClick={() => sessionStorage.removeItem("newsMediaDraft")}
         >
@@ -230,6 +258,14 @@ export default function AddNewsMediaForm() {
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
         <form onSubmit={handleSubmit} onChange={saveDraft} className="space-y-6">
+
+          {/* Submit error display */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-ubuntu-mono text-sm">{submitError}</p>
+            </div>
+          )}
+
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">News Details</h2>
@@ -243,7 +279,7 @@ export default function AddNewsMediaForm() {
                   <input
                     type="text"
                     id="title"
-                    name="title"
+                    ref={titleRef}
                     maxLength={100}
                     placeholder="Enter news title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
@@ -256,7 +292,7 @@ export default function AddNewsMediaForm() {
                   <label htmlFor="content" className="block text-sm font-oswald font-medium text-[#011638] mb-1">Content</label>
                   <textarea
                     id="content"
-                    name="content"
+                    ref={contentRef}
                     rows={5}
                     maxLength={1500}
                     placeholder="Enter news content"
@@ -292,6 +328,7 @@ export default function AddNewsMediaForm() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (imagePreview) URL.revokeObjectURL(imagePreview);
                               setImageFile(null);
                               setImagePreview("");
                               const errorSpan = document.getElementById('image-error');
@@ -326,7 +363,7 @@ export default function AddNewsMediaForm() {
                             <p className="pl-1">or drag and drop</p>
                           </div>
                           <p className="text-xs text-[#475569]">
-                            PNG, JPG, GIF, WEBP up to 10MB
+                            PNG, JPG, GIF up to 10MB
                           </p>
                         </>
                       )}
@@ -337,7 +374,7 @@ export default function AddNewsMediaForm() {
                     name="image"
                     type="file"
                     className="hidden"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    accept="image/jpeg,image/png,image/gif"
                     onChange={handleImageChange}
                   />
                   <span id="image-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -361,7 +398,7 @@ export default function AddNewsMediaForm() {
                   <input
                     type="url"
                     id="post_url"
-                    name="post_url"
+                    ref={postUrlRef}
                     required
                     maxLength={200}
                     placeholder="Enter news link"
@@ -369,7 +406,6 @@ export default function AddNewsMediaForm() {
                     onInput={async (e) => {
                       const input = e.target as HTMLInputElement;
                       const errorSpan = document.getElementById('post-url-error');
-                      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
                       
                       if (input.value.length === 0) {
                         if (errorSpan) {
@@ -377,27 +413,17 @@ export default function AddNewsMediaForm() {
                           errorSpan.style.display = 'block';
                         }
                         setPostUrlError("");
+                      } else if (!validateUrl(input.value)) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please enter a valid URL.';
+                          errorSpan.style.display = 'block';
+                        }
+                        setPostUrlError("");
                       } else {
-                        let isValidUrl = false;
-                        try {
-                          new URL(input.value);
-                          isValidUrl = true;
-                        } catch {
-                          isValidUrl = false;
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
                         }
-
-                        if (!isValidUrl && !urlRegex.test(input.value)) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Please enter a valid URL.';
-                            errorSpan.style.display = 'block';
-                          }
-                          setPostUrlError("");
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
-                          await checkDuplicatePostUrl(input.value);
-                        }
+                        await checkDuplicatePostUrl(input.value);
                       }
                     }}
                   />
@@ -417,7 +443,7 @@ export default function AddNewsMediaForm() {
                   <input
                     type="date"
                     id="fb_post_date"
-                    name="fb_post_date"
+                    ref={fbPostDateRef}
                     required
                     max={new Date().toISOString().split('T')[0]}
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
@@ -446,7 +472,7 @@ export default function AddNewsMediaForm() {
           {/* Submit Button */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
             <Link
-              href="/dashboard"
+              href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
               className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
               onClick={() => sessionStorage.removeItem("newsMediaDraft")}
             >
