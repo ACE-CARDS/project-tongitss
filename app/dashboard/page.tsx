@@ -30,12 +30,16 @@ function DashboardContent() {
   const [memberData, setMemberData] = useState<{
     fname: string;
     lname: string;
+    comm: string;
+    school: string;
   } | null>(null);
 
   const fetchMemberData = async (email: string) => {
     const { data, error } = await supabase
       .from("member")
-      .select("role, mem_fname, mem_lname")
+      .select(
+        "role, mem_fname, mem_lname, committee:committee (comm_name), school:school (school_name)",
+      )
       .eq("mem_email", email)
       .single();
 
@@ -44,7 +48,13 @@ function DashboardContent() {
       return "user";
     }
 
-    setMemberData({ fname: data.mem_fname, lname: data.mem_lname });
+    //it works trust me
+    setMemberData({
+      fname: data.mem_fname,
+      lname: data.mem_lname,
+      comm: data.committee?.comm_name || "Member",
+      school: data.school?.school_name || "No School",
+    });
     return data.role;
   };
 
@@ -156,38 +166,40 @@ function DashboardContent() {
     >
       <NavBar />
       <div className="pt-10">
-        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
-        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+        <div className="bg-white/70">
+          <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+          <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
 
-        <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
-            {/*User Name*/}
-            <div className="w-full md:w-auto">
-              <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
-                {memberData
-                  ? `${memberData.fname} ${memberData.lname}`
-                  : user.user_metadata.name || "User"}
-              </h2>
-            </div>
+          <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
+              {/*User Name*/}
+              <div className="w-full md:w-auto">
+                <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
+                  {memberData
+                    ? `${memberData.fname} ${memberData.lname}`
+                    : user.user_metadata.name || "User"}
+                </h2>
+              </div>
 
-            {/*Committee Name*/}
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
-              <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
-                Internals Committee
-              </p>
+              {/*Committee Name*/}
+              <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+                <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
+                  {memberData ? `${memberData.comm}` : "Member"}
+                </p>
 
-              <span className="hidden md:block h-6 w-px bg-gray-300"></span>
+                <span className="hidden md:block h-6 w-px bg-gray-300"></span>
 
-              {/*University*/}
-              <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
-                University of the Philippines Baguio
-              </p>
+                {/*University*/}
+                <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                  {memberData ? `${memberData.school}` : "Member"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
-        <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+          <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+          <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+        </div>
 
         <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
           <div className="w-full">
