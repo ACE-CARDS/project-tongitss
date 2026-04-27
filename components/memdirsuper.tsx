@@ -4,6 +4,8 @@
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/components/context/userContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Member = {
   id: number;
@@ -38,7 +40,8 @@ export default function MembersPage() {
       const { data: memberData } = await supabase
         .from("member")
         .select("*")
-        .eq("acadyear", "AY 2025-2026"); //CHANGE AY here yung year thnx
+        .eq("acadyear", "AY 2025-2026") //CHANGE AY here yung year thnx
+        .eq("is_active", true);
 
       const { data: committeeData } = await supabase
         .from("committee")
@@ -420,7 +423,7 @@ export default function MembersPage() {
     try {
       const { error } = await supabase
         .from("member")
-        .delete()
+        .update({ is_active: false }) 
         .eq("id", deleteMember.id);
   
       if (error) throw error;
@@ -435,8 +438,8 @@ export default function MembersPage() {
   
       setDeleteMember(null);
     } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete member.");
+      console.error("Soft delete error:", err);
+      alert("Failed to remove member.");
     }
   };
 
@@ -502,6 +505,262 @@ export default function MembersPage() {
     }
   };
 
+  const [showExportOptions, setShowExportOptions] = useState(false);
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+  
+    const img = new Image();
+    img.src = "/assets/logos/ACE CARDS logo.png";
+  
+    img.onload = () => {
+      supabase
+        .from("member")
+        .select(`
+          mem_fname,
+          mem_lname,
+          mem_minit,
+          mem_email,
+          mem_schol_type,
+          mem_schol_year,
+          school,
+          comm,
+          is_active,
+          committee:comm (comm_name),
+          school_rel:school (school_name)
+        `)
+        .eq("acadyear", "AY 2025-2026") //change ay
+        .then(({ data, error }) => {
+          if (error || !data) return;
+  
+          // sort
+          const sorted = [...data].sort((a: any, b: any) =>
+            `${a.mem_lname} ${a.mem_fname}`.localeCompare(
+              `${b.mem_lname} ${b.mem_fname}`
+            )
+          );
+  
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+
+          // logo
+          doc.addImage(
+            img,
+            "PNG",
+            10,
+            8,
+            20,
+            20
+          );
+
+          // titel
+          doc.setTextColor(1, 22, 56);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(30);
+          doc.text("MEMBERSHIP DIRECTORY", 37, 21);
+
+          // ay
+          doc.setTextColor(1, 22, 56);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(15);
+          doc.text("AY 2025–2026", pageWidth - 10, 20, { //change AY
+            align: "right",
+          });
+  
+          const tableData = sorted.map((m: any) => [
+            `${m.mem_lname}, ${m.mem_fname} ${m.mem_minit || ""}`,
+            m.committee?.comm_name || "",
+            m.mem_email,
+            m.mem_schol_type,
+            m.mem_schol_year,
+            m.school_rel?.school_name || m.school,
+          ]);
+
+          // legend 
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(9);
+          doc.setTextColor(160, 160, 160);
+
+          doc.text(
+            "* Italicized and grayed out — Inactive",
+            pageWidth - 10, 
+            32,
+            { align: "right" }
+          );
+
+          const pageNumbers: number[] = [];
+  
+          autoTable(doc, {
+            startY: 35,
+            margin: { left: 8, right: 8 },
+            theme: "grid",
+  
+            head: [[
+              "Name",
+              "Committee",
+              "Email",
+              "Scholarship Type",
+              "Year of Scholarship",
+              "University",
+            ]],
+  
+            body: tableData,
+  
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+              textColor: 30,
+              lineColor: [1, 22, 56], // borders
+              lineWidth: 0.2,
+            },
+  
+            headStyles: {
+              fillColor: [1, 22, 56],
+              textColor: 255,
+              fontSize: 10,
+              halign: "center",
+              valign: "middle", 
+            },
+  
+            alternateRowStyles: {
+              fillColor: [245, 247, 250],
+            },
+  
+            columnStyles: {
+              0: { cellWidth: 60 }, //name
+              1: { cellWidth: 38 }, //comm
+              2: { cellWidth: 60 }, //email
+              3: { cellWidth: 35, halign: "center" }, //schol type
+              4: { cellWidth: 28, halign: "center" }, //schol year
+              5: { cellWidth: 60 }, // uni
+            },
+
+            didParseCell: function (data) {
+              const row = data.row.index;
+              const member = sorted[row];
+            
+              if (member && member.is_active === false) {
+                data.cell.styles.textColor = [160, 160, 160];
+                data.cell.styles.fillColor = [245, 245, 245];
+                data.cell.styles.fontStyle = "italic"; 
+              }
+            },
+  
+            didDrawPage: () => {
+              doc.saveGraphicsState();
+              doc.setGState(new doc.GState({ opacity: 0.06 }));
+  
+              doc.addImage(
+                img,
+                "PNG",
+                pageWidth / 2 - 80,
+                pageHeight / 2 - 75,
+                160,
+                160
+              );
+  
+              doc.restoreGraphicsState();
+
+              const now = new Date();
+
+              const formattedDateTime = now.toLocaleString("en-PH", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+  
+              // footer
+              doc.setFontSize(8);
+              doc.setTextColor(120);
+
+              doc.text(
+                `Generated automatically from ACE CARDS Member System at ${formattedDateTime}`,
+                10,
+                pageHeight - 10
+              );
+            },
+          });
+
+          const totalPages = doc.getNumberOfPages();
+
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+
+            doc.setFontSize(8);
+            doc.setTextColor(120);
+
+            const now = new Date();
+
+                        const formattedDateTime = now.toLocaleString("en-PH", {
+                          year: "numeric",
+                          month: "short",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        });
+
+            doc.text(
+              `Generated automatically from ACE CARDS Member System at ${formattedDateTime}`,
+              10,
+              pageHeight - 10
+            );
+
+            doc.text(
+              `Page ${i} of ${totalPages}`,
+              pageWidth - 10,
+              pageHeight - 10,
+              { align: "right" }
+            );
+          }
+  
+          doc.save("Member_Directory_2025-2026.pdf");
+        });
+    };
+  };
+
+  const handleExportCSV = async () => {
+    const { data, error } = await supabase
+      .from("member")
+      .select("*")
+      .eq("acadyear", "AY 2025-2026"); 
+  
+    if (error || !data) return;
+  
+    const allKeys = Object.keys(data[0]);
+  
+    const headers = allKeys;
+  
+    const rows = data.map((m: any) =>
+      allKeys.map((key) => {
+        const value = m[key];
+  
+        if (value === null || value === undefined) return "";
+        if (typeof value === "object") return JSON.stringify(value);
+  
+        return value;
+      })
+    );
+  
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+  
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+  
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "members_full_export.csv";
+    a.click();
+  
+    URL.revokeObjectURL(url);
+  };
+  
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -626,23 +885,7 @@ export default function MembersPage() {
 
                 {/* export */}
                 <button
-                  onClick={() => {
-                    if (!members.length) return;
-                    const headers = Object.keys(members[0]);
-                    const csvContent = [
-                      headers.join(","),
-                      ...members.map((m) =>
-                        headers.map((h) => (m as any)[h]).join(","),
-                      ),
-                    ].join("\n");
-                    const blob = new Blob([csvContent], { type: "text/csv" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "members.csv";
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
+                  onClick={() => setShowExportOptions(true)}
                   className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
                 >
                   Export Members
@@ -834,6 +1077,56 @@ export default function MembersPage() {
           </div>
         </div>
       </main>
+
+      {/* mowdals */}
+      {showExportOptions && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[320px] text-center">
+
+            <h2 className="text-lg font-bold text-[#011638] mb-4">
+              Export Members
+            </h2>
+
+            <p className="text-sm text-gray-500 mb-6">
+              Choose file format
+            </p>
+
+            <div className="flex flex-col gap-3">
+
+              {/* CSV */}
+              <button
+                onClick={() => {
+                  handleExportCSV();
+                  setShowExportOptions(false);
+                }}
+                className="px-4 py-2 rounded-xl border hover:bg-gray-100"
+              >
+                Export as CSV
+              </button>
+
+              {/* PDF */}
+              <button
+                onClick={() => {
+                  handleExportPDF();
+                  setShowExportOptions(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#011638] text-white hover:opacity-90"
+              >
+                Export as PDF
+              </button>
+
+            </div>
+
+            <button
+              onClick={() => setShowExportOptions(false)}
+              className="mt-5 text-sm text-gray-400 hover:underline"
+            >
+              Cancel
+            </button>
+
+          </div>
+        </div>
+      )}
 
       {deleteMember && (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
