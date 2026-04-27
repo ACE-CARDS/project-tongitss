@@ -244,30 +244,32 @@ export default function CommitteeDirectory() {
               </div>
 
               <div className="flex-grow flex flex-col items-center justify-start">
-                {/* Name: Fixed height for 2 lines */}
+                {/* Name */}
                 <h2
-                  className="mt-4 text-center font-bold text-xl text-[#011638] leading-tight 
-                 line-clamp-2 min-h-[3rem] flex items-center justify-center"
+                  className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight 
+                   line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center"
                 >
                   {person.mem_fname} {person.mem_lname}
                 </h2>
 
-                {/* Committee: Fixed height for 2 lines */}
-                <div className="flex justify-center mt-1 min-h-[3.5rem] items-center">
+                {/* Committee */}
+                <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
                   <span
-                    className="text-sm text-[#0d21a1] tracking-tight px-3 py-2 rounded-[10px] md:rounded-full 
-                     bg-[#0d21a1]/10 font-medium text-center line-clamp-2"
+                    className="text-[10px] sm:text-sm text-[#0d21a1] tracking-tighter sm:tracking-tight px-2 sm:px-3 py-1 sm:py-2 
+                       rounded-lg md:rounded-full bg-[#0d21a1]/10 font-semibold sm:font-medium text-center line-clamp-2"
                   >
                     {person.committee?.comm_name}
                   </span>
                 </div>
 
-                {/* School: Fixed height for 2 lines */}
-                <p className="text-center text-xs text-slate-400 mt-2 italic px-2 line-clamp-2 min-h-[2rem]">
-                  {person.school?.school_name}
-                </p>
+                {/* School*/}
+                <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
+                  <p className="hidden sm:block text-center text-xs text-slate-400 mt-2 italic px-2 line-clamp-2 min-h-[2rem]">
+                    {person.school?.school_name}
+                  </p>
+                </div>
               </div>
-              <p className="relative z-10 text-center text-xs text-slate-300 mt-4 uppercase tracking-widest">
+              <p className="relative z-10 text-center text-[8px] sm:text-xs text-slate-300 mt-2 sm:mt-4 uppercase tracking-widest">
                 {person.acadyear}
               </p>
             </div>
