@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#011638]/80 text-white py-8 backdrop-blur-sm">
+    <footer className="w-full bg-[#011638]/80 text-white py-8 backdrop-blur-sm sticky top-[100vh]">
       <div className="max-w-[1350px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
 
         {/* Logo and Title */}
@@ -16,7 +16,7 @@ export default function Footer() {
             className="w-22 h-22"
             width={100}
             height={100}
-          ></Image>
+          />
 
           <div className="h-full my-auto flex flex-col justify-center lg:items-start mx-auto gap-3 items-center">
             <span className="md:text-[1.7rem] flex font-oswald sm:text-2xl whitespace-nowrap">Association of Competent and Empowered CAR DOST Scholars</span>
