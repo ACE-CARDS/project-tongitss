@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AddEventForm from "./addEventForm";
 import { useUser } from "@/components/context/userContext";
 import { createClient } from "@/lib/supabase/client";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function AddEventPage() {
+function AddEventContent() {
   const { user } = useUser();
   const supabase = createClient();
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -26,18 +27,16 @@ export default function AddEventPage() {
           setUserRole(data.role);
         }
       }
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
     };
 
     fetchRole();
   }, [user]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#fbfaf8]">
-        <p className="font-ubuntu-mono text-xl font-bold animate-pulse text-[#011638]">Verifying permissions...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (userRole !== "admin" && userRole !== "superadmin") {
@@ -61,5 +60,20 @@ export default function AddEventPage() {
       <AddEventForm />
       <Footer />
     </div>
+  );
+}
+
+export default function AddEventPage() {
+  const { user } = useUser();
+
+  // Show loading while user is being fetched
+  if (!user) {
+    return <LoadingState />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <AddEventContent />
+    </Suspense>
   );
 }

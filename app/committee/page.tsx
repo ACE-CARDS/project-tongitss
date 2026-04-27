@@ -1,11 +1,27 @@
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Image from "next/image";
 import BackButton from "@/components/backButton";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function Committee() {
+function CommitteeContent() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
       <NavBar />
@@ -23,5 +39,13 @@ export default function Committee() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function Committee() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CommitteeContent />
+    </Suspense>
   );
 }

@@ -1,14 +1,29 @@
 // Specific for news & media
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AddNewsMediaForm from "../addNewsMediaForm";
 import { useUser } from "@/components/context/userContext";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function AddNewsMediaPage() {
+function AddNewsMediaContent() {
   const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   if (user?.role !== "admin" && user?.role !== "superadmin") {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -30,5 +45,19 @@ export default function AddNewsMediaPage() {
       <AddNewsMediaForm />
       <Footer />
     </div>
+  );
+}
+
+export default function AddNewsMediaPage() {
+  const { user } = useUser();
+
+  if (!user) {
+    return <LoadingState />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <AddNewsMediaContent />
+    </Suspense>
   );
 }
