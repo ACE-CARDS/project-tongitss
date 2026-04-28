@@ -15,16 +15,15 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
 
   // On page change events
   const handlePageChange = (page: number) => {
-    if (page < 1 || page > totalPages) return; // If not w/in page bounds, exit
+    if (page < 1 || page > totalPages) return;
 
-    // Custom callback
     if (onPageChange) {
       onPageChange(page);
     } else {
-      // OR update URL w/ new page parameter
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", page.toString());
-      router.push(`/thesis?${params.toString()}`);
+      // Use window.location.pathname to stay on the current page instead of hardcoded /thesis
+      router.push(`${window.location.pathname}?${params.toString()}`);
     }
   };
 
