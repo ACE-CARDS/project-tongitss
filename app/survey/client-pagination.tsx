@@ -54,14 +54,6 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
     router.push(`?${params.toString()}`);
   };
 
-  if (!mounted) {
-    return (
-      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <>
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (

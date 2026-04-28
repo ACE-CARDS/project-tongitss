@@ -17,6 +17,7 @@ import MemberSurveyView from "@/components/memberSurveyView";
 import MemberThesisView from "@/components/memberThesisView";
 import ManagePage from "./manage/page";
 import LoadingState from "@/components/mainLoadingState";
+import TabLoadingState from "@/components/tabLoadingState";
 
 // Internal component to handle search params
 function DashboardContent() {
@@ -37,6 +38,16 @@ function DashboardContent() {
     school: string;
   } | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true); // Track loading state
+  const [isTabLoading, setIsTabLoading] = useState(false);
+
+  const handleTabChange = async (tabKey: string) => {
+    setIsTabLoading(true);
+    setActiveTab(tabKey);
+
+    setTimeout(() => {
+      setIsTabLoading(false);
+    }, 1500);
+  };
 
   const fetchMemberData = async (email: string) => {
     setIsLoadingRole(true);
@@ -164,6 +175,10 @@ function DashboardContent() {
   ];
 
   const renderTabContent = () => {
+    if (isTabLoading) {
+    return <TabLoadingState />;
+  }
+
     switch (activeTab) {
       case "announcements":
         return <Announcements />;
@@ -265,9 +280,7 @@ function DashboardContent() {
                 .map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => {
-                      setActiveTab(tab.key);
-                    }}
+                    onClick={() => handleTabChange(tab.key)}
                     className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
                       activeTab === tab.key
                         ? "bg-[#011638] text-white shadow-lg"

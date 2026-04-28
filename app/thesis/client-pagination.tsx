@@ -64,15 +64,6 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
     router.push(`?${params.toString()}`); // Nav to new URL
   };
 
-  // Loading
-  if (!mounted) {
-    return (
-      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        Loading... 
-      </div>
-    );
-  }
-
   return (
     <>
       {/* If no theses, message : otherwise, show grid */}

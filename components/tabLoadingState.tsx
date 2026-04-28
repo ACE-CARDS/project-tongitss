@@ -1,4 +1,3 @@
-// same as main but w/o navbar and footer
 "use client";
 
 import Image from "next/image";
@@ -13,16 +12,16 @@ export default function TabLoadingState() {
       setDots((prev) => {
         if (prev === ".") return "..";
         if (prev === "..") return "...";
-        if (prev === "...") return "";
+        if (prev === "...") return ".";  
         return ".";
       });
-    }, 750);
+    }, 500); // 500ms per change
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div >
+    <div className="min-h-[500px] flex items-center justify-center">
       <div className="flex-1 flex items-center justify-center">
         <div className="relative flex flex-col items-center justify-center gap-1">
           {/* Ellipsis sa taas ng image */}
@@ -35,7 +34,7 @@ export default function TabLoadingState() {
           {/* Image, for now just one pic but I wanna try randomizing the graphics soon (if may time pa) */}
           <div className="relative w-[40vw] h-[40vw] max-w-[320px] max-h-[320px] min-w-[180px] min-h-[180px]">
             <Image
-              src="/images/Busy.png"
+              src="/images/Search.png"
               alt="Loading"
               fill
               sizes="(max-width: 768px) 40vw, 320px"

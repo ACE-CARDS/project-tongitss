@@ -7,9 +7,8 @@ import AnnouncementsAdmin from "@/components/announcementsAdmin";
 import EventsAdmin from "@/components/eventsAdmin";
 import NewsAdmin from "@/components/newsAdmin";
 import SpotlightCard from "@/components/SpotlightCard";
-import TabLoadingState from "@/components/tabLoadingState";
 
-function ManagePageContent() {
+export default function ManagePage() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,10 +25,6 @@ function ManagePageContent() {
     }, 1500);
     return () => clearTimeout(timer);
   }, [searchParams]);
-
-  if (isLoading) {
-    return <TabLoadingState />;
-  }
 
   // Redirect if not logged in
   if (!user) {
@@ -183,13 +178,5 @@ function ManagePageContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ManagePage() {
-  return (
-    <Suspense fallback={<TabLoadingState />}>
-      <ManagePageContent />
-    </Suspense>
   );
 }

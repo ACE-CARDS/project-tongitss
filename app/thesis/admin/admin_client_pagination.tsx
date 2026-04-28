@@ -185,14 +185,6 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <>
       {(!paginatedTheses || paginatedTheses.length === 0) ? (

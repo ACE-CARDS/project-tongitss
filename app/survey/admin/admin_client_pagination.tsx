@@ -189,14 +189,6 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <>
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
