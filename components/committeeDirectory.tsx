@@ -35,6 +35,7 @@ export default function CommitteeDirectory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const headerRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true); 
 
   useEffect(() => {
     async function getMembers() {
@@ -64,6 +65,9 @@ export default function CommitteeDirectory() {
       } catch (error) {
         console.error("Error fetching members:", error);
       }
+      setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
     }
     getMembers();
   }, []);
@@ -175,6 +179,39 @@ export default function CommitteeDirectory() {
     );
   };
 
+  if (isLoading) {  // Blank while loading
+    return (
+      <div className="w-full flex flex-col">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+            Committee Directory
+          </h1>
+          <p className="text-[#475569] font-ubuntu-mono mt-2">
+            Meet the members of the organization and their committees.
+          </p>
+        </div>
+
+        {/* Committee Dropdown */}
+        <div className="flex justify-center w-full mb-12" ref={headerRef}>
+          <CommitteeDropdown
+            value={activeTab}
+            options={commTabs.map((tab) => ({
+              label: tab.label,
+              value: tab.key,
+            }))}
+            onChange={(val: string) => setActiveTab(val)}
+          />
+        </div>
+
+        {/* Members */}
+        <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
+          <div className="min-h-[400px] w-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col">
       {/* Header */}
@@ -201,85 +238,85 @@ export default function CommitteeDirectory() {
 
       {/* Members etc */}
       <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
-        {paginatedMembers.map((person, index) => {
-          const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
-            /\s+/g,
-            "",
-          );
-          const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
-          const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
+        {paginatedMembers.length === 0 ? (
+          <p className="text-center text-slate-500 text-lg mt-10 w-full">
+            No members found.
+          </p>
+        ) : (
+          paginatedMembers.map((person, index) => {
+            const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
+              /\s+/g,
+              "",
+            );
+            const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
+            const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
-          return (
-            <div
-              key={index}
-              className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
+            return (
+              <div
+                key={index}
+                className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
                   transition-all duration-300 ease-out
                   hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
                   w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
                   min-h-[180px] sm:min-h-[240px]
                   flex flex-col"
-            >
-              {/*<div
-                className="absolute inset-0 opacity-10 pointer-events-none"
-                style={{
-                  backgroundImage: 'url("/assets/logos/ACE CARDS logo.png")',
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat",
-                }}
-              />*/}
+              >
+                {/*<div
+                  className="absolute inset-0 opacity-10 pointer-events-none"
+                  style={{
+                    backgroundImage: 'url("/assets/logos/ACE CARDS logo.png")',
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                />*/}
 
-              <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#0b1763]/4 to-transparent" />
-              <div className="relative flex justify-center mt-2">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
-                  <img
-                    src={photoUrl}
-                    alt={person.mem_fname}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = fallbackUrl;
-                    }}
-                  />
+                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#0b1763]/4 to-transparent" />
+                <div className="relative flex justify-center mt-2">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
+                    <img
+                      src={photoUrl}
+                      alt={person.mem_fname}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = fallbackUrl;
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex-grow flex flex-col items-center justify-start">
-                {/* Name */}
-                <h2
-                  className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight 
-                   line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words hyphens-auto overflow-hidden"
-                >
-                  {person.mem_fname} {person.mem_lname}
-                </h2>
-
-                {/* Committee */}
-                <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
-                  <span
-                    className="text-[10px] sm:text-sm text-[#0d21a1] tracking-tighter sm:tracking-tight px-2 sm:px-3 py-1 sm:py-2 
-                       rounded-lg md:rounded-full bg-[#0d21a1]/10 font-semibold sm:font-medium text-center line-clamp-2"
+                <div className="flex-grow flex flex-col items-center justify-start">
+                  {/* Name */}
+                  <h2
+                    className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight 
+                     line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words hyphens-auto overflow-hidden"
                   >
-                    {person.committee?.comm_name}
-                  </span>
-                </div>
+                    {person.mem_fname} {person.mem_lname}
+                  </h2>
 
-                {/* School*/}
-                <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
-                  <p className="hidden sm:block text-center text-xs text-slate-400 mt-2 italic px-2 line-clamp-2 min-h-[2rem]">
-                    {person.school?.school_name}
-                  </p>
+                  {/* Committee */}
+                  <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
+                    <span
+                      className="text-[10px] sm:text-sm text-[#0d21a1] tracking-tighter sm:tracking-tight px-2 sm:px-3 py-1 sm:py-2 
+                         rounded-lg md:rounded-full bg-[#0d21a1]/10 font-semibold sm:font-medium text-center line-clamp-2"
+                    >
+                      {person.committee?.comm_name}
+                    </span>
+                  </div>
+
+                  {/* School*/}
+                  <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
+                    <p className="hidden sm:block text-center text-xs text-slate-400 mt-2 italic px-2 line-clamp-2 min-h-[2rem]">
+                      {person.school?.school_name}
+                    </p>
+                  </div>
                 </div>
+                <p className="relative z-10 text-center text-[8px] sm:text-xs text-slate-300 mt-2 sm:mt-4 uppercase tracking-widest">
+                  {person.acadyear}
+                </p>
               </div>
-              <p className="relative z-10 text-center text-[8px] sm:text-xs text-slate-300 mt-2 sm:mt-4 uppercase tracking-widest">
-                {person.acadyear}
-              </p>
-            </div>
-          );
-        })}
-        {/*If no members*/}
-        {paginatedMembers.length === 0 && (
-          <p className="text-center text-slate-500 text-lg mt-10">
-            No members found 👀
-          </p>
+            );
+          })
         )}
       </div>
 
