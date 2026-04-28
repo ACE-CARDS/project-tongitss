@@ -10,9 +10,9 @@ import BackButton from "@/components/backButton";
 import LoadingState from "@/components/mainLoadingState"; 
 
 export default function AboutUs() {
-  const [isLoading, setIsLoading] = useState(true); // ← ADD
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => { // ← ADD
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -20,13 +20,13 @@ export default function AboutUs() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) { // ← ADD
+  if (isLoading) {
     return <LoadingState />;
   }
 
   return (
     <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
+      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
@@ -35,14 +35,16 @@ export default function AboutUs() {
     >
       <NavBar />
 
-      <main className="px-6 sm:px-10 lg:px-20 py-8">
-        <div className="mb-4">
-          <BackButton />
-        </div>
+      <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-4">
+            <BackButton />
+          </div>
 
-        <AboutOrg />
-        <AboutMission />
-        <AboutMascot />
+          <AboutOrg />
+          <AboutMission />
+          <AboutMascot />
+        </div>
       </main>
 
       <Footer />
