@@ -199,7 +199,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
       <div className="min-h-[400px]"></div>  // ← Blank
     ) : (!paginatedTheses || paginatedTheses.length === 0) ? (
       <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        No surveys found.
+        No theses found.
       </div>
       ) : (
         <>
