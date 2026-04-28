@@ -14,33 +14,45 @@ export default function EventsTimeline() {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("is_deleted", false)
-        .order("start_date", { ascending: true });
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    const supabase = createClient();
+    
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("is_deleted", false)
+      .order("start_date", { ascending: true });
 
-      if (data && !error) {
-        setEvents(data);
-      }
-      setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    };
+    if (data && !error) {
+      setEvents(data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
     fetchEvents();
   }, []);
 
+  const availableYears = Array.from(
+    new Set(
+      events.map((event) => 
+        event.year || new Date(event.start_date).getFullYear().toString()
+      )
+    )
+  ).sort((a, b) => Number(b) - Number(a)); // Sort descending (newest first)
+
   const filteredEvents = events.filter((event) => {
+    const statusUpper = event.status?.toUpperCase() || "UPCOMING";
+    const eventYear = event.year || new Date(event.start_date).getFullYear().toString();
+    
     const matchesFilter =
       activeFilter === "ALL" ||
       (activeFilter === "COMPLETED"
-        ? event.status === "COMPLETED"
+        ? statusUpper === "COMPLETED"
         : activeFilter === "UPCOMING"
-          ? event.status !== "COMPLETED"
-          : event.year === activeFilter);
+          ? statusUpper !== "COMPLETED"
+          : eventYear === activeFilter);
 
     const matchesSearch =
       searchQuery === "" ||
@@ -91,12 +103,28 @@ export default function EventsTimeline() {
     return `(${months[d.getMonth()]}, ${d.getFullYear()})`;
   };
 
+  const formatEventDateRange = (start: string, end: string) => {
+    if (!start) return "";
+    const d1 = new Date(start);
+    const d2 = end ? new Date(end) : d1;
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+    if (!end || start === end) {
+      return `${months[d1.getMonth()]} ${d1.getDate()}, ${d1.getFullYear()}`;
+    } else if (d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear()) {
+      return `${months[d1.getMonth()]} ${d1.getDate()}-${d2.getDate()}, ${d1.getFullYear()}`;
+    } else if (d1.getFullYear() === d2.getFullYear()) {
+      return `${months[d1.getMonth()]} ${d1.getDate()}-${months[d2.getMonth()]} ${d2.getDate()}, ${d1.getFullYear()}`;
+    } else {
+      return `${months[d1.getMonth()]} ${d1.getDate()}, ${d1.getFullYear()} - ${months[d2.getMonth()]} ${d2.getDate()}, ${d2.getFullYear()}`;
+    }
+  };
+
   const isEventCompleted = (event: any) => {
-    if (event.status === "COMPLETED") return true;
+    if (event.status?.toUpperCase() === "COMPLETED") return true;
     
     const eventEndDate = new Date(event.end_date || event.start_date);
     const currentDate = new Date();
-    
     eventEndDate.setHours(0,0,0,0);
     currentDate.setHours(0,0,0,0);
     
@@ -138,9 +166,13 @@ export default function EventsTimeline() {
             <option value="ALL">ALL EVENTS</option>
             <option value="UPCOMING">UPCOMING</option>
             <option value="COMPLETED">ACCOMPLISHED</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
+            
+            {/* Dynamically render the available years */}
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
             <svg
@@ -156,9 +188,19 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      {filteredEvents.length > 0 && (
+      {isLoading ? (
+        <div className="w-full flex justify-center py-20">
+          <div className="flex flex-col items-center gap-4 animate-pulse text-[#011638]">
+            <span className="text-4xl">♠</span>
+            <p className="font-bold tracking-widest uppercase text-sm">
+              Loading Events...
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {filteredEvents.length > 0 && (
             <div className="relative w-full mb-8 border-b border-gray-300/50">
-              
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-slate-300/50 -translate-y-1/2"></div>
               
               <div className="relative flex justify-between items-center px-4 py-10 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -168,15 +210,12 @@ export default function EventsTimeline() {
                     onClick={() => scrollToCard(index)}
                     className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[80px] shrink-0"
                   >
-                    
-                    {/* Date Label */}
                     <div className={`absolute bottom-full mb-3 text-[10px] font-black tracking-widest uppercase whitespace-nowrap transition-colors duration-300 ${
                       index === activeIndex ? "text-[#011638]" : "text-slate-400 group-hover:text-[#0d21a1]"
                     }`}>
                       {formatTimelineDate(node.start_date)}
                     </div>
 
-                    {/* Timeline Dot */}
                     <div className="relative flex items-center justify-center h-8 w-8 shrink-0 z-10">
                       {index === activeIndex ? (
                         <div className="w-6 h-6 bg-[#011638] rounded-full flex items-center justify-center transition-all duration-300 shadow-md shadow-[#011638]/40">
@@ -187,14 +226,12 @@ export default function EventsTimeline() {
                       )}
                     </div>
                     
-                    {/* Short Title Tooltip */}
                     <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
                       <div className="w-2 h-2 bg-[#011638] rotate-45 -mb-1.5 z-0"></div>
                       <div className="bg-[#011638] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap relative z-10">
                         {node.short_title}
                       </div>
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -223,8 +260,10 @@ export default function EventsTimeline() {
                 </div>
               ) : (
                 filteredEvents.map((event, index) => {
-                  
                   const completed = isEventCompleted(event);
+                  const statusUpper = event.status?.toUpperCase() || "UPCOMING";
+                  
+                  const hasValidImage = Boolean(event.image_url && typeof event.image_url === 'string' && event.image_url.trim() !== "");
 
                   return (
                     <div
@@ -234,38 +273,59 @@ export default function EventsTimeline() {
                           router.push(`/events/${event.id}`);
                         else scrollToCard(index);
                       }}
-                      className={`w-[320px] h-[460px] rounded-[2.5rem] p-8 flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${index === activeIndex ? "bg-white border-2 border-[#eec643] shadow-xl z-10 scale-100" : "bg-white/60 border border-slate-200 scale-90 opacity-60 hover:opacity-100"}`}
+                      className={`w-[320px] h-[500px] rounded-[2.5rem] flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${index === activeIndex ? "bg-white border-2 border-[#eec643] shadow-xl z-10 scale-100" : "bg-white/60 border border-slate-200 scale-90 opacity-60 hover:opacity-100"}`}
                     >
-                      <div className="relative z-10 flex justify-between items-start mb-4">
-                        <div className="flex flex-col">
-                          <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
-                            Date
-                          </span>
-                          <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
-                            {event.date}
-                          </span>
+                      {/* FOOLPROOF IMAGE RENDER BLOCK */}
+                      {hasValidImage ? (
+                        <div className="w-full h-48 shrink-0 relative overflow-hidden bg-slate-200 border-b border-slate-200">
+                          <img 
+                            src={event.image_url} 
+                            alt={event.title} 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-4 bg-[#eec643] shrink-0"></div>
+                      )}
+
+                      {/* CARD CONTENT BODY */}
+                      <div className={`flex flex-col flex-grow ${hasValidImage ? 'p-6 pt-4' : 'p-8 pt-8'}`}>
+                        <div className="relative z-10 flex justify-between items-start mb-4">
+                          <div className="flex flex-col">
+                            <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
+                              Date
+                            </span>
+                            <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
+                              {formatEventDateRange(event.start_date, event.end_date)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2 line-clamp-2">
+                          {event.title}
+                        </h3>
+                        
+                        <p className="relative z-10 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                          📍 {event.location}
+                        </p>
+                        
+                        <p className="relative z-10 text-slate-600 text-sm font-medium leading-relaxed flex-grow line-clamp-3">
+                          {event.description}
+                        </p>
+                        
+                        {/* Dynamic Status Button */}
+                        <div className="relative z-10 mt-4 pt-4 border-t border-slate-100 text-center shrink-0">
+                          <div className={`w-full py-3 rounded-xl font-black text-xs tracking-widest uppercase shadow-sm ${completed ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white"}`}>
+                            {completed
+                              ? "VIEW RECAP"
+                              : statusUpper === "ONGOING"
+                                ? "JOIN NOW"
+                                : "COMING SOON"}
+                          </div>
                         </div>
                       </div>
-                      <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2">
-                        {event.title}
-                      </h3>
-                      <p className="relative z-10 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-                        📍 {event.location}
-                      </p>
-                      <p className="relative z-10 text-slate-600 text-sm font-medium leading-relaxed flex-grow line-clamp-5">
-                        {event.description}
-                      </p>
                       
-                      {/* Dynamic Status Button */}
-                      <div className="relative z-10 mt-6 pt-6 border-t border-slate-100 text-center">
-                        <div className={`w-full py-4 rounded-xl font-black text-xs tracking-widest uppercase ${completed ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white shadow-md"}`}>
-                          {completed
-                            ? "VIEW RECAP"
-                            : event.status === "RSVP OPEN"
-                              ? "LEARN MORE"
-                              : "COMING SOON"}
-                        </div>
-                      </div>
                     </div>
                   );
                 })
@@ -286,6 +346,8 @@ export default function EventsTimeline() {
               </svg>
             </button>
           </div>
+        </>
+      )}
     </div>
   );
 }
