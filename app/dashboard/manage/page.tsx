@@ -1,25 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
 import AnnouncementsAdmin from "@/components/announcementsAdmin";
 import EventsAdmin from "@/components/eventsAdmin";
 import NewsAdmin from "@/components/newsAdmin";
 import SpotlightCard from "@/components/SpotlightCard";
+import TabLoadingState from "@/components/tabLoadingState";
 
-export default function ManagePage() {
+function ManagePageContent() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true); 
 
   useEffect(() => {
     const section = searchParams.get('section');
     if (section && ['announcements', 'news', 'events'].includes(section)) {
       setActiveSection(section);
     }
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [searchParams]);
+
+  if (isLoading) {
+    return <TabLoadingState />;
+  }
 
   // Redirect if not logged in
   if (!user) {
@@ -173,5 +183,13 @@ export default function ManagePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ManagePage() {
+  return (
+    <Suspense fallback={<TabLoadingState />}>
+      <ManagePageContent />
+    </Suspense>
   );
 }
