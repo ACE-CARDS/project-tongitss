@@ -287,7 +287,7 @@ export default function MemberSurveyView() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [filteredSurveys, setFilteredSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
@@ -378,11 +378,42 @@ export default function MemberSurveyView() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#011638] mx-auto"></div>
-          <p className="text-[#475569] font-ubuntu-mono mt-4">Loading your surveys...</p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h2 className="text-3xl font-oswald font-bold text-[#011638]">My Surveys</h2>
+          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+            View and manage your submitted surveys
+          </p>
         </div>
+
+        {/* Search Bar and Add Button */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search by title, description, or keywords..."
+              disabled
+              className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-50"
+            />
+            <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          
+          <button
+            disabled
+            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg opacity-50 cursor-not-allowed flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Survey
+          </button>
+        </div>
+
+        {/* Blank */}
+        <div className="min-h-[400px] w-full"></div>
       </div>
     );
   }
