@@ -33,6 +33,14 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
   const [movingThesis, setMovingThesis] = useState<any>(null);
   const [reviewingThesis, setReviewingThesis] = useState<any>(null);
   const [theses, setTheses] = useState(allTheses);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (onPendingCountChange) {
@@ -187,10 +195,12 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
 
   return (
     <>
-      {(!paginatedTheses || paginatedTheses.length === 0) ? (
-        <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-          No theses found.
-        </div>
+      {isLoading ? (
+      <div className="min-h-[400px]"></div>  // ← Blank
+    ) : (!paginatedTheses || paginatedTheses.length === 0) ? (
+      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
+        No surveys found.
+      </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">

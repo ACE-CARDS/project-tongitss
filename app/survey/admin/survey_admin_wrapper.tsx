@@ -204,15 +204,6 @@ export default function SurveyAdminWrapper() {
     setCurrentPage(1); // back to first page
   };
 
-  // loading state
-  if (loading && surveys.length === 0) {
-    return (
-      <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
-        Loading surveys...
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
       {/* header with filters */}
