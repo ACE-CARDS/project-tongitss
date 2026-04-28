@@ -839,8 +839,8 @@ export default function Home() {
                   </div>
 
                   {/* Count Display */}
-                  <div className="text-center lg:text-left">
-                    <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl">
+                  <div className="text-center lg:text-left w-[180px]">
+                  <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl tabular-nums">
                       {provinceDisplayCount}
                     </h2>
                     <p className="text-[#eec643] font-semibold mt-2">
@@ -849,7 +849,7 @@ export default function Home() {
                   </div>
 
                   {/* School List*/}
-                  <div className="w-full max-w-lg">
+                  <div className="w-[420px] h-[400px] flex-shrink-0">
                     <div className="space-y-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                       {provinceSchools.length > 0 ? (
                         provinceSchools.map((school) => (
@@ -877,6 +877,7 @@ export default function Home() {
                 </div>
               </div>
 
+              
               {/* RIGHT COLUMN */}
               <div className="hidden lg:block relative z-10 flex-1 mt-10 lg:mt-0">
                 <div className="relative group">
