@@ -172,7 +172,7 @@ function ExecutivesContent() {
                 return (
                   <div
                     key={index}
-                    className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-[#141414]/50 shadow-md
+                    className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
                 transition-all duration-300 ease-out
                 hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
                 aspect-[3/4]
@@ -180,7 +180,7 @@ function ExecutivesContent() {
                 min-h-[180px] sm:min-h-[240px]"
                   >
                     {/* logo bg */}
-                    <div className="absolute inset-0 opacity-85 overflow-hidden ">
+                    <div className="absolute inset-0 opacity-10 overflow-hidden ">
                       <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute top-5 left-5" />
                       <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute bottom-5 right-5 rotate-180" />
                     </div>
@@ -189,7 +189,7 @@ function ExecutivesContent() {
                     <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent" />
 
                     <div className="relative flex justify-center mt-1">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border border-[#141414]/50 shadow-lg overflow-hidden group-hover:scale-105 transition">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
                         {/* img */}
                         <img
                           src={exec.image}
