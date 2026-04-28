@@ -17,8 +17,8 @@ export async function getUserWithRole() {
     .single();
 
     console.log("Auth User ID:", user.id);
-console.log("Public Profile Data:", profile);
-console.log("Database Error:", dbError);
+  console.log("Public Profile Data:", profile);
+  console.log("Database Error:", dbError);
 
   if (dbError) return { ...user, role: null };
 
