@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import EditEventForm from "./editEventForm";
 import { useUser } from "@/components/context/userContext";
 import { createClient } from "@/lib/supabase/client";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function EditEventPage() {
+function EditEventContent() {
   const { user } = useUser();
   const { id } = useParams();
   const supabase = createClient();
@@ -21,12 +22,16 @@ export default function EditEventPage() {
         const { data } = await supabase.from("member").select("role").eq("mem_email", user.email).single();
         if (data) setUserRole(data.role);
       }
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
     };
     fetchRole();
   }, [user]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center font-bold">Verifying...</div>;
+  if (isLoading) {
+    return <LoadingState />;
+  }
 
   if (userRole !== "admin" && userRole !== "superadmin") {
     return <div className="min-h-screen flex items-center justify-center text-red-600 font-bold">Unauthorized.</div>;
@@ -44,5 +49,19 @@ export default function EditEventPage() {
       <EditEventForm eventId={id as string} />
       <Footer />
     </div>
+  );
+}
+
+export default function EditEventPage() {
+  const { user } = useUser();
+
+  if (!user) {
+    return <LoadingState />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EditEventContent />
+    </Suspense>
   );
 }

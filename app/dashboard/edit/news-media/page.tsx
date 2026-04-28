@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from "next/link";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import LoadingState from "@/components/mainLoadingState";
 
 // Types
 interface NewsItem {
@@ -19,7 +20,7 @@ interface NewsItem {
 }
 
 // Main component
-export default function EditNewsMedia() {
+function EditNewsMediaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const newsId = searchParams.get('id');
@@ -269,21 +270,7 @@ export default function EditNewsMedia() {
   };
 
   if (loading) {
-    return (
-      <div 
-        className="fixed inset-0 z-50 bg-[#fbfaf8] overflow-y-auto"
-        style={{
-          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-          backgroundSize: "20px 20px"
-        }}
-      >
-        <NavBar/>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-500">Loading news articles...</p>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -518,5 +505,13 @@ export default function EditNewsMedia() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function EditNewsMedia() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EditNewsMediaContent />
+    </Suspense>
   );
 }
