@@ -287,7 +287,7 @@ export default function MemberSurveyView() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [filteredSurveys, setFilteredSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
