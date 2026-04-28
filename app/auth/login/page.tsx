@@ -2,29 +2,41 @@ import Image from "next/image";
 import Footer from "@/components/footer";
 import Link from "next/link";
 import { signinWithGoogle } from "@/lib/actions";
+import { BsSuitSpadeFill } from "react-icons/bs";
+import BackButton from "@/components/backButton";
 
 export default function LoginPage() {
-  
-
-
   return (
-    <>
-      <div className="flex md:flex-row flex-col w-full min-h-screen max-h-fit bg-white text-slate-600 py-15"
+    <div className="max-w-[1920px] mx-auto relative overflow-hidden">
+      <div className="flex md:flex-row flex-col w-full min-h-screen max-h-fit bg-white text-slate-600 py-15 items-center justify-center"
         style={{
           backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
           backgroundSize: "20px 20px",
           backgroundAttachment: "fixed",
         }}>
+          
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            <BsSuitSpadeFill className="absolute top-[-5%] right-[-5%] rotate-12 size-40 md:size-64 text-[#eff0f2]" />
+            
+            <BsSuitSpadeFill className="absolute top-8/12 -left-20 -rotate-12 size-60 md:size-96 text-[#eff0f2]" />
+            
+            <BsSuitSpadeFill className="absolute top-1/4 left-10 -rotate-[13deg] size-32 text-[#eff0f2]" />
+
+            <BsSuitSpadeFill className="absolute top-2/4 right-10 rotate-[13deg] size-28 text-[#eff0f2]" />
+          </div>
+
           <div className="
-          flex flex-col md:flex-row 
-          my-auto mx-auto 
+          flex flex-col md:flex-row
           md:w-[700px] sm:w-[450px] w-[300px]
-          justify-center items-center 
-          rounded-3xl bg-white shadow-lg 
-          overflow-hidden">
-            <section className="md:w-[400px] w-full flex flex-col 
+          justify-center
+          rounded-3xl shadow-2xl 
+          overflow-hidden z-10">
+            
+
+            <section className="md:w-[400px] relative w-full flex flex-col 
             items-center text-center md:items-start md:text-left
             bg-[#011638]/80 h-full md:p-10 p-8">
+              <BackButton className="absolute top-4 right-4"/>
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
                 alt="ACE CARDS Logo"
@@ -41,7 +53,8 @@ export default function LoginPage() {
               </p>
             </section>
 
-            <section className="md:w-[300px] w-full h-full md:p-10 p-8 flex flex-col items-center justify-center md:justify-start md:items-start md:text-left">
+            <section className="md:w-[300px] relative bg-[#eff0f2] w-full md:p-10 p-8 flex flex-col items-center justify-center md:items-start md:text-left">
+              
               <span className="md:text-2xl text-xl font-medium">
                 <span className="md:text-3xl text-2xl font-bold text-slate-900">
                   Let's stay connected!
@@ -64,20 +77,7 @@ export default function LoginPage() {
                 </button>
               </form>
               <div className="flex flex-row hover:underline hover:cursor-pointer items-center mt-5">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor" 
-                  className="size-6">
-                  <path 
-                    fillRule="evenodd"
-                    d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z"
-                    clipRule="evenodd"/>
-                </svg>
 
-                <span className="text-xl">
-                  <Link href="/">or Go back to Home Page?</Link>
-                </span>
 
               </div>
             </section>
@@ -86,6 +86,6 @@ export default function LoginPage() {
 
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

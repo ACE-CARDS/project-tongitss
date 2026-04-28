@@ -6,7 +6,7 @@ import Image from "next/image";
 export default function Footer() {
   return (
     <footer className="w-full bg-[#011638]/80 text-white py-8 backdrop-blur-sm sticky top-[100vh]">
-      <div className="max-w-[1350px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
+      <div className="max-w-[1100px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
         {/* Logo and Title */}
         <div className="container flex lg:flex-row flex-col items-center gap-5">
           <Image
@@ -18,10 +18,10 @@ export default function Footer() {
           />
 
           <div className="h-full my-auto flex flex-col justify-center lg:items-start mx-auto gap-3 items-center">
-            <span className="md:text-[1.7rem] flex font-oswald sm:text-2xl whitespace-nowrap">
+            <span className="md:text-[1.6rem] flex font-oswald sm:text-2xl whitespace-nowrap">
               Association of Competent and Empowered CAR DOST Scholars
             </span>
-            <span className="text-md">
+            <span className="text-[14px]">
               &copy; 2026 ACE CARDS. All rights reserved.
             </span>
           </div>
@@ -29,7 +29,7 @@ export default function Footer() {
         {/* {new Date().getFullYear()} */}
 
         {/* Social Media Links */}
-        <div className="container mx-auto flex lg:items-end items-center text-sm flex-col pr-10">
+        <div className="container mx-auto flex lg:items-end items-center text-sm flex-col">
           <Link
             href="https://www.facebook.com/acecards.CAR"
             className="hover:underline hover:text-[#a6a6a6] transition-colors cursor-pointer"
