@@ -181,8 +181,8 @@ function ExecutivesContent() {
                   >
                     {/* logo bg */}
                     <div className="absolute inset-0 opacity-10 overflow-hidden ">
-                      <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute top-5 left-5" />
-                      <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute bottom-5 right-5 rotate-180" />
+                      <BsSuitSpadeFill className="size-8 md:size-10 text-[#141414] absolute top-5 left-5" />
+                      <BsSuitSpadeFill className="size-8 md:size-10 text-[#141414] absolute bottom-5 right-5 rotate-180" />
                     </div>
 
                     {/* glow effect */}

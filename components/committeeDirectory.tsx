@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Pagination from "./pagination";
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 const supabase = createClient();
 
@@ -35,7 +36,7 @@ export default function CommitteeDirectory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const headerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function getMembers() {
@@ -66,8 +67,8 @@ export default function CommitteeDirectory() {
         console.error("Error fetching members:", error);
       }
       setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
+        setIsLoading(false);
+      }, 300);
     }
     getMembers();
   }, []);
@@ -179,7 +180,8 @@ export default function CommitteeDirectory() {
     );
   };
 
-  if (isLoading) {  // Blank while loading
+  if (isLoading) {
+    // Blank while loading
     return (
       <div className="w-full flex flex-col">
         {/* Header */}
@@ -270,6 +272,11 @@ export default function CommitteeDirectory() {
                     backgroundRepeat: "no-repeat",
                   }}
                 />*/}
+
+                <div className="absolute inset-0 opacity-10 overflow-hidden ">
+                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#141414] absolute top-5 left-5" />
+                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#141414] absolute bottom-5 right-5 rotate-180" />
+                </div>
 
                 <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#0b1763]/4 to-transparent" />
                 <div className="relative flex justify-center mt-2">
