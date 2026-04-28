@@ -1,223 +1,461 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
-import Link from "next/link";
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
+interface EventItem {
+  id: number;
+  title: string;
+  short_title: string;
+  description: string | null;
+  image_url: string | null;
+  start_date: string;
+  end_date: string;
+  location: string;
+  status: string;
+  year: string;
+}
+
+type SortField = 'title' | 'start_date' | null;
+type SortOrder = 'asc' | 'desc' | null;
+
+// Read more component for description
+function EventDescription({ description }: { description: string | null }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!description) {
+    return null;
+  }
+
+  if (description.length <= 100) {
+    return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">
+      {description}
+    </p>;
+  }
+
+  return (
+    <div>
+      {!isOpen ? (
+        <div>
+          <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-2 break-words">
+            {description}
+          </p>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
+          >
+            Read more →
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar">
+            {description}
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
+          >
+            Read less ↑
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Delete confirmation popup
+function DeleteConfirmPopup({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onConfirm: () => void; 
+  title: string;
+}) {
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#011638] px-6 py-4">
+          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3>
+        </div>
+        
+        {/* Body */}
+        <div className="px-6 py-6">
+          <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
+            Are you sure you want to delete <span className="font-bold text-[#011638]">"{title}"</span>? This action will hide it from the public view.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                onConfirm();
+                onClose();
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-oswald tracking-widest uppercase"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Search Bar
+function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearchChange: (value: string) => void }) {
+  return (
+    <div className="relative flex-1">
+      <input
+        type="text"
+        placeholder="Search events by title..."
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+      />
+      <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+  );
+}
+
+// Main component
 export default function EventsAdmin() {
-  const supabase = createClient();
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
-  
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [selectedYears, setSelectedYears] = useState<string[]>([]);
-  const [locationFilter, setLocationFilter] = useState("ALL");
+  const [deletePopupOpen, setDeletePopupOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-  const fetchEvents = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("events")
-      .select("*")
-      .eq("is_deleted", false)
-      .order("start_date", { ascending: false });
-
-    if (data) setEvents(data);
-    setLoading(false);
-  };
+  const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     fetchEvents();
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setShowFilters(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const resetFilters = () => {
-    setSelectedStatuses([]);
-    setSelectedYears([]);
-    setLocationFilter("ALL");
-    setSearchQuery("");
+  useEffect(() => {
+    let filtered = [...events];
+    
+    if (searchTerm.trim() !== '') {
+      filtered = filtered.filter(item => 
+        item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.short_title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (sortField && sortOrder) {
+      filtered.sort((a, b) => {
+        let aValue = sortField === 'title' ? (a.title || '') : new Date(a.start_date).getTime();
+        let bValue = sortField === 'title' ? (b.title || '') : new Date(b.start_date).getTime();
+        
+        if (sortField === 'title') {
+          aValue = (a.title || '').toLowerCase();
+          bValue = (b.title || '').toLowerCase();
+        }
+        
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    
+    setFilteredEvents(filtered);
+  }, [searchTerm, events, sortField, sortOrder]);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_deleted', false)
+      .order('start_date', { ascending: false });
+    
+    setEvents(data || []);
+    setLoading(false);
   };
 
-  const toggleStatus = (status: string) => {
-    setSelectedStatuses(prev => 
-      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
-    );
+  const handleDelete = async (id: number) => {
+    // Using soft delete (is_deleted: true) to match your previous event architecture
+    await supabase.from('events').update({ is_deleted: true }).eq('id', id);
+    setEvents(events.filter(item => item.id !== id));
   };
 
-  const toggleYear = (year: string) => {
-    setSelectedYears(prev => 
-      prev.includes(year) ? prev.filter(y => y !== year) : [...prev, year]
-    );
-  };
-
-  const uniqueYears = Array.from(new Set(events.map((e) => e.year))).sort().reverse();
-  const uniqueLocations = Array.from(new Set(events.map((e) => e.location))).sort();
-
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          event.short_title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(event.status);
-    const matchesYear = selectedYears.length === 0 || selectedYears.includes(event.year);
-    const matchesLocation = locationFilter === "ALL" || event.location === locationFilter;
-    return matchesSearch && matchesStatus && matchesYear && matchesLocation;
-  });
-
-  const handleDelete = async (id: number, title: string) => {
-    if (confirm(`Hide "${title}" from public view?`)) {
-      const { error } = await supabase.from("events").update({ is_deleted: true }).eq("id", id);
-      if (!error) fetchEvents();
+  const handleSort = (field: SortField) => {
+    if (sortField !== field) {
+      setSortField(field);
+      setSortOrder('asc');
+    } else {
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else if (sortOrder === 'desc') {
+        setSortField(null);
+        setSortOrder(null);
+      }
     }
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse font-bold">Loading...</div>;
+  const formatSchedule = (start: string, end: string) => {
+    const startDate = new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endDate = new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 font-ubuntu-mono animate-pulse">Loading events...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* HEADER SECTION - Styled like Thesis Management */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-oswald font-bold text-[#011638]">Admin Event Management</h1>
-        <p className="text-slate-500 text-sm font-ubuntu-mono tracking-tight">Manage and moderate all event schedules</p>
+    <div className="px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-oswald font-bold text-[#011638] uppercase tracking-wide">Event Management</h1>
+        <p className="text-[#475569] font-ubuntu-mono mt-1">Manage and moderate all community event schedules</p>
       </div>
 
-      {/* SEARCH AND FILTER BAR - Matched to Image */}
-      <div className="flex gap-2 items-center relative">
-        {/* Filters Button */}
-        <button 
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-[#011638] text-white font-bold text-sm hover:bg-[#0b1763] transition-all shrink-0 shadow-sm"
+      {/* Search & Add Header */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <Link
+          href="/dashboard/add/event?from=admin"
+          className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>Filters</span>
-        </button>
+          Add Event
+        </Link>
+      </div>
 
-        {/* Search Input */}
-        <div className="relative flex-grow">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[#011638] outline-none text-sm font-ubuntu-mono transition-all bg-white"
-          />
-          <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-
-        {/* MODAL POPUP (Thesis Style) */}
-        {showFilters && (
-          <div 
-            ref={filterRef}
-            className="absolute top-14 left-0 z-[100] w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-200 p-6"
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-[#011638]">Filter Events</h2>
-              <button onClick={() => setShowFilters(false)} className="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-
-            <div className="space-y-6 h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-              <section>
-                <h3 className="text-sm font-bold text-[#011638] mb-3">Status</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {['UPCOMING', 'RSVP OPEN', 'COMPLETED'].map(status => (
-                    <div 
-                      key={status} 
-                      onClick={() => toggleStatus(status)}
-                      className="flex items-center gap-2 cursor-pointer group"
-                    >
-                      <div className={`w-5 h-5 border-2 rounded transition-all flex items-center justify-center ${selectedStatuses.includes(status) ? 'bg-[#011638] border-[#011638]' : 'border-slate-300'}`}>
-                        {selectedStatuses.includes(status) && <div className="w-2 h-2 bg-white rounded-sm"></div>}
-                      </div>
-                      <span className={`text-[9px] font-black px-2 py-1 rounded ${
-                        status === 'COMPLETED' ? 'bg-slate-100 text-slate-500' : 'bg-[#fef9c3] text-[#854d0e]'
-                      }`}>{status}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-bold text-[#011638] mb-2">Location</h3>
-                <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="w-full p-2.5 border rounded-lg text-sm font-ubuntu-mono outline-none">
-                  <option value="ALL">All Locations</option>
-                  {uniqueLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                </select>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-bold text-[#011638] mb-3">Publication Years</h3>
-                <div className="border border-[#011638] rounded-xl p-3 space-y-2">
-                  {uniqueYears.map(year => (
-                    <div key={year} onClick={() => toggleYear(year)} className="flex items-center gap-3 cursor-pointer">
-                      <div className={`w-5 h-5 border-2 rounded transition-all flex items-center justify-center ${selectedYears.includes(year) ? 'bg-[#011638] border-[#011638]' : 'border-slate-300'}`}>
-                        {selectedYears.includes(year) && <div className="w-2 h-2 bg-white rounded-sm"></div>}
-                      </div>
-                      <span className="text-sm font-medium text-slate-600 font-ubuntu-mono">{year}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-            
-            <button onClick={resetFilters} className="w-full mt-4 bg-[#2546ad] text-white py-2.5 rounded-lg font-bold hover:bg-[#1a3480] transition-colors">Reset Filter</button>
+      {/* Empty State */}
+      {filteredEvents.length === 0 ? (
+        <div className="text-center py-12 bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4 shadow-sm border border-slate-100">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
           </div>
-        )}
-      </div>
+          <h3 className="text-lg font-oswald font-bold text-[#011638] mb-2 uppercase tracking-wide">No Events Found</h3>
+          <p className="text-[#475569] font-ubuntu-mono">Get started by creating your first event</p>
+        </div>
+      ) : (
+        /* Event Table */
+        <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              
+              {/* Table Headers */}
+              <thead className="bg-[#011638]">
+                <tr>
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-32">
+                    Media
+                  </th>
+                  <th 
+                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${
+                      sortField === 'title' && sortOrder !== null ? 'bg-[#0d21a1]' : ''
+                    }`}
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      Title & Info
+                      <div className="flex flex-col gap-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/50'}`}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/50'}`}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-48 ${
+                      sortField === 'start_date' && sortOrder !== null ? 'bg-[#0d21a1]' : ''
+                    }`}
+                    onClick={() => handleSort('start_date')}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      Schedule & Location
+                      <div className="flex flex-col gap-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'start_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/50'}`}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'start_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/50'}`}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-28">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-24">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-      {/* DATA TABLE */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-white">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-[#011638] uppercase text-[10px] font-black tracking-widest">
-              <th className="p-4">Event Details</th>
-              <th className="p-4">Time & Place</th>
-              <th className="p-4 text-center">Status</th>
-              <th className="p-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm font-ubuntu-mono">
-            {filteredEvents.map((event) => (
-              <tr key={event.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                <td className="p-4">
-                  <span className="font-bold text-[#011638] block leading-tight">{event.title}</span>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase">{event.short_title}</span>
-                </td>
-                <td className="p-4">
-                  <span className="text-slate-600 block font-bold">{event.date}</span>
-                  <span className="text-slate-400 text-xs">📍 {event.location}</span>
-                </td>
-                <td className="p-4 text-center">
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black ${
-                    event.status === 'COMPLETED' ? 'bg-slate-100 text-slate-500' : 'bg-[#fef9c3] text-[#854d0e]'
-                  }`}>
-                    {event.status}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <div className="flex justify-center gap-3">
-                    <Link href={`/dashboard/edit/event/${event.id}`} className="text-[#011638] hover:scale-110 transition-transform">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </Link>
-                    <button onClick={() => handleDelete(event.id, event.title)} className="text-red-500 hover:scale-110 transition-transform">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              {/* Table Body */}
+              <tbody className="divide-y divide-gray-200">
+                {filteredEvents.map((item, index) => (
+                  <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#fbfaf8]'}>
+
+                    {/* Image Column */}
+                    <td className="px-4 py-4 text-center">
+                      <div className="flex justify-center">
+                        {item.image_url ? (
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title}
+                            className="w-24 h-24 object-cover rounded-md border border-slate-200 hover:scale-105 transition-transform duration-200 shadow-sm"
+                            style={{ objectPosition: 'center' }}
+                          />
+                        ) : (
+                          <div className="w-24 h-24 bg-slate-100 flex items-center justify-center rounded-md border border-slate-200 shadow-sm">
+                            <img 
+                              src="/assets/logos/ACE CARDS logo.png"
+                              alt="ACE CARDS Logo"
+                              className="w-16 h-16 object-contain opacity-50"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Title & Description Column */}
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex flex-col h-full">
+                        <div className="mb-2">
+                          <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-wide block leading-tight">
+                            {item.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                            {item.short_title}
+                          </span>
+                        </div>
+                        <div>
+                          {item.description ? (
+                            <EventDescription description={item.description} />
+                          ) : (
+                            <p className="text-sm text-gray-400 italic font-ubuntu-mono">No description provided</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Schedule & Location Column */}
+                    <td className="px-4 py-4 text-center align-top">
+                      <div className="flex flex-col items-center justify-center gap-2 h-full pt-1">
+                        <div className="text-sm text-[#011638] font-bold font-ubuntu-mono whitespace-nowrap bg-slate-100 px-3 py-1 rounded border border-slate-200">
+                          {formatSchedule(item.start_date, item.end_date)}
+                        </div>
+                        <div className="text-xs text-slate-500 font-ubuntu-mono flex items-center gap-1 mt-1">
+                          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {item.location}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Status Column */}
+                    <td className="px-4 py-4 text-center align-top pt-5">
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm ${
+                        item.status === 'Completed' || item.status === 'COMPLETED' 
+                          ? 'bg-slate-100 text-slate-500 border border-slate-200' 
+                          : 'bg-[#fef9c3] text-[#854d0e] border border-[#fde047]'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </td>
+
+                    {/* Actions Column */}
+                    <td className="px-4 py-4 whitespace-nowrap text-center align-top pt-5">
+                      <div className="flex items-center justify-center gap-3">
+                        <Link 
+                          href={`/dashboard/edit/event/${item.id}`}
+                          className="text-[#0d21a1] hover:text-[#011638] transition-colors"
+                          title="Edit Event"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                          </svg>
+                        </Link>
+                        <button 
+                          onClick={() => {
+                            setSelectedEvent(item);
+                            setDeletePopupOpen(true);
+                          }}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                          title="Delete Event"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Popup */}
+      <DeleteConfirmPopup
+        isOpen={deletePopupOpen}
+        onClose={() => setDeletePopupOpen(false)}
+        onConfirm={() => {
+          if (selectedEvent) {
+            handleDelete(selectedEvent.id);
+            setDeletePopupOpen(false);
+            setSelectedEvent(null);
+          }
+        }}
+        title={selectedEvent?.title || 'this event'}
+      />
     </div>
   );
 }
