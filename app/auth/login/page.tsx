@@ -22,6 +22,10 @@ export default function LoginPage() {
             
             <BsSuitSpadeFill className="absolute top-1/4 left-10 -rotate-[13deg] size-32 text-[#eff0f2]" />
 
+            <BsSuitSpadeFill className="absolute top-1/12 left-[40%] rotate-[-13deg] size-30 text-[#eff0f2]" />
+
+            <BsSuitSpadeFill className="absolute top-1/5 right-[18%] rotate-[-15deg] size-60 text-[#eff0f2]" />
+
             <BsSuitSpadeFill className="absolute top-2/4 right-10 rotate-[13deg] size-28 text-[#eff0f2]" />
           </div>
 
