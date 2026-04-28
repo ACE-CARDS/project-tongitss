@@ -432,13 +432,15 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
   return (
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-6">
-        <Link
-          href="/thesis"
-          className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-          onClick={() => sessionStorage.removeItem("thesisDraft")}
+        <button
+          onClick={() => {
+            sessionStorage.removeItem("thesisDraft");
+            router.back();
+          }}
+          className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono cursor-pointer"
         >
           ← Back
-        </Link>
+        </button>
         <h1 className="text-2xl font-oswald font-bold text-[#011638]">Add New Thesis</h1>
       </div>
 
@@ -1137,13 +1139,16 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
           {/* Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
-            <Link
-              href="/thesis"
-              className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
-              onClick={() => sessionStorage.removeItem("thesisDraft")}
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.removeItem("thesisDraft");
+                router.back();
+              }}
+              className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono cursor-pointer"
             >
               Cancel
-            </Link>
+            </button>
 
             <button
               type="submit"

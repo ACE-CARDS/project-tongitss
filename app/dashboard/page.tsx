@@ -61,8 +61,8 @@ function DashboardContent() {
 
     if (error) {
       console.error(error);
-      setUserRole("user"); 
-      setIsLoadingRole(false); 
+      setUserRole("user");
+      setIsLoadingRole(false);
       return "user";
     }
     //it works trust me
@@ -72,8 +72,8 @@ function DashboardContent() {
       comm: data.committee?.comm_name || "Member",
       school: data.school?.school_name || "No School",
     });
-    setUserRole(data.role); 
-    setIsLoadingRole(false); 
+    setUserRole(data.role);
+    setIsLoadingRole(false);
     return data.role;
   };
 
@@ -84,7 +84,7 @@ function DashboardContent() {
     if (urlTab && isValidTab(urlTab)) {
       return urlTab;
     }
-    
+
     // Check saved
     if (user?.email) {
       const savedTab = localStorage.getItem(`dashboard_tab_${user.email}`);
@@ -92,14 +92,21 @@ function DashboardContent() {
         return savedTab;
       }
     }
-    
+
     // Default tab: announcements
     return "announcements";
   };
 
   // If tab is valid
   const isValidTab = (tab: string): boolean => {
-    const validTabs = ["announcements", "manage", "committee", "members", "thesis", "survey"];
+    const validTabs = [
+      "announcements",
+      "manage",
+      "committee",
+      "members",
+      "thesis",
+      "survey",
+    ];
     return validTabs.includes(tab);
   };
 
@@ -128,12 +135,12 @@ function DashboardContent() {
 
   // Check for URL parameters first, then fall back to session storage
   useEffect(() => {
-    if (user === undefined) return; 
+    if (user === undefined) return;
     if (isDataLoading) return; // Wait for data to load before setting up tabs
-    
+
     const initialTab = getInitialTab();
     setActiveTab(initialTab);
-    
+
     if (!searchParams.get("tab")) {
       router.push(`/dashboard?tab=${initialTab}`, { scroll: false });
     }
@@ -143,7 +150,7 @@ function DashboardContent() {
   useEffect(() => {
     if (user?.email && activeTab && !isDataLoading) {
       saveTab(activeTab);
-      
+
       // Update URL
       const currentUrlTab = searchParams.get("tab");
       if (currentUrlTab !== activeTab) {
@@ -176,8 +183,8 @@ function DashboardContent() {
 
   const renderTabContent = () => {
     if (isTabLoading) {
-    return <TabLoadingState />;
-  }
+      return <TabLoadingState />;
+    }
 
     switch (activeTab) {
       case "announcements":
@@ -298,7 +305,6 @@ function DashboardContent() {
           </div>
         </main>
       </div>
-      {(userRole === "admin" || userRole === "superadmin") && <CrudButton />}
       <Footer />
     </div>
   );
@@ -307,9 +313,7 @@ function DashboardContent() {
 // Next.js requires Suspense when using useSearchParams in client components
 export default function Dashboard() {
   return (
-    <Suspense
-      fallback={<LoadingState/>}
-    >
+    <Suspense fallback={<LoadingState />}>
       <DashboardContent />
     </Suspense>
   );
