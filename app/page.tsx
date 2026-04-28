@@ -439,7 +439,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   return (
-    <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col">
+    <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col overflow-hidden">
       {showBackToHero && (
         <button
           onClick={() => {
@@ -840,7 +840,7 @@ export default function Home() {
 
                   {/* Count Display */}
                   <div className="text-center lg:text-left w-[180px]">
-                  <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl tabular-nums">
+                    <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl tabular-nums">
                       {provinceDisplayCount}
                     </h2>
                     <p className="text-[#eec643] font-semibold mt-2">
@@ -877,7 +877,6 @@ export default function Home() {
                 </div>
               </div>
 
-              
               {/* RIGHT COLUMN */}
               <div className="hidden lg:block relative z-10 flex-1 mt-10 lg:mt-0">
                 <div className="relative group">
