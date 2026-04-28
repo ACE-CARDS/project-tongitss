@@ -7,6 +7,7 @@ import AnnouncementsAdmin from "@/components/announcementsAdmin";
 import EventsAdmin from "@/components/eventsAdmin";
 import NewsAdmin from "@/components/newsAdmin";
 import SpotlightCard from "@/components/SpotlightCard";
+import { motion } from "framer-motion";
 
 export default function ManagePage() {
   const { user } = useUser();
@@ -142,12 +143,44 @@ export default function ManagePage() {
         </p>
       </div>
 
-      {/* Cards Grid like Survey and Thesis */}
-      <div className="flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-          {manageOptions.map((option) => (
+    <div className="flex justify-center">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.3,
+            }
+          }
+        }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full"
+      >
+        {manageOptions.map((option, index) => (
+          <motion.div
+            key={option.key}
+            variants={{
+              hidden: { 
+                opacity: 0, 
+                y: 50,
+                scale: 0.9
+              },
+              visible: { 
+                opacity: 1, 
+                y: 0,
+                scale: 1,
+                transition: {
+                  type: "spring",
+                  damping: 12,
+                  stiffness: 100,
+                  duration: 0.5
+                }
+              }
+            }}
+          >
             <SpotlightCard
-              key={option.key}
               className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative cursor-pointer"
               spotlightColor="rgba(239, 240, 242, 0.16)"
             >
@@ -174,9 +207,10 @@ export default function ManagePage() {
                 </div>
               </div>
             </SpotlightCard>
-          ))}
-        </div>
-      </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
     </div>
   );
 }
