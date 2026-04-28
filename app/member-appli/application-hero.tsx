@@ -1,34 +1,39 @@
-export default function ApplicationHero() {
+"use client";
+
+import { motion } from "framer-motion";
+
+export default function ApplicationHero({ deadline }: { deadline: string }) {
   return (
-    <section className="relative pt-40 pb-20 px-5 flex flex-col items-center justify-center text-center overflow-hidden min-h-[60vh]">
-      <div
-        className="absolute inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(#011638 2px, transparent 2px)",
-          backgroundSize: "30px 30px",
-        }}
-      ></div>
-
-      <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">
-        <h1 className="text-5xl lg:text-7xl font-extrabold text-[#011638] uppercase border-b-8 border-[#011638] pb-4 mb-4 inline-block tracking-tight">
-          MEMBER
-          <br />
-          APPLICATION
-        </h1>
-
-        <p className="text-red-500 font-bold tracking-widest uppercase mb-12 text-lg">
-          STATUS: OPEN
-        </p>
-
-        <div className="w-full max-w-2xl border-4 border-[#011638] rounded-3xl py-16 px-5 bg-white shadow-[8px_8px_0px_0px_rgba(1,22,56,1)] transition-transform hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(1,22,56,1)]">
-          <h2 className="text-4xl lg:text-6xl font-bold text-[#011638] tracking-widest">
-            DEADLINE
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 font-medium">
-            To Be Announced
-          </p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="w-full bg-white/70 backdrop-blur-xl border border-white rounded-[2rem] p-6 lg:p-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8 mb-8"
+    >
+      <div className="flex flex-col items-center md:items-start gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl lg:text-4xl text-[#eec643]">♠</span>
+          <h1 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
+            Application
+          </h1>
+          <span className="text-3xl lg:text-4xl text-[#eec643]">♠</span>
+        </div>
+        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-green-100 border border-green-200 shadow-sm">
+          <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+          <span className="text-sm font-black text-green-700 tracking-widest uppercase">
+            Status: Open
+          </span>
         </div>
       </div>
-    </section>
+
+      <div className="bg-[#011638] text-white px-10 py-6 rounded-[1.5rem] shadow-xl text-center min-w-[280px]">
+        <h3 className="text-xs font-bold text-[#eec643] uppercase tracking-widest mb-2">
+          Application Deadline
+        </h3>
+        <p className="text-2xl font-black leading-tight">
+          {deadline}
+        </p>
+      </div>
+    </motion.div>
   );
 }
