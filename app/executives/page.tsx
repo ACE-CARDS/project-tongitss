@@ -118,86 +118,134 @@ function ExecutivesContent() {
             </h1>
             <span className="text-5xl text-[#eec643]">♠</span>
           </div>
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+            Meet the visionary leaders shaping our organization across academic
+            years
+          </p>
         </div>
 
-        {/* Filter Dropdown */}
-        <div className="flex justify-center mb-10">
-          <select
-            className="bg-white/70 backdrop-blur-xl px-6 py-3 border border-slate-300 rounded-2xl font-medium focus:outline-none"
-            value={selectedAY}
-            onChange={(e) => setSelectedAY(e.target.value)}
-          >
-            <option>AY 2025-2026</option>
-            <option>AY 2024-2025</option>
-            <option>AY 2023-2024</option>
-          </select>
+        {/* Filter Dropdown etc */}
+        <div className="flex justify-center mb-5">
+          <div className="relative">
+            <select
+              className="appearance-none bg-white/70 backdrop-blur-xl px-6 py-3 pr-12 border border-slate-300 rounded-2xl text-slate-800 font-medium shadow-sm hover:shadow-md transition focus:outline-none"
+              value={selectedAY}
+              onChange={(e) => setSelectedAY(e.target.value)}
+            >
+              <option>AY 2025-2026</option>
+              <option>AY 2024-2025</option>
+              <option>AY 2023-2024</option>
+              <option>AY 2022-2023</option>
+            </select>
+
+            {/* dropdown arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+              <svg
+                className="w-5 h-5 text-slate-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
 
+        {/* execs proper */}
         {executives.length === 0 ? (
           <p className="text-center text-slate-500 text-lg">
             No executives found 👀
           </p>
         ) : (
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-7 max-w-7xl mx-auto">
-            {executives.map((exec, index) => {
-              const fallbackUrl = `https://ui-avatars.com/api/?name=${exec.name}&background=f1f5f9&color=64748b&bold=true`;
+          <div className="flex justify-center">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-7 max-w-7xl">
+              {executives.map((exec, index) => {
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${exec.name}&background=f1f5f9&color=64748b&bold=true`;
 
-              return (
-                <div
-                  key={index}
-                  className="group relative rounded-2xl p-3 sm:p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl w-[46%] sm:w-[42%] md:w-[28%] lg:w-[20%] aspect-[4/5] sm:aspect-auto flex flex-col"
-                >
-                  <div className="relative flex justify-center mt-1">
-                    <div className="w-14 h-14 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-2 sm:border-4 border-white shadow-lg overflow-hidden">
-                      <img
-                        src={exec.image}
-                        className="w-full h-full object-cover"
-                        alt={exec.name}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = fallbackUrl;
-                        }}
-                      />
+                return (
+                  <div
+                    key={index}
+                    className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
+                transition-all duration-300 ease-out
+                hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
+                aspect-[3/4]
+                w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
+                min-h-[180px] sm:min-h-[240px]"
+                  >
+                    {/* logo bg */}
+                    <div
+                      className="absolute inset-0 opacity-10"
+                      style={{
+                        backgroundImage:
+                          'url("/assets/logos/ACE CARDS logo.png")',
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                    />
+
+                    {/* glow effect */}
+                    <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent" />
+
+                    <div className="relative flex justify-center mt-1">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
+                        {/* img */}
+                        <img
+                          src={exec.image}
+                          className="w-full h-full object-cover"
+                          alt={exec.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = fallbackUrl;
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex-grow flex flex-col items-center">
-                    <h2 className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-lg text-[#011638] line-clamp-2 min-h-[2.5rem]">
-                      {exec.name}
-                    </h2>
-                    <span className="mt-1 text-[10px] sm:text-xs text-[#0d21a1] px-2 py-1 rounded-lg bg-[#0d21a1]/10 font-bold uppercase text-center line-clamp-2">
-                      {exec.position}
-                    </span>
-                  </div>
+                    <div className="flex-grow flex flex-col items-center">
+                      <h2 className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-lg text-[#011638] line-clamp-2 min-h-[2.5rem]">
+                        {exec.name}
+                      </h2>
+                      <span className="mt-1 text-[10px] sm:text-xs text-[#0d21a1] px-2 py-1 rounded-lg bg-[#0d21a1]/10 font-bold uppercase text-center line-clamp-2">
+                        {exec.position}
+                      </span>
+                    </div>
 
-                  <div className="flex justify-center gap-3 mt-4 pb-2">
-                    <a
-                      href={`mailto:${exec.email}`}
-                      className="hover:scale-110 transition"
-                    >
-                      <img
-                        src="/assets/logos/gmail.jpg"
-                        alt="Email"
-                        className="w-5 h-5 rounded-full"
-                      />
-                    </a>
-                    {exec.fblink && (
+                    <div className="flex justify-center gap-3 mt-4 pb-2">
                       <a
-                        href={exec.fblink}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`mailto:${exec.email}`}
                         className="hover:scale-110 transition"
                       >
                         <img
-                          src="/assets/logos/facebook1.jpg"
-                          alt="FB"
+                          src="/assets/logos/gmail.jpg"
+                          alt="Email"
                           className="w-5 h-5 rounded-full"
                         />
                       </a>
-                    )}
+                      {exec.fblink && (
+                        <a
+                          href={exec.fblink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:scale-110 transition"
+                        >
+                          <img
+                            src="/assets/logos/facebook1.jpg"
+                            alt="FB"
+                            className="w-5 h-5 rounded-full"
+                          />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </main>
