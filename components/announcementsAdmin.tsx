@@ -198,7 +198,7 @@ export default function AnnouncementsAdmin() {
           <h1 className="text-2xl font-oswald font-bold text-[#011638]">Announcements Management</h1>
           <p className="text-[#475569] font-ubuntu-mono mt-1">Control active notices for the landing page and member area</p>
         </div>
-        <Link href="/dashboard/add/announcements" className="bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center gap-2 font-oswald">
+        <Link href="/dashboard/add/announcement" className="bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center gap-2 font-oswald">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           New Announcement
         </Link>
