@@ -6,6 +6,7 @@ import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
 import BackButton from "@/components/backButton";
 import LoadingState from "@/components/mainLoadingState";
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
@@ -179,16 +180,11 @@ function ExecutivesContent() {
                 min-h-[180px] sm:min-h-[240px]"
                   >
                     {/* logo bg */}
-                    <div
-                      className="absolute inset-0 opacity-10"
-                      style={{
-                        backgroundImage:
-                          'url("/assets/logos/ACE CARDS logo.png")',
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                      }}
-                    />
+                    <div className="absolute inset-0 opacity-18 overflow-hidden ">
+                      <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute top-5 left-5" />
+                      <BsSuitSpadeFill className="size-10 md:size-10 text-[#141414] absolute bottom-5 right-5 rotate-180" />
+                      <BsSuitSpadeFill className="size-50 md:size-50 text-[#eec643] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    </div>
 
                     {/* glow effect */}
                     <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent" />
