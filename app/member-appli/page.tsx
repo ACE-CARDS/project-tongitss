@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
 import BackButton from "@/components/backButton";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function MembershipApplication() {
+function MembershipApplicationContent() {
   const supabase = createClient();
   const [pageContent, setPageContent] = useState({
     reminders: [] as string[],
@@ -41,10 +42,16 @@ export default function MembershipApplication() {
             fetchedReminders.length > 0 ? fetchedReminders : prev.reminders,
         }));
       }
+      setTimeout(() => {
       setIsLoadingContent(false);
-    };
+    }, 1500);
+  };
     fetchContent();
   }, [supabase]);
+  
+  if (isLoadingContent) {
+  return <LoadingState />;
+}
 
   return (
     <div
@@ -118,12 +125,6 @@ export default function MembershipApplication() {
                 </h3>
               </div>
 
-              {isLoadingContent ? (
-                <div className="animate-pulse space-y-4">
-                  <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-slate-200 rounded w-full"></div>
-                </div>
-              ) : (
                 <ul className="space-y-4 text-slate-700 font-medium list-disc ml-6 marker:text-red-500 text-lg">
                   {pageContent.reminders.length > 0 ? (
                     pageContent.reminders.map((reminder, idx) => (
@@ -137,7 +138,7 @@ export default function MembershipApplication() {
                     </p>
                   )}
                 </ul>
-              )}
+
             </motion.div>
 
             {/* Instructions Card */}
@@ -204,5 +205,13 @@ export default function MembershipApplication() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function MembershipApplication() { 
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <MembershipApplicationContent />
+    </Suspense>
   );
 }

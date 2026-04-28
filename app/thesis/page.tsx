@@ -3,6 +3,7 @@ import Footer from "@/components/footer";
 import ThesisData from "./thesis_data";
 import { createClient } from "@/lib/supabase/server";
 import BackButton from "@/components/backButton"; // For back button
+import ThesisPageClient from "./thesis-page-client";
 
 // Main export
 export default async function ThesisPage({
@@ -37,6 +38,7 @@ export default async function ThesisPage({
   ]);
 
   return (
+    <ThesisPageClient>
     <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" //default bg 
      style={{
        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
@@ -57,5 +59,6 @@ export default async function ThesisPage({
 
       <Footer />
     </div>
+    </ThesisPageClient>
   );
 }

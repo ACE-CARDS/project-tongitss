@@ -26,7 +26,9 @@ export default function EventsTimeline() {
       if (data && !error) {
         setEvents(data);
       }
+      setTimeout(() => {
       setIsLoading(false);
+    }, 1500);
     };
     fetchEvents();
   }, []);
@@ -154,18 +156,7 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="w-full flex justify-center py-20">
-          <div className="flex flex-col items-center gap-4 animate-pulse text-[#011638]">
-            <span className="text-4xl">♠</span>
-            <p className="font-bold tracking-widest uppercase text-sm">
-              Loading Events...
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {filteredEvents.length > 0 && (
+      {filteredEvents.length > 0 && (
             <div className="relative w-full mb-8 border-b border-gray-300/50">
               
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-slate-300/50 -translate-y-1/2"></div>
@@ -295,8 +286,6 @@ export default function EventsTimeline() {
               </svg>
             </button>
           </div>
-        </>
-      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import Footer from "@/components/footer";
 import SurveyData from "./survey_data";
 import { createClient } from "@/lib/supabase/server";
 import BackButton from "@/components/backButton";
+import SurveyPageClient from "./survey-page-client";
 
 export default async function SurveyPage({
   searchParams,
@@ -30,6 +31,7 @@ export default async function SurveyPage({
   ]);
 
   return (
+    <SurveyPageClient>
     <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" 
      style={{
        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
@@ -47,5 +49,6 @@ export default async function SurveyPage({
       </div>
       <Footer />
     </div>
+    </SurveyPageClient>
   );
 }

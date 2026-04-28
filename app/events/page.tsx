@@ -1,11 +1,27 @@
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import EventsTimeline from "./events-timeline";
 import BackButton from "@/components/backButton";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function EventsPage() {
+function EventsPageContent() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   return (
     <div
       className="min-h-screen bg-[#fbfaf8]"
@@ -27,5 +43,13 @@ export default function EventsPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function EventsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EventsPageContent />
+    </Suspense>
   );
 }

@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
 import BackButton from "@/components/backButton";
+import LoadingState from "@/components/mainLoadingState";
 
-export default function Executives() {
+function ExecutivesContent() {
   const [executives, setExecutives] = useState([]);
   const [selectedAY, setSelectedAY] = useState("AY 2025-2026");
+  const [isLoading, setIsLoading] = useState(true);
 
   const roleOrder = [
     "Regional Director",
@@ -84,10 +86,18 @@ export default function Executives() {
       setExecutives(
         formatted.sort((a, b) => roleOrder.indexOf(a.position) - roleOrder.indexOf(b.position))
       );
-    };
+
+    setTimeout(() => {  // ← ADD this for minimum delay
+      setIsLoading(false);
+    }, 1500);
+  };
 
     fetchExecutives();
   }, [selectedAY]);
+
+  if (isLoading) {
+  return <LoadingState />;
+}
 
   return (
     <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
@@ -233,5 +243,13 @@ export default function Executives() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function Executives() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <ExecutivesContent />
+    </Suspense>
   );
 }

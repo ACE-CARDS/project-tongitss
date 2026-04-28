@@ -17,7 +17,7 @@ export default function LoadingState() {
         if (prev === "...") return "";
         return ".";
       });
-    }, 750);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);
