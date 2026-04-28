@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useUser } from "@/components/context/userContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -34,6 +33,7 @@ export default function MembersPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [importedMembers, setImportedMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +55,9 @@ export default function MembersPage() {
         setOriginalMembers(structuredClone(cloned));
       }
       if (committeeData) setCommittees(committeeData);
+      setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
     };
     fetchData();
   }, []);
@@ -1009,9 +1012,11 @@ const handleConfirmImport = async () => {
             </div>
 
             <div className="space-y-4">
-              {paginatedMembers.length === 0 ? (
+              {isLoading ? (
+                <div className="min-h-[200px]"></div> // ← Blank while loading
+              ) : paginatedMembers.length === 0 ? (
                 <p className="text-center text-gray-500 text-lg py-6">
-                  No members found 👀
+                  No members found.
                 </p>
               ) : (
                 paginatedMembers.map((member) => {
