@@ -218,34 +218,34 @@ export default function Home() {
   const [displayCount, setDisplayCount] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef(null);
+  const hasEventsAnimated = useRef(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          let start = 0;
-          const target = eventCount;
-          const duration = 500;
-          const increment = target / (duration / 16);
-
-          const interval = setInterval(() => {
-            start += increment;
-            if (start >= target) {
-              setDisplayCount(target);
-              clearInterval(interval);
-            } else {
-              setDisplayCount(Math.floor(start));
-            }
-          }, 16);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+  
+      if (hasEventsAnimated.current) return;
+      hasEventsAnimated.current = true;
+  
+      let start = 0;
+      const target = eventCount;
+      const duration = 500;
+      const increment = target / (duration / 16);
+  
+      const interval = setInterval(() => {
+        start += increment;
+  
+        if (start >= target) {
+          setDisplayCount(target);
+          clearInterval(interval);
         } else {
-          setDisplayCount(0); // reset pag umalis
+          setDisplayCount(Math.floor(start));
         }
-      },
-      { threshold: 0.5 },
-    );
-
+      }, 16);
+    }, { threshold: 0.5 });
+  
     if (sectionRef.current) observer.observe(sectionRef.current);
-
+  
     return () => observer.disconnect();
   }, [eventCount]);
 
@@ -340,34 +340,34 @@ export default function Home() {
   const [memberDisplayCount, setMemberDisplayCount] = useState(0);
   const [hasMemberAnimated, setHasMemberAnimated] = useState(false);
   const memberSectionRef = useRef(null);
+  const hasMembersAnimated = useRef(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          let start = 0;
-          const target = memberCount;
-          const duration = 500;
-          const increment = target / (duration / 16);
-
-          const interval = setInterval(() => {
-            start += increment;
-            if (start >= target) {
-              setMemberDisplayCount(target);
-              clearInterval(interval);
-            } else {
-              setMemberDisplayCount(Math.floor(start));
-            }
-          }, 16);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+  
+      if (hasMembersAnimated.current) return;
+      hasMembersAnimated.current = true;
+  
+      let start = 0;
+      const target = memberCount;
+      const duration = 500;
+      const increment = target / (duration / 16);
+  
+      const interval = setInterval(() => {
+        start += increment;
+  
+        if (start >= target) {
+          setMemberDisplayCount(target);
+          clearInterval(interval);
         } else {
-          setMemberDisplayCount(0); // reset pag umalis
+          setMemberDisplayCount(Math.floor(start));
         }
-      },
-      { threshold: 0.5 },
-    );
-
+      }, 16);
+    }, { threshold: 0.5 });
+  
     if (memberSectionRef.current) observer.observe(memberSectionRef.current);
-
+  
     return () => observer.disconnect();
   }, [memberCount]);
 
@@ -640,6 +640,9 @@ export default function Home() {
               <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-white/90 mt-1">
                 Events
               </h2>
+              <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-3">
+                since 2022
+              </p>
 
               <Link
                 href="/events"
@@ -721,9 +724,9 @@ export default function Home() {
           }}
         >
           <div className="w-full mx-auto mb-10 max-w-[1920px]">
-            <div className="flex flex-col lg:flex-row items-center gap-20">
+          <div className="flex flex-col lg:flex-row items-center gap-20">
               {/* img */}
-              <div className="flex-1 flex justify-center lg:justify-end">
+              <div className="flex-1 flex justify-center lg:justify-end order-2 lg:order-1">
                 <div className="relative">
                   <img
                     src="/assets/logos/ga.jpg"
@@ -735,7 +738,7 @@ export default function Home() {
               </div>
 
               {/* txt */}
-              <div className="flex-1 text-center lg:text-left max-w-lg">
+              <div className="flex-1 text-center lg:text-left max-w-lg order-1 lg:order-2">
                 <h1 className="text-8xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
                   {memberDisplayCount}
                 </h1>
@@ -758,7 +761,7 @@ export default function Home() {
                         "members-section",
                       )
                     }
-                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Committees →
                   </Link>
@@ -771,7 +774,7 @@ export default function Home() {
                         "members-section",
                       )
                     }
-                    className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Executives →
                   </Link>
