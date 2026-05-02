@@ -431,7 +431,6 @@ export default function Home() {
 
       setShowBackToHero(window.scrollY > heroHeight - 50);
 
-      // 👇 ADD THIS
       setIsOverHero(window.scrollY < heroHeight - 80);
     };
 
@@ -520,7 +519,7 @@ export default function Home() {
         {/* HERO SECTION */}
         <section
           id="hero"
-          className="relative min-h-[75vh] sm:min-h-screen flex items-center overflow-hidden px-6 lg:px-20 pt-20 sm:pt-28 lg:pt-0"
+          className="relative h-[100svh] sm:min-h-screen flex items-center overflow-hidden px-6 lg:px-20 py-10 sm:py-16 lg:py-0"
         >
           {/* background */}
           <div
@@ -536,9 +535,9 @@ export default function Home() {
           <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#0d21a1]/20 rounded-full blur-[160px]" />
 
           {/* CONTENT WRAPPER */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 items-center">
             {/* LEFT SIDE - TEXT */}
-            <div className="flex flex-col gap-6 text-left">
+            <div className="flex flex-col gap-6 text-left lg:mt-0">
               <div>
                 <p className="text-white/60 tracking-widest uppercase text-sm">
                   DOST-SEI Scholars • CAR
@@ -557,7 +556,7 @@ export default function Home() {
                   ACE CARDS
                 </h1>
 
-                <div className="w-24 h-[2px] bg-[#eec643] mt-4" />
+                <div className="w-24 h-[4px] mt-4 w-20 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1]" />
               </div>
 
               <p className="text-white/75 text-base sm:text-lg leading-relaxed max-w-xl">
@@ -568,7 +567,12 @@ export default function Home() {
               </p>
 
               {/* CORE VALUES */}
-              <div className="flex flex-wrap gap-3 mt-2">
+              <div className="flex flex-col gap-2">
+              <p className="text-white/60 tracking-widest uppercase text-sm leading-tight">
+                3 CORE VALUES of a DOST-SEI Scholar
+              </p>
+
+              <div className="flex flex-wrap gap-3">
                 {[
                   "Professional Excellence",
                   "Social Responsibility",
@@ -582,10 +586,11 @@ export default function Home() {
                   </span>
                 ))}
               </div>
+              </div>
             </div>
 
             {/* RIGHT SIDE - LOGO */}
-            <div className="relative flex items-center justify-center min-h-[500px]">
+            <div className="relative flex items-center justify-center min-h-[400px] lg:min-h-[500px] order-first lg:order-last">
               {/* glow */}
               <div className="absolute w-[500px] h-[500px] bg-[#eec643]/25 blur-[140px] rounded-full" />
 
@@ -596,7 +601,9 @@ export default function Home() {
                 <img
                   src="/assets/logos/ACE CARDS logo.png"
                   alt="Ace Cards Logo"
-                  className="hidden lg:block w-72 sm:w-80 lg:w-[420px] rounded-3xl shadow-5xl transition-transform duration-500 group-hover:scale-105"
+                  className="block w-72 sm:w-80 lg:w-[420px] rounded-3xl shadow-5xl
+                  transition-all duration-700 ease-out transform-gpu
+                  hover:scale-105 hover:-translate-y-1"
                 />
               </div>
             </div>
