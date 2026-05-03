@@ -644,7 +644,7 @@ export default function Home() {
         <section
           id="events-section"
           ref={sectionRef}
-          className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638]"
+          className="pt-8 pb-0 lg:py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638]"
         >
           <div
             className="absolute inset-0 opacity-10"
@@ -659,9 +659,9 @@ export default function Home() {
 
           <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
             <div className="text-center mb-20 flex flex-col items-center">
-              <h1 className="text-7xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
-                {displayCount}
-              </h1>
+            <h1 className="text-[120px] sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
+              {displayCount}
+            </h1>
               <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
                 Total
               </h3>
@@ -669,7 +669,7 @@ export default function Home() {
                 Events
               </h2>
               <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-3">
-                since 2022
+                since establishment
               </p>
 
               <Link
@@ -688,56 +688,157 @@ export default function Home() {
           </div>
 
           {/* Mobile */}
-          <div className="grid grid-cols-2 gap-6 lg:hidden">
-            <img
-              src="/assets/logos/upbfair.jpg"
-              alt="event 1"
-              className="w-full h-72 object-cover rounded-3xl shadow-2xl hover:scale-105 hover:shadow-3xl transition-all duration-500 ring-2 ring-white/50"
-            />
-            <img
-              src="/assets/logos/uge26.jpeg"
-              alt="event 2"
-              className="w-full h-72 object-cover rounded-3xl shadow-2xl hover:scale-105 hover:shadow-3xl transition-all duration-500 ring-2 ring-white/50"
-            />
-            <img
-              src="/assets/logos/inadalan.jpg"
-              alt="event 3"
-              className="w-full h-72 object-cover rounded-3xl shadow-2xl hover:scale-105 hover:shadow-3xl transition-all duration-500 ring-2 ring-white/50"
-            />
-            <img
-              src="/assets/logos/blooddonation.jpg"
-              alt="event 4"
-              className="w-full h-72 object-cover rounded-3xl shadow-2xl hover:scale-105 hover:shadow-3xl transition-all duration-500 ring-2 ring-white/50"
-            />
+          <div className="lg:hidden relative h-[55vh] flex items-start justify-center overflow-visible -mt-3">
+
+          {/* UP Baguio Fair */}
+          <div className="absolute top-0 rotate-[-10deg] translate-x-[-80px] z-10">
+            <div className="relative w-64 h-96">
+              <img
+                src="/assets/logos/upbfair.jpg"
+                alt="UP Baguio Fair"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl ring-2 ring-white/50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+                  <h3 className="text-white text-xs font-semibold">UP Baguio Fair</h3>
+                  <p className="text-white/80 text-[10px]">2025</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* UGE */}
+          <div className="absolute top-[-10px] rotate-[-4deg] translate-x-[-25px] z-20">
+            <div className="relative w-64 h-96">
+              <img
+                src="/assets/logos/uge26.jpeg"
+                alt="UGE 26"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl ring-2 ring-white/50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+                  <h3 className="text-white text-xs font-semibold">
+                    Undergraduate Examination
+                  </h3>
+                  <p className="text-white/80 text-[10px]">2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Inadalan */}
+          <div className="absolute top-[-10px] rotate-[6deg] translate-x-[30px] z-30">
+            <div className="relative w-64 h-96">
+              <img
+                src="/assets/logos/inadalan.jpg"
+                alt="Inadalan"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl ring-2 ring-white/50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+                  <h3 className="text-white text-xs font-semibold">Inadalan</h3>
+                  <p className="text-white/80 text-[10px]">2024</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Blood Donation */}
+          <div className="absolute top-0 rotate-[12deg] translate-x-[85px] z-40">
+            <div className="relative w-64 h-96">
+              <img
+                src="/assets/logos/blooddonation.jpg"
+                alt="Blood Donation Drive"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl ring-2 ring-white/50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+                  <h3 className="text-white text-xs font-semibold">
+                    Blood Donation Drive
+                  </h3>
+                  <p className="text-white/80 text-[10px]">2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           </div>
 
           {/* Desktop */}
           <div className="hidden lg:block">
-            <div className="absolute top-20 left-24 rotate-12 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
+
+          {/* UP Baguio Fair */}
+          <div className="absolute top-20 left-24 rotate-12 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
+            <div className="relative">
               <img
                 src="/assets/logos/upbfair.jpg"
-                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60 group-hover:shadow-3xl"
+                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60"
               />
-            </div>
-            <div className="absolute top-20 right-24 -rotate-6 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
-              <img
-                src="/assets/logos/uge26.jpeg"
-                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60 group-hover:shadow-3xl"
-              />
-            </div>
-            <div className="absolute bottom-20 left-45 rotate-3 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
-              <img
-                src="/assets/logos/inadalan.jpg"
-                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60 group-hover:shadow-3xl"
-              />
-            </div>
-            <div className="absolute bottom-20 right-45 -rotate-15 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
-              <img
-                src="/assets/logos/blooddonation.jpg"
-                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60 group-hover:shadow-3xl"
-              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">UP Baguio Fair</h3>
+                  <p className="text-white/80 text-xs">2025</p>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* UGE 26 */}
+          <div className="absolute top-20 right-24 -rotate-6 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
+            <div className="relative">
+              <img
+                src="/assets/logos/uge26.jpeg"
+                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Undergraduate Examination</h3>
+                  <p className="text-white/80 text-xs">2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Inadal-an */}
+          <div className="absolute bottom-20 left-45 rotate-3 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
+            <div className="relative">
+              <img
+                src="/assets/logos/inadalan.jpg"
+                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Inadalan</h3>
+                  <p className="text-white/80 text-xs">2024</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Blood Donation */}
+          <div className="absolute bottom-20 right-45 -rotate-12 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
+            <div className="relative">
+              <img
+                src="/assets/logos/blooddonation.jpg"
+                className="w-72 h-96 object-cover rounded-3xl shadow-2xl ring-4 ring-white/60"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Blood Donation Drive</h3>
+                  <p className="text-white/80 text-xs">2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         </section>
 
         {/* MEMBERS SECTION */}
