@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from "react"; 
 import Link from "next/link"; 
 import { createClient } from '@/lib/supabase/client';
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 // Types for news media posts
 interface NewsMedia {
@@ -71,14 +72,6 @@ export default function NewsMedia() {
     timeoutArray.forEach(timeout => clearTimeout(timeout)); 
   };
 
-  // Reset cards to unflipped
-  const resetCarouselToBack = () => {
-    setFlippedCarouselCards([]); 
-    setCarouselHasFlipped(false); // Reset flipped flag
-    clearTimeouts(carouselTimeoutsRef.current); 
-    carouselTimeoutsRef.current = []; 
-  };
-
   // Flip when visible
   useEffect(() => {
     if (!latestSectionRef.current || latestPosts.length === 0) return; // No posts -> Exit
@@ -86,40 +79,36 @@ export default function NewsMedia() {
     const observer = new IntersectionObserver( 
       (entries) => {
         entries.forEach((entry) => {
-          clearTimeouts(latestTimeoutsRef.current);
-          latestTimeoutsRef.current = [];
-          
           if (entry.isIntersecting) { // Visible
-            // Flip
-            latestPosts.forEach((_, idx) => {
-              const timeout = setTimeout(() => {
-                setFlippedLatestCards(prev => {
-                  if (prev.includes(idx)) return prev; // Don't flip if flipped
-                  return [...prev, idx]; // Index to flipped array
-                });
-                // Last card flips = complete
-                if (idx === latestPosts.length - 1) {
-                  setTimeout(() => {
-                    setFirstRowAnimationComplete(true); 
-                  }, 500); // Wait 
-                }
-              }, idx * 80); // Delay by 80ms
-              latestTimeoutsRef.current.push(timeout); // Store timeout for cleanup
-            });
-          } else { // Out of view
-            setFlippedLatestCards([]); // Bback to og
-          }
-        });
-      },
-      { threshold: 0.2 } // Trigger when 20% visible
-    );
+          // Flip
+          const cardsToFlip = latestPosts.map((_, idx) => idx).filter(idx => !flippedLatestCards.includes(idx));
+          
+          cardsToFlip.forEach((idx) => {
+            const timeout = setTimeout(() => {
+              setFlippedLatestCards(prev => {
+                if (prev.includes(idx)) return prev;
+                return [...prev, idx];
+              });
+              if (idx === latestPosts.length - 1) {
+                setTimeout(() => {
+                  setFirstRowAnimationComplete(true);
+                }, 500);
+              }
+            }, idx * 80);
+            latestTimeoutsRef.current.push(timeout);
+          });
+        }
+      });
+    },
+    { threshold: 0.2 }
+  );
 
     observer.observe(latestSectionRef.current); 
     return () => {
       observer.disconnect(); 
       clearTimeouts(latestTimeoutsRef.current); 
     };
-  }, [latestPosts]); // Re-run 
+  }, [latestPosts, flippedLatestCards]); // Re-run 
 
   // Second row 
   useEffect(() => {
@@ -143,10 +132,6 @@ export default function NewsMedia() {
       (entries) => {
         entries.forEach((entry) => {
           setIsCarouselVisible(entry.isIntersecting); 
-          
-          if (!entry.isIntersecting) { // Not visible
-            resetCarouselToBack(); // Reset 
-          }
         });
       },
       { threshold: 0.1 } // Trigger when 10% visible
@@ -220,7 +205,9 @@ export default function NewsMedia() {
 
     // Delay for all cards to render
     const timer = setTimeout(() => {
+      if (!carouselHasFlipped) { // Double-check before flipping
       flipVisibleCarouselCards(); // Flip
+      }
     }, 100);
 
     return () => clearTimeout(timer); 
@@ -242,15 +229,13 @@ export default function NewsMedia() {
         updateButtonStates(); 
         
         scrollTimeout = setTimeout(() => {
-          if (carouselHasFlipped && isCarouselVisible) { 
+          if (isCarouselVisible) { 
             const newVisibleIndices = getVisibleCarouselIndices(); 
             
             // Keep visible flipped cards
             setFlippedCarouselCards(prev => {
-              const stillVisible = prev.filter(idx => newVisibleIndices.includes(idx));
-              
               // Find unflipped visible cards
-              const newlyVisible = newVisibleIndices.filter(idx => !stillVisible.includes(idx));
+              const newlyVisible = newVisibleIndices.filter(idx => !prev.includes(idx));
               
               if (newlyVisible.length > 0) {
                 clearTimeouts(carouselTimeoutsRef.current);
@@ -269,7 +254,7 @@ export default function NewsMedia() {
                 });
               }
               
-              return stillVisible; // Keep still-visible cards
+              return prev;
             });
           }
         }, 150); // Wait 150ms
@@ -305,7 +290,11 @@ export default function NewsMedia() {
       const check = () => {
         checkScrollPosition(); 
         if (!carouselHasFlipped && isCarouselVisible && firstRowAnimationComplete) {
-          flipVisibleCarouselCards();
+          const visibleIndices = getVisibleCarouselIndices();
+          const allVisibleFlipped = visibleIndices.every(idx => flippedCarouselCards.includes(idx));
+          if (!allVisibleFlipped) {
+            flipVisibleCarouselCards();
+          }
         }
       };
       
@@ -316,39 +305,87 @@ export default function NewsMedia() {
         window.removeEventListener('resize', check);
       };
     }
-  }, [carouselPosts, showSecondRow, isCarouselVisible, firstRowAnimationComplete, carouselHasFlipped]); // Re-run when dependencies change
+  }, [carouselPosts.length, showSecondRow, isCarouselVisible, firstRowAnimationComplete, carouselHasFlipped, flippedCarouselCards.length]); // Re-run when dependencies change
 
   // Horizontal scrolling for carousel
   const scroll = (dir: 'left' | 'right') => {
     if (scrollRef.current && isCarouselVisible) { 
-      const amount = 800; // Scroll distance
-      const currentScroll = scrollRef.current.scrollLeft;
-      const targetScroll = dir === 'left' ? currentScroll - amount : currentScroll + amount; 
+      const container = scrollRef.current;
+      const cardWidth = getCarouselCardWidth(); // Get card width
+      const gap = getCarouselGap(); // Get card gap
       
-      scrollRef.current.scrollTo({
+      const scrollAmount = cardWidth + gap;
+      
+      const currentScroll = container.scrollLeft;
+      let targetScroll = dir === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+      
+      container.scrollTo({
         left: targetScroll, 
-        behavior: 'smooth' // Smooth scrolling
+        behavior: 'smooth'
       });
-      
-      // Reset flips
-      resetCarouselToBack();
       
       // After scroll, flip new visible cards
       const checkScrollComplete = setInterval(() => {
-        if (scrollRef.current) {
-          const isScrolling = Math.abs(scrollRef.current.scrollLeft - targetScroll) > 10;
+        if (container) {
+          const isScrolling = Math.abs(container.scrollLeft - targetScroll) > 5;
           if (!isScrolling) { 
             clearInterval(checkScrollComplete); // Stop checking
             setTimeout(() => {
               if (isCarouselVisible && firstRowAnimationComplete) {
-                flipVisibleCarouselCards(); 
-              }
-            }, 100);
-          }
+                const visibleIndices = getVisibleCarouselIndices();
+              visibleIndices.forEach((idx, order) => {
+                setFlippedCarouselCards(prev => {
+                  if (prev.includes(idx)) return prev;
+                  // Use timeout for sequential flipping
+                  setTimeout(() => {
+                    setFlippedCarouselCards(current => {
+                      if (current.includes(idx)) return current;
+                      return [...current, idx];
+                    });
+                  }, order * 100);
+                  return prev;
+                });
+              });
+            }
+          }, 150);
         }
-      }, 50); // Check every 50ms
+      }
+    }, 50); // Check every 50ms
       
       setTimeout(() => clearInterval(checkScrollComplete), 1000);
+    }
+  };
+
+  // Get current card width based on screen size
+  const getCarouselCardWidth = () => {
+    if (typeof window === 'undefined') return 320;
+    
+    const width = window.innerWidth;
+    
+    if (width <= 640) {
+      return 280; // Mobile width
+    } else if (width <= 767) {
+      return 300; // Tablet-phones width
+    } else {
+      return 320; // Desktop width
+    }
+  };
+
+  // Get current gap between cards
+  const getCarouselGap = () => {
+    if (typeof window === 'undefined') return 24;
+    
+    const width = window.innerWidth;
+    
+    if (width <= 767) {
+      return 16; // gap-4 on mobile
+    } else {
+      return 24; // gap-6 on desktop
     }
   };
 
@@ -369,16 +406,34 @@ export default function NewsMedia() {
 
   return (
     <div 
-      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 relative"
+      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 relative overflow-x-hidden"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px",
         backgroundAttachment: 'fixed'
       }}
     >
-      {/* Decorative blur elements at the sides */}
-    <div className="absolute top-[50px] -translate-y-1/2 -left-10 w-96 h-96 bg-[#0d21a1]/15 rounded-full blur-3xl pointer-events-none" />
-    <div className="absolute top-[1000px] -translate-y-1/2 -right-48 w-96 h-96 bg-[#0d21a1]/15 rounded-full blur-3xl delay-1000 pointer-events-none" />
+      {/* Evenly Distributed Spades */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Top Row */}
+        <BsSuitSpadeFill className="absolute top-[2%] left-[5%] rotate-12 size-20 md:size-37 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[5%] left-[25%] -rotate-12 size-16 md:size-24 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[8%] left-[75%] -rotate-15 size-18 md:size-28 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[1%] left-[92%] rotate-20 size-22 md:size-34 text-[#0d21a1]/10" />
+
+        {/* Middle-Left Area */}
+        <BsSuitSpadeFill className="absolute top-[60%] left-[1%] rotate-15 size-32 md:size-52 text-[#0d21a1]/10" />
+
+        {/* Middle-Right Area */}
+        <BsSuitSpadeFill className="absolute top-[40%] right-[3%] rotate-10 size-30 md:size-55 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[86%] right-[4%] rotate-18 size-20 md:size-40 text-[#0d21a1]/10" />
+
+        {/* Center Area */}
+        <BsSuitSpadeFill className="absolute top-[47%] left-[59%] -rotate-30 size-15 md:size-30 text-[#0d21a1]/10" />
+                
+        {/* Between Posts Areas */}
+        <BsSuitSpadeFill className="absolute top-[45%] left-[20%] rotate-35 size-20 md:size-45 text-[#0d21a1]/10" />
+      </div>
       
       {/* Heading */}
       <div className="text-center mb-6 relative z-10">
@@ -399,16 +454,21 @@ export default function NewsMedia() {
 
       {/* 1st ROW: Latest Posts */}
       {latestPosts.length > 0 && (
-        <div ref={latestSectionRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 relative z-10"> 
-          {latestPosts.map((post, idx) => (
-            <div key={post.id} className="perspective-container h-[400px]">
-              <FlippableNewsCard 
-                post={post} 
-                isFlipped={flippedLatestCards.includes(idx)}
-                index={idx}
-              />
-            </div>
-          ))}
+        <div ref={latestSectionRef} className="mb-12 relative z-10">
+          <div className="news-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {latestPosts.map((post, idx) => (
+              <div 
+                key={post.id} 
+                className="perspective-container h-[400px]"
+              >
+                <FlippableNewsCard 
+                  post={post} 
+                  isFlipped={flippedLatestCards.includes(idx)}
+                  index={idx}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -416,26 +476,33 @@ export default function NewsMedia() {
       {showSecondRow && carouselPosts.length > 0 && (
         <div ref={carouselSectionRef} className="relative z-10">
           {/* Sub heading */}
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center gap-3 mb-6 z-10">
             <span className="text-4xl text-[#eec643]">♠</span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#011638]">More Updates</h2>
             <span className="text-4xl text-[#eec643]">♠</span>
           </div>
 
           {/* Carousel Container */}
-          <div className="relative px-11 py-2">
+          <div className="relative px-4 sm:px-8 md:px-11 py-2">
             {/* Left Scroll Button */}
             <button
               onClick={() => scroll('left')}
               disabled={!canScrollLeft}
-              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-2 shadow-md transition-all ${
+              className={`absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
                 canScrollLeft 
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'opacity-50 cursor-not-allowed'
+                  ? 'bg-[#011638] hover:bg-[#0d21a1] hover:shadow-lg cursor-pointer opacity-100' 
+                  : 'bg-gray-300 cursor-not-allowed opacity-60'
               }`}
+              style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '36px',
+                minHeight: '36px'
+              }}
               aria-label="Scroll left"
             >
-              <svg className={`w-5 h-5 ${canScrollLeft ? 'text-[#0d21a1]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${canScrollLeft ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -444,14 +511,21 @@ export default function NewsMedia() {
             <button
               onClick={() => scroll('right')}
               disabled={!canScrollRight}
-              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-2 shadow-md transition-all ${
+              className={`absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
                 canScrollRight 
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'opacity-50 cursor-not-allowed'
+                  ? 'bg-[#011638] hover:bg-[#0d21a1] hover:shadow-lg cursor-pointer opacity-100' 
+                  : 'bg-gray-300 cursor-not-allowed opacity-60'
               }`}
+              style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '36px',
+                minHeight: '36px'
+              }}
               aria-label="Scroll right"
             >
-              <svg className={`w-5 h-5 ${canScrollRight ? 'text-[#0d21a1]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${canScrollRight ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -459,14 +533,20 @@ export default function NewsMedia() {
             {/* Scrollable Cards Container */}
             <div
               ref={scrollRef}
-              className="flex overflow-x-auto overflow-y-visible gap-6 pb-5 hide-scrollbar"
+              className="flex overflow-x-auto overflow-y-visible gap-6 pb-5 hide-scrollbar snap-x snap-mandatory"
               style={{ 
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
+                scrollSnapType: 'x mandatory'
               }}
             >
               {carouselPosts.map((post, idx) => (
-                <div key={post.id} className="flex-none w-80 py-2 perspective-container h-[400px] carousel-card">
+                <div key={post.id} className="flex-none py-2 perspective-container h-[400px] carousel-card snap-start"
+                  style={{
+                    width: 'clamp(260px, calc(100vw - 80px), 320px)',
+                    scrollSnapAlign: 'start'
+                  }}
+                >
                   <FlippableNewsCard 
                     post={post} 
                     isFlipped={flippedCarouselCards.includes(idx)}
@@ -501,6 +581,94 @@ export default function NewsMedia() {
         .delay-1000 {
           animation-delay: 1s;
         }
+      
+      
+      /* If on table, mobile, or minimized screen -> center */
+      @media (max-width: 767px) {
+        .news-grid {
+          justify-items: center;
+        }
+        .news-grid > div {
+          max-width: 350px;
+          width: 100%;
+          height: 320px;
+        }
+      }
+      
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .news-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1.5rem;
+        }
+        
+        /* Targeting third card (span then center) */
+        .news-grid > div:last-child:nth-child(3) {
+          grid-column: span 2;
+          max-width: 400px;
+          width: 100%;
+          justify-self: center;
+        }
+      }
+
+      .news-grid > div {
+        height: 380px;
+      }
+
+      .flex.overflow-x-auto {
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        scroll-behavior: smooth;
+      }
+
+      .carousel-card {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+      }
+
+      /* Adjust for different screen sizes */
+      @media (max-width: 640px) {
+        .carousel-card {
+          scroll-snap-align: start !important;
+          scroll-snap-stop: always;
+        }
+      }
+      
+      button[aria-label="Scroll left"],
+      button[aria-label="Scroll right"] {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        z-index: 30 !important;
+        transition: all 0.3s ease;
+      }
+
+      button[aria-label="Scroll left"]:hover:not(:disabled),
+      button[aria-label="Scroll right"]:hover:not(:disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+      }
+    }
+
+      @media (max-width: 640px) {
+      .carousel-card {
+        width: calc(100vw - 80px) !important;
+        min-width: 260px;
+        scroll-snap-align: center;
+      }
+    }
+
+      @media (min-width: 641px) and (max-width: 767px) {
+        .carousel-card {
+          width: 300px !important;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .carousel-card {
+          width: 320px !important;
+        }
+      }
+
+      }
       `}</style>
     </div>
   );
@@ -549,12 +717,12 @@ function FlippableNewsCard({
           <div 
             className="rounded-lg overflow-hidden bg-gradient-to-br from-[#011638] to-[#0d21a1] flex flex-col items-center justify-center h-full shadow-md relative w-full text-center p-6"
             style={{ 
-              backgroundImage: "url('/assets/logos/hero-bg.png')",
+              backgroundImage: "url('/assets/logos/card-bg.png')",
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
           >
-            <div className="absolute inset-0 bg-[#011638]/70 rounded-lg" />
+            <div className="absolute inset-0 bg-[#011638]/50 rounded-lg" />
             
             <div className="relative z-10 flex flex-col items-center justify-center">
               <img
@@ -602,6 +770,11 @@ function FlippableNewsCard({
                     {formatDate(post.fb_post_date)}
                   </span>
                 </div>
+              </div>
+
+              {/* Separator */}
+              <div className="relative w-full px-2">
+                <div className="h-[1px] bg-gradient-to-r from-transparent via-[#011638]/80 to-transparent shadow-sm"></div>
               </div>
 
               {/* Content section */}
