@@ -3,23 +3,49 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
 
 export default function LoadingState() {
-  const [dots, setDots] = useState("."); // Start with 1 dot
+  const [scale, setScale] = useState(1);
+  const [opacity, setOpacity] = useState(1);
+  const [shadowIntensity, setShadowIntensity] = useState(0);
+  const [shineIntensity, setShineIntensity] = useState(0);
 
-  // Interval
+  // Pulses
   useEffect(() => {
-    const interval = setInterval(() => { 
-      setDots((prev) => {
-        if (prev === ".") return "..";
-        if (prev === "..") return "...";
-        if (prev === "...") return "";
-        return ".";
-      });
-    }, 500);
+    let animationFrameId: number;
+    const startTime = performance.now();
+    const duration = 8000; // 8 seconds
+    const pulseCount = 4; // 4 pulses
+    
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = (elapsed % duration) / duration;
+      
+      // Sinusoidal Wave
+      const angle = progress * Math.PI * 2 * pulseCount;
+      const sinValue = (Math.sin(angle) + 1) / 2; // Math.sin() create waves (0 → 1 → 0 → -1 → 0 and again)
+      // Adding 1 and dividing by 2 turns it to: 0.5 → 1 → 0.5 → 0 → 0.5 (between 0 and 1)
+      
+      const newScale = 1 - (sinValue * 0.08); // Scale: 1 (peak) to 0.92 (valley) to 1 (next peak)
+      const newOpacity = 1 - (sinValue * 0.3); // Opacity: 1 (peak) to 0.7 (valley) to 1 (next peak)
+      const newShadowIntensity = sinValue * 15; // Shadow pulsing from 0 to 15px
+      const newShineIntensity = sinValue;  // Shine strongest at peak 
 
-    return () => clearInterval(interval);
+      setScale(newScale);
+      setOpacity(newOpacity);
+      setShadowIntensity(newShadowIntensity);
+      setShineIntensity(newShineIntensity);
+      
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, []);
 
   return (
@@ -33,18 +59,31 @@ export default function LoadingState() {
     >
       <NavBar />
       <div className="flex-1 flex items-center justify-center">
-        <div className="relative flex flex-col items-center justify-center gap-1">
-          {/* Ellipsis sa taas ng image */}
-          <div className="text-center min-h-[48px]">
-            <p className="text-3xl md:text-4xl font-bold tracking-wider" style={{ color: '#141414' }}>
-              {dots}
-            </p>
-          </div>
-          
-          {/* Image, for now just one pic but I wanna try randomizing the graphics soon (if may time pa) */}
-          <div className="relative w-[40vw] h-[40vw] max-w-[320px] max-h-[320px] min-w-[180px] min-h-[180px]">
+        <div className="relative flex flex-col items-center justify-center w-full">
+          <div 
+            className="relative transition-all duration-75 ease-linear mx-auto"
+            style={{
+              width: 'clamp(160px, 35vw, 260px)',
+              height: 'clamp(160px, 35vw, 260px)',
+              transform: `scale(${scale})`,
+              opacity: opacity,
+              filter: `drop-shadow(0px 4px ${shadowIntensity}px rgba(0, 0, 0, 0.25))`,
+            }}
+          >
+            {/* Shine */}
+            <div 
+              className="absolute inset-0 pointer-events-none z-10 rounded-full"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(255, 255, 255, ${0.6 * shineIntensity}) 0%, 
+                  rgba(255, 255, 255, ${0.2 * shineIntensity}) 30%,
+                  transparent 60%
+                )`,
+                opacity: shineIntensity > 0.1 ? shineIntensity : 0,
+              }}
+            />
             <Image
-              src="/images/Busy.png"
+              src="/assets/logos/ACE CARDS logo.png"
               alt="Loading"
               fill
               sizes="(max-width: 768px) 40vw, 320px"
@@ -54,7 +93,6 @@ export default function LoadingState() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
