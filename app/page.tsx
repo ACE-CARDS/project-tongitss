@@ -788,7 +788,7 @@ export default function Home() {
         <section
           key={provinceAnimKey}
           ref={provinceSectionRef}
-          className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
+          className="pt-8 pb-10 sm:pt-12 sm:pb-12 lg:pt-16 lg:pb-8 px-4 sm:px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
         >
           {/* Background */}
           <div
@@ -850,7 +850,7 @@ export default function Home() {
 
                   {/* Count Display */}
                   <div className="text-center lg:text-left w-[180px]">
-                    <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white drop-shadow-2xl tabular-nums">
+                  <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white tracking-tight tabular-nums scale-y-110 [text-shadow:0_1px_0_rgba(0,0,0,0.8),0_2px_0_rgba(0,0,0,0.6),0_3px_6px_rgba(0,0,0,0.8)]">  {/* attempt sa bolder count kasi not working ang font-bold pero huhu wala pa ding difference */}
                       {provinceDisplayCount}
                     </h2>
                     <p className="text-[#eec643] font-semibold mt-2">
@@ -860,7 +860,7 @@ export default function Home() {
 
                   {/* School List*/}
                   <div className="w-[420px] h-[400px] flex-shrink-0">
-                    <div className="space-y-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar">
                       {provinceSchools.length > 0 ? (
                         provinceSchools.map((school) => (
                           <div
@@ -878,7 +878,7 @@ export default function Home() {
                       ) : (
                         <div className="text-center py-8 text-white/60">
                           {selectedProvince
-                            ? "No schools found in this province"
+                            ? "No members found in this province"
                             : "Select a province to view schools"}
                         </div>
                       )}
@@ -913,11 +913,20 @@ export default function Home() {
                   </div>
 
                   {/* Map Container */}
-                  <div className="relative overflow-hidden">
+                  <div className="relative w-full mx-auto lg:mx-0
+                                  aspect-[4/5] 
+                                  sm:aspect-[4/5]
+                                  md:aspect-[4/5]
+                                  lg:aspect-[4/5]
+                                  xl:aspect-[4/5]
+                                  min-h-[320px]
+                                  sm:min-h-[380px]
+                                  md:min-h-[450px]
+                                  lg:min-h-[520px]">
                     <img
                       src="/assets/logos/webcarmap.png"
                       alt="CAR map"
-                      className="w-full max-w-2xl mx-auto lg:mx-0 object-contain transition-all duration-700 group-hover:scale-105"
+                      className="absolute inset-0 w-full h-full object-contain"
                     />
 
                     {/* Reset Button */}
@@ -948,105 +957,104 @@ export default function Home() {
                         </span>
                       </button>
                     )}
+                    {/* Map Markers */}
+                    {/* Abra */}
+                    <button
+                      onClick={() => setSelectedProvince("Abra")}
+                      className={`absolute left-[38%] top-[43%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Abra" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Abra
+                      </span>
+                    </button>
+
+                    {/* Apayao */}
+                    <button
+                      onClick={() => setSelectedProvince("Apayao")}
+                      className={`absolute left-[52%] top-[27%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Apayao" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Apayao
+                      </span>
+                    </button>
+
+                    {/* Kalinga */}
+                    <button
+                      onClick={() => setSelectedProvince("Kalinga")}
+                      className={`absolute left-[58%] top-[46%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Kalinga" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Kalinga
+                      </span>
+                    </button>
+
+                    {/* Benguet */}
+                    <button
+                      onClick={() => setSelectedProvince("Benguet")}
+                      className={`absolute left-[31%] top-[72%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Benguet" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Benguet
+                      </span>
+                    </button>
+
+                    {/* Ifugao */}
+                    <button
+                      onClick={() => setSelectedProvince("Ifugao")}
+                      className={`absolute left-[50%] top-[63%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Ifugao" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Ifugao
+                      </span>
+                    </button>
+
+                    {/* Mountain Province */}
+                    <button
+                      onClick={() => setSelectedProvince("Mountain Province")}
+                      className={`absolute left-[53%] top-[56%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                    >
+                      <div className="relative">
+                        <div
+                          className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Mountain Province" ? "ring-[#eec643]/50" : ""}`}
+                        />
+                        <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                        Mountain Province
+                      </span>
+                    </button>
                   </div>
-
-                  {/* Map Markers */}
-                  {/* Abra */}
-                  <button
-                    onClick={() => setSelectedProvince("Abra")}
-                    className={`absolute left-[35%] top-[40%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Abra" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Abra
-                    </span>
-                  </button>
-
-                  {/* Apayao */}
-                  <button
-                    onClick={() => setSelectedProvince("Apayao")}
-                    className={`absolute left-[52%] top-[20%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Apayao" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Apayao
-                    </span>
-                  </button>
-
-                  {/* Kalinga */}
-                  <button
-                    onClick={() => setSelectedProvince("Kalinga")}
-                    className={`absolute left-[58%] top-[43%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Kalinga" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Kalinga
-                    </span>
-                  </button>
-
-                  {/* Benguet */}
-                  <button
-                    onClick={() => setSelectedProvince("Benguet")}
-                    className={`absolute left-[31%] top-[75%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Benguet" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Benguet
-                    </span>
-                  </button>
-
-                  {/* Ifugao */}
-                  <button
-                    onClick={() => setSelectedProvince("Ifugao")}
-                    className={`absolute left-[50%] top-[65%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Ifugao" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Ifugao
-                    </span>
-                  </button>
-
-                  {/* Mountain Province */}
-                  <button
-                    onClick={() => setSelectedProvince("Mountain Province")}
-                    className={`absolute left-[53%] top-[56.5%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                  >
-                    <div className="relative">
-                      <div
-                        className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Mountain Province" ? "ring-[#eec643]/50" : ""}`}
-                      />
-                      <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                    </div>
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                      Mountain Province
-                    </span>
-                  </button>
-                </div>
+                  </div>
               </div>
             </div>
           </div>
