@@ -166,14 +166,19 @@ export default function Home() {
           };
         }),
       );
+      
+      const filteredSchools = schoolsWithCounts.filter(
+        (school) => school.memberCount > 0,
+      );
 
-      const totalMembers = schoolsWithCounts.reduce(
+      //for no pulsings
+      const totalMembers = filteredSchools.reduce(
         (acc, curr) => acc + curr.memberCount,
         0,
       );
 
       setProvinceMembers(totalMembers);
-      setProvinceSchools(schoolsWithCounts);
+      setProvinceSchools(filteredSchools); //noo pulsings
     };
 
     fetchProvinceData();
@@ -437,6 +442,29 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  //current acad year
+  const getCurrentAcademicYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; 
+  
+    //around oct siya since mostly september ang membership drive
+    if (month >= 10) {
+      return `${year}-${year + 1}`;
+    } else {
+      return `${year - 1}-${year}`;
+    }
+  };
+
+  //balikan for not pulsing circles sa map 
+  const getProvinceHasMembers = (name) => {
+    if (selectedProvince === name) {
+      return provinceMembers > 0;
+    }
+    return true; 
+  };
+
   return (
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col overflow-hidden">
       {showBackToHero && (
@@ -856,9 +884,20 @@ export default function Home() {
                     <p className="text-[#eec643] font-semibold mt-2">
                       Total Members
                     </p>
+                    <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-1">
+                      AY {getCurrentAcademicYear()}
+                    </p>
                   </div>
 
                   {/* School List*/}
+                  <div className="mb-0 text-center lg:text-left block lg:hidden">
+                  <p className="text-white/60 text-xs tracking-widest uppercase">
+                    {selectedProvince
+                      ? `Showing all Schools in ${selectedProvince}`
+                      : "Showing all schools across CAR"}
+                  </p>
+                </div>
+
                   <div className="w-[420px] h-[400px] flex-shrink-0">
                   <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar">
                       {provinceSchools.length > 0 ? (
@@ -891,11 +930,11 @@ export default function Home() {
               <div className="hidden lg:block relative z-10 flex-1 mt-10 lg:mt-0">
                 <div className="relative group">
                   {/* Years */}
-                  <div className="absolute -top-2 right-4 z-50">
+                  <div className="absolute top-15 right-4 z-50 ">
                     <select
                       value={selectedAY}
                       onChange={(e) => setSelectedAY(e.target.value)}
-                      className="border border-white/20 rounded-xl px-4 py-2 bg-white/10 backdrop-blur-md font-semibold text-white text-sm shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer hover:bg-white/20"
+                      className="border border-white/20 rounded-xl px-4 py-2 bg-white/90 backdrop-blur-md font-semibold text-black text-sm shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer hover:scale-105 transition-all duration-200 z-50"
                     >
                       <option value="AY 2025-2026" className="text-[#011638]">
                         AY 2025-2026
@@ -937,7 +976,7 @@ export default function Home() {
                           setProvinceMembers(0);
                           setProvinceSchools([]);
                         }}
-                        className="absolute bottom-4 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50"
+                        className="absolute bottom-15 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50"
                       >
                         {/* https://heroicons.com/outline */}
                         <svg
