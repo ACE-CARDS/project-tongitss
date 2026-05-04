@@ -57,7 +57,6 @@ export default function LoadingState() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       <div className="flex-1 flex items-center justify-center">
         <div className="relative flex flex-col items-center justify-center w-full">
           <div 
