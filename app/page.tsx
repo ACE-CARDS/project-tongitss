@@ -467,7 +467,7 @@ export default function Home() {
 
   return (
     <>
-    <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen flex flex-col overflow-hidden">
+    <div className="text-[#141414] min-h-screen flex flex-col overflow-hidden">
       {showBackToHero && (
         <button
           onClick={() => {

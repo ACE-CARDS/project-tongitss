@@ -26,6 +26,9 @@ body {
   color: var(--foreground);
   font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
   scrollbar-gutter: stable;
+  background-image: radial-gradient(#d7dce2 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-attachment: fixed;
 }
 
 h1 {
