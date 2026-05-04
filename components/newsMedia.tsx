@@ -33,6 +33,7 @@ export default function NewsMedia() {
   const [flippedCarouselCards, setFlippedCarouselCards] = useState<number[]>([]); 
   const [carouselHasFlipped, setCarouselHasFlipped] = useState(false);  
   const [firstRowAnimationComplete, setFirstRowAnimationComplete] = useState(false); 
+  const [showContent, setShowContent] = useState(false);
   const [isCarouselVisible, setIsCarouselVisible] = useState(false); 
   const latestSectionRef = useRef<HTMLDivElement>(null);
   const carouselSectionRef = useRef<HTMLDivElement>(null); 
@@ -57,8 +58,12 @@ export default function NewsMedia() {
         setNewsPosts(data || []);
       } finally {
         setLoading(false);
-      }
-    };
+      // Delay
+      setTimeout(() => {
+        setShowContent(true);
+      }, 0.1);
+    }
+  };
 
     fetchNews();
   }, []);
@@ -389,20 +394,30 @@ export default function NewsMedia() {
     }
   };
 
-  // Loading spinner
-  if (loading) {
-    return (
-      <div 
-        className="w-full bg-[#fbfaf8] max-w-[1920px] min-h-screen flex items-center justify-center relative overflow-hidden"
-        style={{
-          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
-          backgroundSize: "20px 20px"
-        }}
-      >
-        <div className="w-12 h-12 border-4 border-[#0d21a1] border-t-[#eec643] rounded-full animate-spin"></div> {/* Spinning loader */}
+  // Loading
+  if (!showContent) {
+  return (
+    <div 
+      className="w-full bg-[#fbfaf8] max-w-[1920px] min-h-screen relative overflow-hidden"
+      style={{
+        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
+        backgroundSize: "20px 20px"
+      }}
+    >
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <BsSuitSpadeFill className="absolute top-[2%] left-[5%] rotate-12 size-20 md:size-37 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[5%] left-[25%] -rotate-12 size-16 md:size-24 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[8%] left-[75%] -rotate-15 size-18 md:size-28 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[1%] left-[92%] rotate-20 size-22 md:size-34 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[60%] left-[1%] rotate-15 size-32 md:size-52 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[40%] right-[3%] rotate-10 size-30 md:size-55 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[86%] right-[4%] rotate-18 size-20 md:size-40 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[47%] left-[59%] -rotate-30 size-15 md:size-30 text-[#0d21a1]/10" />
+        <BsSuitSpadeFill className="absolute top-[45%] left-[20%] rotate-35 size-20 md:size-45 text-[#0d21a1]/10" />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div 
