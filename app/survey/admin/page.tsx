@@ -31,6 +31,8 @@ export default async function AdminSurveyPage({
 
   return (
     // default bg
+    <>
+    <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
       style={{
@@ -39,14 +41,14 @@ export default async function AdminSurveyPage({
         backgroundAttachment: 'fixed'
       }}
     >
-      <NavBar />
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
         <div className="mb-4">
           <BackButton />
         </div>
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }

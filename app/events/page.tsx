@@ -7,6 +7,8 @@ import BackButton from "@/components/backButton";
 
 export default function EventsPage() {
   return (
+    <>
+    <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -15,7 +17,6 @@ export default function EventsPage() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
         <div className="max-w-7xl mx-auto w-full">
@@ -41,7 +42,8 @@ export default function EventsPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }

@@ -23,8 +23,9 @@ function CommitteeContent() {
   }
 
   return (
+    <>
+    <NavBar />
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] text-[#141414] min-h-screen">
-      <NavBar />
               <div className="container mx-auto py-8 px-4 max-w-7xl">
                 <BackButton />
               </div>
@@ -37,8 +38,9 @@ function CommitteeContent() {
           className="mx-auto"
         />
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }
 

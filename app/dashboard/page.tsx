@@ -228,6 +228,8 @@ function DashboardContent() {
   };
 
   return (
+    <>
+    <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
       style={{
@@ -236,7 +238,6 @@ function DashboardContent() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       <div className="pt-10">
         <div className="bg-white/70">
           <div className="w-full h-1 bg-[#0b1763] my-2"></div>
@@ -305,8 +306,9 @@ function DashboardContent() {
           </div>
         </main>
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }
 
