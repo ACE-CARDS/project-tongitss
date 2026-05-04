@@ -69,7 +69,7 @@ export default function NavBar({ isOverHero = false }) {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
 
           {/* Title */}
-          <a title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
+          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
         `} href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
@@ -81,7 +81,7 @@ export default function NavBar({ isOverHero = false }) {
             <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap md:text-3xl sm:text-2xl text-xl font-bold leading-none font-oswald">
                 {siteName}
             </div>
-          </a>
+          </Link>
 
           {/* Navigation */}
           <div
