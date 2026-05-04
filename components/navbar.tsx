@@ -69,8 +69,7 @@ export default function NavBar({ isOverHero = false }) {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
 
           {/* Title */}
-          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-        `} href="/">
+          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 ease-in-out hover:scale-[1.04] ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""} ring-0 shadow-[0_0_15px_rgba(255,255,255,0.3)]`} href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
@@ -87,6 +86,7 @@ export default function NavBar({ isOverHero = false }) {
           <div
             ref={academicsRef}
             className={`
+              shadow-[0_0_15px_rgba(255,255,255,0.3)]
               fixed text-lg lg:right-[30px] right-[10px] top-[80px]
               flex xl:flex-row text-right
               xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full
@@ -96,7 +96,8 @@ export default function NavBar({ isOverHero = false }) {
               w-[220px] xl:w-auto
               overflow-hidden xl:overflow-visible
               ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"}
-              origin-top-right transition-all duration-300 ease-in-out
+              origin-top-right transition-all duration-200 ease-in-out
+              ring-0
               ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
             `}
           >
@@ -253,10 +254,12 @@ export default function NavBar({ isOverHero = false }) {
 
           <div className={`
           flex flex-row 
+          shadow-[0_0_15px_rgba(255,255,255,0.3)]
           items-center justify-center 
-          xl:hidden 
+          xl:hidden transition-all duration-200 ease-in-out 
           rounded-full p-3 max-h-full max-w-fit
-          bg-[#011638]/70 backdrop-blur-sm  
+          bg-[#011638]/70 backdrop-blur-sm
+          ring-0
           ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
           `}>
             {/* hamburger */}
