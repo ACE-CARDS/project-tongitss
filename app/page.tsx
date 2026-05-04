@@ -871,7 +871,7 @@ export default function Home() {
                 <h1 className="text-8xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
                   {memberDisplayCount}
                 </h1>
-                <h2 className="text-4xl lg:text-6xl font-bold text-[#141414]/90 mt-4 drop-shadow-lg">
+                <h2 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent mt-4 drop-shadow-lg">
                   Current Members
                 </h2>
                 <div className="w-20 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
@@ -1215,7 +1215,7 @@ export default function Home() {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0d21a1]/10 rounded-full blur-3xl animate-pulse delay-1000" />
 
           <div className="w-full mx-auto max-w-[1920px] relative z-10">
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
+          <div className="flex flex-col-reverse lg:flex-row items-center justify-center gap-12 lg:gap-20">
               {/* Image */}
               <div className="flex-1 flex justify-center lg:justify-end perspective-1000">
                 <div className="relative group">
@@ -1223,18 +1223,24 @@ export default function Home() {
                   <div className="absolute -inset-4 bg-gradient-to-r from-[#eec643]/20 to-[#0d21a1]/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-700" />
 
                   {/* Image w/ 3D hover effect */}
-                  <div className="relative transform transition-all duration-700 group-hover:scale-105 group-hover:rotate-y-12 group-hover:shadow-2xl">
+                  <div className="rounded-3xl relative transform transition-all duration-700 group-hover:rotate-y-6 group-hover:shadow-2xl">
                     <img
                       src="/assets/logos/acad.jpg"
                       alt="Academics"
-                      className="w-full max-w-lg lg:max-w-2xl rounded-3xl object-cover shadow-2xl ring-4 ring-white/20 group-hover:ring-[#eec643]/50 transition-all duration-500"
+                      className="w-full max-w-lg lg:max-w-2xl rounded-3xl object-cover shadow-2xl ring-4 ring-white/20 transition-all duration-500 group-hover:ring-[#eec643]/70"
                     />
+
+                    {/* shining shimmering splendid */}
+                    <div className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden">
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                      </div>
+                    </div>
 
                     {/* Overlay gradient */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-[#011638]/20 via-transparent to-[#eec643]/10 rounded-3xl group-hover:opacity-75 transition-opacity duration-500" />
 
                     {/* Decorative corner accents */}
-                    <div className="absolute -top-3 -left-3 w-16 h-16 border-t-4 border-l-4 border-[#eec643] rounded-tl-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                     <div className="absolute -bottom-3 -right-3 w-16 h-16 border-b-4 border-r-4 border-[#eec643] rounded-br-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                   </div>
 
@@ -1248,37 +1254,27 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Text Content */}
               <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left relative">
-                <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-[#eec643] via-[#0d21a1] to-[#eec643] bg-clip-text text-transparent leading-tight drop-shadow-2xl animate-gradient">
+
+                {/* Text Content */}
+                <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent leading-tight drop-shadow-2xl">
                   ACADEMICS
                 </h2>
-
-                <p className="text-lg lg:text-xl text-[#011638]/70 mt-4 font-semibold tracking-wide">
-                  Empowering Scholars Through Knowledge
-                </p>
 
                 {/* Decorative line */}
                 <div className="w-32 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-6 rounded-full shadow-lg" />
 
-                <p className="mt-8 text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl border border-[#eec643]/20 hover:shadow-2xl transition-all duration-500 text-center lg:text-left">
-                  Supporting research and thesis initiatives of members.
-                  <span className="block mt-2 font-bold text-[#011638]">
-                    Promoting academic growth and collaboration.
-                  </span>
-                </p>
-
                 {/* Stats Counter */}
                 <div className="w-full">
-                  <div className="flex flex-wrap justify-center gap-6 mt-12 pt-8">
+                <div className=" mt-10 flex flex-wrap justify-center lg:justify-start gap-6 mb-1">
                     <div
                       ref={surveySectionRef}
                       className="text-center group cursor-pointer"
                     >
-                      <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
+                      <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                         {displaySurveyCount}
                       </div>
-                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
+                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
                         Research Surveys
                       </div>
                     </div>
@@ -1287,17 +1283,25 @@ export default function Home() {
                       ref={thesesSectionRef}
                       className="text-center group cursor-pointer"
                     >
-                      <div className="text-2xl sm:text-3xl font-black text-[#eec643] group-hover:scale-110 transition-transform duration-300">
+                      <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                         {displayThesesCount}
                       </div>
-                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-10">
+                      <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
                         Research Thesis
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <p className="mt-8 text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl border border-[#eec643]/20 hover:shadow-2xl transition-all duration-500 text-center lg:text-left">
+                  Supporting research and thesis initiatives of members.
+                  <span className="block mt-2 font-bold text-[#011638]">
+                    Promoting academic growth and collaboration.
+                  </span>
+                </p>
 
                   {/* Buttons */}
-                  <div className="flex flex-wrap justify-center gap-6 mt-12">
+                  <div className="grid grid-cols-2 gap-4 mt-12 w-full max-w-md">
                     <Link
                       href="/survey"
                       onClick={() =>
@@ -1306,7 +1310,7 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       Take Survey →
                     </Link>
@@ -1319,12 +1323,11 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-lg hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       View Thesis →
                     </Link>
                   </div>
-                </div>
               </div>
             </div>
           </div>
