@@ -21,9 +21,15 @@ export default function AboutMascot() {
             <span className="text-xs font-bold text-[#0d21a1] tracking-widest uppercase">The Face of the Org</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase mb-8">
-            The Mascot
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase mb-8"
+          >
+            The Mascot, Kidla
+          </motion.h1>
           
           <motion.div 
             whileHover={{ scale: 1.02 }}

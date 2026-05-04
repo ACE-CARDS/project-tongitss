@@ -5,6 +5,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AboutOrg from "./about-org";
 import AboutMission from "./about-mission";
+import AboutLogo from "./about-logo"; // <-- Missing import added here!
 import AboutMascot from "./about-mascot";
 import BackButton from "@/components/backButton";
 import LoadingState from "@/components/mainLoadingState"; 
@@ -43,6 +44,7 @@ export default function AboutUs() {
 
           <AboutOrg />
           <AboutMission />
+          <AboutLogo /> 
           <AboutMascot />
         </div>
       </main>

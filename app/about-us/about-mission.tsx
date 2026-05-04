@@ -45,13 +45,19 @@ export default function AboutMission() {
               </div>
 
               <div className="relative z-10">
-                <div className="mb-8">
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="mb-8"
+                >
                   <h2 className="text-[#eec643] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
                     Our Vision
                   </h2>
-                </div>
+                </motion.div>
+                
                 <div className="relative w-full">
-
                   <span className="absolute -top-6 -left-6 text-6xl text-[#eec643]/30 font-serif leading-none select-none">
                     &ldquo;
                   </span>
@@ -60,7 +66,6 @@ export default function AboutMission() {
                     Building the next generation of S&T professionals committed to the well-being of every Filipino.
                   </p>
                   
-
                   <span className="absolute -bottom-8 right-0 lg:-right-4 text-6xl text-[#eec643]/30 font-serif leading-none select-none">
                     &rdquo;
                   </span>
@@ -111,11 +116,18 @@ export default function AboutMission() {
               </div>
 
               <div className="relative z-10">
-                <div className="mb-8">
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="mb-8"
+                >
                   <h2 className="text-[#011638] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
                     Our Mission
                   </h2>
-                </div>
+                </motion.div>
+                
                 <div className="relative mb-8 w-full">
                   <span className="absolute -top-6 -left-6 text-6xl text-[#011638]/10 font-serif leading-none select-none">
                     &ldquo;
@@ -167,6 +179,7 @@ export default function AboutMission() {
         </div>
 
         <div className="pt-10 lg:pt-16">
+          {/* Core Objectives header was already animated here */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
