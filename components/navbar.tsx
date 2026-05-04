@@ -74,8 +74,8 @@ export default function NavBar({ isOverHero = false }) {
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
               className="w-11 h-11 shrink-0"
-              width={40}
-              height={40}
+              width={100}
+              height={100}
             />
             <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap md:text-3xl sm:text-2xl text-xl font-bold leading-none font-oswald">
                 {siteName}
