@@ -39,7 +39,7 @@ export default async function ThesisPage({
 
   return (
     <ThesisPageClient>
-    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" //default bg 
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] overflow-hidden" //default bg 
      style={{
        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
        backgroundSize: "20px 20px",
