@@ -244,6 +244,9 @@ export default function MembersPage() {
         
             setShowToast(true);
             setTimeout(() => setShowToast(false), 2500);
+
+            setShowSaveSuccess(true);
+            setTimeout(() => setShowSaveSuccess(false), 2500);
             } catch (error) {
             console.error(error);
             }
@@ -367,6 +370,9 @@ export default function MembersPage() {
           );
       
           setDeleteMember(null);
+
+          setShowDeleteSuccess(true);
+          setTimeout(() => setShowDeleteSuccess(false), 2500);
         } catch (err) {
           console.error("Soft delete error:", err);
           alert("Failed to remove member.");
@@ -395,6 +401,8 @@ export default function MembersPage() {
             )
           );
           setEditMember(null);
+          setShowRenameSuccess(true);
+          setTimeout(() => setShowRenameSuccess(false), 2500);
           return;
         }
     
@@ -430,6 +438,9 @@ export default function MembersPage() {
         );
     
         setEditMember(null);
+
+        setShowRenameSuccess(true);
+        setTimeout(() => setShowRenameSuccess(false), 2500);
     
       } catch (err) {
         console.error(err);
@@ -732,12 +743,30 @@ const handleConfirmImport = async () => {
 
     setPendingImport([]);
     setShowImportConfirm(false);
+
+    setShowImportSuccess(true);
+
+    setTimeout(() => setShowImportSuccess(false), 2500);
+
   } catch (err) {
     console.error(err);
   }
 };
 
+const [showImportSuccess, setShowImportSuccess] = useState(false);
+const [showRenameSuccess, setShowRenameSuccess] = useState(false);
 
+const hasEditChanges =
+  editMember &&
+  (
+    editForm.mem_fname !== editMember.mem_fname ||
+    editForm.mem_lname !== editMember.mem_lname ||
+    editForm.mem_minit !== (editMember.mem_minit || "")
+  );
+
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -1098,6 +1127,152 @@ const handleConfirmImport = async () => {
       </main>
 
       {/* mowdals */}
+      {showSaveSuccess && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Changes Saved
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            All updates have been successfully saved.
+          </p>
+
+          <button
+            onClick={() => setShowSaveSuccess(false)}
+            className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+
+      {showDeleteSuccess && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Delete Successful
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            Member has been successfully removed.
+          </p>
+
+          <button
+            onClick={() => setShowDeleteSuccess(false)}
+            className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+
+      {showRenameSuccess && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+            <div className="flex justify-center mb-3">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-[#011638] mb-2">
+              Rename Successful
+            </h2>
+
+            <p className="text-sm text-gray-500 mb-6">
+              Member details have been successfully updated.
+            </p>
+
+            <button
+              onClick={() => setShowRenameSuccess(false)}
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showImportSuccess && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Import Successful
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            {pendingImport.length === 0
+              ? "Members have been successfully imported and updated."
+              : "Members have been successfully imported."}
+          </p>
+
+          <button
+            onClick={() => setShowImportSuccess(false)}
+            className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+
       {showImportConfirm && (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white rounded-xl shadow-2xl p-8 w-[380px] text-center">
@@ -1273,7 +1448,12 @@ const handleConfirmImport = async () => {
 
             <button
               onClick={handleEditSave}
-              className="px-4 py-2 bg-[#011638] text-white rounded-xl"
+              disabled={!hasEditChanges}
+              className={`px-4 py-2 rounded-xl text-white transition ${
+                hasEditChanges
+                  ? "bg-[#011638] hover:opacity-90"
+                  : "bg-gray-300 cursor-not-allowed"
+              }`}
             >
               Save
             </button>
