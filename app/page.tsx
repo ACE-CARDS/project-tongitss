@@ -101,7 +101,7 @@ export default function Home() {
   useEffect(() => {
     setMemberDisplayCount(0);
     setHasMemberAnimated(false);
-  }, [selectedAY]);
+  }, []);
 
   useEffect(() => {
     const fetchProvinceMembers = async () => {
@@ -959,14 +959,14 @@ export default function Home() {
 
                 {/* Total count and school list */}
                 <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-12">
-                  {/* Mobile dropdown */}
-                  <div className="lg:hidden w-full mb-4">
+                  {/* mobile dropdown */}
+                  <div className="lg:hidden w-full mb-4 flex gap-3">
+                    
+                    {/* Province Filter */}
                     <select
-                      className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
+                      className="flex-1 px-3 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
                       value={selectedProvince || ""}
-                      onChange={(e) =>
-                        setSelectedProvince(e.target.value || null)
-                      }
+                      onChange={(e) => setSelectedProvince(e.target.value || null)}
                       style={{ colorScheme: "dark" }}
                     >
                       <option value="" className="bg-[#0a1a3a] text-white">
@@ -982,6 +982,28 @@ export default function Home() {
                         </option>
                       ))}
                     </select>
+
+                    {/* AY Filter */}
+                    <select
+                      className="flex-1 px-3 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
+                      value={selectedAY}
+                      onChange={(e) => setSelectedAY(e.target.value)}
+                      style={{ colorScheme: "dark" }}
+                    >
+                      <option value="AY 2025-2026" className="bg-[#0a1a3a] text-white">
+                        AY 2025-2026
+                      </option>
+                      <option value="AY 2024-2025" className="bg-[#0a1a3a] text-white">
+                        AY 2024-2025
+                      </option>
+                      <option value="AY 2023-2024" className="bg-[#0a1a3a] text-white">
+                        AY 2023-2024
+                      </option>
+                      <option value="AY 2022-2023" className="bg-[#0a1a3a] text-white">
+                        AY 2022-2023
+                      </option>
+                    </select>
+
                   </div>
 
                   {/* Count Display */}
@@ -993,7 +1015,7 @@ export default function Home() {
                       Total Members
                     </p>
                     <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-1">
-                      AY {getCurrentAcademicYear()}
+                      {selectedAY}
                     </p>
                   </div>
 
@@ -1006,7 +1028,7 @@ export default function Home() {
                   </p>
                 </div>
 
-                  <div className="w-[420px] h-[400px] flex-shrink-0">
+                  <div className="lg:w-[420px] h-[400px] flex-shrink-0">
                   <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar">
                       {provinceSchools.length > 0 ? (
                         provinceSchools.map((school) => (
@@ -1246,7 +1268,6 @@ export default function Home() {
 
                     {/* Overlay gradient */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-[#011638]/20 via-transparent to-[#eec643]/10 rounded-3xl group-hover:opacity-75 transition-opacity duration-500" />
-
                   </div>
 
                   {/* Floating stats card */}
