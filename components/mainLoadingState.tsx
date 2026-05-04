@@ -50,13 +50,14 @@ export default function LoadingState() {
 
   return (
     <div 
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
+      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-[101vh] flex flex-col"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
         backgroundAttachment: "fixed",
       }}
     >
+      <NavBar />
       <div className="flex-1 flex items-center justify-center">
         <div className="relative flex flex-col items-center justify-center w-full">
           <div 
