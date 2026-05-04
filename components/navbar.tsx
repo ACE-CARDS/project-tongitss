@@ -160,7 +160,7 @@ export default function NavBar({ isOverHero = false }) {
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer px-[10px] py-[2px] rounded-[25px] duration-200 transition-all
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer px-[10px] py-[2px] rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
                   ${isActive("/thesis") || isActive("/survey")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -189,12 +189,11 @@ export default function NavBar({ isOverHero = false }) {
                 <ul
                   className={`
                     ${academicsOpen ? "flex" : "hidden"}
-                    flex-col gap-3 text-left
-                    py-
+                    flex-col gap-1 xl:gap-3 text-left
                     whitespace-normal xl:whitespace-nowrap
                     xl:absolute xl:shadow-[0_5px_10px_rgba(1,22,56,0.8)]
                     xl:bg-[#011638]/90 xl:backdrop-blur-sm
-                    xl:p-4 xl:rounded-[30px]
+                    p-1 xl:p-4 xl:rounded-[30px]
                     xl:-left-10 xl:top-8 xl:w-50 xl:text-center
                   `}
                 >
@@ -231,10 +230,10 @@ export default function NavBar({ isOverHero = false }) {
                 <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right p-[4px] pl-[6px] mr-0.5 rounded-[50px] bg-white/0 xl:bg-white/80 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs xl:hover:bg-white/100 xl:hover:scale-[1.04]">
                   <Link href="/dashboard">
                     <li
-                      className={`px-[13px] py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-white
+                      className={`px-[13px] py-[6px] xl:py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-black bg-white/80 text-center backdrop-blur-xs xl:bg-
                         ${isActive("/dashboard")
-                          ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
-                          : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
+                          ? "shadow-[0_0_15px_white] xl:shadow-0 xl:bg-[#a6a6a6]/35 xl:hover:bg-[#a6a6a6]/40 scale-[1.04]"
+                          : "hover:bg-[#a6a6a6]/30 xl:bg-[#a6a6a6]/35 hover:scale-[1.04]"
                         }`}
                     >
                       Dashboard
@@ -243,7 +242,7 @@ export default function NavBar({ isOverHero = false }) {
 
                   <li
                     onClick={handleLogout}
-                    className="cursor-pointer rounded-[50px] bg-red-500/60 xl:text-white text-white xl:text-red-500 duration-200 transition-all px-[13px] py-[4px] xl:hover:bg-red-500/90 xl:hover:scale-[1.04]"
+                    className="text-center cursor-pointer rounded-[50px] py-[6px] bg-red-500/60 xl:text-white text-white xl:text-red-500 duration-200 transition-all px-[13px] py-[4px] xl:hover:bg-red-500/90 xl:hover:scale-[1.04]"
                   >
                     Logout
                   </li>

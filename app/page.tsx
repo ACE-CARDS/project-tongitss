@@ -666,7 +666,7 @@ export default function Home() {
 
           <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
             <div className="text-center mb-20 flex flex-col items-center">
-            <h1 className="text-[120px] sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
+            <h1 className="text-9xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
               {displayCount}
             </h1>
               <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
@@ -687,7 +687,7 @@ export default function Home() {
                     "events-section",
                   )
                 }
-                className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] text-[#eec643] font-bold text-lg hover:bg-[#eec643] hover:text-[#011638] shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8"
+                className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] hover:bg-[#eec643] text-[#011638] font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8 bg-[#eec643]/60"
               >
                 View Events →
               </Link>
@@ -875,7 +875,7 @@ export default function Home() {
 
               {/* txt */}
               <div className="flex-1 text-center lg:text-left max-w-lg order-1 lg:order-2">
-                <h1 className="text-8xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
+                <h1 className="text-9xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
                   {memberDisplayCount}
                 </h1>
                 <h2 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent mt-4 drop-shadow-lg">
@@ -897,7 +897,7 @@ export default function Home() {
                         "members-section",
                       )
                     }
-                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Committees →
                   </Link>
@@ -910,7 +910,7 @@ export default function Home() {
                         "members-section",
                       )
                     }
-                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                    className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                   >
                     Executives →
                   </Link>
@@ -1106,7 +1106,7 @@ export default function Home() {
                           setProvinceMembers(0);
                           setProvinceSchools([]);
                         }}
-                        className="absolute bottom-15 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50"
+                        className="absolute bottom-15 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50 cursor-pointer"
                       >
                         {/* https://heroicons.com/outline */}
                         <svg
@@ -1336,7 +1336,7 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       Take Survey →
                     </Link>
@@ -1349,7 +1349,7 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       View Thesis →
                     </Link>

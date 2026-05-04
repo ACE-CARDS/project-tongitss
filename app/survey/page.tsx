@@ -32,7 +32,7 @@ export default async function SurveyPage({
 
   return (
     <SurveyPageClient>
-    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" 
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] overflow-hidden" 
      style={{
        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
        backgroundSize: "20px 20px",

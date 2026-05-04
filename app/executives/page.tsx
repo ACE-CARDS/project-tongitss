@@ -100,7 +100,7 @@ function ExecutivesContent() {
 
   return (
     <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
+    className="min-h-screen flex flex-col bg-[#fbfaf8]"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
@@ -164,8 +164,8 @@ function ExecutivesContent() {
             No executives found 👀
           </p>
         ) : (
-          <div className="flex justify-center">
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-7 max-w-7xl">
+          <div className="w-full flex justify-center">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-7 max-w-7xl mx-auto">
               {executives.map((exec, index) => {
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${exec.name}&background=f1f5f9&color=64748b&bold=true`;
 
@@ -173,20 +173,18 @@ function ExecutivesContent() {
                   <div
                     key={index}
                     className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
-                transition-all duration-300 ease-out
-                hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
-                aspect-[3/4]
-                w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
-                min-h-[180px] sm:min-h-[240px]"
+                      transition-all duration-300 ease-out
+                      hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
+                      w-[260px] min-h-[260px] flex flex-col justify-between"
                   >
                     {/* logo bg */}
-                    <div className="absolute inset-0 opacity-10 overflow-hidden ">
+                    <div className="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
                       <BsSuitSpadeFill className="size-8 md:size-10 text-[#141414] absolute top-5 left-5" />
                       <BsSuitSpadeFill className="size-8 md:size-10 text-[#141414] absolute bottom-5 right-5 rotate-180" />
                     </div>
 
                     {/* glow effect */}
-                    <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent" />
+                    <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent pointer-events-none" />
 
                     <div className="relative flex justify-center mt-1">
                       <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
@@ -214,12 +212,12 @@ function ExecutivesContent() {
                     <div className="flex justify-center gap-3 mt-4 pb-2">
                       <a
                         href={`mailto:${exec.email}`}
-                        className="hover:scale-110 transition"
+                        className="hover:scale-110 transition shadow-sm hover:shadow-lg shadow-black/20 rounded-full"
                       >
                         <img
                           src="/assets/logos/gmail.jpg"
                           alt="Email"
-                          className="w-5 h-5 rounded-full"
+                          className="w-8 h-8 rounded-full"
                         />
                       </a>
                       {exec.fblink && (
@@ -227,12 +225,12 @@ function ExecutivesContent() {
                           href={exec.fblink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:scale-110 transition"
+                          className="hover:scale-110 transition shadow-sm hover:shadow-lg shadow-black/20 rounded-full px-1 py-1"
                         >
                           <img
                             src="/assets/logos/facebook1.jpg"
                             alt="FB"
-                            className="w-5 h-5 rounded-full"
+                            className="w-6 h-6 rounded-full"
                           />
                         </a>
                       )}
