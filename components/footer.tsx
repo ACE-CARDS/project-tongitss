@@ -6,7 +6,7 @@ import Image from "next/image";
 export default function Footer() {
   return (
     <footer className="
-      relative ml-[-50vw]  mr-[-50vw] left-1/2 right-1/2 w-[100vw] 
+      relative ml-[-50vw] mr-[-50vw] left-1/2 right-1/2 w-[100vw] 
     bg-[#011638]/80 text-white py-8 backdrop-blur-sm mx-auto">
       <div className="max-w-[1100px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
         {/* Logo and Title */}

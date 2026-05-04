@@ -56,7 +56,7 @@ export default function NavBar({ isOverHero = false }) {
   };
 
   return (
-    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-50`}>
+    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-[100000]`}>
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
