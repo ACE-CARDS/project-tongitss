@@ -99,6 +99,8 @@ function ExecutivesContent() {
   }
 
   return (
+    <>
+    <NavBar />
     <div
     className="min-h-screen flex flex-col bg-[#fbfaf8]"
       style={{
@@ -107,7 +109,6 @@ function ExecutivesContent() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       <main className="px-6 sm:px-10 lg:px-28 py-8">
         <BackButton />
 
@@ -242,8 +243,9 @@ function ExecutivesContent() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }
 

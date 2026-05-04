@@ -31,6 +31,8 @@ export default async function AdminThesisPage({
   ]);
 
   return (
+    <>
+    <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
       style={{
@@ -39,7 +41,6 @@ export default async function AdminThesisPage({
         backgroundAttachment: 'fixed'
       }}
     >
-      <NavBar />
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
         <div className="mb-4">
@@ -47,7 +48,8 @@ export default async function AdminThesisPage({
         </div>
         <ThesisAdminWrapper />
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }

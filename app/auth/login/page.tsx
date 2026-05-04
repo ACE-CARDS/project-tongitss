@@ -7,6 +7,7 @@ import BackButton from "@/components/backButton";
 
 export default function LoginPage() {
   return (
+    <>
     <div className="max-w-[1920px] mx-auto relative overflow-hidden">
       <div className="flex md:flex-row flex-col w-full min-h-screen max-h-fit bg-white text-slate-600 py-15 items-center justify-center"
         style={{
@@ -89,7 +90,8 @@ export default function LoginPage() {
           </div>
 
       </div>
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }

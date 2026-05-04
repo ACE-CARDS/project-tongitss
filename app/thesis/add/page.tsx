@@ -21,6 +21,7 @@ export default async function AddThesisPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center">
+        <NavBar />
         <div 
           className="w-full max-w-[1920px] flex flex-col min-h-screen bg-[#fbfaf8]"
           style={{
@@ -28,12 +29,11 @@ export default async function AddThesisPage() {
             backgroundSize: "20px 20px",
             backgroundAttachment: 'fixed'
           }}>
-          <NavBar />
           <main className="flex-grow w-full">
             <AddThesisForm categories={categories || []} schools={schools || []} />
           </main>
-          <Footer />
         </div>
+        <Footer />
       </div>
       );
     }

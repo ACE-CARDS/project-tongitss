@@ -75,6 +75,8 @@ function MembershipApplicationContent() {
   }
 
   return (
+    <>
+    <NavBar />
     <div
       className="min-h-screen bg-[#fbfaf8] flex flex-col"
       style={{
@@ -83,7 +85,6 @@ function MembershipApplicationContent() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
         <div className="mb-6">
@@ -102,8 +103,9 @@ function MembershipApplicationContent() {
         </div>
       </main>
 
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }
 

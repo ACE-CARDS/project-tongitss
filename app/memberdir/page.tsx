@@ -339,13 +339,14 @@ const getCommName = (comm: number | string) => {
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
+    <>
+    <NavBar />
     <div className="bg-gradient-to-br from-[#f8f9fa] to-[#eff0f2] min-h-screen flex flex-col"
     style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
         backgroundSize: "20px 20px",
         backgroundAttachment: "fixed" 
       }}>
-      <NavBar />
       <main className="flex-1 px-6 py-12">
         <div className="mb-4 px-12">
                   <BackButton />
@@ -580,7 +581,8 @@ const getCommName = (comm: number | string) => {
           </div>
         </div>
       )}
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }

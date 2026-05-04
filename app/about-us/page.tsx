@@ -26,6 +26,8 @@ export default function AboutUs() {
   }
 
   return (
+    <>
+    <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -34,7 +36,6 @@ export default function AboutUs() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
         <div className="max-w-7xl mx-auto w-full">
@@ -49,7 +50,8 @@ export default function AboutUs() {
         </div>
       </main>
 
-      <Footer />
     </div>
+    <Footer />
+    </>
   );
 }
