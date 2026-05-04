@@ -455,17 +455,16 @@ export default function AdminThesisHeader({
   };
 
   const handlePendingClick = () => {
-    setSelectedStatuses(["pending"]);
-    onFilterChange({ statuses: ["pending"] });
+    if (selectedStatuses.includes('pending') && selectedStatuses.length === 1) {
+      // Remove all filters
+      setSelectedStatuses([]);
+      onFilterChange({ statuses: [] });
+    } else {
+      // Set only pending
+      setSelectedStatuses(['pending']);
+      onFilterChange({ statuses: ['pending'] });
+    }
   };
-
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, []);
 
   const totalFilters =
     (selectedCategory ? 1 : 0) +
@@ -486,18 +485,19 @@ export default function AdminThesisHeader({
         </div>
 
         {pendingCount > 0 && (
-          <button
-            onClick={handlePendingClick}
-            className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full font-ubuntu-mono font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md flex items-center gap-2"
-          >
-            {/* pinggg */}
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
-              <span className="relative inline-flex size-2 rounded-full bg-yellow-500"></span>
-            </span>
-            {pendingCount} PENDING {pendingCount === 1 ? "WORK" : "WORKS"}
-          </button>
-        )}
+        <button
+          onClick={handlePendingClick}
+          className={`bg-yellow-100 text-yellow-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-ubuntu-mono font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
+            selectedStatuses.includes('pending') ? 'ring-2 ring-yellow-400 bg-yellow-200' : ''
+          }`}
+        >
+          <span className="relative flex size-1.5 sm:size-2 items-center">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
+            <span className="relative inline-flex size-1.5 sm:size-2 rounded-full bg-yellow-500"></span>
+          </span>
+          {pendingCount} PENDING {pendingCount === 1 ? "WORK" : "WORKS"}
+        </button>
+      )}
       </div>
 
       <div className="flex flex-col gap-1">
