@@ -38,7 +38,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300);
+    }, 800);
     return () => clearTimeout(timer);
   }, []);
 

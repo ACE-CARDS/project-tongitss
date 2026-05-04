@@ -38,7 +38,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300);
+    }, 800);
     return () => clearTimeout(timer);
   }, []);
 
