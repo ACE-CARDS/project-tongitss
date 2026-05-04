@@ -387,6 +387,12 @@ export default function MembersPage() {
       mem_lname: "",
       mem_minit: "",
     });
+
+    const [editFieldErrors, setEditFieldErrors] = useState({
+      mem_fname: false,
+      mem_lname: false,
+      mem_minit: false,
+    });
   
     const handleEditSave = async () => {
       if (!editMember) return;
@@ -404,20 +410,29 @@ export default function MembersPage() {
           setShowRenameSuccess(true);
           setTimeout(() => setShowRenameSuccess(false), 2500);
           return;
+          return;
         }
     
-        const { error } = await supabase
-          .from("member")
-          .update({
-            mem_fname: editForm.mem_fname,
-            mem_lname: editForm.mem_lname,
-            mem_minit: editForm.mem_minit,
-          })
-          .eq("id", editMember.id);
-    
-        if (error) {
-          console.error("Edit error:", error);
-          alert(error.message);
+        const errors = {
+          mem_fname: editForm.mem_fname.trim() === "",
+          mem_lname: editForm.mem_lname.trim() === "",
+          mem_minit:
+            editForm.mem_minit.trim() !== "" &&
+            editForm.mem_minit.trim().length > 3,
+        };
+        
+        setEditFieldErrors(errors);
+        
+        if (errors.mem_fname || errors.mem_lname) {
+          let msg = "This field cannot be empty.";
+        
+          if (errors.mem_minit) {
+            msg = "Middle Initial must not exceed 3 characters.";
+          }
+        
+          setEditErrorMessage(msg);
+          setShowEditError(true);
+          setEditFieldErrors(errors);
           return;
         }
     
@@ -438,12 +453,14 @@ export default function MembersPage() {
         );
     
         setEditMember(null);
-
+  
         setShowRenameSuccess(true);
         setTimeout(() => setShowRenameSuccess(false), 2500);
     
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
+        setEditErrorMessage(err?.message || "Unexpected error while editing.");
+        setShowEditError(true);
       }
     };
 
@@ -724,17 +741,25 @@ const handleConfirmImport = async () => {
       })
       .select();
 
-    if (error) {
-      console.error(error);
-      alert("Import failed");
-      return;
-    }
+      if (error) {
+        console.error(error);
+        setImportErrorMessage(error.message || "Failed to import members.");
+        setShowImportError(true);
+        setShowImportConfirm(false); 
+        return;
+      }
 
-    const { data: refreshed } = await supabase
+    const { data: refreshed, error: fetchError } = await supabase
       .from("member")
       .select("*")
       .eq("acadyear", "AY 2025-2026")
       .eq("is_active", true);
+
+    if (fetchError) {
+      setImportErrorMessage(fetchError.message || "Failed to refresh data.");
+      setShowImportError(true);
+      return;
+    }
 
     if (refreshed) {
       setMembers(structuredClone(refreshed));
@@ -743,13 +768,14 @@ const handleConfirmImport = async () => {
 
     setPendingImport([]);
     setShowImportConfirm(false);
-
     setShowImportSuccess(true);
 
     setTimeout(() => setShowImportSuccess(false), 2500);
 
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
+    setImportErrorMessage(err?.message || "Unexpected error during import.");
+    setShowImportError(true);
   }
 };
 
@@ -767,6 +793,13 @@ const hasEditChanges =
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+   const [showImportError, setShowImportError] = useState(false);
+  const [importErrorMessage, setImportErrorMessage] = useState("");
+
+  const [showEditError, setShowEditError] = useState(false);
+  const [editErrorMessage, setEditErrorMessage] = useState("");
+
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -1005,6 +1038,12 @@ const hasEditChanges =
                             mem_lname: member.mem_lname,
                             mem_minit: member.mem_minit || "",
                           });
+                        
+                          setEditFieldErrors({
+                            mem_fname: false,
+                            mem_lname: false,
+                            mem_minit: false,
+                          });
                         }}
                         className="text-[#011638] hover:scale-110 transition-transform"
                       >
@@ -1127,6 +1166,78 @@ const hasEditChanges =
       </main>
 
       {/* mowdals */}
+      {showImportError && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Import Failed
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            Something went wrong while importing members.
+          </p>
+
+          <button
+            onClick={() => setShowImportError(false)}
+            className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+
+      {showImportError && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
+
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-[#011638] mb-2">
+            Import Failed
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            Something went wrong while importing members.
+          </p>
+
+          <button
+            onClick={() => setShowImportError(false)}
+            className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+
       {showSaveSuccess && (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
@@ -1407,34 +1518,50 @@ const hasEditChanges =
           </h2>
 
           <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="First Name"
-              value={editForm.mem_fname}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, mem_fname: e.target.value }))
-              }
-              className="w-full px-3 py-2 border rounded-lg"
-            />
+          <input maxLength={30}
+            type="text"
+            placeholder="First Name"
+            value={editForm.mem_fname}
+            onChange={(e) => {
+              setEditForm((prev) => ({ ...prev, mem_fname: e.target.value }));
+              setEditFieldErrors((prev) => ({ ...prev, mem_fname: false }));
+            }}
+            className={`w-full px-3 py-2 border rounded-lg transition
+              ${editFieldErrors.mem_fname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}
+            `}
+          />
 
-            <input
+            <input maxLength={20}
               type="text"
               placeholder="Last Name"
               value={editForm.mem_lname}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, mem_lname: e.target.value }))
-              }
-              className="w-full px-3 py-2 border rounded-lg"
+              onChange={(e) => {
+                setEditForm((prev) => ({ ...prev, mem_lname: e.target.value }));
+                setEditFieldErrors((prev) => ({ ...prev, mem_lname: false }));
+              }}
+              className={`w-full px-3 py-2 border rounded-lg transition
+                ${editFieldErrors.mem_lname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}
+              `}
             />
 
-            <input
+            <input maxLength={3}
               type="text"
               placeholder="Middle Initial"
               value={editForm.mem_minit}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, mem_minit: e.target.value }))
-              }
-              className="w-full px-3 py-2 border rounded-lg"
+              onChange={(e) => {
+                const value = e.target.value;
+              
+                setEditForm((prev) => ({
+                  ...prev,
+                  mem_minit: value,
+                }));
+              
+                setEditFieldErrors((prev) => ({
+                  ...prev,
+                  mem_minit: value.trim() !== "" && value.length > 3,
+                }));
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
           </div>
 
