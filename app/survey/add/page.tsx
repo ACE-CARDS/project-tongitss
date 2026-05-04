@@ -19,15 +19,20 @@ export default async function AddSurveyPage() {
     .order("school_name");
 
   return (
-    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" 
+    <div className="min-h-screen flex flex-col items-center">
+    <div 
+      className="w-full max-w-[1920px] flex flex-col min-h-screen bg-[#fbfaf8]"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px",
         backgroundAttachment: 'fixed'
       }}>
       <NavBar />
-      <AddSurveyForm categories={categories || []} schools={schools || []} />
+      <main className="flex-grow w-full">
+        <AddSurveyForm categories={categories || []} schools={schools || []} />
+      </main>
       <Footer />
     </div>
+  </div>
   );
 }

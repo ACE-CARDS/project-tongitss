@@ -20,18 +20,20 @@ export default async function AddThesisPage() {
     .order("school_name");                   // Sort
 
   return (
-    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]" //default bg
-      style={{
-        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-        backgroundSize: "20px 20px",
-        backgroundAttachment: 'fixed'
-      }}>
-
-      <NavBar />
-      
-      <AddThesisForm categories={categories || []} schools={schools || []} />
-
-      <Footer />
-    </div>
-  );
-}
+    <div className="min-h-screen flex flex-col items-center">
+        <div 
+          className="w-full max-w-[1920px] flex flex-col min-h-screen bg-[#fbfaf8]"
+          style={{
+            backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+            backgroundSize: "20px 20px",
+            backgroundAttachment: 'fixed'
+          }}>
+          <NavBar />
+          <main className="flex-grow w-full">
+            <AddThesisForm categories={categories || []} schools={schools || []} />
+          </main>
+          <Footer />
+        </div>
+      </div>
+      );
+    }

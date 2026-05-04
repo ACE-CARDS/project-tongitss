@@ -404,6 +404,32 @@ export default function SurveyHeader({
       </h1>
       <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">Browse all available surveys</p>
 
+    {/* Member feature banner */}
+    {!isAuthenticated && (
+    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-yellow-700 font-ubuntu-mono">
+              <strong className="font-oswald font-bold">ACE CARDS Member Feature:</strong>{" "}
+              Survey submission is available exclusively to ACE CARDS members.
+            </p>
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          <Link href="/auth/login" className="text-yellow-700 hover:underline font-medium font-bold text-sm font-oswald whitespace-nowrap">
+            <strong>Sign in to submit →</strong>
+          </Link>
+        </div>
+      </div>
+    </div>
+    )}
+
       <div className="flex flex-col gap-1">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative" ref={filterButtonRef}>
