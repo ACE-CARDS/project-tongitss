@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 interface Category {
@@ -42,7 +41,16 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
+
+  const [categoryError, setCategoryError] = useState("");
+  const [schoolError, setSchoolError] = useState("");
+  const [isCategoryTouched, setIsCategoryTouched] = useState(false);
+  const [isSchoolTouched, setIsSchoolTouched] = useState(false);
   const [surveyLinkError, setSurveyLinkError] = useState("");
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [dateError, setDateError] = useState("");
 
   // To check duplicate authors on each field
   const checkDuplicateAuthors = () => {
@@ -132,6 +140,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
           setTimeout(() => {
             const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement | null;
             if (categorySelect) categorySelect.value = draft.category;
+            setIsCategoryTouched(true);
+            setCategoryError("");
           }, 100);
         }
 
@@ -148,6 +158,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
           setTimeout(() => {
             const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement | null;
             if (schoolSelect) schoolSelect.value = draft.school;
+            setIsSchoolTouched(true);
+            setSchoolError("");
           }, 100);
         }
 
@@ -191,8 +203,15 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
   };
 
   const handleAddNewCategory = async () => {
+    setCategoryError("");
+
     if (!newCategoryName.trim()) {
-      alert("Please enter a category name");
+      setCategoryError("Please enter a category name");
+      return;
+    }
+
+    if (newCategoryName.trim().length < 2) {
+      setCategoryError("Category name must be at least 2 characters");
       return;
     }
 
@@ -208,6 +227,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         }
         setShowNewCategory(false);
         setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
         return;
       }
 
@@ -229,6 +250,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         
         setShowNewCategory(false);
         setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
         return;
       }
 
@@ -238,7 +261,18 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         .select("id, r_category_name")
         .single();
 
-      if (categoryError) throw categoryError;
+      if (categoryError) {
+        // Handle database error
+        if (categoryError.code === '23505') { // Unique violation
+          setCategoryError("This category already exists in the database");
+        } else if (categoryError.code === '23514') {
+          setCategoryError("Category name is invalid");
+        } else {
+          setCategoryError(`Database error: ${categoryError.message}`);
+        }
+        console.error("Error adding category:", categoryError);
+        return;
+      }
 
       setAvailableCategories(prev => [...prev, newCategory]);
 
@@ -251,15 +285,24 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
 
       setShowNewCategory(false);
       setNewCategoryName("");
+      setCategoryError("");
+      setIsCategoryTouched(true);
     } catch (error) {
       console.error("Error adding category:", error);
-      alert("Failed to add category. Please try again.");
+      setCategoryError("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleAddNewSchool = async () => {
+    setSchoolError("");
+    
     if (!newSchoolName.trim()) {
-      alert("Please enter a school name");
+      setSchoolError("Please enter a school name");
+      return;
+    }
+
+    if (newSchoolName.trim().length < 2) {
+      setSchoolError("School name must be at least 2 characters");
       return;
     }
 
@@ -275,6 +318,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         }
         setShowNewSchool(false);
         setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
         return;
       }
 
@@ -296,6 +341,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         
         setShowNewSchool(false);
         setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
         return;
       }
 
@@ -314,7 +361,18 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
         .select("id, school_name")
         .single();
 
-      if (schoolError) throw schoolError;
+      if (schoolError) {
+        // Handle database error
+        if (schoolError.code === '23505') { // Unique violation
+          setSchoolError("This school already exists in the database");
+        } else if (schoolError.code === '23514') {
+          setSchoolError("School name is invalid");
+        } else {
+          setSchoolError(`Database error: ${schoolError.message}`);
+        }
+        console.error("Error adding school:", schoolError);
+        return;
+      }
 
       setAvailableSchools(prev => [...prev, newSchool]);
 
@@ -327,14 +385,54 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
 
       setShowNewSchool(false);
       setNewSchoolName("");
+      setSchoolError("");
+      setIsSchoolTouched(true);
     } catch (error) {
       console.error("Error adding school:", error);
-      alert("Failed to add school. Please try again.");
+      setSchoolError("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (startDate && endDate && endDate <= startDate) {
+    setDateError("End date must be after start date");
+    // Scroll to the error
+    const dateSection = document.getElementById('end_date');
+    if (dateSection) {
+      dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+
+    // Validate category and school before submission
+    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement | null;
+    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement | null;
+    
+    let hasError = false;
+    
+    if (!categorySelect?.value) {
+      setCategoryError("Please select a category");
+      setIsCategoryTouched(true);
+      hasError = true;
+    }
+    
+    if (!schoolSelect?.value) {
+      setSchoolError("Please select a school");
+      setIsSchoolTouched(true);
+      hasError = true;
+    }
+    
+    if (hasError) {
+      // Scroll to the error
+      const errorElement = document.querySelector('.border-red-500');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -903,19 +1001,27 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       name="start_date"
                       required
                       min="2022-01-01"
-                      max={new Date().toISOString().split('T')[0]}
+                      max={(() => {
+                        const now = new Date();
+                        const phTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+                        const year = phTime.getFullYear();
+                        const month = String(phTime.getMonth() + 1).padStart(2, '0');
+                        const day = String(phTime.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                      })()}
                       className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                       // Date Limit
+                      value={startDate}
                       onChange={(e) => {
-                        const endDateInput = document.querySelector('input[name="end_date"]') as HTMLInputElement;
-                        if (endDateInput) {
-                          const startDate = e.target.value;
-                          const today = new Date().toISOString().split('T')[0];
-                          endDateInput.min = startDate > today ? startDate : today;
-
-                          if (endDateInput.value && endDateInput.value < startDate) {
-                            endDateInput.value = '';
-                          }
+                        const newStartDate = e.target.value;
+                        setStartDate(newStartDate);
+                        
+                        // If end date exists and is not after start date, clear it and show error
+                        if (endDate && newStartDate >= endDate) {
+                          setEndDate("");
+                          setDateError("End date must be after start date");
+                        } else {
+                          setDateError("");
                         }
                       }}
                     />
@@ -930,68 +1036,117 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       id="end_date"
                       name="end_date"
                       required
-                      min={new Date().toISOString().split('T')[0]} //Date Limit
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                        dateError ? 'border-red-500' : 'border-[#94a3b8]'
+                      }`}
+                      value={endDate}
+                      min={startDate ? (() => {
+                        // Min date = start date + 1 day
+                        const minDate = new Date(startDate);
+                        minDate.setDate(minDate.getDate() + 1);
+                        return minDate.toISOString().split('T')[0];
+                      })() : "2022-01-01"}
+                      onChange={(e) => {
+                        const newEndDate = e.target.value;
+                        setEndDate(newEndDate);
+                        
+                        // Validate end date after start date
+                        if (startDate && newEndDate <= startDate) {
+                          setDateError("End date must be after start date");
+                        } else {
+                          setDateError("");
+                        }
+                      }}
+                      onBlur={() => {
+                        // Final validation
+                        if (startDate && endDate && endDate <= startDate) {
+                          setDateError("End date must be after start date");
+                          setEndDate("");
+                        }
+                      }}
                     />
+                    {dateError && (
+                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Survey Link <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    id="survey_link"
-                    name="survey_link"
-                    required
-                    maxLength={200}
-                    placeholder="Enter survey URL"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    // Error handling
-                    onInput={async (e) => {
-                    const input = e.target as HTMLInputElement;
+                <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  Survey Link <span className="text-[#eec643]">*</span>
+                </label>
+                <input
+                  type="url"
+                  id="survey_link"
+                  name="survey_link"
+                  required
+                  maxLength={200}
+                  placeholder="Enter survey URL"
+                  className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                    surveyLinkError ? 'border-red-500' : 'border-[#94a3b8]'
+                  }`}
+                  onChange={async (e) => {
+                    const input = e.target;
+                    const value = input.value;
                     const errorSpan = document.getElementById('survey-link-error');
                     const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
                     
-                    if (input.value.length === 0) {
+                    setSurveyLinkError("");
+                    
+                    if (value.length === 0) {
                       if (errorSpan) {
                         errorSpan.textContent = 'Survey link is required.';
                         errorSpan.style.display = 'block';
                       }
-                      setSurveyLinkError("");
-                    } else if (!urlRegex.test(input.value)) {
-                      let isValidUrl = false;
-
-                      try {
-                        new URL(input.value);
-                        isValidUrl = true;
-                      } catch {
-                        isValidUrl = false;
+                      return;
+                    }
+                    
+                    // Check URL format
+                    let isValidUrl = false;
+                    try {
+                      new URL(value);
+                      isValidUrl = true;
+                    } catch {
+                      isValidUrl = false;
+                    }
+                    
+                    if (!isValidUrl) {
+                      if (errorSpan) {
+                        errorSpan.textContent = 'Please enter a valid URL.';
+                        errorSpan.style.display = 'block';
                       }
-
-                      if (!isValidUrl) {
-                        if (errorSpan) {
-                          errorSpan.textContent = 'Please enter a valid URL.';
-                          errorSpan.style.display = 'block';
-                        }
-                        setSurveyLinkError("");
-                      } else {
-                        if (errorSpan) {
-                          errorSpan.style.display = 'none';
-                        }
-                        await checkDuplicateSurveyLink(input.value);
+                      return;
+                    }
+                    
+                    // Hide error if valid
+                    if (errorSpan) {
+                      errorSpan.style.display = 'none';
+                    }
+                    
+                    // Check for duplicate link
+                    const supabase = createClient();
+                    const { data: existingSurvey } = await supabase
+                      .from("survey")
+                      .select("id")
+                      .ilike("survey_link", value)
+                      .maybeSingle();
+                    
+                    if (existingSurvey) {
+                      setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
+                      if (errorSpan) {
+                        errorSpan.textContent = "This survey link is already in use. Please provide a unique link.";
+                        errorSpan.style.display = 'block';
+                      }
+                    } else {
+                      setSurveyLinkError("");
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
                       }
                     }
                   }}
                 />
                 <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                {surveyLinkError && (
-                  <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                    {surveyLinkError}
-                  </span>
-                )}
-                </div>
+              </div>
 
                 <div>
                   <label htmlFor="respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -1113,21 +1268,25 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         id="category"
                         name="category"
                         required
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         defaultValue=""
                         // Error handling
                         onChange={(e) => {
-                        const errorSpan = document.getElementById('category-error');
-                        if (!e.target.value) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Please select a category.';
-                            errorSpan.style.display = 'block';
+                          setIsCategoryTouched(true);
+                          if (!e.target.value) {
+                            setCategoryError("Please select a category");
+                          } else {
+                            setCategoryError("");
                           }
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
+                        }}
+                        onBlur={() => {
+                          const select = document.getElementById('category') as HTMLSelectElement;
+                          if (!select?.value) {
+                            setCategoryError("Please select a category");
+                            setIsCategoryTouched(true);
                           }
-                        }
                       }}
                       >
                         <option value="" disabled>Select a category</option>
@@ -1150,10 +1309,15 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       <input
                         type="text"
                         value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onChange={(e) => {
+                          setNewCategoryName(e.target.value);
+                          setCategoryError("");
+                        }}
                         placeholder="Enter new category name"
-                        maxLength={20}
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        maxLength={30}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         required
                         // Key Limits
                         onKeyDown={(e) => {
@@ -1199,8 +1363,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         onClick={() => {
                           setShowNewCategory(false);
                           setNewCategoryName("");
-                          const errorSpan = document.getElementById('category-error');
-                          if (errorSpan) errorSpan.style.display = 'none';
+                          setCategoryError("");
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1208,7 +1371,9 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       </button>
                     </div>
                   )}
-                  <span id="category-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  {isCategoryTouched && categoryError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                  )}
                 </div>
 
                 <div>
@@ -1221,22 +1386,26 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         id="school"
                         name="school"
                         required
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         defaultValue=""
                         // Error handling
                         onChange={(e) => {
-                        const errorSpan = document.getElementById('school-error');
+                        setIsSchoolTouched(true);
                         if (!e.target.value) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Please select a school.';
-                            errorSpan.style.display = 'block';
+                            setSchoolError("Please select a school");
+                          } else {
+                            setSchoolError("");
                           }
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
+                        }}
+                        onBlur={() => {
+                          const select = document.getElementById('school') as HTMLSelectElement;
+                          if (!select?.value) {
+                            setSchoolError("Please select a school");
+                            setIsSchoolTouched(true);
                           }
-                        }
-                      }}
+                        }}
                       >
                         <option value="" disabled>Select a school</option>
                         {availableSchools.map((school) => (
@@ -1258,10 +1427,15 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       <input
                         type="text"
                         value={newSchoolName}
-                        onChange={(e) => setNewSchoolName(e.target.value)}
+                        onChange={(e) => {
+                          setNewSchoolName(e.target.value);
+                          setSchoolError("");
+                        }}
                         placeholder="Enter new school name"
                         maxLength={34}
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          schoolError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         required
                         // Key Limits
                         onKeyDown={(e) => {
@@ -1307,6 +1481,7 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                         onClick={() => {
                           setShowNewSchool(false);
                           setNewSchoolName("");
+                          setSchoolError("");
                           const errorSpan = document.getElementById('school-error');
                           if (errorSpan) errorSpan.style.display = 'none';
                         }}
@@ -1316,7 +1491,9 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
                       </button>
                     </div>
                   )}
-                  <span id="school-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  {isSchoolTouched && schoolError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
+                  )}
                 </div>
               </div>
             </div>

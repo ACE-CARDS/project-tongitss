@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 interface Category {
@@ -42,6 +41,13 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
 
+  const [categoryError, setCategoryError] = useState("");
+  const [schoolError, setSchoolError] = useState("");
+  const [isCategoryTouched, setIsCategoryTouched] = useState(false);
+  const [isSchoolTouched, setIsSchoolTouched] = useState(false);
+
+  const [digitalLinkError, setDigitalLinkError] = useState("");
+
   // Check duplicate authors
   const checkDuplicateAuthors = () => {
     const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
@@ -74,6 +80,23 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
     }
     return null;
   };
+
+  const checkDuplicateDigitalLink = async (link: string) => {
+  if (!link) return;
+  
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("thesis")
+    .select("id")
+    .ilike("thesis_digi", link)
+    .maybeSingle();
+  
+  if (data) {
+    setDigitalLinkError("This digital link is already in use. Please provide a unique link.");
+  } else {
+    setDigitalLinkError("");
+  }
+};
 
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("thesisDraft");
@@ -108,6 +131,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
           setTimeout(() => {
             const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement | null;
             if (categorySelect) categorySelect.value = draft.category;
+            setIsCategoryTouched(true);
+            setCategoryError("");
           }, 100);
         }
 
@@ -124,6 +149,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
           setTimeout(() => {
             const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement | null;
             if (schoolSelect) schoolSelect.value = draft.school;
+            setIsSchoolTouched(true);
+            setSchoolError("");
           }, 100);
         }
 
@@ -167,8 +194,15 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
   };
 
   const handleAddNewCategory = async () => {
+    setCategoryError("");
+    
     if (!newCategoryName.trim()) {
-      alert("Please enter a category name");
+      setCategoryError("Please enter a category name");
+      return;
+    }
+
+    if (newCategoryName.trim().length < 2) {
+      setCategoryError("Category name must be at least 2 characters");
       return;
     }
 
@@ -184,6 +218,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         }
         setShowNewCategory(false);
         setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
         return;
       }
 
@@ -205,6 +241,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         
         setShowNewCategory(false);
         setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
         return;
       }
 
@@ -214,7 +252,18 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         .select("id, r_category_name")
         .single();
 
-      if (categoryError) throw categoryError;
+      if (categoryError) {
+        // Handle database error
+        if (categoryError.code === '23505') { // Unique violation
+          setCategoryError("This category already exists in the database");
+        } else if (categoryError.code === '23514') {
+          setCategoryError("Category name is invalid");
+        } else {
+          setCategoryError(`Database error: ${categoryError.message}`);
+        }
+        console.error("Error adding category:", categoryError);
+        return;
+      }
 
       setAvailableCategories(prev => [...prev, newCategory]);
 
@@ -227,15 +276,24 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
       setShowNewCategory(false);
       setNewCategoryName("");
+      setCategoryError("");
+      setIsCategoryTouched(true);
     } catch (error) {
       console.error("Error adding category:", error);
-      alert("Failed to add category. Please try again.");
+      setCategoryError("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleAddNewSchool = async () => {
+    setSchoolError("");
+    
     if (!newSchoolName.trim()) {
-      alert("Please enter a school name");
+      setSchoolError("Please enter a school name");
+      return;
+    }
+
+    if (newSchoolName.trim().length < 2) {
+      setSchoolError("School name must be at least 2 characters");
       return;
     }
 
@@ -251,6 +309,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         }
         setShowNewSchool(false);
         setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
         return;
       }
 
@@ -272,6 +332,8 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         
         setShowNewSchool(false);
         setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
         return;
       }
 
@@ -290,7 +352,18 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
         .select("id, school_name")
         .single();
 
-      if (schoolError) throw schoolError;
+      if (schoolError) {
+        // Handle database error
+        if (schoolError.code === '23505') { // Unique violation
+          setSchoolError("This school already exists in the database");
+        } else if (schoolError.code === '23514') {
+          setSchoolError("School name is invalid");
+        } else {
+          setSchoolError(`Database error: ${schoolError.message}`);
+        }
+        console.error("Error adding school:", schoolError);
+        return;
+      }
 
       setAvailableSchools(prev => [...prev, newSchool]);
 
@@ -303,14 +376,44 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
 
       setShowNewSchool(false);
       setNewSchoolName("");
+      setSchoolError("");
+      setIsSchoolTouched(true);
     } catch (error) {
       console.error("Error adding school:", error);
-      alert("Failed to add school. Please try again.");
+      setSchoolError("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate category and school before submission
+    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement | null;
+    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement | null;
+    
+    let hasError = false;
+    
+    if (!categorySelect?.value) {
+      setCategoryError("Please select a category");
+      setIsCategoryTouched(true);
+      hasError = true;
+    }
+    
+    if (!schoolSelect?.value) {
+      setSchoolError("Please select a school");
+      setIsSchoolTouched(true);
+      hasError = true;
+    }
+    
+    if (hasError) {
+      // Scroll to the error
+      const errorElement = document.querySelector('.border-red-500');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -322,12 +425,22 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
       const dateInput = form.elements.namedItem("date") as HTMLInputElement | null;
       const physicalInput = form.elements.namedItem("physical") as HTMLInputElement | null;
       const digitalInput = form.elements.namedItem("digital") as HTMLInputElement | null;
-      const categorySelect = form.elements.namedItem("category") as HTMLSelectElement | null;
-      const schoolSelect = form.elements.namedItem("school") as HTMLSelectElement | null;
 
       if (!titleInput?.value || !abstractInput?.value || !keywordsInput?.value || !dateInput?.value) {
         throw new Error("Please fill in all required fields");
       }
+
+      if (digitalInput?.value) {
+      const { data: existingThesis } = await supabase
+        .from("thesis")
+        .select("id")
+        .ilike("thesis_digi", digitalInput.value)
+        .maybeSingle();
+      
+      if (existingThesis) {
+        throw new Error("This digital link is already in use. Please provide a unique link.");
+      }
+    }
 
       if (!categorySelect?.value) {
         throw new Error("Please select a category");
@@ -337,6 +450,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
       if (!schoolSelect?.value) {
         throw new Error("Please select a school");
       }
+    
       const schoolId = schoolSelect.value;
 
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
@@ -400,7 +514,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
           thesis_digi: digitalInput?.value || null,
           r_category: parseInt(categoryId),
           school: parseInt(schoolId),
-          thesis_status: 'accepted',
+          thesis_status: 'pending',
         })
         .select("id")
         .single();
@@ -832,19 +946,23 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         id="category"
                         name="category"
                         required
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         defaultValue=""
                         onChange={(e) => {
-                          const errorSpan = document.getElementById('category-error');
+                          setIsCategoryTouched(true);
                           if (!e.target.value) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Please select a category.';
-                              errorSpan.style.display = 'block';
-                            }
+                            setCategoryError("Please select a category");
                           } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
+                            setCategoryError("");
+                          }
+                        }}
+                        onBlur={() => {
+                          const select = document.getElementById('category') as HTMLSelectElement;
+                          if (!select?.value) {
+                            setCategoryError("Please select a category");
+                            setIsCategoryTouched(true);
                           }
                         }}
                       >
@@ -868,39 +986,16 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       <input
                         type="text"
                         value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onChange={(e) => {
+                          setNewCategoryName(e.target.value);
+                          setCategoryError("");
+                        }}
                         placeholder="Enter new category name"
                         maxLength={30}
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         required
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('category-error');
-                          
-                          if (!input.value.trim()) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Category name is required.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (input.value.length < 2) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Category name must be at least 2 characters.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
-                        }}
                       />
                       <button
                         type="button"
@@ -914,8 +1009,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         onClick={() => {
                           setShowNewCategory(false);
                           setNewCategoryName("");
-                          const errorSpan = document.getElementById('category-error');
-                          if (errorSpan) errorSpan.style.display = 'none';
+                          setCategoryError("");
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -923,7 +1017,9 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       </button>
                     </div>
                   )}
-                  <span id="category-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  {isCategoryTouched && categoryError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                  )}
                 </div>
 
                 <div>
@@ -936,19 +1032,23 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         id="school"
                         name="school"
                         required
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         defaultValue=""
                         onChange={(e) => {
-                          const errorSpan = document.getElementById('school-error');
+                          setIsSchoolTouched(true);
                           if (!e.target.value) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Please select a school.';
-                              errorSpan.style.display = 'block';
-                            }
+                            setSchoolError("Please select a school");
                           } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
+                            setSchoolError("");
+                          }
+                        }}
+                        onBlur={() => {
+                          const select = document.getElementById('school') as HTMLSelectElement;
+                          if (!select?.value) {
+                            setSchoolError("Please select a school");
+                            setIsSchoolTouched(true);
                           }
                         }}
                       >
@@ -972,39 +1072,16 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       <input
                         type="text"
                         value={newSchoolName}
-                        onChange={(e) => setNewSchoolName(e.target.value)}
+                        onChange={(e) => {
+                          setNewSchoolName(e.target.value);
+                          setSchoolError("");
+                        }}
                         placeholder="Enter new school name"
                         maxLength={34}
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          schoolError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
                         required
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById('school-error');
-                          
-                          if (!input.value.trim()) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'School name is required.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (input.value.length < 2) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'School name must be at least 2 characters.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
-                        }}
                       />
                       <button
                         type="button"
@@ -1018,8 +1095,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                         onClick={() => {
                           setShowNewSchool(false);
                           setNewSchoolName("");
-                          const errorSpan = document.getElementById('school-error');
-                          if (errorSpan) errorSpan.style.display = 'none';
+                          setSchoolError("");
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1027,7 +1103,9 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                       </button>
                     </div>
                   )}
-                  <span id="school-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  {isSchoolTouched && schoolError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -1096,16 +1174,67 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
                     id="digital"
                     name="digital"
                     maxLength={200}
-                    placeholder="Enter thesis URL"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    onInput={(e) => {
-                      const input = e.target as HTMLInputElement;
+                    placeholder="e.g., https://example.com/"
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                      digitalLinkError ? 'border-red-500' : 'border-[#94a3b8]'
+                    }`}
+                    onChange={async (e) => {
+                      const input = e.target;
+                      const value = input.value;
                       const errorSpan = document.getElementById('digital-error');
-                      if (input.value && !input.value.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i)) {
-                        errorSpan!.textContent = 'Please enter a valid URL.';
-                        errorSpan!.style.display = 'block';
+                      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+                      
+                      // Clear previous errors first
+                      setDigitalLinkError("");
+                      
+                      if (value.length === 0) {
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
+                        return;
+                      }
+                      
+                      // Check URL format
+                      let isValidUrl = false;
+                      try {
+                        new URL(value);
+                        isValidUrl = true;
+                      } catch {
+                        isValidUrl = false;
+                      }
+                      
+                      if (!isValidUrl) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please enter a valid URL.';
+                          errorSpan.style.display = 'block';
+                        }
+                        return;
+                      }
+                      
+                      // Hide format error if URL is valid
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
+                      }
+                      
+                      // Check for duplicate link
+                      const supabase = createClient();
+                      const { data: existingThesis } = await supabase
+                        .from("thesis")
+                        .select("id")
+                        .ilike("thesis_digi", value)
+                        .maybeSingle();
+                      
+                      if (existingThesis) {
+                        setDigitalLinkError("This digital link is already in use. Please provide a unique link.");
+                        if (errorSpan) {
+                          errorSpan.textContent = "This digital link is already in use. Please provide a unique link.";
+                          errorSpan.style.display = 'block';
+                        }
                       } else {
-                        errorSpan!.style.display = 'none';
+                        setDigitalLinkError("");
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
                       }
                     }}
                   />

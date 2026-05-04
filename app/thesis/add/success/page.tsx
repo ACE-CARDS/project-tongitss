@@ -40,7 +40,7 @@ export default function SuccessPage() {
           </h1>
           
           <p className="text-[#475569] font-ubuntu-mono mb-6">
-            Your thesis has been added to the collection.
+            Your thesis will be reviewed and published shortly.
           </p>
           
           {/* For Button */}
