@@ -258,9 +258,30 @@ export default function MembersPage() {
       setTimeout(() => setShowToast(false), 2500);
 
       setShowSaveSuccess(true);
-      setTimeout(() => setShowSaveSuccess(false), 2500);
+
+setTimeout(async () => {
+  setShowSaveSuccess(false);
+
+  setMembers([]); 
+  await refreshMembers();
+}, 2000);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const refreshMembers = async () => {
+    const { data } = await supabase
+      .from("member")
+      .select("*")
+      .eq("acadyear", "AY 2025-2026")
+      .eq("is_active", true);
+  
+    if (data) {
+      const cloned = structuredClone(data);
+  
+      setMembers([...cloned]); 
+      setOriginalMembers(structuredClone(cloned));
     }
   };
 

@@ -161,7 +161,7 @@ function ExecutivesContent() {
         {/* execs proper */}
         {executives.length === 0 ? (
           <p className="text-center text-slate-500 text-lg">
-            No executives found 👀
+            No executives found.
           </p>
         ) : (
           <div className="w-full flex justify-center">
