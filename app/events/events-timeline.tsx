@@ -1,18 +1,16 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function EventsTimeline() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  const [activeIndex, setActiveIndex] = useState(0);
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [activeYear, setActiveYear] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -34,74 +32,39 @@ export default function EventsTimeline() {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    if (selectedEvent) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => { document.body.style.overflow = 'auto'; };
+  }, [selectedEvent]);
+
   const availableYears = Array.from(
     new Set(
       events.map((event) => 
         event.year || new Date(event.start_date).getFullYear().toString()
       )
     )
-  ).sort((a, b) => Number(b) - Number(a)); // Sort descending (newest first)
+  ).sort((a, b) => Number(a) - Number(b));
 
   const filteredEvents = events.filter((event) => {
     const statusUpper = event.status?.toUpperCase() || "UPCOMING";
     const eventYear = event.year || new Date(event.start_date).getFullYear().toString();
     
-    const matchesFilter =
+    const matchesStatus =
       activeFilter === "ALL" ||
-      (activeFilter === "COMPLETED"
-        ? statusUpper === "COMPLETED"
-        : activeFilter === "UPCOMING"
-          ? statusUpper !== "COMPLETED"
-          : eventYear === activeFilter);
+      (activeFilter === "COMPLETED" ? statusUpper === "COMPLETED" : statusUpper !== "COMPLETED");
+
+    const matchesYear = activeYear === "ALL" || eventYear === activeYear;
 
     const matchesSearch =
       searchQuery === "" ||
       event.title.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesFilter && matchesSearch;
+    return matchesStatus && matchesYear && matchesSearch;
   });
-
-  const CARD_SLOT_WIDTH = 352;
-
-  const scrollToCard = (index: number) => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        left: index * CARD_SLOT_WIDTH,
-        behavior: "smooth",
-      });
-      setActiveIndex(index);
-    }
-  };
-
-  const scroll = (direction: "left" | "right") => {
-    let newIndex =
-      direction === "left"
-        ? Math.max(0, activeIndex - 1)
-        : Math.min(filteredEvents.length - 1, activeIndex + 1);
-    scrollToCard(newIndex);
-  };
-
-  const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const newIndex = Math.round(
-        scrollContainerRef.current.scrollLeft / CARD_SLOT_WIDTH,
-      );
-      if (
-        newIndex !== activeIndex &&
-        newIndex >= 0 &&
-        newIndex < filteredEvents.length
-      ) {
-        setActiveIndex(newIndex);
-      }
-    }
-  };
-
-  const formatTimelineDate = (dateString: string) => {
-    if (!dateString) return "";
-    const d = new Date(dateString);
-    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    return `(${months[d.getMonth()]}, ${d.getFullYear()})`;
-  };
 
   const formatEventDateRange = (start: string, end: string) => {
     if (!start) return "";
@@ -132,222 +95,278 @@ export default function EventsTimeline() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col">
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-3">
-          <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
-          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
-            Events
-          </h1>
-          <span className="text-4xl md:text-5xl text-[#eec643]">♠</span>
+    <div className="w-full flex flex-col">
+      
+      {/* SEARCH AND STATUS DROPDOWN */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto mb-8">
+        <div className="relative w-full sm:w-1/2">
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-5 py-3.5 rounded-xl bg-white border-2 border-slate-200 font-ubuntu-mono font-bold text-slate-800 placeholder:text-slate-400 focus:border-[#011638] focus:ring-0 outline-none shadow-sm transition-all"
+          />
+          <svg className="absolute right-4 top-3.5 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
-      </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto mb-10">
-        <input
-          type="text"
-          placeholder="Search events..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setActiveIndex(0);
-          }}
-          className="w-full sm:w-2/3 px-6 py-3 rounded-xl bg-white/80 border border-slate-300 font-bold text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-[#011638] outline-none shadow-sm transition-all"
-        />
-        <div className="relative w-full sm:w-1/3">
+        <div className="relative w-full sm:w-1/2">
           <select
             value={activeFilter}
-            onChange={(e) => {
-              setActiveFilter(e.target.value);
-              setActiveIndex(0);
-            }}
-            className="w-full appearance-none px-6 py-3 rounded-xl bg-white/80 border border-slate-300 text-slate-800 font-bold cursor-pointer tracking-widest text-sm uppercase outline-none focus:ring-2 focus:ring-[#011638] transition-colors shadow-sm pr-10"
+            onChange={(e) => setActiveFilter(e.target.value)}
+            className="w-full appearance-none px-5 py-3.5 rounded-xl bg-white border-2 border-slate-200 text-slate-800 font-bold font-ubuntu-mono cursor-pointer tracking-widest text-sm uppercase outline-none focus:border-[#011638] transition-colors shadow-sm pr-10"
           >
             <option value="ALL">ALL EVENTS</option>
             <option value="UPCOMING">UPCOMING</option>
             <option value="COMPLETED">ACCOMPLISHED</option>
-            
-            {/* Dynamically render the available years */}
-            {availableYears.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-            <svg
-              className="w-5 h-5 text-slate-500"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
         </div>
       </div>
 
+      {/* TIMELINE AS YEAR FILTER */}
+      {!isLoading && events.length > 0 && (
+        <div className="relative w-full max-w-6xl mx-auto mb-14">
+          <div className="overflow-x-auto pb-8 pt-12 px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="relative min-w-max flex justify-between items-center gap-24 md:gap-40 lg:gap-56 px-8 md:px-16 mx-auto">
+              
+              <div className="absolute top-1/2 left-0 right-0 h-1.5 bg-slate-200 -translate-y-1/2 z-0 rounded-full"></div>
+              
+              {["ALL", ...availableYears].map((year) => (
+                <div 
+                  key={year} 
+                  onClick={() => setActiveYear(year)}
+                  className="relative z-10 flex flex-col items-center cursor-pointer group"
+                >
+                  <span className={`absolute -top-10 text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
+                    activeYear === year ? 'text-[#011638]' : 'text-slate-400 group-hover:text-[#0d21a1]'
+                  }`}>
+                    {year === "ALL" ? "All Years" : year}
+                  </span>
+                  
+                  <div className={`w-6 h-6 rounded-full border-[4px] transition-all duration-300 flex items-center justify-center ${
+                    activeYear === year 
+                      ? 'bg-[#eec643] border-[#011638] scale-[1.3] shadow-md' 
+                      : 'bg-white border-slate-300 group-hover:border-[#0d21a1]'
+                  }`}>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="w-full flex justify-center py-20">
           <div className="flex flex-col items-center gap-4 animate-pulse text-[#011638]">
             <span className="text-4xl">♠</span>
-            <p className="font-bold tracking-widest uppercase text-sm">
-              Loading Events...
-            </p>
+            <p className="font-bold tracking-widest uppercase text-sm">Loading Events...</p>
           </div>
         </div>
       ) : (
         <>
-          {filteredEvents.length > 0 && (
-            <div className="relative w-full mb-8 border-b border-gray-300/50">
-              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-slate-300/50 -translate-y-1/2"></div>
-              
-              <div className="relative flex justify-between items-center px-4 py-10 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {filteredEvents.map((node, index) => (
-                  <div
-                    key={node.id}
-                    onClick={() => scrollToCard(index)}
-                    className="group relative flex flex-col items-center justify-center cursor-pointer min-w-[80px] shrink-0"
-                  >
-                    <div className={`absolute bottom-full mb-3 text-[10px] font-black tracking-widest uppercase whitespace-nowrap transition-colors duration-300 ${
-                      index === activeIndex ? "text-[#011638]" : "text-slate-400 group-hover:text-[#0d21a1]"
-                    }`}>
-                      {formatTimelineDate(node.start_date)}
-                    </div>
+          {filteredEvents.length === 0 ? (
+            <div className="w-full text-center py-20 text-slate-500 font-bold text-xl font-ubuntu-mono">
+              No events found for the selected filters.
+            </div>
+          ) : (
+            /* GRID DISPLAY */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredEvents.map((event) => {
+                const completed = isEventCompleted(event);
+                const statusUpper = event.status?.toUpperCase() || "UPCOMING";
+                const hasValidImage = Boolean(event.image_url && typeof event.image_url === 'string' && event.image_url.trim() !== "");
 
-                    <div className="relative flex items-center justify-center h-8 w-8 shrink-0 z-10">
-                      {index === activeIndex ? (
-                        <div className="w-6 h-6 bg-[#011638] rounded-full flex items-center justify-center transition-all duration-300 shadow-md shadow-[#011638]/40">
-                          <div className="w-3 h-3 bg-[#eec643] rounded-full"></div>
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 bg-white border-[3px] border-slate-300 rounded-full group-hover:border-[#0d21a1] transition-all duration-300"></div>
-                      )}
-                    </div>
-                    
-                    <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 flex flex-col items-center">
-                      <div className="w-2 h-2 bg-[#011638] rotate-45 -mb-1.5 z-0"></div>
-                      <div className="bg-[#011638] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap relative z-10">
-                        {node.short_title}
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => setSelectedEvent(event)}
+                    className="bg-white rounded-3xl flex flex-col transition-all duration-300 cursor-pointer overflow-hidden group shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-1 border border-slate-100 h-full w-full"
+                  >
+                    {hasValidImage ? (
+                      <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-100">
+                        <img 
+                          src={event.image_url} 
+                          alt={event.title} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-4 bg-[#011638] shrink-0"></div>
+                    )}
+
+                    <div className="flex flex-col flex-grow p-6 sm:p-8 w-full overflow-hidden">
+                      <div className="flex flex-col mb-4 w-full">
+                        <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
+                          Date
+                        </span>
+                        <span className="font-black text-lg leading-tight text-[#0d21a1] break-words line-clamp-2">
+                          {formatEventDateRange(event.start_date, event.end_date)}
+                        </span>
+                      </div>
+                      
+                      <h3 
+                        title={event.title}
+                        className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
+                      >
+                        {event.title}
+                      </h3>
+                      
+                      <p 
+                        title={event.location}
+                        className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
+                      >
+                        📍 {event.location}
+                      </p>
+                      
+                      <p 
+                        title={event.description}
+                        className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
+                      >
+                        {event.description}
+                      </p>
+                      
+                      {/* CARD FOOTER */}
+                      <div className="mt-6 pt-5 border-t border-slate-100 text-center shrink-0 w-full" onClick={() => setSelectedEvent(event)}>
+                        {completed ? (
+                          <span className="inline-block w-full py-2.5 rounded-xl font-black text-xs tracking-widest uppercase bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
+                            VIEW RECAP
+                          </span>
+                        ) : statusUpper === "ONGOING" ? (
+                          <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200">
+                            ● ONGOING
+                          </span>
+                        ) : (
+                          <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047]">
+                            COMING SOON
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           )}
-
-          <div className="w-full flex items-center justify-between gap-4 lg:gap-8 mt-2">
-            <button
-              onClick={() => scroll("left")}
-              disabled={activeIndex === 0}
-              className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-lg disabled:opacity-0 transition-all duration-300"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-
-            <div
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="flex-1 flex gap-8 overflow-x-auto snap-x snap-mandatory py-8 px-4 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth items-center"
-            >
-              {filteredEvents.length === 0 ? (
-                <div className="w-full text-center py-20 text-slate-500 font-bold text-xl">
-                  No events found.
-                </div>
-              ) : (
-                filteredEvents.map((event, index) => {
-                  const completed = isEventCompleted(event);
-                  const statusUpper = event.status?.toUpperCase() || "UPCOMING";
-                  
-                  const hasValidImage = Boolean(event.image_url && typeof event.image_url === 'string' && event.image_url.trim() !== "");
-
-                  return (
-                    <div
-                      key={event.id}
-                      onClick={() => {
-                        if (index === activeIndex)
-                          router.push(`/events/${event.id}`);
-                        else scrollToCard(index);
-                      }}
-                      className={`w-[320px] h-[500px] rounded-[2.5rem] flex flex-col snap-center transition-all duration-500 shrink-0 cursor-pointer relative overflow-hidden group ${index === activeIndex ? "bg-white border-2 border-[#eec643] shadow-xl z-10 scale-100" : "bg-white/60 border border-slate-200 scale-90 opacity-60 hover:opacity-100"}`}
-                    >
-                      {/* FOOLPROOF IMAGE RENDER BLOCK */}
-                      {hasValidImage ? (
-                        <div className="w-full h-48 shrink-0 relative overflow-hidden bg-slate-200 border-b border-slate-200">
-                          <img 
-                            src={event.image_url} 
-                            alt={event.title} 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                        </div>
-                      ) : (
-                        <div className="w-full h-4 bg-[#eec643] shrink-0"></div>
-                      )}
-
-                      {/* CARD CONTENT BODY */}
-                      <div className={`flex flex-col flex-grow ${hasValidImage ? 'p-6 pt-4' : 'p-8 pt-8'}`}>
-                        <div className="relative z-10 flex justify-between items-start mb-4">
-                          <div className="flex flex-col">
-                            <span className={`font-black text-[10px] uppercase tracking-widest ${index === activeIndex ? "text-[#eec643]" : "text-slate-400"}`}>
-                              Date
-                            </span>
-                            <span className={`font-black text-lg leading-tight ${index === activeIndex ? "text-[#0d21a1]" : "text-slate-500"}`}>
-                              {formatEventDateRange(event.start_date, event.end_date)}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <h3 className="relative z-10 text-2xl font-black text-[#011638] uppercase leading-tight mb-2 line-clamp-2">
-                          {event.title}
-                        </h3>
-                        
-                        <p className="relative z-10 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
-                          📍 {event.location}
-                        </p>
-                        
-                        <p className="relative z-10 text-slate-600 text-sm font-medium leading-relaxed flex-grow line-clamp-3">
-                          {event.description}
-                        </p>
-                        
-                        {/* Dynamic Status Button */}
-                        <div className="relative z-10 mt-4 pt-4 border-t border-slate-100 text-center shrink-0">
-                          <div className={`w-full py-3 rounded-xl font-black text-xs tracking-widest uppercase shadow-sm ${completed ? "bg-slate-100 text-slate-600" : "bg-[#011638] text-white"}`}>
-                            {completed
-                              ? "VIEW RECAP"
-                              : statusUpper === "ONGOING"
-                                ? "JOIN NOW"
-                                : "COMING SOON"}
-                          </div>
-                        </div>
-                      </div>
-                      
-                    </div>
-                  );
-                })
-              )}
-              <div className="min-w-[50vw] shrink-0"></div>
-            </div>
-
-            <button
-              onClick={() => scroll("right")}
-              disabled={
-                activeIndex === filteredEvents.length - 1 ||
-                filteredEvents.length === 0
-              }
-              className="hidden md:flex shrink-0 z-30 w-14 h-14 items-center justify-center rounded-2xl bg-[#011638] text-white hover:bg-[#0d21a1] hover:scale-110 shadow-lg disabled:opacity-0 transition-all duration-300"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
         </>
       )}
+
+      {/* MODAL POPUP FOR EVENT DETAILS */}
+      {selectedEvent && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#011638]/60 backdrop-blur-sm p-4 sm:p-6 w-full"
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header/Image */}
+            <div className="relative w-full shrink-0 overflow-hidden">
+              <button 
+                onClick={() => setSelectedEvent(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors"
+              >
+                ✕
+              </button>
+              
+              {selectedEvent.image_url ? (
+                <div className="w-full h-64 sm:h-80 bg-slate-100 relative">
+                  <img 
+                    src={selectedEvent.image_url} 
+                    alt={selectedEvent.title} 
+                    className="w-full h-full object-cover" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6 w-[calc(100%-3rem)]">
+                    <span 
+                      title={selectedEvent.short_title}
+                      className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1"
+                    >
+                      {selectedEvent.short_title}
+                    </span>
+                    <h2 
+                      title={selectedEvent.title}
+                      className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight drop-shadow-md break-all sm:break-words w-full line-clamp-3"
+                    >
+                      {selectedEvent.title}
+                    </h2>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full pt-16 pb-6 px-6 sm:px-10 bg-[#011638] overflow-hidden">
+                  <span 
+                    title={selectedEvent.short_title}
+                    className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1"
+                  >
+                    {selectedEvent.short_title}
+                  </span>
+                  <h2 
+                    title={selectedEvent.title}
+                    className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight break-all sm:break-words w-full line-clamp-3"
+                  >
+                    {selectedEvent.title}
+                  </h2>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 sm:p-10 flex flex-col gap-6 w-full">
+              
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 pb-6 border-b border-slate-100 w-full items-start">
+                <div className="w-full sm:w-1/3 min-w-0">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">Date</p>
+                  <p className="font-bold text-[#0d21a1] text-lg font-ubuntu-mono break-words w-full line-clamp-2">
+                    {formatEventDateRange(selectedEvent.start_date, selectedEvent.end_date)}
+                  </p>
+                </div>
+                <div className="w-full sm:w-1/3 min-w-0">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">Location</p>
+                  <p 
+                    title={selectedEvent.location}
+                    className="font-bold text-slate-700 text-lg font-ubuntu-mono break-words w-full line-clamp-3"
+                  >
+                    {selectedEvent.location}
+                  </p>
+                </div>
+                <div className="w-full sm:w-1/3 min-w-0">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">Status</p>
+                  <p 
+                    title={selectedEvent.status}
+                    className="font-bold text-slate-700 text-lg font-ubuntu-mono uppercase break-words w-full line-clamp-2"
+                  >
+                    {selectedEvent.status}
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full min-w-0">
+                <p className="text-slate-700 font-ubuntu-mono text-base leading-relaxed whitespace-pre-wrap break-words w-full">
+                  {selectedEvent.description}
+                </p>
+              </div>
+
+              {/* Action Button inside modal */}
+              {isEventCompleted(selectedEvent) && (
+                <div className="mt-4 pt-6 border-t border-slate-100 flex justify-center w-full">
+                  <button className="px-8 py-3 bg-[#011638] text-white font-oswald font-bold tracking-widest uppercase rounded-xl hover:bg-[#eec643] hover:text-[#011638] transition-colors shadow-md">
+                    View Recap Gallery
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
