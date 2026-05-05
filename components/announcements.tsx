@@ -43,13 +43,13 @@ export default function Dashboard() {
       <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Calendar */}
-          <div className="w-full">
+          <div className="w-full ">
             <Calendar />
           </div>
 
           {/* Announcements */}
           <div className="w-[90%] mb-12 md:w-full flex flex-col mx-auto ">
-            <div className="shadow-2xl border-[1.5] border-[#011638] rounded-xl bg-white">
+            <div className=" border-[1.5] border-[#011638] rounded-xl bg-[white]">
               <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6 ">
                 ANNOUNCEMENTS
               </h2>
