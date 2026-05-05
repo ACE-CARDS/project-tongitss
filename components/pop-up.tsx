@@ -23,6 +23,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
         .from("announce_landing")
         .select()
         .gte("announce_landing_end", today)
+        .lte("announce_landing_start", today)
         .order("announce_landing_end", { ascending: true });
 
       if (data) {
