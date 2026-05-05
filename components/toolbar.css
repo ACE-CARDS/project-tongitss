@@ -5,7 +5,7 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
   margin-bottom: 20px;
-  border: 1.5px solid #011638;
+  border: 1 solid #011638;
 }
 
 .toolbar a,

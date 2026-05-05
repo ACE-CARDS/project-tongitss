@@ -239,7 +239,7 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Members etc */}
-      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full">
+      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full ">
         {paginatedMembers.length === 0 ? (
           <p className="text-center text-slate-500 text-lg mt-10 w-full">
             No members found.
@@ -256,9 +256,9 @@ export default function CommitteeDirectory() {
             return (
               <div
                 key={index}
-                className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md
+                className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-[#011638] shadow-md
                   transition-all duration-300 ease-out
-                  hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white
+                  hover:-translate-y-3 hover:shadow-2xl hover:border-[#eec643] hover:bg-white
                   w-[42%] sm:w-[42%] md:w-[28%] lg:w-[20%]
                   min-h-[180px] sm:min-h-[240px]
                   flex flex-col"
@@ -273,9 +273,9 @@ export default function CommitteeDirectory() {
                   }}
                 />*/}
 
-                <div className="absolute inset-0 opacity-10 overflow-hidden ">
-                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#141414] absolute top-5 left-5" />
-                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#141414] absolute bottom-5 right-5 rotate-180" />
+                <div className="absolute inset-0 opacity-20 overflow-hidden ">
+                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#011638] absolute top-5 left-5" />
+                  <BsSuitSpadeFill className="size-6 md:size-8 text-[#011638] absolute bottom-5 right-5 rotate-180" />
                 </div>
 
                 <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#0b1763]/4 to-transparent" />
