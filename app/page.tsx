@@ -1009,9 +1009,9 @@ export default function Home() {
 
                   {/* Count Display */}
                   <div className="text-center lg:text-left w-[180px]">
-                  <h2 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white tracking-tight tabular-nums scale-y-110 [text-shadow:0_1px_0_rgba(0,0,0,0.8),0_2px_0_rgba(0,0,0,0.6),0_3px_6px_rgba(0,0,0,0.8)]">  {/* attempt sa bolder count kasi not working ang font-bold pero huhu wala pa ding difference */}
+                    <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white tracking-tight tabular-nums scale-y-110 [text-shadow:0_1px_0_rgba(0,0,0,0.8),0_2px_0_rgba(0,0,0,0.6),0_3px_6px_rgba(0,0,0,0.8)]">  {/* attempt sa bolder count kasi not working ang font-bold pero huhu wala pa ding difference */}
                       {provinceDisplayCount}
-                    </h2>
+                    </h1>
                     <p className="text-[#eec643] font-semibold mt-2">
                       Total Members
                     </p>
