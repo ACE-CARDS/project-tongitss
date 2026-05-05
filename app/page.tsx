@@ -1030,7 +1030,7 @@ export default function Home() {
                 </div>
 
                   <div className="lg:w-[420px] h-[400px] flex-shrink-0">
-                  <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar">
+                  <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar-white-nobg">
                       {provinceSchools.length > 0 ? (
                         provinceSchools.map((school) => (
                           <div
