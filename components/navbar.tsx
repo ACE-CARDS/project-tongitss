@@ -161,7 +161,7 @@ export default function NavBar({ isOverHero = false }) {
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer px-[10px] py-[2px] rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
                   ${isActive("/thesis") || isActive("/survey")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -169,6 +169,7 @@ export default function NavBar({ isOverHero = false }) {
                   ${academicsOpen ? "bg-[#a6a6a6]/30 scale-[1.04]" : ""}
                 `}
               >
+                <span className="animate-shine px-[10px] py-[2px]">
                 {/* Label row */}
                 <div className="flex flex-row items-center gap-1 whitespace-nowrap justify-end xl:justify-start">
                   Academics
@@ -184,15 +185,16 @@ export default function NavBar({ isOverHero = false }) {
                       clipRule="evenodd"
                     />
                   </svg>
+                  
                 </div>
-
+                </span>
                 {/* Submenu — inline on mobile, absolute on xl */}
                 <ul
                   className={`
                     ${academicsOpen ? "flex" : "hidden"}
                     flex-col gap-1 xl:gap-3 text-left
                     whitespace-normal xl:whitespace-nowrap
-                    xl:absolute xl:shadow-[0_5px_10px_rgba(1,22,56,0.8)]
+                    xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
                     xl:bg-[#011638]/90 xl:backdrop-blur-sm
                     p-1 xl:p-4 xl:rounded-[30px]
                     xl:-left-10 xl:top-8 xl:w-50 xl:text-center
@@ -291,6 +293,40 @@ export default function NavBar({ isOverHero = false }) {
 
         </div>
       </nav>
+
+      <style jsx> 
+        {`
+          @keyframes occasional-shine {
+            0% { transform: translateX(-200%) skewX(-30deg); }
+            20% { transform: translateX(200%) skewX(-30deg); }
+            100% { transform: translateX(200%) skewX(-30deg); }
+          }
+
+          .animate-shine {
+            position: relative;
+            overflow: hidden;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+          }
+
+          .animate-shine::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              to right,
+              transparent,
+              rgba(255, 255, 255, 0.4),
+              transparent
+            );
+            animation: occasional-shine 3s infinite;
+          }
+        `}
+      </style>
 
     </div>
   );
