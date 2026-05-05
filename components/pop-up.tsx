@@ -49,7 +49,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
         {
           opacity: 1,
           scale: 1,
-          y: 0,
+          y: 25,
           duration: 0.4,
           ease: "back.out(1.2)",
         },
