@@ -75,8 +75,6 @@ function MembershipApplicationContent() {
   }
 
   return (
-    <>
-    <NavBar />
     <div
       className="min-h-screen bg-[#fbfaf8] flex flex-col"
       style={{
@@ -85,13 +83,14 @@ function MembershipApplicationContent() {
         backgroundAttachment: "fixed",
       }}
     >
+      <NavBar />
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
-        <div className="mb-6">
-          <BackButton />
-        </div>
-
         <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-6">
+            <BackButton />
+          </div>
+
           <ApplicationHero deadline={pageContent.deadline} />
           
           <ApplicationInfo 
@@ -99,13 +98,15 @@ function MembershipApplicationContent() {
             instructions={pageContent.instructions} 
           />
           
-          <ApplicationTestimony videoUrl={pageContent.videoUrl} />
+          {/* testimony if a valid URL exists */}
+          {pageContent.videoUrl && (
+            <ApplicationTestimony videoUrl={pageContent.videoUrl} />
+          )}
         </div>
       </main>
 
+      <Footer />
     </div>
-    <Footer />
-    </>
   );
 }
 
