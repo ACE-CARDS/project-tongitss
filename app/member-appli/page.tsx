@@ -26,6 +26,7 @@ function MembershipApplicationContent() {
       const { data, error } = await supabase
         .from("announce_memapp")
         .select("*")
+        .order("order_index", { ascending: true })
         .order("id", { ascending: true });
 
       if (data && !error) {
@@ -98,7 +99,6 @@ function MembershipApplicationContent() {
             instructions={pageContent.instructions} 
           />
           
-          {/* testimony if a valid URL exists */}
           {pageContent.videoUrl && (
             <ApplicationTestimony videoUrl={pageContent.videoUrl} />
           )}

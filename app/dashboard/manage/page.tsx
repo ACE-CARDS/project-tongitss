@@ -6,6 +6,7 @@ import { useUser } from "@/components/context/userContext";
 import AnnouncementsAdmin from "@/components/announcementsAdmin";
 import EventsAdmin from "@/components/eventsAdmin";
 import NewsAdmin from "@/components/newsAdmin";
+import MemAppAdmin from "@/components/memappadmin"; 
 import SpotlightCard from "@/components/SpotlightCard";
 import { motion } from "framer-motion";
 
@@ -18,7 +19,7 @@ export default function ManagePage() {
 
   useEffect(() => {
     const section = searchParams.get('section');
-    if (section && ['announcements', 'news', 'events'].includes(section)) {
+    if (section && ['announcements', 'news', 'events', 'memapp'].includes(section)) {
       setActiveSection(section);
     }
     const timer = setTimeout(() => {
@@ -71,6 +72,18 @@ export default function ManagePage() {
       color: "from-[#011638] to-[#011638]",
       bgColor: "bg-green-50"
     },
+    { 
+      label: "Membership App", 
+      key: "memapp", 
+      description: "Manage instructions, deadlines, and videos for applicants",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      color: "from-[#011638] to-[#011638]",
+      bgColor: "bg-yellow-50"
+    },
   ];
 
   // Content
@@ -82,6 +95,8 @@ export default function ManagePage() {
         return <NewsAdmin />;
       case "events":
         return <EventsAdmin />;
+      case "memapp":
+        return <MemAppAdmin />;
       default:
         return null;
     }
@@ -107,7 +122,6 @@ export default function ManagePage() {
               Back
             </button>
 
-            { /* Header + Content Per Card */ }
             <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-[#011638] to-[#012a5a] text-white p-6">
                 <div className="flex items-center gap-3">
@@ -130,7 +144,6 @@ export default function ManagePage() {
     );
   }
 
-  // Cards
   return (
     <div className="w-full">
       {/* Header */}
@@ -156,7 +169,7 @@ export default function ManagePage() {
             }
           }
         }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full"
       >
         {manageOptions.map((option, index) => (
           <motion.div
@@ -184,12 +197,12 @@ export default function ManagePage() {
               className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative cursor-pointer"
               spotlightColor="rgba(239, 240, 242, 0.16)"
             >
-              <div onClick={() => setActiveSection(option.key)}>
+              <div onClick={() => setActiveSection(option.key)} className="flex flex-col h-full">
                 {/* Card Header */}
                 <div className={`bg-gradient-to-r ${option.color} p-6 text-white`}>
                   <div className="flex items-center justify-start gap-4">
-                    <span className="text-white">{option.icon}</span>
-                    <h3 className="text-xl font-bold text-white my-auto text-left">{option.label}</h3>
+                    <span className="text-white shrink-0">{option.icon}</span>
+                    <h3 className="text-xl font-bold text-white my-auto text-left leading-tight">{option.label}</h3>
                   </div>
                 </div>
 
@@ -199,7 +212,7 @@ export default function ManagePage() {
 
                   {/* Action Button */}
                   <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-[#011638] font-medium">
-                    <span className="text-sm">Manage {option.label}</span>
+                    <span className="text-sm">Manage</span>
                     <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                     </svg>
