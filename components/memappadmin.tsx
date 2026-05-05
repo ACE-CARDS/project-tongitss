@@ -12,7 +12,6 @@ interface MemAppItem {
   order_index: number;
 }
 
-// Delete confirmation popup
 function DeleteConfirmPopup({ 
   isOpen, 
   onClose, 
@@ -32,29 +31,21 @@ function DeleteConfirmPopup({
         onClose();
       }
     }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
-      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
-        {/* Header */}
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
+      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3>
+          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8] uppercase tracking-wide">Confirm Delete</h3>
         </div>
-        
-        {/* Body */}
         <div className="px-6 py-6">
           <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-            Are you sure you want to delete <span className="font-bold text-[#011638]">&quot;{title}&quot;</span>? This action will hide it from the public view.
+            Are you sure you want to delete <span className="font-bold text-[#011638]">&quot;{title}&quot;</span>? This action will hide it from the public view and automatically adjust the sequence of remaining items.
           </p>
           <div className="flex justify-end gap-3">
             <button
@@ -64,10 +55,8 @@ function DeleteConfirmPopup({
               Cancel
             </button>
             <button
-              onClick={() => {
-                onConfirm();
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-oswald tracking-widest uppercase"
+              onClick={onConfirm} 
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-oswald tracking-widest uppercase font-bold"
             >
               Delete
             </button>
@@ -78,7 +67,6 @@ function DeleteConfirmPopup({
   );
 }
 
-// Search Bar
 function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearchChange: (value: string) => void }) {
   return (
     <div className="relative flex-1">
@@ -101,17 +89,15 @@ export default function MemAppAdmin() {
   const [filteredItems, setFilteredItems] = useState<MemAppItem[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Deadline State
   const [deadlineItem, setDeadlineItem] = useState<MemAppItem | null>(null);
   const [deadlineDate, setDeadlineDate] = useState("");
   const [savingDeadline, setSavingDeadline] = useState(false);
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
   
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MemAppItem | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const supabase = createClient();
   const router = useRouter();
@@ -120,7 +106,6 @@ export default function MemAppAdmin() {
     fetchItems();
   }, []);
 
-  // Filter Logic
   useEffect(() => {
     let filtered = items.filter(item => item.type !== 'deadline'); 
 
@@ -180,14 +165,17 @@ export default function MemAppAdmin() {
   };
 
   const handleDelete = async () => {
-    if (!selectedItem) return;
+    if (!selectedId) return;
     
-    const { error } = await supabase.from('announce_memapp').delete().eq('id', selectedItem.id);
+    const itemToDelete = items.find(i => i.id === selectedId);
+    if (!itemToDelete) return;
+    
+    const { error } = await supabase.from('announce_memapp').delete().eq('id', selectedId);
     
     if (!error) {
-        if (selectedItem.type === 'instruction' || selectedItem.type === 'reminder') {
+        if (itemToDelete.type === 'instruction' || itemToDelete.type === 'reminder') {
             const remaining = items
-               .filter(i => i.type === selectedItem.type && i.id !== selectedItem.id)
+               .filter(i => i.type === itemToDelete.type && i.id !== selectedId)
                .sort((a,b) => a.order_index - b.order_index);
                
             for (let i = 0; i < remaining.length; i++) {
@@ -198,32 +186,23 @@ export default function MemAppAdmin() {
             }
         }
         setDeletePopupOpen(false);
-        setSelectedItem(null);
+        setSelectedId(null);
         fetchItems(); 
     } else {
-        alert("Failed to delete item.");
+        alert("Failed to delete item. Ensure you have the correct permissions.");
     }
   };
 
-  // Safely renders the table body without confusing the compiler
   const renderTableBody = () => {
     if (loading) {
       return (
-        <tr>
-          <td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569] animate-pulse">
-            Loading content...
-          </td>
-        </tr>
+        <tr><td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569] animate-pulse">Loading content...</td></tr>
       );
     }
 
     if (filteredItems.length === 0) {
       return (
-        <tr>
-          <td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569]">
-            No content found. Add instructions, reminders, or videos to get started.
-          </td>
-        </tr>
+        <tr><td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569]">No content found. Add instructions, reminders, or videos to get started.</td></tr>
       );
     }
 
@@ -263,7 +242,7 @@ export default function MemAppAdmin() {
                 </svg>
               </Link>
               <button 
-                onClick={() => { setSelectedItem(item); setDeletePopupOpen(true); }} 
+                onClick={() => { setSelectedId(item.id); setDeletePopupOpen(true); }} 
                 className="text-red-600 hover:text-red-800 transition-colors"
                 title="Delete Item"
               >
@@ -281,16 +260,12 @@ export default function MemAppAdmin() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-full overflow-hidden">
       
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-oswald font-bold text-[#011638] uppercase tracking-wide">Membership App Content</h1>
         <p className="text-[#475569] font-ubuntu-mono mt-1">Control instructions, reminders, deadlines, and videos</p>
       </div>
 
-      {/* Deadline and Add Content Bar */}
       <div className="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-        
-        {/* Compact Deadline Setter */}
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest hidden md:block">Set Deadline:</span>
@@ -310,14 +285,12 @@ export default function MemAppAdmin() {
           </button>
         </div>
 
-        {/* Add Content Button */}
         <Link href="/dashboard/add/mem-app" className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Content
         </Link>
       </div>
 
-      {/* Show current deadline string below if exists */}
       {deadlineItem && (
         <div className="mb-6 -mt-3 text-left w-full">
           <span className="text-sm text-[#475569] font-ubuntu-mono">
@@ -326,7 +299,6 @@ export default function MemAppAdmin() {
         </div>
       )}
 
-      {/* Filters */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         <select
@@ -341,7 +313,6 @@ export default function MemAppAdmin() {
         </select>
       </div>
 
-      {/* Table */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200 w-full">
         <div className="overflow-x-auto w-full">
           <table className="min-w-full">
@@ -363,10 +334,8 @@ export default function MemAppAdmin() {
       <DeleteConfirmPopup 
         isOpen={deletePopupOpen} 
         onClose={() => setDeletePopupOpen(false)} 
-        onConfirm={() => {
-          handleDelete();
-        }}
-        title={selectedItem?.type || "this content"}
+        onConfirm={handleDelete}
+        title={items.find(i => i.id === selectedId)?.type || "this content"}
       />
     </div>
   );

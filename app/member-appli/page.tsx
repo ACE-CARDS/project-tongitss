@@ -30,26 +30,23 @@ function MembershipApplicationContent() {
         .order("id", { ascending: true });
 
       if (data && !error) {
-        const fetchedDeadline = data.find((row) => row.type === "deadline")?.description;
+        const fetchedDeadline = data.find((row) => row.type?.toLowerCase().trim() === "deadline")?.description;
         
         const fetchedReminders = data
-          .filter((row) => row.type === "reminder")
+          .filter((row) => row.type?.toLowerCase().trim() === "reminder")
           .map((row) => row.description);
           
         const fetchedInstructions = data
-          .filter((row) => row.type === "instruction")
+          .filter((row) => row.type?.toLowerCase().trim() === "instruction")
           .map((row) => row.description);
           
-        const fetchedVideo = data.find((row) => row.type === "video")?.description;
+        const fetchedVideo = data.find((row) => row.type?.toLowerCase().trim() === "video")?.description;
 
         let finalVideoUrl = "";
         if (fetchedVideo) {
-          if (fetchedVideo.includes("watch?v=")) {
-            const videoId = fetchedVideo.split("watch?v=")[1].split("&")[0];
-            finalVideoUrl = `https://www.youtube.com/embed/${videoId}`;
-          } else if (fetchedVideo.includes("youtu.be/")) {
-            const videoId = fetchedVideo.split("youtu.be/")[1].split("?")[0];
-            finalVideoUrl = `https://www.youtube.com/embed/${videoId}`;
+          const match = fetchedVideo.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/);
+          if (match && match[1]) {
+            finalVideoUrl = `https://www.youtube.com/embed/${match[1]}`;
           } else {
             finalVideoUrl = fetchedVideo;
           }
