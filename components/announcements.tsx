@@ -16,10 +16,13 @@ export default function Dashboard() {
   useEffect(() => {
     async function getAnnouncements() {
       try {
+        const today = new Date().toISOString();
         const { data, error } = await supabase
           .from("announce_dash")
           .select("*")
-          .order("id", { ascending: true });
+          .gte("announce_dash_end", today)
+          .lte("announce_dash_start", today)
+          .order("announce_dash_end", { ascending: true });
 
         if (error) throw error;
         if (data) setAnnouncements(data);
@@ -46,7 +49,7 @@ export default function Dashboard() {
 
           {/* Announcements */}
           <div className="w-[90%] mb-12 md:w-full flex flex-col mx-auto ">
-            <div className="shadow-2xl border-1 border-[#d7d7d7] rounded-xl bg-white">
+            <div className="shadow-2xl border-[1.5] border-[#011638] rounded-xl bg-white">
               <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6 ">
                 ANNOUNCEMENTS
               </h2>
