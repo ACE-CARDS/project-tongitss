@@ -110,6 +110,7 @@ export default function NavBar({ isOverHero = false }) {
                 overflow-y-auto xl:overflow-visible
                 max-h-[calc(100svh-100px)] xl:max-h-none
                 w-full xl:w-auto
+                custom-scrollbar-white
               `}
             >
               <Link href="/">
