@@ -4,21 +4,39 @@ import { useRouter } from "next/navigation";
 
 interface BackButtonProps {
   className?: string;
-  href?: string; // Add the optional href prop
+  href?: string;
 }
 
 export default function BackButton({ className = "", href }: BackButtonProps) {
   const router = useRouter();
 
-  const handleBack = () => {
-    //Check if from success page
-    const returnPath = sessionStorage.getItem('successReturnPath');
+const handleBack = () => {
+    if (href) {
+      router.push(href);
+      return;
+    }
+
+    const rawPath = sessionStorage.getItem('successReturnPath');
     
-    if (returnPath) {
+    if (rawPath) {
+      // Clear it IMMEDIATELY so other components stop reacting to it
       sessionStorage.removeItem('successReturnPath');
-      router.push(returnPath); // To parent folder
+
+        // Split by '?' to manually handle the query string
+        const [basePath, search] = rawPath.split('?');
+        
+        if (search) {
+          const params = new URLSearchParams(search);
+          params.delete('page'); // Explicitly kill the page tag
+          
+          const newSearch = params.toString();
+          const cleanPath = newSearch ? `${basePath}?${newSearch}` : basePath;
+          
+          router.push(cleanPath);
+        } else {
+          router.push(basePath);
+        }
     } else {
-      // Normal back
       router.back();
     }
   };
@@ -42,9 +60,7 @@ export default function BackButton({ className = "", href }: BackButtonProps) {
         <line x1="19" y1="12" x2="5" y2="12" />
         <polyline points="12 19 5 12 12 5" />
       </svg>
-      <span className="font-black pl-2">
-        Back
-      </span>
+      <span className="font-black pl-2">Back</span>
     </button>
   );
 }
