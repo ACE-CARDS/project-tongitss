@@ -170,8 +170,8 @@ export default function NewsMedia() {
       const totalWidth = cardRect.width;
       const visiblePercentage = visibleWidth / totalWidth; // % of visible
       
-      // Visible if at least 30%
-      if (visiblePercentage > 0.3) {
+      // Visible if at least 40%
+      if (visiblePercentage > 0.4) {
         visibleIndices.push(idx); 
       }
     });
@@ -217,6 +217,37 @@ export default function NewsMedia() {
 
     return () => clearTimeout(timer); 
   }, [isCarouselVisible, showSecondRow, carouselPosts.length, firstRowAnimationComplete, carouselHasFlipped]); // Re-run
+
+  useEffect(() => {
+    if (!scrollRef.current || !showSecondRow || carouselPosts.length === 0) return;
+    
+    const handleResize = () => {
+      const container = scrollRef.current;
+      if (!container) return;
+      
+      // Scroll padding based on screen size
+      const screenWidth = window.innerWidth;
+      let snapPadding;
+      
+      if (screenWidth < 640) {
+        snapPadding = 'calc(50% - 130px)'; // Smaller cards on mobile
+      } else if (screenWidth < 768) {
+        snapPadding = 'calc(50% - 140px)';
+      } else if (screenWidth < 1024) {
+        snapPadding = 'calc(50% - 150px)';
+      } else {
+        snapPadding = 'calc(50% - 160px)';
+      }
+      
+      container.style.scrollPaddingLeft = snapPadding;
+      container.style.scrollPaddingRight = snapPadding;
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [showSecondRow, carouselPosts.length]);
 
   // Scroll position changes 
   useEffect(() => {
@@ -316,81 +347,57 @@ export default function NewsMedia() {
   const scroll = (dir: 'left' | 'right') => {
     if (scrollRef.current && isCarouselVisible) { 
       const container = scrollRef.current;
-      const cardWidth = getCarouselCardWidth(); // Get card width
-      const gap = getCarouselGap(); // Get card gap
+      const cards = container.querySelectorAll('.carousel-card');
       
-      const scrollAmount = cardWidth + gap;
+      if (cards.length === 0) return;
       
-      const currentScroll = container.scrollLeft;
-      let targetScroll = dir === 'left' 
-        ? currentScroll - scrollAmount 
-        : currentScroll + scrollAmount;
+      // Get current scroll position and visible area
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
       
-      const maxScroll = container.scrollWidth - container.clientWidth;
-      targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+      let targetCard: Element | null = null;
+      let closestDistance = Infinity;
       
-      container.scrollTo({
-        left: targetScroll, 
-        behavior: 'smooth'
+      // Find card closest to center
+      cards.forEach((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const distance = Math.abs(cardCenter - containerCenter);
+        
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          targetCard = card;
+        }
       });
       
-      // After scroll, flip new visible cards
-      const checkScrollComplete = setInterval(() => {
-        if (container) {
-          const isScrolling = Math.abs(container.scrollLeft - targetScroll) > 5;
-          if (!isScrolling) { 
-            clearInterval(checkScrollComplete); // Stop checking
-            setTimeout(() => {
-              if (isCarouselVisible && firstRowAnimationComplete) {
-                const visibleIndices = getVisibleCarouselIndices();
-              visibleIndices.forEach((idx, order) => {
-                setFlippedCarouselCards(prev => {
-                  if (prev.includes(idx)) return prev;
-                  // Use timeout for sequential flipping
-                  setTimeout(() => {
-                    setFlippedCarouselCards(current => {
-                      if (current.includes(idx)) return current;
-                      return [...current, idx];
-                    });
-                  }, order * 100);
-                  return prev;
-                });
-              });
-            }
-          }, 150);
-        }
-      }
-    }, 50); // Check every 50ms
+      if (!targetCard) return;
       
-      setTimeout(() => clearInterval(checkScrollComplete), 1000);
-    }
-  };
-
-  // Get current card width based on screen size
-  const getCarouselCardWidth = () => {
-    if (typeof window === 'undefined') return 320;
-    
-    const width = window.innerWidth;
-    
-    if (width <= 640) {
-      return 280; // Mobile width
-    } else if (width <= 767) {
-      return 300; // Tablet-phones width
-    } else {
-      return 320; // Desktop width
-    }
-  };
-
-  // Get current gap between cards
-  const getCarouselGap = () => {
-    if (typeof window === 'undefined') return 24;
-    
-    const width = window.innerWidth;
-    
-    if (width <= 767) {
-      return 16; // gap-4 on mobile
-    } else {
-      return 24; // gap-6 on desktop
+      // Find target card index
+      const targetIndex = Array.from(cards).indexOf(targetCard);
+      
+      let newIndex;
+      if (dir === 'left') {
+        newIndex = Math.max(0, targetIndex - 1);
+      } else {
+        newIndex = Math.min(cards.length - 1, targetIndex + 1);
+      }
+      
+      // Scroll to the new card
+      const newTargetCard = cards[newIndex] as HTMLElement;
+      if (newTargetCard) {
+        newTargetCard.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+      
+      // Flip new visible cards
+      setTimeout(() => {
+        if (isCarouselVisible && firstRowAnimationComplete && !carouselHasFlipped) {
+          flipVisibleCarouselCards();
+        }
+      }, 400);
     }
   };
 
@@ -421,7 +428,7 @@ export default function NewsMedia() {
 
   return (
     <div 
-      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 relative overflow-x-hidden"
+      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 pb-[50px] md:px-8 lg:px-16 relative overflow-x-hidden"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px",
@@ -470,11 +477,11 @@ export default function NewsMedia() {
       {/* 1st ROW: Latest Posts */}
       {latestPosts.length > 0 && (
         <div ref={latestSectionRef} className="mb-12 relative z-10">
-          <div className="news-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="news-grid">
             {latestPosts.map((post, idx) => (
               <div 
                 key={post.id} 
-                className="perspective-container h-[400px]"
+                className="perspective-container"
               >
                 <FlippableNewsCard 
                   post={post} 
@@ -498,12 +505,12 @@ export default function NewsMedia() {
           </div>
 
           {/* Carousel Container */}
-          <div className="relative px-4 sm:px-8 md:px-11 py-2">
+          <div className="relative w-full py-2">
             {/* Left Scroll Button */}
             <button
               onClick={() => scroll('left')}
               disabled={!canScrollLeft}
-              className={`absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
+              className={`absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
                 canScrollLeft 
                   ? 'bg-[#011638] hover:bg-[#0d21a1] hover:shadow-lg cursor-pointer opacity-100' 
                   : 'bg-gray-300 cursor-not-allowed opacity-60'
@@ -512,12 +519,12 @@ export default function NewsMedia() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minWidth: '36px',
-                minHeight: '36px'
+                width: '36px',
+                height: '36px'
               }}
               aria-label="Scroll left"
             >
-              <svg className={`w-5 h-5 ${canScrollLeft ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -526,7 +533,7 @@ export default function NewsMedia() {
             <button
               onClick={() => scroll('right')}
               disabled={!canScrollRight}
-              className={`absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
+              className={`absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 shadow-md transition-all duration-300 ${
                 canScrollRight 
                   ? 'bg-[#011638] hover:bg-[#0d21a1] hover:shadow-lg cursor-pointer opacity-100' 
                   : 'bg-gray-300 cursor-not-allowed opacity-60'
@@ -535,12 +542,12 @@ export default function NewsMedia() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minWidth: '36px',
-                minHeight: '36px'
+                width: '36px',
+                height: '36px'
               }}
               aria-label="Scroll right"
             >
-              <svg className={`w-5 h-5 ${canScrollRight ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -548,18 +555,26 @@ export default function NewsMedia() {
             {/* Scrollable Cards Container */}
             <div
               ref={scrollRef}
-              className="flex overflow-x-auto overflow-y-visible gap-6 pb-5 hide-scrollbar snap-x snap-mandatory"
+              className="flex overflow-x-auto overflow-y-visible gap-4 sm:gap-5 pb-5 hide-scrollbar snap-mandatory px-8 sm:px-10"
               style={{ 
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
-                scrollSnapType: 'x mandatory'
+                scrollSnapType: 'x mandatory',
+                scrollPaddingLeft: 'calc(50% - 160px)',
+                scrollPaddingRight: 'calc(50% - 160px)'
               }}
             >
               {carouselPosts.map((post, idx) => (
-                <div key={post.id} className="flex-none py-2 perspective-container h-[400px] carousel-card snap-start"
+                <div 
+                  key={post.id} 
+                  className="flex-none carousel-card snap-center"
                   style={{
-                    width: 'clamp(260px, calc(100vw - 80px), 320px)',
-                    scrollSnapAlign: 'start'
+                    width: 'auto',
+                    minWidth: '280px',
+                    maxWidth: '90vw',
+                    scrollSnapAlign: 'center',
+                    height: 'auto',
+                    minHeight: '380px'
                   }}
                 >
                   <FlippableNewsCard 
@@ -582,108 +597,211 @@ export default function NewsMedia() {
         
         .perspective-container {
           perspective: 1000px;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.05;
-          }
-          50% {
-            opacity: 0.15;
-          }
-        }
-        
-        .delay-1000 {
-          animation-delay: 1s;
-        }
-      
-      
-      /* If on table, mobile, or minimized screen -> center */
-      @media (max-width: 767px) {
-        .news-grid {
-          justify-items: center;
-        }
-        .news-grid > div {
-          max-width: 350px;
           width: 100%;
-          height: 320px;
-        }
-      }
-      
-      @media (min-width: 768px) and (max-width: 1023px) {
-        .news-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1.5rem;
+          height: 100%;
         }
         
-        /* Targeting third card (span then center) */
-        .news-grid > div:last-child:nth-child(3) {
-          grid-column: span 2;
-          max-width: 400px;
-          width: 100%;
-          justify-self: center;
-        }
-      }
-
-      .news-grid > div {
-        height: 380px;
-      }
-
-      .flex.overflow-x-auto {
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-        scroll-behavior: smooth;
-      }
-
-      .carousel-card {
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-      }
-
-      /* Adjust for different screen sizes */
-      @media (max-width: 640px) {
+        /* Cards to be responsive */
         .carousel-card {
-          scroll-snap-align: start !important;
+          height: auto !important;
+          min-height: 360px;
+          scroll-snap-align: center;
           scroll-snap-stop: always;
         }
-      }
-      
-      button[aria-label="Scroll left"],
-      button[aria-label="Scroll right"] {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        z-index: 30 !important;
-        transition: all 0.3s ease;
-      }
-
-      button[aria-label="Scroll left"]:hover:not(:disabled),
-      button[aria-label="Scroll right"]:hover:not(:disabled) {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-      }
-    }
-
-      @media (max-width: 640px) {
-      .carousel-card {
-        width: calc(100vw - 80px) !important;
-        min-width: 260px;
-        scroll-snap-align: center;
-      }
-    }
-
-      @media (min-width: 641px) and (max-width: 767px) {
-        .carousel-card {
-          width: 300px !important;
+        
+        /* Smooth scrolling container */
+        .flex.overflow-x-auto {
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+          scroll-snap-type: x mandatory;
         }
-      }
-
-      @media (min-width: 768px) {
-        .carousel-card {
-          width: 320px !important;
+        
+        .news-grid {
+          display: grid;
+          gap: 1.5rem;
+          width: 100%;
         }
-      }
+        
+        /* Mobile styles */
+        @media (max-width: 640px) {
+          .news-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+          }
+          
+          .news-grid > div {
+            width: 100%;
+            max-width: 100%;
+            min-height: 320px;
+          }
+          
+          .perspective-container {
+            min-height: 320px;
+          }
+          
+          .carousel-card {
+            min-width: 260px !important;
+            max-width: 85vw !important;
+          }
+          
+          /* Make cards more compact on mobile */
+          .flip-card-front .rounded-lg,
+          .flip-card-back .rounded-lg {
+            min-height: 320px;
+          }
+          
+          .flip-card-front h3 {
+            font-size: 1rem !important;
+            min-height: 48px !important;
+          }
+          
+          .flip-card-front .h-48 {
+            height: 160px !important;
+          }
+        }
+        
+        /* Tablet styles */
+        @media (min-width: 641px) and (max-width: 1023px) {
+          .news-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            padding: 0 0.5rem;
+          }
+          
+          .news-grid > div {
+            width: 100%;
+            min-width: 0;
+          }
+          
+          .perspective-container {
+            min-height: 380px;
+          }
+          
+          .flip-card-front .rounded-lg {
+            min-height: 380px;
+          }
+          
+          .flip-card-front h3 {
+            font-size: 1.125rem !important;
+            min-height: 56px !important;
+          }
+          
+          .flip-card-front .h-48 {
+            height: 180px !important;
+          }
+          
+          .news-grid > div:last-child:nth-child(3) {
+            grid-column: span 2;
+            max-width: 450px;
+            width: 100%;
+            justify-self: center;
+          }
+          
+          .carousel-card {
+            min-width: 280px !important;
+            max-width: 75vw !important;
+          }
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 1024px) {
+          .news-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+          }
+          
+          .news-grid > div {
+            width: 100%;
+          }
+          
+          .perspective-container {
+            min-height: 420px;
+          }
+          
+          .carousel-card {
+            min-width: 320px !important;
+            max-width: 320px !important;
+          }
+        }
+        
+        /* Large desktop */
+        @media (min-width: 1280px) {
+          .carousel-card {
+            min-width: 340px !important;
+            max-width: 340px !important;
+          }
+        }
+        
+        /* Responsive image container */
+        .image-container {
+          width: 100%;
+          overflow: hidden;
+        }
 
-      }
+        @media (max-width: 640px) {
+          .image-container {
+            height: 160px !important;
+          }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+          .image-container {
+            height: 170px !important;
+          }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .image-container {
+            height: 180px !important;
+          }
+        }
+
+        @media (min-width: 1025px) {
+          .image-container {
+            height: 192px !important;
+          }
+        }
+        
+        /* Button positioning and hover effects */
+        button[aria-label="Scroll left"],
+        button[aria-label="Scroll right"] {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+          z-index: 30 !important;
+          transition: all 0.3s ease;
+        }
+
+        button[aria-label="Scroll left"]:hover:not(:disabled),
+        button[aria-label="Scroll right"]:hover:not(:disabled) {
+          transform: scale(1.05) !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+        }
+        
+        /* Card content improvements */
+        .flip-card-front .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        /* Proper spacing */
+        .relative.z-10 {
+          width: 100%;
+          overflow-x: visible;
+        }
+        
+        /* Carousel container padding */
+        .relative.w-full.py-2 {
+          padding-left: 2rem !important;
+          padding-right: 2rem !important;
+        }
+        
+        @media (max-width: 640px) {
+          .relative.w-full.py-2 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+        }
       `}</style>
     </div>
   );
@@ -718,23 +836,28 @@ function FlippableNewsCard({
     <div 
       className="flip-card-wrapper"
       style={{ 
-        animation: `cardFloat 0.3s ease-out ${Math.min(index * 0.05, 0.3)}s both` // Fade-in
+        animation: `cardFloat 0.3s ease-out ${Math.min(index * 0.05, 0.3)}s both`, // Fade-in
+        width: '100%',
+        height: '100%'
       }}
     >
       <div 
         className={`flip-card ${isCardFlipped ? 'flipped' : ''}`}
         style={{ 
-          transition: `transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)`
+          transition: `transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)`,
+          width: '100%',
+          height: '100%'
         }}
       >
         {/* Back of card */}
         <div className="flip-card-back">
           <div 
-            className="rounded-lg overflow-hidden bg-gradient-to-br from-[#011638] to-[#0d21a1] flex flex-col items-center justify-center h-full shadow-md relative w-full text-center p-6"
+            className="rounded-lg overflow-hidden bg-gradient-to-br from-[#011638] to-[#0d21a1] flex flex-col items-center justify-center h-full shadow-md relative w-full text-center p-4 sm:p-6"
             style={{ 
               backgroundImage: "url('/assets/logos/card-bg.png')",
               backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundPosition: 'center',
+              minHeight: '320px'
             }}
           >
             <div className="absolute inset-0 bg-[#011638]/50 rounded-lg" />
@@ -743,14 +866,14 @@ function FlippableNewsCard({
               <img
                 src="/assets/logos/ACE CARDS logo.png"
                 alt="ACE CARDS Logo"
-                className="w-32 h-32 object-contain mx-auto mb-5"
+                className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain mx-auto mb-3 sm:mb-5"
               />
               
-              <h3 className="text-white font-bold text-xl mb-0 text-center">
+              <h3 className="text-white font-bold text-lg sm:text-xl mb-0 text-center">
                 ACE CARDS
               </h3>
               
-              <p className="text-[#eec643] text-sm font-semibold text-center">
+              <p className="text-[#eec643] text-xs sm:text-sm font-semibold text-center">
                 Latest Update
               </p>
             </div>
@@ -762,13 +885,13 @@ function FlippableNewsCard({
           <Link href={post.post_url} target="_blank" rel="noopener noreferrer" className="block h-full">
             <div className="rounded-lg overflow-hidden transition-all duration-300 bg-white flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-md relative">
               {/* Image section */}
-              <div className="h-48 rounded-t-lg overflow-hidden bg-gray-100 relative flex-shrink-0">
+              <div className="image-container h-40 sm:h-44 md:h-48 rounded-t-lg overflow-hidden bg-gray-100 relative flex-shrink-0">
                 {(!post.image_url || imgError) ? ( 
                   <div className="w-full h-full flex items-center justify-center bg-[#011638]">
                     <img
                       src="/assets/logos/ACE CARDS logo.png"
                       alt="ACE CARDS Logo"
-                      className="w-24 h-24 object-contain opacity-80"
+                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain opacity-80"
                     />
                   </div>
                 ) : (
@@ -780,8 +903,8 @@ function FlippableNewsCard({
                   />
                 )}
                 {/* Date badge */}
-                <div className="absolute top-3 right-3">
-                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#0d21a1] shadow-lg">
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium text-[#0d21a1] shadow-lg">
                     {formatDate(post.fb_post_date)}
                   </span>
                 </div>
@@ -793,21 +916,21 @@ function FlippableNewsCard({
               </div>
 
               {/* Content section */}
-              <div className="p-4 flex-1 flex flex-col overflow-hidden">
-                <h3 className="font-bold text-lg text-[#011638] mb-2 line-clamp-2 hover:text-[#0d21a1] transition-colors text-left min-h-[56px]">
+              <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-hidden">
+                <h3 className="font-bold text-base sm:text-lg text-[#011638] mb-2 line-clamp-2 hover:text-[#0d21a1] transition-colors text-left min-h-[48px] sm:min-h-[56px]">
                   {post.title}
                 </h3>
 
                 {post.content && (
-                  <p className="text-gray-600 text-sm mb-0 line-clamp-2 text-left">
+                  <p className="text-gray-600 text-xs sm:text-sm mb-0 line-clamp-2 text-left">
                     {post.content}
                   </p>
                 )}
 
                 {/* Read more link */}
-                <div className="mt-auto flex items-center text-[#eec643] font-medium text-sm group pt-0">
+                <div className="mt-auto flex items-center text-[#eec643] font-medium text-xs sm:text-sm group pt-2">
                   <span>Read more</span>
-                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
