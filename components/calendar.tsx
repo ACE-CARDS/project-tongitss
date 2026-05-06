@@ -70,7 +70,7 @@ export default function BigCalendar() {
   };
 
   return (
-    <div className="flex flex-col h-screen p-0">
+    <div className="flex flex-col h-full min-h-[550px] md:min-h-[750px] p-0">
       {/*Toolbar*/}
       <div className="rounded-xl toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row ">
         <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
@@ -118,7 +118,7 @@ export default function BigCalendar() {
       </div>
 
       {/*calendar*/}
-      <div className="flex-1 min-h-[100px]">
+      <div className="h-full min-h-[600px]">
         <Calendar
           localizer={localizer}
           events={events}
