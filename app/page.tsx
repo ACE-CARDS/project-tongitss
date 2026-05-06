@@ -661,7 +661,7 @@ export default function Home() {
           <section
             id="events-section"
             ref={sectionRef}
-            className="pt-8 pb-0 lg:py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] overflow-hidden"
+            className="pt-8 pb-0 xl:py-8 px-6 xl:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] overflow-hidden"
           >
             <div
               className="absolute inset-0 opacity-10"
@@ -676,13 +676,13 @@ export default function Home() {
 
             <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
               <div className="text-center mb-20 flex flex-col items-center">
-                <h1 className="text-9xl sm:text-8xl lg:text-[200px] font-black text-white drop-shadow-2xl leading-none">
+                <h1 className="text-9xl sm:text-8xl xl:text-[200px] font-black text-white drop-shadow-2xl leading-none">
                   {displayCount}
                 </h1>
-                <h3 className="text-xl sm:text-6xl lg:text-7xl font-bold text-white/90 mt-4">
+                <h3 className="text-xl sm:text-6xl xl:text-7xl font-bold text-white/90 mt-4">
                   Total
                 </h3>
-                <h2 className="text-4xl sm:text-6xl lg:text-9xl font-bold text-white/90 mt-1">
+                <h2 className="text-4xl sm:text-6xl xl:text-9xl font-bold text-white/90 mt-1">
                   Events
                 </h2>
                 <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-3">
