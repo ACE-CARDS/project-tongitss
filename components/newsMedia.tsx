@@ -421,7 +421,7 @@ export default function NewsMedia() {
 
   return (
     <div 
-      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 md:px-8 lg:px-16 relative overflow-x-hidden"
+      className="w-full mx-auto bg-[#fbfaf8] max-w-[1920px] pt-12 px-4 pb-[50px] md:px-8 lg:px-16 relative overflow-x-hidden"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px",

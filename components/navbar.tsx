@@ -12,7 +12,9 @@ export default function NavBar({ isOverHero = false }) {
   const { user } = useUser();
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
+  const membersRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
@@ -23,16 +25,26 @@ export default function NavBar({ isOverHero = false }) {
 
   const toggleDropdown = () => {
     setAcademicsOpen(!academicsOpen);
+    setMembersOpen(false);
   };
+
+  const toggleMembers = () => {
+    setMembersOpen(!membersOpen);
+    setAcademicsOpen(false);
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        academicsRef.current &&
-        !academicsRef.current.contains(event.target as Node)
+        (academicsRef.current &&
+        !academicsRef.current.contains(event.target as Node)) || 
+        (membersRef.current &&
+        !membersRef.current.contains(event.target as Node)
+        )
       ) {
         setAcademicsOpen(false);
         setMenuisOpen(false);
+        setMembersOpen(false);
       }
     };
 
@@ -110,6 +122,7 @@ export default function NavBar({ isOverHero = false }) {
                 overflow-y-auto xl:overflow-visible
                 max-h-[calc(100svh-100px)] xl:max-h-none
                 w-full xl:w-auto
+                custom-scrollbar-white
               `}
             >
               <Link href="/">
@@ -142,15 +155,55 @@ export default function NavBar({ isOverHero = false }) {
                 </li>
               </Link>
 
-              <Link href="/executives">
-                <li className={`px-[10px] py-[2px] rounded-full duration-200 transition-all
-                  ${isActive("/executives")
+              <li
+                ref={membersRef}
+                onClick={toggleMembers}
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                  ${isActive("/executives") || isActive("/committee")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
-                  }`}>
-                  Executives
-                </li>
-              </Link>
+                  }
+                  ${membersOpen ? "bg-[#a6a6a6]/30 scale-[1.04]" : ""}
+                `}
+              >
+                {/* Label row */}
+                <div className="flex flex-row items-center gap-1 whitespace-nowrap justify-end xl:justify-start">
+                  Members
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`size-4 transition-transform duration-200 ${membersOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  
+                </div>
+
+                {/* Submenu — inline on mobile, absolute on xl */}
+                <ul
+                  className={`
+                    ${membersOpen ? "flex" : "hidden"}
+                    flex-col gap-1 xl:gap-3 text-left
+                    whitespace-normal xl:whitespace-nowrap
+                    xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
+                    xl:bg-[#011638]/90 xl:backdrop-blur-sm
+                    p-1 xl:p-4 xl:rounded-[30px]
+                    xl:-left-5 xl:top-8 xl:w-40 xl:text-center
+                  `}
+                >
+                  <li className="hover:underline">
+                    <Link href="/committee">Committees</Link>
+                  </li>
+                  <li className="hover:underline">
+                    <Link href="/executives">Executives</Link>
+                  </li>
+                </ul>
+              </li>
 
               {/*
                 Academics dropdown
@@ -297,9 +350,8 @@ export default function NavBar({ isOverHero = false }) {
       <style jsx> 
         {`
           @keyframes occasional-shine {
-            0% { transform: translateX(-200%) skewX(-30deg); }
-            20% { transform: translateX(200%) skewX(-30deg); }
-            100% { transform: translateX(200%) skewX(-30deg); }
+            0% { transform: translateX(-150%) skewX(-30deg); }
+            100% { transform: translateX(150%) skewX(-30deg); }
           }
 
           .animate-shine {
@@ -323,7 +375,7 @@ export default function NavBar({ isOverHero = false }) {
               rgba(255, 255, 255, 0.4),
               transparent
             );
-            animation: occasional-shine 3s infinite;
+            animation: occasional-shine 6s infinite;
           }
         `}
       </style>

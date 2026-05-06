@@ -57,15 +57,18 @@ const KidlaDialogue: FC<Props> = ({
       {(status) => (
         <div
           ref={container}
-          className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end lg:pr-24 px-4"
+          className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end pt-20 lg:pt-28 lg:pr-24 px-4 overflow-y-auto"
         >
           <div
             className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-[3px]"
             onClick={onClose}
           />
 
-          <div className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[40vh] md:min-h-[50vh] rounded-[2rem] md:rounded-[90rem] lg:rounded-full border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center">
-            <div className="z-[-1] absolute -bottom-8 right-10 md:right-20 md:-bottom-1 w-12 h-12 bg-[#fbfaf8] triangle " />
+          <div
+            className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[40vh] md:min-h-[50vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
+          border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center"
+          >
+            <div className="hidden lg:block z-[-1] absolute -bottom-8 right-10 md:right-20 md:-bottom-1 w-12 h-12 bg-[#fbfaf8] triangle " />
             <div className="absolute top-3 right-3 z-10">
               <button
                 type="button"
@@ -90,24 +93,29 @@ const KidlaDialogue: FC<Props> = ({
             </div>
             <div className="flex flex-col items-center justify-center text-center">
               <div id="announcementHeader" className="space-y-4 md:pt-4 ">
-                <p className="text-xl md:text-3xl font-bold text-[#141414]">
+                <p className="text-md md:text-3xl font-bold text-[#141414]">
                   Welcome to ACE CARDS!
                 </p>
-                <p className="text-base md:text-xl font-medium text-[#141414] max-w-md mx-auto">
+                <p className="text-xs md:text-xl font-medium text-[#141414] max-w-md mx-auto">
                   Would you like to see announcements or take a look at our
                   member application process?
                 </p>
               </div>
-              <div className="mt-8 flex flex-col sm:flex-row justify-center gap-2 md:gap-4 w-full px-4 md:pb-6">
+
+              <div className="mt-8 flex flex-col sm:flex-row justify-center gap-2 md:gap-4 sm:w-[40%] max-w-lg mx-auto px-4 md:pb-6">
                 <button
                   onClick={onAnnouncements}
-                  className="bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                  className="w-full sm:w-auto bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold 
+                  text-xs md:text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 
+                  shadow-xl hover:shadow-2xl hover:scale-105 transform"
                 >
                   See Announcements
                 </button>
                 <button
                   onClick={onRedirectMemApp}
-                  className="bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+                  className="w-full sm:w-auto bg-origin-border cursor-pointer group px-10 py-4 border-2 border-[#011638] rounded-full font-bold 
+                  text-xs md:text-lg text-[#011638] hover:bg-gradient-to-r hover:from-[#011638] hover:to-[#0d21a1] hover:text-white transition-all duration-300 
+                  shadow-xl hover:shadow-2xl hover:scale-105 transform"
                 >
                   Apply for Membership!
                 </button>

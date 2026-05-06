@@ -1,43 +1,39 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DayPilot, DayPilotMonth } from "@daypilot/daypilot-lite-react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
 import { createClient } from "@/lib/supabase/client";
 import CalendarEvent from "./calendarEvent";
 import Image from "next/image";
+import ShowMoreEventsModal from "./showMoreEventsModal";
 
-// @ts-ignore
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./toolbar.css";
 
 const supabase = createClient();
+const localizer = momentLocalizer(moment);
 
-export default function Calendar() {
-  const [cellHeight, setCellHeight] = useState(100);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setCellHeight(window.innerWidth < 768 ? 60 : 100);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+export default function BigCalendar() {
   const [events, setEvents] = useState<any[]>([]);
-  const [startDate, setStartDate] = useState(
-    DayPilot.Date.today().firstDayOfMonth(),
-  );
-  const [calendar, setCalendar] = useState<DayPilot.Month>();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isPopupShowing, setIsPopupShowing] = useState(false);
+  const [selectedEventData, setSelectedEventData] = useState<any>(null);
 
-  const prevMonth = () => {
-    setStartDate(startDate.addMonths(-1));
+  const [isMorePopupOpen, setIsMorePopupOpen] = useState(false);
+  const [moreEventsData, setMoreEventsData] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const handleShowMore = (events: any[], date: Date) => {
+    setMoreEventsData(events);
+    setSelectedDate(date);
+    setIsMorePopupOpen(true);
   };
-  const nextMonth = () => {
-    setStartDate(startDate.addMonths(1));
-  };
-  const goToToday = () => {
-    setStartDate(DayPilot.Date.today().firstDayOfMonth());
+
+  const handleSelectFromMore = (event: any) => {
+    setIsMorePopupOpen(false);
+    setSelectedEventData(event.resource || event);
+    setIsPopupShowing(true);
   };
 
   useEffect(() => {
@@ -52,101 +48,106 @@ export default function Calendar() {
       } else {
         const listEvents = data.map((item) => ({
           id: item.id,
-          text: item.short_title || item.title,
-          start: item.start_date,
-          end: new DayPilot.Date(item.end_date).addDays(1),
-          data: item,
+          title: item.short_title || item.title,
+          start: new Date(item.start_date),
+          end: new Date(item.end_date),
+          resource: item,
         }));
         setEvents(listEvents);
       }
     }
-
     getEvents();
   }, []);
 
-  const styles = {
-    wrap: {
-      padding: "0px",
-    },
-    main: {
-      flexGrow: "1",
-    },
+  const prevMonth = () => {
+    setCurrentDate(moment(currentDate).subtract(1, "month").toDate());
+  };
+  const nextMonth = () => {
+    setCurrentDate(moment(currentDate).add(1, "month").toDate());
+  };
+  const goToToday = () => {
+    setCurrentDate(new Date());
   };
 
-  const [isPopupShowing, setIsPopupShowing] = useState(false);
-  const [selectedEventData, setSelectedEventData] = useState<any>(null);
-
   return (
-    <div style={styles.wrap}>
-      <div>
-        {/*Toolbar*/}
-        <div className="rounded-xl toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row">
-          <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
-            {startDate.toString("MMMM yyyy")}
-          </h2>
+    <div className="flex flex-col h-screen p-0">
+      {/*Toolbar*/}
+      <div className="rounded-xl toolbar mb-4 flex flex-col items-center justify-between gap-4 md:gap-0 md:flex-row ">
+        <h2 className="text-2xl font-bold text-center md:text-left md:text-xl">
+          {moment(currentDate).format("MMMM yyyy")}
+        </h2>
 
-          <div className="flex w-full justify-center md:justify-end gap-1 md:w-auto">
-            <button
-              onClick={prevMonth}
-              className="btn-primary flex-1 md:flex-none"
-            >
-              <Image
-                src="/left-arrow.svg"
-                alt="Previous Month"
-                width={20}
-                height={20}
-                className="mx-auto"
-              />
-            </button>
-            <button
-              onClick={goToToday}
-              className="btn-primary flex-1 md:flex-none"
-            >
-              <Image
-                src="/current.svg"
-                alt="Current Month"
-                width={20}
-                height={20}
-                className="mx-auto"
-              />
-            </button>
-            <button
-              onClick={nextMonth}
-              className="btn-primary flex-1 md:flex-none"
-            >
-              <Image
-                src="/right-arrow.svg"
-                alt="Next Month"
-                width={20}
-                height={20}
-                className="mx-auto"
-              />
-            </button>
-          </div>
+        <div className="flex w-full justify-center md:justify-end gap-1 md:w-auto ">
+          <button
+            onClick={prevMonth}
+            className="btn-primary flex-1 md:flex-none"
+          >
+            <Image
+              src="/left-arrow.svg"
+              alt="Prev"
+              width={20}
+              height={20}
+              className="mx-auto"
+            />
+          </button>
+          <button
+            onClick={goToToday}
+            className="btn-primary flex-1 md:flex-none"
+          >
+            <Image
+              src="/current.svg"
+              alt="Today"
+              width={20}
+              height={20}
+              className="mx-auto"
+            />
+          </button>
+          <button
+            onClick={nextMonth}
+            className="btn-primary flex-1 md:flex-none"
+          >
+            <Image
+              src="/right-arrow.svg"
+              alt="Next"
+              width={20}
+              height={20}
+              className="mx-auto"
+            />
+          </button>
         </div>
+      </div>
 
-        {/*calendar*/}
-        <div style={styles.main} className="calendar">
-          <DayPilotMonth
-            startDate={startDate}
-            events={events}
-            timeRangeSelectedHandling="Disabled"
-            eventMoveHandling="Disabled" // Disables drag and drop
-            eventResizeHandling="Disabled"
-            onEventClick={(args) => {
-              setSelectedEventData(args.e.data.data);
-              setIsPopupShowing(true);
-            }}
-            onBeforeEventRender={(args) => {}}
-          />
+      {/*calendar*/}
+      <div className="flex-1 min-h-[100px]">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          date={currentDate}
+          view="month"
+          toolbar={false}
+          popup={false}
+          onShowMore={handleShowMore}
+          onSelectEvent={(event) => {
+            setSelectedEventData(event.resource);
+            setIsPopupShowing(true);
+          }}
+        />
 
-          {/*Calendar Modal mhm*/}
-          <CalendarEvent
-            isShowing={isPopupShowing}
-            onClose={() => setIsPopupShowing(false)}
-            eventDetail={selectedEventData}
-          />
-        </div>
+        {/*show more events*/}
+        <ShowMoreEventsModal
+          isShowing={isMorePopupOpen}
+          events={moreEventsData}
+          date={selectedDate}
+          onClose={() => setIsMorePopupOpen(false)}
+          onEventClick={handleSelectFromMore}
+        />
+
+        {/*Calendar Modal mhm*/}
+        <CalendarEvent
+          isShowing={isPopupShowing}
+          onClose={() => setIsPopupShowing(false)}
+          eventDetail={selectedEventData}
+        />
       </div>
     </div>
   );
