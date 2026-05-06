@@ -10,6 +10,7 @@ import MemAppAdmin from "@/components/memappadmin";
 import SpotlightCard from "@/components/SpotlightCard";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import BackButton from "@/components/backButton";
 
 export default function ManagePage() {
   const { user } = useUser();
@@ -88,15 +89,7 @@ export default function ManagePage() {
       <div className="min-h-screen w-full">
         <div className="pt-8 pb-12 px-4 md:px-8">
           <main className="w-full max-w-[1400px] mx-auto">
-            <Link
-              href="/dashboard?tab=manage"
-              className="mb-6 flex items-center w-fit gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 bg-white rounded-xl shadow-md hover:shadow transition-all duration-200 group"
-            >
-              <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </Link>
+            <BackButton href="/dashboard?tab=manage" />
 
             <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-[#011638] to-[#012a5a] text-white p-6">

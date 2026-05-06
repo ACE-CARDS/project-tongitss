@@ -2,12 +2,25 @@
 
 import { useRouter } from "next/navigation";
 
-export default function BackButton({ className = "" }: { className?: string }) {
+interface BackButtonProps {
+  className?: string;
+  href?: string; // Add the optional href prop
+}
+
+export default function BackButton({ className = "", href }: BackButtonProps) {
   const router = useRouter();
+
+  const handleBack = () => {
+    if (href) {
+      router.push(href);
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <button
-      onClick={() => router.back()}
+      onClick={handleBack}
       className={`bg-white/90 p-3 sm:p-4 rounded-2xl cursor-pointer shadow-sm border border-white hover:scale-105 hover:shadow-md transition-all text-[#011638] flex items-center justify-center backdrop-blur-md w-fit ${className}`}
       aria-label="Go back"
     >
