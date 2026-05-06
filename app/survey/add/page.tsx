@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AddSurveyForm from "./addSurveyForm"; 
-import SuccessPageWrapper from "@/components/SuccessPageWrapper";
 
 export default async function AddSurveyPage() {
   const supabase = await createClient();
@@ -20,7 +19,6 @@ export default async function AddSurveyPage() {
     .order("school_name");
 
   return (
-    <SuccessPageWrapper>
     <div className="min-h-screen flex flex-col items-center">
       <NavBar />
     <div 
@@ -36,6 +34,5 @@ export default async function AddSurveyPage() {
     </div>
       <Footer />
   </div>
-  </SuccessPageWrapper>
   );
 }
