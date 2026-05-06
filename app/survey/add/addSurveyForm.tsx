@@ -26,14 +26,16 @@ interface Author {
 interface AddSurveyFormProps {
   categories: Category[];
   schools: School[];
+  returnTo?: string;
 }
 
-export default function AddSurveyForm({ categories, schools }: AddSurveyFormProps) {
+export default function AddSurveyForm({ categories, schools, returnTo }: AddSurveyFormProps) {
   const router = useRouter();
   const supabase = createClient();
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  const [returnUrl, setReturnUrl] = useState<string>("/survey");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
   
@@ -191,6 +193,21 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
       }
     }
   }, [availableCategories, availableSchools]);
+
+  useEffect(() => {
+    if (returnTo) {
+      // save to sessionStorage
+      sessionStorage.setItem("surveyReturnUrl", returnTo);
+      setReturnUrl(returnTo);
+    } else {
+      const storedReturnUrl = sessionStorage.getItem("surveyReturnUrl");
+      if (storedReturnUrl) {
+        setReturnUrl(storedReturnUrl);
+      } else {
+        setReturnUrl("/survey");
+      }
+    }
+  }, [returnTo]);
 
   const addAuthor = () => {
     setAuthors([...authors, { id: authors.length + 1 }]);
@@ -562,8 +579,8 @@ export default function AddSurveyForm({ categories, schools }: AddSurveyFormProp
       if (linkError) throw linkError;
 
       sessionStorage.removeItem("surveyDraft");
-      router.push("/survey/add/success");
-
+      router.push(`/survey/add/success?returnTo=${encodeURIComponent(returnUrl)}`);
+      
     } catch (error) {
       console.error("Submission error:", error);
       alert(error instanceof Error ? error.message : "Failed to submit survey");

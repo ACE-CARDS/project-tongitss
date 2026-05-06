@@ -25,14 +25,16 @@ interface Author {
 interface AddThesisFormProps {
   categories: Category[];
   schools: School[];
+  returnTo?: string;
 }
 
-export default function AddThesisForm({ categories, schools }: AddThesisFormProps) {
+export default function AddThesisForm({ categories, schools, returnTo }: AddThesisFormProps) {
   const router = useRouter();
   const supabase = createClient();
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [returnUrl, setReturnUrl] = useState<string>("/thesis");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
   
@@ -182,6 +184,21 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
       }
     }
   }, [availableCategories, availableSchools]);
+
+  useEffect(() => {
+    if (returnTo) {
+      // save to sessionStorage
+      sessionStorage.setItem("thesisReturnUrl", returnTo);
+      setReturnUrl(returnTo);
+    } else {
+      const storedReturnUrl = sessionStorage.getItem("thesisReturnUrl");
+      if (storedReturnUrl) {
+        setReturnUrl(storedReturnUrl);
+      } else {
+        setReturnUrl("/thesis");
+      }
+    }
+  }, [returnTo]);
 
   const addAuthor = () => {
     setAuthors([...authors, { id: authors.length + 1 }]);
@@ -533,7 +550,7 @@ export default function AddThesisForm({ categories, schools }: AddThesisFormProp
       if (linkError) throw linkError;
 
       sessionStorage.removeItem("thesisDraft");
-      router.push("/thesis/add/success");
+      router.push(`/survey/add/thesis?returnTo=${encodeURIComponent(returnUrl)}`);
 
     } catch (error) {
       console.error("Submission error:", error);
