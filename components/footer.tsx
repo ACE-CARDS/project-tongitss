@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="w-full bg-[#011638]/80 text-white py-8 backdrop-blur-sm sticky top-[100vh] mx-auto">
       <div className="max-w-[1100px] flex lg:flex-row flex-col justify-center items-center mx-auto gap-10 lg:gap-0 px-6">
         {/* Logo and Title */}
-        <div className="container flex lg:flex-row flex-col items-center gap-5">
+        <div className="container flex lg:flex-row flex-col items-center gap-5 w-3/4">
           <Image
             src="/assets/logos/ACE CARDS logo.png"
             alt="ACE CARDS Logo"
@@ -17,8 +17,8 @@ export default function Footer() {
             height={100}
           />
 
-          <div className="h-full my-auto flex flex-col justify-center lg:items-start mx-auto gap-3 items-center">
-            <span className="md:text-[1.6rem] flex font-oswald sm:text-2xl text-center">
+          <div className="h-full my-auto flex flex-col justify-center lg:items-start ml-0 gap-3 items-center">
+            <span className="text-[1.6rem] flex font-oswald sm:text-2xl text-center lg:text-start">
               Association of Competent and Empowered CAR DOST Scholars
             </span>
             <span className="text-[14px] text-center">
@@ -29,7 +29,7 @@ export default function Footer() {
         {/* {new Date().getFullYear()} */}
 
         {/* Social Media Links */}
-        <div className="container mx-auto flex lg:items-end items-center text-sm flex-col">
+        <div className="container mx-auto flex lg:items-end items-center text-sm flex-col w-1/4">
           <Link
             href="https://www.facebook.com/acecards.CAR"
             className="hover:underline hover:text-[#a6a6a6] transition-colors cursor-pointer"
@@ -51,7 +51,7 @@ export default function Footer() {
 
           <Link
             href="mailto:support@acecards.com"
-            className="hover:text-[#a6a6a6] text-white sm:text-lg"
+            className="hover:text-[#a6a6a6] text-white text-[1rem] sm:text-lg"
             aria-label="Send us an email"
             target="_blank"
             rel="noopener noreferrer"
