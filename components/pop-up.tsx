@@ -128,7 +128,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
               </h2>
             </div>
 
-            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar-white px-6 lg:px-12 pb-10">
+            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar px-6 lg:px-12 pb-10">
               {announcements.length === 0 ? (
                 <div className="flex h-64 w-full items-center justify-center">
                   <p className="text-white/50 animate-pulse">Loading...</p>

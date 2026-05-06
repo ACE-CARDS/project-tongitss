@@ -154,7 +154,7 @@ export default function ManagePage() {
       (opt) => opt.key === activeSection,
     );
     return (
-      <div className="h-auto w-full">
+      <div className="min-h-screen w-full">
         <div className="pt-8 pb-12 px-4 md:px-8">
           <main className="w-full max-w-[1400px] mx-auto">
             <button

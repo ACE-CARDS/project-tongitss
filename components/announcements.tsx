@@ -41,20 +41,18 @@ export default function Dashboard() {
   return (
     <div className="text-[#141414]">
       <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
           {/* Calendar */}
-          <div className="w-full ">
+          <div className="w-full md:h-[750px]">
             <BigCalendar />
           </div>
-
           {/* Announcements */}
-          <div className="w-[90%] mb-12 md:w-full flex flex-col mx-auto ">
-            <div className=" border border-[#011638] rounded-xl bg-[white]">
-              <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6 ">
+          <div className="w-full flex flex-col md:h-[750px] mx-auto">
+            <div className="border border-[#011638] rounded-xl bg-[#eec643]/10 h-full flex flex-col">
+              <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6">
                 ANNOUNCEMENTS
               </h2>
-
-              <div className="h-[300] md:h-[525.5px] overflow-y-auto custom-scrollbar pr-4 ">
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 pb-6">
                 {loading ? (
                   <div className="flex h-64 w-full items-center justify-center">
                     <p>Loading...</p>
