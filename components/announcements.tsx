@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Calendar from "@/components/calendar";
+import BigCalendar from "@/components/calendar";
 import { createClient } from "@/lib/supabase/client";
 import AnnounceMemberCard from "@/components/announceMemberCard";
 import { useUser } from "@/components/context/userContext";
@@ -44,7 +44,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Calendar */}
           <div className="w-full ">
-            <Calendar />
+            <BigCalendar />
           </div>
 
           {/* Announcements */}

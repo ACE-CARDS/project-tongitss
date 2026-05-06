@@ -13,7 +13,7 @@ const AnnounceCard = ({ announce_landing }) => {
     announce_landing.announce_landing_end;
 
   return (
-    <div className="mb-4 p-4 rounded-md border-1 border-[#eff0f2] pr-6 pl-6 bg-[#bfc4cd]/20">
+    <div className="mb-4 p-4 rounded-md border border-[#eff0f2] pr-6 pl-6 bg-[#bfc4cd]/10">
       <p className="text-[#eff0f2] text-justify text-sm opacity-60">
         {formatDate(announce_landing.announce_landing_start)}
         {!isSame && ` - ${formatDate(announce_landing.announce_landing_end)}`}

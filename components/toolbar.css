@@ -71,96 +71,102 @@
   margin-right: 15px;
 }
 
-.month_default_main,
-.month_default_header {
+/*Main*/
+.rbc-calendar {
   font-family: var(--font-oswald), ui-sans-serif, system-ui;
+  border: 1px solid #011638 !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: white;
 }
 
-.month_default_cell_inner,
-.month_default_event {
-  font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
-}
-
-/*Day Names*/
-.month_default_header_inner {
+/*Day name etc*/
+.rbc-header {
   background-color: #011638 !important;
   color: #f7f7f9 !important;
-  border-bottom: 1px solid #ccc;
-  font-weight: 0;
-  font-size: 17px;
-  padding: 5px 0;
-}
-
-/* Date Number */
-.month_default_cell_inner {
-  font-size: 14px;
-  background-color: white !important;
-}
-
-.month_default_event_inner {
-  background-color: #eec643 !important;
-  background-image: none !important;
-  color: #141414 !important;
-  border: 1px solid #eec643 !important;
-  border-radius: 4px !important;
-  font-size: 13px;
-  padding-left: 5px;
-  display: block !important;
-  align-items: center;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  cursor: pointer;
-}
-
-.month_default_event_bar,
-.month_default_event_bar_inner {
-  display: none !important;
-}
-
-.toolbar button {
-  padding: 3px;
-  font-size: 14px;
+  border-bottom: 1px solid #011638 !important;
+  padding: 8px 0 !important;
+  font-weight: normal;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
 @media (min-width: 768px) {
-  .toolbar {
-    padding: 10px 20px;
+  .rbc-header {
+    font-size: 17px;
   }
+}
+
+/*Cells*/
+.rbc-month-view {
+  border: none !important;
+}
+
+.rbc-day-bg {
+  background-color: white !important;
+}
+
+.rbc-month-row {
+  min-height: 100px !important;
+  overflow-y: auto !important;
+  flex-direction: column;
+}
+
+/*Date number*/
+.rbc-date-cell {
+  font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
+  font-size: 14px;
+  padding: 5px 10px;
+  text-align: right;
+  color: #011638;
+}
+
+/*events*/
+.rbc-event {
+  background-color: #eec643 !important;
+  color: #141414 !important;
+  border: 1px solid #d4b03a !important;
+  border-radius: 4px !important;
+  font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
+  font-size: 10px !important;
+  padding: 2px 5px !important;
+  margin-bottom: 2px !important;
+  transition: transform 0.1s ease;
+}
+
+.rbc-event:focus {
+  outline: none;
+}
+
+.rbc-event:hover {
+  filter: brightness(95%);
+}
+
+@media (min-width: 768px) {
+  .rbc-event {
+    font-size: 13px !important;
+  }
+}
+
+.rbc-show-more {
+  color: #011638;
+}
+
+@media (min-width: 768px) {
   .toolbar button {
     padding: 7px 17px;
   }
 }
 
-.month_default_header_inner {
-  background-color: #011638 !important;
-  color: #f7f7f9 !important;
-  font-size: 12px;
-  padding: 5px 0;
+/*grid lines and such*/
+.rbc-off-range-bg {
+  background-color: #f0f0f0 !important;
 }
 
-.month_default_main {
-  border: 1px solid #011638 !important;
-  border-radius: 0.75rem; /* Matches your rounded-xl class */
-  overflow: hidden;
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid #011638 !important;
 }
 
-.month_default_header {
-  border-bottom: 1px solid #011638 !important;
-  color: #011638 !important;
-}
-@media (min-width: 768px) {
-  .month_default_header_inner {
-    font-size: 17px;
-  }
-}
-
-.month_default_event_inner {
-  font-size: 10px !important;
-}
-
-@media (min-width: 768px) {
-  .month_default_event_inner {
-    font-size: 13px !important;
-  }
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid #011638 !important;
 }
