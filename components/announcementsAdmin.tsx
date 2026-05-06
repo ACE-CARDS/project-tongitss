@@ -14,6 +14,9 @@ interface AnnouncementItem {
   created_at: string;
 }
 
+type SortField = 'title' | 'start_date' | null;
+type SortOrder = 'asc' | 'desc' | null;
+
 function AnnouncementDescription({ description }: { description: string }) {
   const [isOpen, setIsOpen] = useState(false);
   if (description.length <= 120) {
@@ -102,6 +105,10 @@ export default function AnnouncementsAdmin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  
+  // SORTING STATE
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
   const itemsPerPage = 5;
 
@@ -110,12 +117,25 @@ export default function AnnouncementsAdmin() {
   }, [activeTab]);
 
   useEffect(() => {
-    const filtered = announcements.filter(item => 
+    let filtered = announcements.filter(item => 
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       item.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Apply Sorting
+    if (sortField && sortOrder) {
+        filtered.sort((a, b) => {
+          let aValue = sortField === 'title' ? a.title.toLowerCase() : new Date(a.start_date).getTime();
+          let bValue = sortField === 'title' ? b.title.toLowerCase() : new Date(b.start_date).getTime();
+          
+          if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+          if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+    }
+
     setFilteredAnnouncements(filtered);
-  }, [searchTerm, announcements]);
+  }, [searchTerm, announcements, sortField, sortOrder]);
 
   useEffect(() => {
     if (searchTerm) {
@@ -145,6 +165,16 @@ export default function AnnouncementsAdmin() {
       setAnnouncements(mappedData);
     }
     setLoading(false);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField !== field) {
+      setSortField(field);
+      setSortOrder('asc');
+    } else {
+      if (sortOrder === 'asc') setSortOrder('desc');
+      else { setSortField(null); setSortOrder(null); }
+    }
   };
 
   const updateUrl = (newParams: Record<string, string>) => {
@@ -209,9 +239,39 @@ export default function AnnouncementsAdmin() {
           <table className="w-full table-fixed">
             <thead className="bg-[#011638]">
               <tr>
-                <th className="w-[30%] px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Title</th>
-                <th className="w-[40%] px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Description</th>
-                <th className="w-[18%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Duration</th>
+                <th 
+                  className={`w-[30%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`}
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center justify-center  gap-2">
+                    Title
+                    <div className="flex flex-col gap-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
+                  </div>
+                </th>
+                <th className="w-[40%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Description</th>
+                <th 
+                  className={`w-[18%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'start_date' ? 'bg-[#0d21a1]' : ''}`}
+                  onClick={() => handleSort('start_date')}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    Duration
+                    <div className="flex flex-col gap-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'start_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'start_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
+                  </div>
+                </th>
                 <th className="w-[12%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>

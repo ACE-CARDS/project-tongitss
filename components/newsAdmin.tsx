@@ -112,7 +112,6 @@ export default function NewsAdmin() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Pagination constants
   const itemsPerPage = 5; 
   const currentPage = parseInt(searchParams.get('page') || '1');
 
@@ -135,7 +134,6 @@ export default function NewsAdmin() {
     setFilteredNews(filtered);
   }, [searchTerm, news, sortField, sortOrder]);
 
-  // Reset to page 1 when searching
   useEffect(() => {
     if (searchTerm) {
       const params = new URLSearchParams(searchParams.toString());
@@ -207,8 +205,43 @@ export default function NewsAdmin() {
                 <thead className="bg-[#011638]">
                   <tr>
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">Image</th>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1]" onClick={() => handleSort('title')}>Title & Description</th>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] w-[180px]" onClick={() => handleSort('fb_post_date')}>Post Date</th>
+                    
+                    {/* Sortable Title Header */}
+                    <th 
+                      className={`px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`} 
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center justify-center  gap-2">
+                        Title & Description
+                        <div className="flex flex-col gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                      </div>
+                    </th>
+
+                    {/* Sortable Date Header */}
+                    <th 
+                      className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[180px] ${sortField === 'fb_post_date' ? 'bg-[#0d21a1]' : ''}`} 
+                      onClick={() => handleSort('fb_post_date')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Post Date
+                        <div className="flex flex-col gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'fb_post_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'fb_post_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                      </div>
+                    </th>
+
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">Actions</th>
                   </tr>
                 </thead>
