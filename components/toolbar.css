@@ -5,7 +5,7 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
   margin-bottom: 20px;
-  border: 1 solid #011638;
+  border: 1px solid #011638;
 }
 
 .toolbar a,
@@ -76,8 +76,8 @@
   font-family: var(--font-oswald), ui-sans-serif, system-ui;
   border: 1px solid #011638 !important;
   border-radius: 0.75rem;
-  overflow: hidden;
   background-color: white;
+  overflow: hidden;
 }
 
 /*Day name etc*/
@@ -104,12 +104,6 @@
 
 .rbc-day-bg {
   background-color: white !important;
-}
-
-.rbc-month-row {
-  min-height: 100px !important;
-  overflow-y: auto !important;
-  flex-direction: column;
 }
 
 /*Date number*/

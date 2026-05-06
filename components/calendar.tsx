@@ -118,7 +118,7 @@ export default function BigCalendar() {
       </div>
 
       {/*calendar*/}
-      <div className="flex-grow calendar" style={{ height: "600px" }}>
+      <div className="flex-1 min-h-[100px]">
         <Calendar
           localizer={localizer}
           events={events}
