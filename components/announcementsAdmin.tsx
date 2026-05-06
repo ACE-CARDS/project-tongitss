@@ -14,25 +14,17 @@ interface AnnouncementItem {
   created_at: string;
 }
 
-// New Read more component for Announcement description
 function AnnouncementDescription({ description }: { description: string }) {
   const [isOpen, setIsOpen] = useState(false);
-
   if (description.length <= 120) {
     return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">{description}</p>;
   }
-
   return (
     <div className="w-full">
       {!isOpen ? (
         <div>
-          <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-3 break-words">
-            {description}
-          </p>
-          <button 
-            onClick={() => setIsOpen(true)} 
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
-          >
+          <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-3 break-words">{description}</p>
+          <button onClick={() => setIsOpen(true)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
             Read more →
           </button>
         </div>
@@ -41,10 +33,7 @@ function AnnouncementDescription({ description }: { description: string }) {
           <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-32 overflow-y-auto pr-2 break-words custom-scrollbar">
             {description}
           </div>
-          <button 
-            onClick={() => setIsOpen(false)} 
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
-          >
+          <button onClick={() => setIsOpen(false)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
             Read less ↑
           </button>
         </div>
@@ -99,21 +88,22 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm }: { isOpen: boolean; o
 }
 
 export default function AnnouncementsAdmin() {
-  const [activeTab, setActiveTab] = useState<'landing' | 'dashboard'>('landing');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = createClient();
+
+  // DERIVE STATE FROM URL
+  const activeTab = (searchParams.get('type') as 'landing' | 'dashboard') || 'landing';
+  const currentPage = parseInt(searchParams.get('page') || '1');
+
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [filteredAnnouncements, setFilteredAnnouncements] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const supabase = createClient();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const itemsPerPage = 5;
-  const currentPage = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
     fetchAnnouncements();
@@ -129,9 +119,7 @@ export default function AnnouncementsAdmin() {
 
   useEffect(() => {
     if (searchTerm) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', '1');
-      router.replace(`${window.location.pathname}?${params.toString()}`);
+      updateUrl({ page: '1' });
     }
   }, [searchTerm]);
 
@@ -159,29 +147,21 @@ export default function AnnouncementsAdmin() {
     setLoading(false);
   };
 
+  const updateUrl = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      params.set(key, value);
+    });
+    router.push(`${window.location.pathname}?${params.toString()}`);
+  };
+
   const handleDelete = async () => {
     if (!selectedId) return;
     const tableName = activeTab === 'landing' ? 'announce_landing' : 'announce_dash';
     const { error } = await supabase.from(tableName).delete().eq('id', selectedId);
     if (!error) {
-        setAnnouncements(prev => prev.filter(item => item.id !== selectedId));
+      setAnnouncements(prev => prev.filter(item => item.id !== selectedId));
     }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`${window.location.pathname}?${params.toString()}`);
-  };
-
-  // Function to handle tab switching and page reset
-  const handleTabChange = (tab: 'landing' | 'dashboard') => {
-    setActiveTab(tab);
-    setSearchTerm('');
-    // Reset page to 1 in URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', '1');
-    router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
   const totalPages = Math.ceil(filteredAnnouncements.length / itemsPerPage);
@@ -201,13 +181,13 @@ export default function AnnouncementsAdmin() {
         
         <div className="flex gap-2 p-1 bg-gray-100 w-fit rounded-lg border border-gray-200">
             <button 
-                onClick={() => handleTabChange('landing')}
+                onClick={() => { setSearchTerm(''); updateUrl({ type: 'landing', page: '1' }); }}
                 className={`px-4 py-2 rounded-md font-ubuntu-mono text-sm transition-all ${activeTab === 'landing' ? 'bg-[#011638] text-white shadow-md' : 'text-[#475569] hover:bg-gray-200'}`}
             >
                 Landing Page
             </button>
             <button 
-                onClick={() => handleTabChange('dashboard')}
+                onClick={() => { setSearchTerm(''); updateUrl({ type: 'dashboard', page: '1' }); }}
                 className={`px-4 py-2 rounded-md font-ubuntu-mono text-sm transition-all ${activeTab === 'dashboard' ? 'bg-[#011638] text-white shadow-md' : 'text-[#475569] hover:bg-gray-200'}`}
             >
                 Member Dashboard
@@ -229,7 +209,7 @@ export default function AnnouncementsAdmin() {
           <table className="w-full table-fixed">
             <thead className="bg-[#011638]">
               <tr>
-                <th className="w-[30%] px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider ">Title</th>
+                <th className="w-[30%] px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Title</th>
                 <th className="w-[40%] px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Description</th>
                 <th className="w-[18%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Duration</th>
                 <th className="w-[12%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Actions</th>
@@ -286,7 +266,7 @@ export default function AnnouncementsAdmin() {
         <div className="flex justify-center items-center gap-2 mt-8 font-ubuntu-mono">
           <button
             disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
+            onClick={() => updateUrl({ page: (currentPage - 1).toString() })}
             className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -295,7 +275,7 @@ export default function AnnouncementsAdmin() {
           {[...Array(totalPages)].map((_, i) => (
             <button
               key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
+              onClick={() => updateUrl({ page: (i + 1).toString() })}
               className={`w-10 h-10 rounded-lg transition-colors ${
                 currentPage === i + 1 
                 ? 'bg-[#011638] text-white shadow-md' 
@@ -308,7 +288,7 @@ export default function AnnouncementsAdmin() {
 
           <button
             disabled={currentPage === totalPages}
-            onClick={() => handlePageChange(currentPage + 1)}
+            onClick={() => updateUrl({ page: (currentPage + 1).toString() })}
             className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
