@@ -86,7 +86,7 @@ export default function ManagePage() {
   if (activeSection && manageOptions.some(opt => opt.key === activeSection)) {
     const currentOption = manageOptions.find((opt) => opt.key === activeSection);
     return (
-      <div className="min-h-screen w-full">
+      <div className="w-full">
         <div className="pt-8 pb-12 px-4 md:px-8">
           <main className="w-full max-w-[1400px] mx-auto">
             <BackButton href="/dashboard?tab=manage" />
