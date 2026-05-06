@@ -59,26 +59,29 @@ const ShowMoreEventsModal: FC<Props> = ({
             onClick={onClose}
           />
           <div className="content relative z-10 w-full max-w-lg bg-[#011638] rounded-xl p-8 text-[#eff0f2] shadow-2xl">
-            {/*arrow sa gilid*/}
-            <button
-              onClick={onClose}
-              className="absolute right-6 top-6 text-[#eff0f2]/50 hover:text-[#eff0f2] transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="absolute right-6 top-6 z-30">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eff0f2]/5 bg-[#eff0f2]/10 text-[#eff0f2] backdrop-blur-md 
+                transition hover:bg-[#eff0f2]/20 focus:outline-none"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
 
             <div className="mb-6 border-b border-white/10 pb-4">
               <label className="text-xs uppercase tracking-widest opacity-50 block mb-1">
