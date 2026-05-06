@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useUser } from "@/components/context/userContext";
+import SuccessPageWrapper from "@/components/SuccessPageWrapper";
 
 export default function AddSuccessPage() {
   const { user } = useUser();
@@ -70,6 +71,7 @@ export default function AddSuccessPage() {
   }
 
   return (
+    <SuccessPageWrapper>
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -129,5 +131,6 @@ export default function AddSuccessPage() {
 
       <Footer />
     </div>
+    </SuccessPageWrapper>
   );
 }
