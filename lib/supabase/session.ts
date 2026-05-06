@@ -24,7 +24,7 @@ export async function getUserWithRole() {
 
   return {
     ...user,
-    role: profile.member?.[0]?.role || null,
+    role: profile?.member?.role || profile?.member?.[0]?.role || null,
     member_id: profile.member_id
   };
 }
