@@ -123,7 +123,6 @@ export default function BigCalendar() {
           localizer={localizer}
           events={events}
           date={currentDate}
-          onNavigate={(date) => setCurrentDate(date)}
           view="month"
           toolbar={false}
           popup={false}
