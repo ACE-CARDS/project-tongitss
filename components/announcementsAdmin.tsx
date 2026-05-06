@@ -193,19 +193,11 @@ export default function AnnouncementsAdmin() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex justify-between items-end">
+      <div className="mb-8 flex justify-between sm:items-end items-center sm:flex-row flex-col sm:gap-0 gap-3">
         <div>
           <h1 className="text-2xl font-oswald font-bold text-[#011638]">Announcements Management</h1>
           <p className="text-[#475569] font-ubuntu-mono mt-1">Control active notices for the landing page and member area</p>
         </div>
-        <Link href="/dashboard/add/announcement" className="bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center gap-2 font-oswald">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          New Announcement
-        </Link>
-      </div>
-
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
-        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         
         <div className="flex gap-2 p-1 bg-gray-100 w-fit rounded-lg border border-gray-200">
             <button 
@@ -221,6 +213,15 @@ export default function AnnouncementsAdmin() {
                 Member Dashboard
             </button>
         </div>
+      </div>
+
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
+        <Link href="/dashboard/add/announcement" className="bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center gap-2 font-oswald">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          New Announcement
+        </Link>
       </div>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
