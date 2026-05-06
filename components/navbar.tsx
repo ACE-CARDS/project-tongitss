@@ -298,9 +298,8 @@ export default function NavBar({ isOverHero = false }) {
       <style jsx> 
         {`
           @keyframes occasional-shine {
-            0% { transform: translateX(-200%) skewX(-30deg); }
-            20% { transform: translateX(200%) skewX(-30deg); }
-            100% { transform: translateX(200%) skewX(-30deg); }
+            0% { transform: translateX(-150%) skewX(-30deg); }
+            100% { transform: translateX(150%) skewX(-30deg); }
           }
 
           .animate-shine {
@@ -324,7 +323,7 @@ export default function NavBar({ isOverHero = false }) {
               rgba(255, 255, 255, 0.4),
               transparent
             );
-            animation: occasional-shine 3s infinite;
+            animation: occasional-shine 6s infinite;
           }
         `}
       </style>
