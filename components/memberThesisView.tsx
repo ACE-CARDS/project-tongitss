@@ -360,7 +360,7 @@ export default function MemberThesisView() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h2 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h2>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
           <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
             View and manage your submitted theses
           </p>
@@ -402,7 +402,7 @@ export default function MemberThesisView() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h2 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h2>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
           <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
             View and manage your submitted theses
           </p>
@@ -414,7 +414,7 @@ export default function MemberThesisView() {
             <input
               type="text"
               placeholder="Search by title, abstract, or keywords..."
-              value={searchQuery}
+              value={searchQuery ?? ''}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
             />

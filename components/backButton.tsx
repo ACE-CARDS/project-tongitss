@@ -11,9 +11,14 @@ export default function BackButton({ className = "", href }: BackButtonProps) {
   const router = useRouter();
 
   const handleBack = () => {
-    if (href) {
-      router.push(href);
+    //Check if from success page
+    const returnPath = sessionStorage.getItem('successReturnPath');
+    
+    if (returnPath) {
+      sessionStorage.removeItem('successReturnPath');
+      router.push(returnPath); // To parent folder
     } else {
+      // Normal back
       router.back();
     }
   };
