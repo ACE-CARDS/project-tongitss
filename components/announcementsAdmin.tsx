@@ -58,7 +58,7 @@ function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearc
     <div className="relative flex-1">
       <input
         type="text"
-        placeholder="Search announcements..."
+        placeholder="Search..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
         className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
