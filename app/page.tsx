@@ -661,7 +661,7 @@ export default function Home() {
           <section
             id="events-section"
             ref={sectionRef}
-            className="pt-8 pb-0 lg:py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638]"
+            className="pt-8 pb-0 lg:py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] overflow-hidden"
           >
             <div
               className="absolute inset-0 opacity-10"
@@ -705,7 +705,7 @@ export default function Home() {
             </div>
 
             {/* Mobile */}
-            <div className="[@media(min-width:1100px)]:hidden relative min-h-[55vh] flex items-start justify-center overflow-visible -mt-3 item-center pb-16 sm:pb-20">
+            <div className="[@media(min-width:1100px)]:hidden relative min-h-[45vh] flex items-start justify-center overflow-visible -mt-3 item-center pb-16 sm:pb-20">
               {/* UP Baguio Fair */}
               <div className="absolute top-0 rotate-[-10deg] translate-x-[-80px] z-10">
                 <div className="relative w-[42vw] max-w-[260px] aspect-[2/3]">
@@ -941,7 +941,7 @@ export default function Home() {
           <section
             key={provinceAnimKey}
             ref={provinceSectionRef}
-            className="pt-8 pb-10 sm:pt-12 sm:pb-12 lg:pt-16 lg:pb-8 px-4 sm:px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
+            className="pt-8 pb-10 sm:pt-12 sm:pb-12 xl:pt-16 xl:pb-8 px-4 sm:px-6 xl:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
           >
             {/* Background */}
             <div
@@ -957,9 +957,9 @@ export default function Home() {
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
             <div className="w-full mx-auto max-w-[1920px] relative z-10">
-              <div className="flex flex-col lg:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
+              <div className="flex flex-col xl:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
                 {/* LEFT COLUMN */}
-                <div className="flex-1 w-full text-center lg:text-left">
+                <div className="flex-1 w-full text-center xl:text-left">
                   {/* Province label */}
                   <div className="inline-block lg:inline-block">
                     <p className="text-sm sm:text-base tracking-[0.3em] uppercase text-[#eec643] font-semibold mb-2">
@@ -968,16 +968,16 @@ export default function Home() {
                   </div>
 
                   {/* Province name */}
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-none mb-6">
+                  <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold text-white leading-none mb-6">
                     {selectedProvince
                       ? selectedProvince.toUpperCase()
                       : "CORDILLERA ADMINISTRATIVE REGION"}
                   </h1>
 
                   {/* Total count and school list */}
-                  <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-12">
+                  <div className="flex flex-col xl:flex-row items-center xl:items-start gap-6 xl:gap-12">
                     {/* mobile dropdown */}
-                    <div className="lg:hidden w-full mb-4 flex gap-3">
+                    <div className="xl:hidden w-full mb-4 flex gap-3">
                       {/* Province Filter */}
                       <select
                         className="flex-1 px-3 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
@@ -1036,8 +1036,8 @@ export default function Home() {
                     </div>
 
                     {/* Count Display */}
-                    <div className="text-center lg:text-left w-[180px]">
-                      <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white tracking-tight tabular-nums scale-y-110 [text-shadow:0_1px_0_rgba(0,0,0,0.8),0_2px_0_rgba(0,0,0,0.6),0_3px_6px_rgba(0,0,0,0.8)]">
+                    <div className="text-center xl:text-left w-[180px]">
+                      <h1 className="text-7xl sm:text-8xl xl:text-9xl font-black text-white tracking-tight tabular-nums scale-y-110 [text-shadow:0_1px_0_rgba(0,0,0,0.8),0_2px_0_rgba(0,0,0,0.6),0_3px_6px_rgba(0,0,0,0.8)]">
                         {" "}
                         {/* attempt sa bolder count kasi not working ang font-bold pero huhu wala pa ding difference */}
                         {provinceDisplayCount}
@@ -1051,7 +1051,7 @@ export default function Home() {
                     </div>
 
                     {/* School List*/}
-                    <div className="mb-0 text-center lg:text-left block lg:hidden">
+                    <div className="mb-0 text-center xl:text-left block xl:hidden">
                       <p className="text-white/60 text-xs tracking-widest uppercase">
                         {selectedProvince
                           ? `Showing all Schools in ${selectedProvince}`
@@ -1059,7 +1059,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <div className="lg:w-[420px] h-[400px] flex-shrink-0">
+                    <div className="xl:w-[420px] h-[400px] flex-shrink-0">
                       <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar-white-nobg">
                         {provinceSchools.length > 0 ? (
                           provinceSchools.map((school) => (
@@ -1091,7 +1091,7 @@ export default function Home() {
                 </div>
 
                 {/* RIGHT COLUMN */}
-                <div className="hidden lg:block relative z-10 flex-1 mt-10 lg:mt-0">
+                <div className="hidden xl:block relative z-10 flex-1 mt-10 xl:mt-0">
                   <div className="relative group">
                     {/* Years */}
                     <div className="absolute top-15 right-4 z-50 ">
@@ -1117,16 +1117,16 @@ export default function Home() {
 
                     {/* Map Container */}
                     <div
-                      className="relative w-full mx-auto lg:mx-0
+                      className="relative w-full mx-auto xl:mx-0
                                   aspect-[4/5] 
                                   sm:aspect-[4/5]
                                   md:aspect-[4/5]
-                                  lg:aspect-[4/5]
+                                  xl:aspect-[4/5]
                                   xl:aspect-[4/5]
                                   min-h-[320px]
                                   sm:min-h-[380px]
                                   md:min-h-[450px]
-                                  lg:min-h-[520px]"
+                                  xl:min-h-[520px]"
                     >
                       <img
                         src="/assets/logos/webcarmap.png"
