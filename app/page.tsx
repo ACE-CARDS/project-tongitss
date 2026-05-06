@@ -705,10 +705,10 @@ export default function Home() {
             </div>
 
             {/* Mobile */}
-            <div className="lg:hidden relative h-[55vh] flex items-start justify-center overflow-visible -mt-3">
+            <div className="[@media(min-width:1100px)]:hidden relative min-h-[55vh] flex items-start justify-center overflow-visible -mt-3 item-center pb-16 sm:pb-20">
               {/* UP Baguio Fair */}
               <div className="absolute top-0 rotate-[-10deg] translate-x-[-80px] z-10">
-                <div className="relative w-64 h-96">
+                <div className="relative w-[42vw] max-w-[260px] aspect-[2/3]">
                   <img
                     src="/assets/logos/upbfair.jpg"
                     alt="UP Baguio Fair"
@@ -728,7 +728,7 @@ export default function Home() {
 
               {/* UGE */}
               <div className="absolute top-[-10px] rotate-[-4deg] translate-x-[-25px] z-20">
-                <div className="relative w-64 h-96">
+                <div className="relative w-[42vw] max-w-[260px] aspect-[2/3]">
                   <img
                     src="/assets/logos/uge26.jpeg"
                     alt="UGE 26"
@@ -748,7 +748,7 @@ export default function Home() {
 
               {/* Inadalan */}
               <div className="absolute top-[-10px] rotate-[6deg] translate-x-[30px] z-30">
-                <div className="relative w-64 h-96">
+                <div className="relative w-[42vw] max-w-[260px] aspect-[2/3]">
                   <img
                     src="/assets/logos/inadalan.jpg"
                     alt="Inadalan"
@@ -768,7 +768,7 @@ export default function Home() {
 
               {/* Blood Donation */}
               <div className="absolute top-0 rotate-[12deg] translate-x-[85px] z-40">
-                <div className="relative w-64 h-96">
+                <div className="relative w-[42vw] max-w-[260px] aspect-[2/3]">
                   <img
                     src="/assets/logos/blooddonation.jpg"
                     alt="Blood Donation Drive"
@@ -788,7 +788,7 @@ export default function Home() {
             </div>
 
             {/* Desktop */}
-            <div className="hidden lg:block">
+            <div className="hidden [@media(min-width:1100px)]:block">
               {/* UP Baguio Fair */}
               <div className="absolute top-20 left-24 rotate-12 transition-all duration-700 group z-10 hover:z-50 hover:-translate-y-6 hover:scale-105">
                 <div className="relative">
@@ -1065,12 +1065,15 @@ export default function Home() {
                           provinceSchools.map((school) => (
                             <div
                               key={school.id}
-                              className="group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                              className="justify-between tart group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer hover:scale-[1.02]"
                             >
-                              <span className="font-semibold text-base sm:text-lg text-white group-hover:text-[#eec643] transition-colors">
-                                {school.name}
-                              </span>
-                              <span className="text-lg sm:text-xl font-bold text-[#eec643]">
+                              <div className="flex-1 pr-4 text-left">
+                                <span className="font-semibold text-base sm:text-lg text-white group-hover:text-[#eec643] transition-colors leading-snug break-words whitespace-normal">
+                                  {school.name}
+                                </span>
+                              </div>
+
+                              <span className="text-lg sm:text-xl font-bold text-[#eec643] shrink-0">
                                 {school.memberCount}
                               </span>
                             </div>
