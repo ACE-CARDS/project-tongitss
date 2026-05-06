@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import Pagination from "./pagination";
 import { BsSuitSpadeFill } from "react-icons/bs";
@@ -9,6 +10,27 @@ const supabase = createClient();
 
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.08,
+    },
+  },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: "easeOut" },
+  },
+};
 
 const getItemsPerPage = () => {
   if (typeof window === "undefined") return 8;
@@ -21,7 +43,7 @@ const getItemsPerPage = () => {
 
 export default function CommitteeDirectory() {
   const commTabs = [
-    { label: "Executives", key: "EXECUTIVES" },
+    { label: "Non-Committee", key: "NON-COMMITTEE" },
     { label: "Internals", key: "INTERNALS" },
     { label: "Externals", key: "EXTERNALS" },
     { label: "Finance and Business", key: "FINANCE" },
@@ -31,7 +53,7 @@ export default function CommitteeDirectory() {
   ];
 
   const [members, setMembers] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState("EXECUTIVES");
+  const [activeTab, setActiveTab] = useState("NON-COMMITTEE");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
@@ -87,7 +109,7 @@ export default function CommitteeDirectory() {
   const filteredMembers = members.filter((person) => {
     const role = person.committee?.comm_name;
     switch (activeTab) {
-      case "EXECUTIVES":
+      case "NON-COMMITTEE":
         return [
           "Regional Director",
           "Secretary",
@@ -239,7 +261,14 @@ export default function CommitteeDirectory() {
       </div>
 
       {/* Members etc */}
-      <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full ">
+      <motion.div
+        key={activeTab}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={containerVariants}
+        className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-7xl w-full "
+      >
         {paginatedMembers.length === 0 ? (
           <p className="text-center text-slate-500 text-lg mt-10 w-full">
             No members found.
@@ -254,7 +283,7 @@ export default function CommitteeDirectory() {
             const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
             return (
-              <div
+              <motion.div
                 key={index}
                 className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-[#011638] shadow-md
                   transition-all duration-300 ease-out
@@ -292,11 +321,12 @@ export default function CommitteeDirectory() {
                   </div>
                 </div>
 
-                <div className="flex-grow flex flex-col items-center justify-start">
+                <div className="flex-grow flex flex-col items-center justify-start overflow-hidden">
                   {/* Name */}
                   <h2
                     className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight 
-                     line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words hyphens-auto overflow-hidden"
+                     line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words
+                      hyphens-auto "
                   >
                     {person.mem_fname} {person.mem_lname}
                   </h2>
@@ -321,11 +351,11 @@ export default function CommitteeDirectory() {
                 <p className="relative z-10 text-center text-[8px] sm:text-xs text-slate-300 mt-2 sm:mt-4 uppercase tracking-widest">
                   {person.acadyear}
                 </p>
-              </div>
+              </motion.div>
             );
           })
         )}
-      </div>
+      </motion.div>
 
       {totalPages > 1 && (
         <div className="mt-12 flex flex-col items-center gap-4">
