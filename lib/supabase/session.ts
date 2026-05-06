@@ -12,19 +12,19 @@ export async function getUserWithRole() {
   // 2. Fetch the role from your public.users table
   const { data: profile, error: dbError } = await supabase
     .from('users')
-    .select('role, member_id')
+    .select('member_id, member (role)')
     .eq('id', user.id)
     .single();
 
     console.log("Auth User ID:", user.id);
-  console.log("Public Profile Data:", profile);
-  console.log("Database Error:", dbError);
+    console.log("Public Profile Data:", profile);
+    console.log("Database Error:", dbError);
 
   if (dbError) return { ...user, role: null };
 
   return {
     ...user,
-    role: profile.role,
+    role: profile.member?.[0]?.role || null,
     member_id: profile.member_id
   };
 }
