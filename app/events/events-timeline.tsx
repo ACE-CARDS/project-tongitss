@@ -130,7 +130,7 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      {/* TIMELINE AS YEAR FILTER */}
+      {/* TIMELINE */}
       {!isLoading && events.length > 0 && (
         <div className="relative w-full max-w-6xl mx-auto mb-14">
           <div className="overflow-x-auto pb-8 pt-12 px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -188,66 +188,73 @@ export default function EventsTimeline() {
                   <div
                     key={event.id}
                     onClick={() => setSelectedEvent(event)}
-                    className="bg-white rounded-3xl flex flex-col transition-all duration-300 cursor-pointer overflow-hidden group shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-1 border border-slate-100 h-full w-full"
+                    className="group relative rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md transition-all duration-300 ease-out hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white flex flex-col cursor-pointer overflow-hidden h-full w-full"
                   >
-                    {hasValidImage ? (
-                      <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-100">
-                        <img 
-                          src={event.image_url} 
-                          alt={event.title} 
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-4 bg-[#011638] shrink-0"></div>
-                    )}
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent pointer-events-none z-0" />
 
-                    <div className="flex flex-col flex-grow p-6 sm:p-8 w-full overflow-hidden">
-                      <div className="flex flex-col mb-4 w-full">
-                        <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
-                          Date
-                        </span>
-                        <span className="font-black text-lg leading-tight text-[#0d21a1] break-words line-clamp-2">
-                          {formatEventDateRange(event.start_date, event.end_date)}
-                        </span>
-                      </div>
-                      
-                      <h3 
-                        title={event.title}
-                        className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
-                      >
-                        {event.title}
-                      </h3>
-                      
-                      <p 
-                        title={event.location}
-                        className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
-                      >
-                        📍 {event.location}
-                      </p>
-                      
-                      <p 
-                        title={event.description}
-                        className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
-                      >
-                        {event.description}
-                      </p>
-                      
-                      {/* CARD FOOTER */}
-                      <div className="mt-6 pt-5 border-t border-slate-100 text-center shrink-0 w-full" onClick={() => setSelectedEvent(event)}>
-                        {completed ? (
-                          <span className="inline-block w-full py-2.5 rounded-xl font-black text-xs tracking-widest uppercase bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
-                            VIEW RECAP
+                    <div className="relative z-10 flex flex-col h-full w-full">
+                      {/* Image Header */}
+                      {hasValidImage ? (
+                        <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-200/60">
+                          <img 
+                            src={event.image_url} 
+                            alt={event.title} 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-4 bg-[#011638] shrink-0"></div>
+                      )}
+
+                      {/* Content Body */}
+                      <div className="flex flex-col flex-grow p-6 sm:p-8 w-full">
+                        <div className="flex flex-col mb-4 w-full">
+                          <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
+                            Date
                           </span>
-                        ) : statusUpper === "ONGOING" ? (
-                          <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200">
-                            ● ONGOING
+                          <span className="font-black text-lg leading-tight text-[#0d21a1] break-words line-clamp-2">
+                            {formatEventDateRange(event.start_date, event.end_date)}
                           </span>
-                        ) : (
-                          <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047]">
-                            COMING SOON
-                          </span>
-                        )}
+                        </div>
+                        
+                        <h3 
+                          title={event.title}
+                          className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
+                        >
+                          {event.title}
+                        </h3>
+                        
+                        <p 
+                          title={event.location}
+                          className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
+                        >
+                          📍 {event.location}
+                        </p>
+                        
+                        <p 
+                          title={event.description}
+                          className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
+                        >
+                          {event.description}
+                        </p>
+                        
+                        {/* CARD FOOTER */}
+                        <div className="mt-6 pt-5 border-t border-slate-200/60 text-center shrink-0 w-full relative z-20">
+                          {completed ? (
+                            <span className="inline-block w-full py-2.5 rounded-xl font-black text-xs tracking-widest uppercase bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
+                              VIEW RECAP
+                            </span>
+                          ) : statusUpper === "ONGOING" ? (
+                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
+                              ● ONGOING
+                            </span>
+                          ) : (
+                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047] shadow-sm">
+                              COMING SOON
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -258,7 +265,7 @@ export default function EventsTimeline() {
         </>
       )}
 
-      {/* MODAL POPUP FOR EVENT DETAILS */}
+      {/* MODAL POPUP */}
       {selectedEvent && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-[#011638]/60 backdrop-blur-sm p-4 sm:p-6 w-full"
@@ -288,7 +295,7 @@ export default function EventsTimeline() {
                   <div className="absolute bottom-6 left-6 right-6 w-[calc(100%-3rem)]">
                     <span 
                       title={selectedEvent.short_title}
-                      className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1"
+                      className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1 shadow-sm"
                     >
                       {selectedEvent.short_title}
                     </span>
@@ -304,7 +311,7 @@ export default function EventsTimeline() {
                 <div className="w-full pt-16 pb-6 px-6 sm:px-10 bg-[#011638] overflow-hidden">
                   <span 
                     title={selectedEvent.short_title}
-                    className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1"
+                    className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1 shadow-sm"
                   >
                     {selectedEvent.short_title}
                   </span>
@@ -354,7 +361,7 @@ export default function EventsTimeline() {
                 </p>
               </div>
 
-              {/* Action Button inside modal */}
+              {/* Action Button */}
               {isEventCompleted(selectedEvent) && (
                 <div className="mt-4 pt-6 border-t border-slate-100 flex justify-center w-full">
                   <button className="px-8 py-3 bg-[#011638] text-white font-oswald font-bold tracking-widest uppercase rounded-xl hover:bg-[#eec643] hover:text-[#011638] transition-colors shadow-md">
