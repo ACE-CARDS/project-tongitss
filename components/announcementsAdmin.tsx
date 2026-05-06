@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Pagination from "@/components/pagination";
 
 interface AnnouncementItem {
   id: number;
@@ -17,6 +18,7 @@ interface AnnouncementItem {
 type SortField = 'title' | 'start_date' | null;
 type SortOrder = 'asc' | 'desc' | null;
 
+// Sub-component for Description management
 function AnnouncementDescription({ description }: { description: string }) {
   const [isOpen, setIsOpen] = useState(false);
   if (description.length <= 120) {
@@ -95,7 +97,6 @@ export default function AnnouncementsAdmin() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  // DERIVE STATE FROM URL
   const activeTab = (searchParams.get('type') as 'landing' | 'dashboard') || 'landing';
   const currentPage = parseInt(searchParams.get('page') || '1');
 
@@ -106,7 +107,6 @@ export default function AnnouncementsAdmin() {
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   
-  // SORTING STATE
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
@@ -122,25 +122,20 @@ export default function AnnouncementsAdmin() {
       item.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Apply Sorting
     if (sortField && sortOrder) {
         filtered.sort((a, b) => {
           let aValue = sortField === 'title' ? a.title.toLowerCase() : new Date(a.start_date).getTime();
           let bValue = sortField === 'title' ? b.title.toLowerCase() : new Date(b.start_date).getTime();
-          
           if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
           if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
           return 0;
         });
     }
-
     setFilteredAnnouncements(filtered);
   }, [searchTerm, announcements, sortField, sortOrder]);
 
   useEffect(() => {
-    if (searchTerm) {
-      updateUrl({ page: '1' });
-    }
+    if (searchTerm) updateUrl({ page: '1' });
   }, [searchTerm]);
 
   const fetchAnnouncements = async () => {
@@ -182,7 +177,7 @@ export default function AnnouncementsAdmin() {
     Object.entries(newParams).forEach(([key, value]) => {
       params.set(key, value);
     });
-    router.push(`${window.location.pathname}?${params.toString()}`);
+    router.replace(`${window.location.pathname}?${params.toString()}`);
   };
 
   const handleDelete = async () => {
@@ -194,8 +189,12 @@ export default function AnnouncementsAdmin() {
     }
   };
 
-  const totalPages = Math.ceil(filteredAnnouncements.length / itemsPerPage);
-  const currentItems = filteredAnnouncements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  // Pagination Calculations
+  const totalItems = filteredAnnouncements.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = filteredAnnouncements.slice(startIndex, startIndex + itemsPerPage);
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', { 
     year: 'numeric', month: 'short', day: 'numeric' 
@@ -203,6 +202,7 @@ export default function AnnouncementsAdmin() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Section */}
       <div className="mb-8 flex justify-between sm:items-end items-center sm:flex-row flex-col sm:gap-0 gap-3">
         <div>
           <h1 className="text-2xl font-oswald font-bold text-[#011638]">Announcements Management</h1>
@@ -227,13 +227,13 @@ export default function AnnouncementsAdmin() {
 
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-
         <Link href="/dashboard/add/announcement" className="bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center gap-2 font-oswald">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           New Announcement
         </Link>
       </div>
 
+      {/* Table Section */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed">
@@ -243,7 +243,7 @@ export default function AnnouncementsAdmin() {
                   className={`w-[30%] px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`}
                   onClick={() => handleSort('title')}
                 >
-                  <div className="flex items-center justify-center  gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     Title
                     <div className="flex flex-col gap-0.5">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
@@ -294,23 +294,11 @@ export default function AnnouncementsAdmin() {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-3">
-                        <Link 
-                          href={`/dashboard/edit/announcement?id=${item.id}&type=${activeTab}`}
-                          className="text-[#0d21a1] hover:scale-110 transition-transform"
-                          title="Edit Announcement"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                          </svg>
+                        <Link href={`/dashboard/edit/announcement?id=${item.id}&type=${activeTab}`} className="text-[#0d21a1] hover:scale-110 transition-transform">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                         </Link>
-                        <button 
-                          onClick={() => { setSelectedId(item.id); setDeletePopupOpen(true); }} 
-                          className="text-red-600 hover:scale-110 transition-transform"
-                          title="Delete Announcement"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                          </svg>
+                        <button onClick={() => { setSelectedId(item.id); setDeletePopupOpen(true); }} className="text-red-600 hover:scale-110 transition-transform">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                         </button>
                       </div>
                     </td>
@@ -322,38 +310,23 @@ export default function AnnouncementsAdmin() {
         </div>
       </div>
 
+      {/* Pagination Controls */}
       {!loading && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-8 font-ubuntu-mono">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => updateUrl({ page: (currentPage - 1).toString() })}
-            className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          </button>
-
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => updateUrl({ page: (i + 1).toString() })}
-              className={`w-10 h-10 rounded-lg transition-colors ${
-                currentPage === i + 1 
-                ? 'bg-[#011638] text-white shadow-md' 
-                : 'text-[#475569] hover:bg-gray-100'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => updateUrl({ page: (currentPage + 1).toString() })}
-            className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </button>
-        </div>
+        <>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
+            <p className="text-[#475569] font-ubuntu-mono text-xs mb-2">
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}
+            </p>
+            <p className="text-[#475569] font-ubuntu-mono text-sm">
+              Page {validCurrentPage} of {totalPages || 1}
+            </p>
+          </div>
+          
+          <Pagination 
+            currentPage={validCurrentPage} 
+            totalPages={totalPages || 1} 
+          />
+        </>
       )}
 
       <DeleteConfirmPopup
