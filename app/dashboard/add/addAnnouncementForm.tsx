@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -9,11 +9,11 @@ export default function AddAnnouncementForm() {
   const router = useRouter();
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   // State to toggle between 'landing' and 'dashboard'
-  const [announcementType, setAnnouncementType] = useState<
-    "landing" | "dashboard"
-  >("landing");
+  const [announcementType, setAnnouncementType] = useState<"landing" | "dashboard">("landing");
 
   // Load draft from session storage
   useEffect(() => {
@@ -23,18 +23,10 @@ export default function AddAnnouncementForm() {
         const draft = JSON.parse(savedDraft);
         setAnnouncementType(draft.type || "landing");
 
-        const titleInput = document.querySelector(
-          'input[name="title"]',
-        ) as HTMLInputElement | null;
-        const descInput = document.querySelector(
-          'textarea[name="description"]',
-        ) as HTMLTextAreaElement | null;
-        const startInput = document.querySelector(
-          'input[name="start_date"]',
-        ) as HTMLInputElement | null;
-        const endInput = document.querySelector(
-          'input[name="end_date"]',
-        ) as HTMLInputElement | null;
+        const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement | null;
+        const descInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement | null;
+        const startInput = document.querySelector('input[name="start_date"]') as HTMLInputElement | null;
+        const endInput = document.querySelector('input[name="end_date"]') as HTMLInputElement | null;
 
         if (titleInput) titleInput.value = draft.title || "";
         if (descInput) descInput.value = draft.description || "";
@@ -49,25 +41,17 @@ export default function AddAnnouncementForm() {
   const saveDraft = () => {
     const draft = {
       type: announcementType,
-      title: (document.querySelector('input[name="title"]') as HTMLInputElement)
-        ?.value,
-      description: (
-        document.querySelector(
-          'textarea[name="description"]',
-        ) as HTMLTextAreaElement
-      )?.value,
-      start_date: (
-        document.querySelector('input[name="start_date"]') as HTMLInputElement
-      )?.value,
-      end_date: (
-        document.querySelector('input[name="end_date"]') as HTMLInputElement
-      )?.value,
+      title: (document.querySelector('input[name="title"]') as HTMLInputElement)?.value,
+      description: (document.querySelector('textarea[name="description"]') as HTMLTextAreaElement)?.value,
+      start_date: (document.querySelector('input[name="start_date"]') as HTMLInputElement)?.value,
+      end_date: (document.querySelector('input[name="end_date"]') as HTMLInputElement)?.value,
     };
     sessionStorage.setItem("announcementDraft", JSON.stringify(draft));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError("");
     setIsSubmitting(true);
 
     try {
@@ -77,18 +61,18 @@ export default function AddAnnouncementForm() {
       const start = formData.get("start_date") as string;
       const end = formData.get("end_date") as string;
 
+      // Validation logic
+      if (!title.trim() || !desc.trim()) {
+        throw new Error("Title and Description are required.");
+      }
+
       if (new Date(end) < new Date(start)) {
         throw new Error("End date cannot be earlier than the start date.");
       }
 
-      // 1. Determine table name
-      const tableName =
-        announcementType === "landing" ? "announce_landing" : "announce_dash";
+      const tableName = announcementType === "landing" ? "announce_landing" : "announce_dash";
 
-      // 2. Determine column mapping based on the table
-      // Ensure these match your Supabase column names EXACTLY
-      const payload =
-        announcementType === "landing"
+      const payload = announcementType === "landing"
           ? {
               announce_landing_title: title,
               announce_landing_desc: desc,
@@ -96,7 +80,6 @@ export default function AddAnnouncementForm() {
               announce_landing_end: end,
             }
           : {
-              // Adjust these if your dashboard table columns are named differently
               announce_dash_title: title,
               announce_dash_desc: desc,
               announce_dash_start: start,
@@ -106,19 +89,22 @@ export default function AddAnnouncementForm() {
       const { error } = await supabase.from(tableName).insert(payload);
 
       if (error) {
-        // Log the full error to the console to see missing columns or RLS issues
         console.error("Supabase Error Details:", error);
         throw new Error(error.message);
       }
 
       sessionStorage.removeItem("announcementDraft");
-      router.push("/dashboard/add/success");
+      router.push("/dashboard/add/success?type=announcement");
       router.refresh();
-    } catch (error) {
-      console.error("Submission error:", error);
-      alert(
-        error instanceof Error ? error.message : "Failed to add announcement",
-      );
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setSubmitError(errorMessage);
+      console.error("Submission error:", err);
+      
+      // Scroll to error message
+      setTimeout(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     } finally {
       setIsSubmitting(false);
     }
@@ -139,12 +125,16 @@ export default function AddAnnouncementForm() {
         </h1>
       </div>
 
-      <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
-        <form
-          onSubmit={handleSubmit}
-          onChange={saveDraft}
-          className="space-y-6"
-        >
+      <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
+        <form onSubmit={handleSubmit} onChange={saveDraft} className="space-y-6">
+          
+          {/* Submit error display */}
+          {submitError && (
+            <div ref={errorRef} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-ubuntu-mono text-sm">{submitError}</p>
+            </div>
+          )}
+
           {/* Type Selector */}
           <div>
             <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
@@ -153,7 +143,7 @@ export default function AddAnnouncementForm() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setAnnouncementType("landing")}
+                onClick={() => { setAnnouncementType("landing"); setSubmitError(""); }}
                 className={`py-3 px-4 rounded border-2 font-ubuntu-mono transition-all ${
                   announcementType === "landing"
                     ? "border-[#011638] bg-[#011638] text-white"
@@ -164,7 +154,7 @@ export default function AddAnnouncementForm() {
               </button>
               <button
                 type="button"
-                onClick={() => setAnnouncementType("dashboard")}
+                onClick={() => { setAnnouncementType("dashboard"); setSubmitError(""); }}
                 className={`py-3 px-4 rounded border-2 font-ubuntu-mono transition-all ${
                   announcementType === "dashboard"
                     ? "border-[#011638] bg-[#011638] text-white"
@@ -177,15 +167,12 @@ export default function AddAnnouncementForm() {
           </div>
 
           <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">
-                {announcementType === "landing"
-                  ? "Public Landing"
-                  : "Internal Dashboard"}{" "}
-                Details
+                {announcementType === "landing" ? "Public Landing" : "Internal Dashboard"} Details
               </h2>
             </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
               {/* Title */}
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -196,11 +183,7 @@ export default function AddAnnouncementForm() {
                   name="title"
                   maxLength={100}
                   required
-                  placeholder={
-                    announcementType === "landing"
-                      ? "Public heading..."
-                      : "Internal notice..."
-                  }
+                  placeholder={announcementType === "landing" ? "Public heading..." : "Internal notice..."}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                 />
               </div>
@@ -229,7 +212,6 @@ export default function AddAnnouncementForm() {
                     type="date"
                     name="start_date"
                     required
-                    max="9999-12-31"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
                 </div>
@@ -241,7 +223,6 @@ export default function AddAnnouncementForm() {
                     type="date"
                     name="end_date"
                     required
-                    max="9999-12-31"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                   />
                 </div>
@@ -249,15 +230,20 @@ export default function AddAnnouncementForm() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
+              onClick={() => sessionStorage.removeItem("announcementDraft")}
+            >
+              Cancel
+            </Link>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting
-                ? "Posting..."
-                : `Post to ${announcementType === "landing" ? "Landing" : "Dashboard"}`}
+              {isSubmitting ? "Posting..." : `Post to ${announcementType === "landing" ? "Landing" : "Dashboard"}`}
             </button>
           </div>
         </form>
