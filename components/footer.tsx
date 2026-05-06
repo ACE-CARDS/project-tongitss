@@ -18,10 +18,10 @@ export default function Footer() {
           />
 
           <div className="h-full my-auto flex flex-col justify-center lg:items-start mx-auto gap-3 items-center">
-            <span className="md:text-[1.6rem] flex font-oswald sm:text-2xl whitespace-nowrap">
+            <span className="md:text-[1.6rem] flex font-oswald sm:text-2xl text-center">
               Association of Competent and Empowered CAR DOST Scholars
             </span>
-            <span className="text-[14px]">
+            <span className="text-[14px] text-center">
               &copy; 2026 ACE CARDS. All rights reserved.
             </span>
           </div>
@@ -51,7 +51,7 @@ export default function Footer() {
 
           <Link
             href="mailto:support@acecards.com"
-            className="hover:text-[#a6a6a6] text-white text-lg"
+            className="hover:text-[#a6a6a6] text-white sm:text-lg"
             aria-label="Send us an email"
             target="_blank"
             rel="noopener noreferrer"
