@@ -49,6 +49,8 @@ export default function LoadingState() {
   }, []);
 
   return (
+    <>
+    <NavBar />
     <div 
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-[101vh] flex flex-col"
       style={{
@@ -57,7 +59,6 @@ export default function LoadingState() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       <div className="flex-1 flex items-center justify-center">
         <div className="relative flex flex-col items-center justify-center w-full">
           <div 
@@ -94,5 +95,6 @@ export default function LoadingState() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -17,17 +17,19 @@ export default function LoginPage() {
         }}>
           
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-            <BsSuitSpadeFill className="absolute top-[-5%] right-[-5%] rotate-12 size-40 md:size-64 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-[-5%] right-[-5%] rotate-12 size-40 md:size-64 text-slate-600/70" />
             
-            <BsSuitSpadeFill className="absolute top-8/12 -left-20 -rotate-12 size-60 md:size-96 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-8/12 -left-20 -rotate-12 size-60 md:size-96 text-slate-600/70" />
             
-            <BsSuitSpadeFill className="absolute top-1/4 left-10 -rotate-[13deg] size-32 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-1/4 left-10 -rotate-[13deg] size-32 text-slate-600/70" />
 
-            <BsSuitSpadeFill className="absolute top-1/12 left-[40%] rotate-[-13deg] size-30 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-1/12 left-[40%] rotate-[-13deg] size-30 text-slate-600/70" />
 
-            <BsSuitSpadeFill className="absolute top-1/5 right-[18%] rotate-[-15deg] size-60 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-1/5 right-[18%] rotate-[-15deg] size-60 text-slate-600/70" />
 
-            <BsSuitSpadeFill className="absolute top-2/4 right-10 rotate-[13deg] size-28 text-[#eff0f2]" />
+            <BsSuitSpadeFill className="absolute top-2/4 right-10 rotate-[13deg] size-28 text-slate-600/70" />
+
+            <BsSuitSpadeFill className="absolute top-3/4 right-32 -rotate-[6deg] size-40 text-slate-600/70" />
           </div>
 
           <div className="

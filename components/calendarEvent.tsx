@@ -25,12 +25,6 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
         { opacity: 0, scale: 0.9, y: 20 },
         { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" },
         0,
-      )
-      .fromTo(
-        ".detail-item",
-        { opacity: 0, x: -10 },
-        { opacity: 1, x: 0, stagger: 0.1 },
-        "-=0.2",
       );
   });
 

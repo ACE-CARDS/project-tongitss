@@ -29,7 +29,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "components/announceCard.js"
+    "components/announceCard.tsx"
   ],
   "exclude": ["node_modules"]
 }

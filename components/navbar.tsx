@@ -12,7 +12,9 @@ export default function NavBar({ isOverHero = false }) {
   const { user } = useUser();
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
+  const membersRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
@@ -23,16 +25,26 @@ export default function NavBar({ isOverHero = false }) {
 
   const toggleDropdown = () => {
     setAcademicsOpen(!academicsOpen);
+    setMembersOpen(false);
   };
+
+  const toggleMembers = () => {
+    setMembersOpen(!membersOpen);
+    setAcademicsOpen(false);
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        academicsRef.current &&
-        !academicsRef.current.contains(event.target as Node)
+        (academicsRef.current &&
+        !academicsRef.current.contains(event.target as Node)) || 
+        (membersRef.current &&
+        !membersRef.current.contains(event.target as Node)
+        )
       ) {
         setAcademicsOpen(false);
         setMenuisOpen(false);
+        setMembersOpen(false);
       }
     };
 
@@ -69,14 +81,13 @@ export default function NavBar({ isOverHero = false }) {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
 
           {/* Title */}
-          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 hover:scale-[1.04] border-0  ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
-        `} href="/">
+          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 ease-in-out hover:scale-[1.04] ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""} ring-0 shadow-[0_0_15px_rgba(255,255,255,0.3)]`} href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
               className="w-11 h-11 shrink-0"
-              width={40}
-              height={40}
+              width={100}
+              height={100}
             />
             <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap md:text-3xl sm:text-2xl text-xl font-bold leading-none font-oswald">
                 {siteName}
@@ -87,6 +98,7 @@ export default function NavBar({ isOverHero = false }) {
           <div
             ref={academicsRef}
             className={`
+              shadow-[0_0_15px_rgba(255,255,255,0.3)]
               fixed text-lg lg:right-[30px] right-[10px] top-[80px]
               flex xl:flex-row text-right
               xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full
@@ -96,7 +108,8 @@ export default function NavBar({ isOverHero = false }) {
               w-[220px] xl:w-auto
               overflow-hidden xl:overflow-visible
               ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"}
-              origin-top-right transition-all duration-300 ease-in-out
+              origin-top-right transition-all duration-200 ease-in-out
+              ring-0
               ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
             `}
           >
@@ -109,6 +122,7 @@ export default function NavBar({ isOverHero = false }) {
                 overflow-y-auto xl:overflow-visible
                 max-h-[calc(100svh-100px)] xl:max-h-none
                 w-full xl:w-auto
+                custom-scrollbar-white
               `}
             >
               <Link href="/">
@@ -141,15 +155,55 @@ export default function NavBar({ isOverHero = false }) {
                 </li>
               </Link>
 
-              <Link href="/executives">
-                <li className={`px-[10px] py-[2px] rounded-full duration-200 transition-all
-                  ${isActive("/executives")
+              <li
+                ref={membersRef}
+                onClick={toggleMembers}
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                  ${isActive("/executives") || isActive("/committee")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
-                  }`}>
-                  Executives
-                </li>
-              </Link>
+                  }
+                  ${membersOpen ? "bg-[#a6a6a6]/30 scale-[1.04]" : ""}
+                `}
+              >
+                {/* Label row */}
+                <div className="flex flex-row items-center gap-1 whitespace-nowrap justify-end xl:justify-start">
+                  Members
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`size-4 transition-transform duration-200 ${membersOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  
+                </div>
+
+                {/* Submenu — inline on mobile, absolute on xl */}
+                <ul
+                  className={`
+                    ${membersOpen ? "flex" : "hidden"}
+                    flex-col gap-1 xl:gap-3 text-left
+                    whitespace-normal xl:whitespace-nowrap
+                    xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
+                    xl:bg-[#011638]/90 xl:backdrop-blur-sm
+                    p-1 xl:p-4 xl:rounded-[30px]
+                    xl:-left-5 xl:top-8 xl:w-40 xl:text-center
+                  `}
+                >
+                  <li className="hover:underline">
+                    <Link href="/committee">Committees</Link>
+                  </li>
+                  <li className="hover:underline">
+                    <Link href="/executives">Executives</Link>
+                  </li>
+                </ul>
+              </li>
 
               {/*
                 Academics dropdown
@@ -160,7 +214,7 @@ export default function NavBar({ isOverHero = false }) {
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer px-[10px] py-[2px] rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
                   ${isActive("/thesis") || isActive("/survey")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -168,6 +222,7 @@ export default function NavBar({ isOverHero = false }) {
                   ${academicsOpen ? "bg-[#a6a6a6]/30 scale-[1.04]" : ""}
                 `}
               >
+                <span className="animate-shine px-[10px] py-[2px]">
                 {/* Label row */}
                 <div className="flex flex-row items-center gap-1 whitespace-nowrap justify-end xl:justify-start">
                   Academics
@@ -183,15 +238,16 @@ export default function NavBar({ isOverHero = false }) {
                       clipRule="evenodd"
                     />
                   </svg>
+                  
                 </div>
-
+                </span>
                 {/* Submenu — inline on mobile, absolute on xl */}
                 <ul
                   className={`
                     ${academicsOpen ? "flex" : "hidden"}
                     flex-col gap-1 xl:gap-3 text-left
                     whitespace-normal xl:whitespace-nowrap
-                    xl:absolute xl:shadow-[0_5px_10px_rgba(1,22,56,0.8)]
+                    xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
                     xl:bg-[#011638]/90 xl:backdrop-blur-sm
                     p-1 xl:p-4 xl:rounded-[30px]
                     xl:-left-10 xl:top-8 xl:w-50 xl:text-center
@@ -253,10 +309,12 @@ export default function NavBar({ isOverHero = false }) {
 
           <div className={`
           flex flex-row 
+          shadow-[0_0_15px_rgba(255,255,255,0.3)]
           items-center justify-center 
-          xl:hidden 
+          xl:hidden transition-all duration-200 ease-in-out 
           rounded-full p-3 max-h-full max-w-fit
-          bg-[#011638]/70 backdrop-blur-sm  
+          bg-[#011638]/70 backdrop-blur-sm
+          ring-0
           ${isOverHero ? "ring-2 ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""}
           `}>
             {/* hamburger */}
@@ -288,6 +346,39 @@ export default function NavBar({ isOverHero = false }) {
 
         </div>
       </nav>
+
+      <style jsx> 
+        {`
+          @keyframes occasional-shine {
+            0% { transform: translateX(-150%) skewX(-30deg); }
+            100% { transform: translateX(150%) skewX(-30deg); }
+          }
+
+          .animate-shine {
+            position: relative;
+            overflow: hidden;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+          }
+
+          .animate-shine::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              to right,
+              transparent,
+              rgba(255, 255, 255, 0.4),
+              transparent
+            );
+            animation: occasional-shine 6s infinite;
+          }
+        `}
+      </style>
 
     </div>
   );

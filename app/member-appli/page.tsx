@@ -26,29 +26,27 @@ function MembershipApplicationContent() {
       const { data, error } = await supabase
         .from("announce_memapp")
         .select("*")
+        .order("order_index", { ascending: true })
         .order("id", { ascending: true });
 
       if (data && !error) {
-        const fetchedDeadline = data.find((row) => row.type === "deadline")?.description;
+        const fetchedDeadline = data.find((row) => row.type?.toLowerCase().trim() === "deadline")?.description;
         
         const fetchedReminders = data
-          .filter((row) => row.type === "reminder")
+          .filter((row) => row.type?.toLowerCase().trim() === "reminder")
           .map((row) => row.description);
           
         const fetchedInstructions = data
-          .filter((row) => row.type === "instruction")
+          .filter((row) => row.type?.toLowerCase().trim() === "instruction")
           .map((row) => row.description);
           
-        const fetchedVideo = data.find((row) => row.type === "video")?.description;
+        const fetchedVideo = data.find((row) => row.type?.toLowerCase().trim() === "video")?.description;
 
         let finalVideoUrl = "";
         if (fetchedVideo) {
-          if (fetchedVideo.includes("watch?v=")) {
-            const videoId = fetchedVideo.split("watch?v=")[1].split("&")[0];
-            finalVideoUrl = `https://www.youtube.com/embed/${videoId}`;
-          } else if (fetchedVideo.includes("youtu.be/")) {
-            const videoId = fetchedVideo.split("youtu.be/")[1].split("?")[0];
-            finalVideoUrl = `https://www.youtube.com/embed/${videoId}`;
+          const match = fetchedVideo.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/);
+          if (match && match[1]) {
+            finalVideoUrl = `https://www.youtube.com/embed/${match[1]}`;
           } else {
             finalVideoUrl = fetchedVideo;
           }
@@ -75,8 +73,6 @@ function MembershipApplicationContent() {
   }
 
   return (
-    <>
-    <NavBar />
     <div
       className="min-h-screen bg-[#fbfaf8] flex flex-col"
       style={{
@@ -85,13 +81,14 @@ function MembershipApplicationContent() {
         backgroundAttachment: "fixed",
       }}
     >
+      <NavBar />
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
-        <div className="mb-6">
-          <BackButton />
-        </div>
-
         <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-6">
+            <BackButton />
+          </div>
+
           <ApplicationHero deadline={pageContent.deadline} />
           
           <ApplicationInfo 
@@ -99,13 +96,14 @@ function MembershipApplicationContent() {
             instructions={pageContent.instructions} 
           />
           
-          <ApplicationTestimony videoUrl={pageContent.videoUrl} />
+          {pageContent.videoUrl && (
+            <ApplicationTestimony videoUrl={pageContent.videoUrl} />
+          )}
         </div>
       </main>
 
+      <Footer />
     </div>
-    <Footer />
-    </>
   );
 }
 

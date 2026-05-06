@@ -71,6 +71,7 @@ function DashboardContent() {
       lname: data.mem_lname,
       comm: data.committee?.comm_name || "Member",
       school: data.school?.school_name || "No School",
+      role: data.role,
     });
     setUserRole(data.role);
     setIsLoadingRole(false);
@@ -229,85 +230,90 @@ function DashboardContent() {
 
   return (
     <>
-    <NavBar />
-    <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <div className="pt-10">
-        <div className="bg-white/70">
-          <div className="w-full h-1 bg-[#0b1763] my-2"></div>
-          <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+      <NavBar />
+      <div
+        className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <div className="pt-10">
+          <div className="bg-white/70">
+            <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+            <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
 
-          <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
-              {/*User Name*/}
-              <div className="w-full md:w-auto">
-                <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
-                  {memberData
-                    ? `${memberData.fname} ${memberData.lname}`
-                    : user.user_metadata.name || "User"}
-                </h2>
-              </div>
-              {/*Committee Name*/}
-              <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
-                <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
-                  {memberData ? `${memberData.comm}` : "Member"}
-                </p>
+            <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
+                {/*User Name*/}
+                <div className="w-full md:w-auto">
+                  <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
+                    {memberData
+                      ? `${memberData.fname} ${memberData.lname}`
+                      : user.user_metadata.name || "User"}
+                  </h2>
+                </div>
+                {/*Committee Name*/}
+                <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+                  <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
+                    {memberData ? `${memberData.comm}` : "Member"}
+                  </p>
 
-                <span className="hidden md:block h-6 w-px bg-gray-300"></span>
-                {/*University*/}
-                <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
-                  {memberData ? `${memberData.school}` : "Member"}
-                </p>
+                  <span className="hidden md:block h-6 w-px bg-gray-300"></span>
+                  {/*University*/}
+                  <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                    {memberData ? `${memberData.school}` : " "}
+                  </p>
+                  <span className="hidden md:block h-6 w-px bg-gray-300"></span>
+                  {/*role*/}
+                  <p className="text-xs md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                    {memberData ? `${memberData.role}` : "Member"}
+                  </p>
+                </div>
               </div>
             </div>
+
+            <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
+            <div className="w-full h-1 bg-[#0b1763] my-2"></div>
           </div>
 
-          <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
-          <div className="w-full h-1 bg-[#0b1763] my-2"></div>
+          <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
+            <div className="w-full">
+              <div className="flex gap-1 mb-0 overflow-x-auto scrollbar-hide">
+                {mainTabs
+                  .filter((tab) => {
+                    if (userRole === "superadmin" || userRole === "admin")
+                      return true;
+                    return (
+                      tab.key !== "members" &&
+                      tab.key !== "events" &&
+                      tab.key !== "manage"
+                    );
+                  })
+                  .map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => handleTabChange(tab.key)}
+                      className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
+                        activeTab === tab.key
+                          ? "bg-[#011638] text-white shadow-lg"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+              </div>
+
+              <div className="bg-white rounded-b-xl border border-gray-200 p-6 shadow-md min-h-[500px] mb-6">
+                {renderTabContent()}
+              </div>
+            </div>
+          </main>
         </div>
-
-        <main className="mx-auto w-[95%] lg:w-[90%] max-w-[1400px] lg:py-12">
-          <div className="w-full">
-            <div className="flex gap-1 mb-0 overflow-x-auto scrollbar-hide">
-              {mainTabs
-                .filter((tab) => {
-                  if (userRole === "superadmin" || userRole === "admin")
-                    return true;
-                  return (
-                    tab.key !== "members" &&
-                    tab.key !== "events" &&
-                    tab.key !== "manage"
-                  );
-                })
-                .map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => handleTabChange(tab.key)}
-                    className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
-                      activeTab === tab.key
-                        ? "bg-[#011638] text-white shadow-lg"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-            </div>
-
-            <div className="bg-white rounded-b-xl border border-gray-200 p-6 shadow-md min-h-[500px]">
-              {renderTabContent()}
-            </div>
-          </div>
-        </main>
       </div>
-    </div>
-    <Footer />
+      <Footer />
     </>
   );
 }
