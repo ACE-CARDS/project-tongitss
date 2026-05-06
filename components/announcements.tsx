@@ -48,7 +48,7 @@ export default function Dashboard() {
           </div>
           {/* Announcements */}
           <div className="w-full flex flex-col md:h-[750px] mx-auto">
-            <div className="border border-[#011638] rounded-xl bg-[white] h-full flex flex-col">
+            <div className="border border-[#011638] rounded-xl bg-[#eec643]/10 h-full flex flex-col">
               <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6">
                 ANNOUNCEMENTS
               </h2>
