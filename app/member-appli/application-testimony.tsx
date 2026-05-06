@@ -36,7 +36,7 @@ export default function ApplicationTestimony({ videoUrl }: { videoUrl: string })
         ></iframe>
       </motion.div>
 
-      {/* MASCOT (Left as an image since it's an illustration, not a UI icon) */}
+      {/* MASCOT */}
       <motion.div 
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}

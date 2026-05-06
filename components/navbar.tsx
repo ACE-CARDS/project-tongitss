@@ -158,7 +158,7 @@ export default function NavBar({ isOverHero = false }) {
               <li
                 ref={membersRef}
                 onClick={toggleMembers}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[25px] duration-200 transition-all
                   ${isActive("/executives") || isActive("/committee")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"

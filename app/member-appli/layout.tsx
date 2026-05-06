@@ -11,7 +11,6 @@ export default function MemberAppliLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Applied the 1920px max-width wrapper here
     <div className="w-full mx-auto max-w-[1920px]">
       {children}
     </div>
