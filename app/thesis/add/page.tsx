@@ -4,8 +4,9 @@ import Footer from "@/components/footer";
 import AddThesisForm from "./addThesisForm";
 
 // Main export
-export default async function AddThesisPage() {
+export default async function AddThesisPage({ searchParams, }: { searchParams: Promise<{ returnTo?: string }> }) {
   const supabase = await createClient();
+  const { returnTo } = await searchParams; // Get returnTo from URL
   
   // Fetch categories
   const { data: categories } = await supabase
@@ -30,7 +31,12 @@ export default async function AddThesisPage() {
             backgroundAttachment: 'fixed'
           }}>
           <main className="flex-grow w-full">
-            <AddThesisForm categories={categories || []} schools={schools || []} />
+            {/* Pass returnTo component */}
+            <AddThesisForm 
+              categories={categories || []} 
+              schools={schools || []} 
+              returnTo={returnTo}
+            />
           </main>
         </div>
         <Footer />

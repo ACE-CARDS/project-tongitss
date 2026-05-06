@@ -5,8 +5,9 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AddSurveyForm from "./addSurveyForm"; 
 
-export default async function AddSurveyPage() {
+export default async function AddSurveyPage({ searchParams, }: { searchParams: Promise<{ returnTo?: string }> }) {
   const supabase = await createClient();
+  const { returnTo } = await searchParams; // Get returnTo from URL
   
   const { data: categories } = await supabase
     .from("r_category")
@@ -29,7 +30,12 @@ export default async function AddSurveyPage() {
         backgroundAttachment: 'fixed'
       }}>
       <main className="flex-grow w-full">
-        <AddSurveyForm categories={categories || []} schools={schools || []} />
+        {/* Pass returnTo component */}
+        <AddSurveyForm 
+          categories={categories || []} 
+          schools={schools || []} 
+          returnTo={returnTo}
+        />
       </main>
     </div>
       <Footer />
