@@ -334,7 +334,7 @@ export default function MembersPage() {
       options.find((o) => o.value === value)?.label || "Select";
 
     return (
-      <div ref={ref} className="relative w-full min-w-0">
+      <div ref={ref} className="relative w-full min-w-0 my-auto">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
@@ -1112,7 +1112,7 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
 
             <div className="space-y-4">
               {isLoading ? (
-                <div className="min-h-[200px]"></div> // ← Blank while loading
+                <div className="min-h-[200px]"></div> 
               ) : paginatedMembers.length === 0 ? (
                 <p className="text-center text-gray-500 text-lg py-6">
                   No members found.
@@ -1134,7 +1134,7 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                         bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition
                       "
                     >
-                     <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
+                     <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight my-auto">
                         {member.mem_lname.toUpperCase()},{" "}
                         {member.mem_fname
                           .toLowerCase()
@@ -1148,7 +1148,7 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                           : ""}
                       </span>
                       <div
-                        className={`${getCommitteeStyle(commName)} font-medium rounded-xl`}
+                        className={`${getCommitteeStyle(commName)} font-medium rounded-xl my-auto`}
                       >
                         <CommitteeDropdown
                           value={member.comm}
@@ -1171,9 +1171,9 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                         onChange={(val) =>
                           handleRoleChange(member.id, val as string)
                         }
-                        styleClass={getRoleStyle(member.role)}
+                        styleClass={`${getRoleStyle(member.role)} my-auto`}
                       />
-                      <div className="flex flex-wrap justify-center gap-2 min-w-[70px]">
+                      <div className="flex flex-wrap justify-center gap-2 min-w-[70px] my-auto">
                       <button
                         onClick={() => {
                           setEditMember(member);

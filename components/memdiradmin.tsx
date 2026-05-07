@@ -1028,7 +1028,7 @@ const hasEditChanges =
                       key={member.id}
                       className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
+                      <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight my-auto">
                         {member.mem_lname.toUpperCase()},{" "}
                         {member.mem_fname
                           .toLowerCase()
@@ -1042,7 +1042,7 @@ const hasEditChanges =
                           : ""}
                       </span>
                       <div
-                        className={`${getCommitteeStyle(commName)} font-normal rounded-xl`}
+                        className={`${getCommitteeStyle(commName)} font-normal rounded-xl my-auto`}
                       >
                         <CommitteeDropdown
                           value={member.comm}
@@ -1056,7 +1056,7 @@ const hasEditChanges =
                         />
         
                       </div>
-                      <div className="flex justify-center gap-3">
+                      <div className="flex justify-center gap-3 my-auto">
                       <button
                         onClick={() => {
                           setEditMember(member);
