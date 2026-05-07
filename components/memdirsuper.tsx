@@ -499,6 +499,28 @@ export default function MembersPage() {
     if (!editMember) return;
   
     try {
+      const errors = {
+        mem_fname: editForm.mem_fname.trim() === "",
+        mem_lname: editForm.mem_lname.trim() === "",
+        mem_minit:
+          editForm.mem_minit.trim() !== "" &&
+          editForm.mem_minit.trim().length > 3,
+      };
+  
+      setEditFieldErrors(errors);
+  
+      if (errors.mem_fname || errors.mem_lname || errors.mem_minit) {
+        let msg = "This field cannot be empty.";
+  
+        if (errors.mem_minit) {
+          msg = "Middle Initial must not exceed 3 characters.";
+        }
+  
+        setEditErrorMessage(msg);
+        setShowEditError(true);
+        return;
+      }
+  
       if ((editMember as any).isImported) {
         setMembers((prev) =>
           prev.map((m) =>
@@ -507,33 +529,27 @@ export default function MembersPage() {
               : m
           )
         );
+  
         setEditMember(null);
+  
         setShowRenameSuccess(true);
         setTimeout(() => setShowRenameSuccess(false), 2500);
         return;
-        return;
       }
   
-      const errors = {
-        mem_fname: editForm.mem_fname.trim() === "",
-        mem_lname: editForm.mem_lname.trim() === "",
-        mem_minit:
-          editForm.mem_minit.trim() !== "" &&
-          editForm.mem_minit.trim().length > 3,
-      };
-      
-      setEditFieldErrors(errors);
-      
-      if (errors.mem_fname || errors.mem_lname) {
-        let msg = "This field cannot be empty.";
-      
-        if (errors.mem_minit) {
-          msg = "Middle Initial must not exceed 3 characters.";
-        }
-      
-        setEditErrorMessage(msg);
+      const { error } = await supabase
+        .from("member")
+        .update({
+          mem_fname: editForm.mem_fname,
+          mem_lname: editForm.mem_lname,
+          mem_minit: editForm.mem_minit,
+        })
+        .eq("id", editMember.id);
+  
+      if (error) {
+        console.error("Supabase update error:", error);
+        setEditErrorMessage(error.message || "Failed to update member.");
         setShowEditError(true);
-        setEditFieldErrors(errors);
         return;
       }
   
@@ -554,7 +570,7 @@ export default function MembersPage() {
       );
   
       setEditMember(null);
-
+  
       setShowRenameSuccess(true);
       setTimeout(() => setShowRenameSuccess(false), 2500);
   
@@ -1118,7 +1134,7 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                         bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition
                       "
                     >
-                      <span className="font-bold text-[#141414] truncate max-w-full block">
+                     <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
                         {member.mem_lname.toUpperCase()},{" "}
                         {member.mem_fname
                           .toLowerCase()
