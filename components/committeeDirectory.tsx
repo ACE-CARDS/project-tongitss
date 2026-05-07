@@ -90,7 +90,7 @@ export default function CommitteeDirectory() {
           )
           .eq("acadyear", ACADYEAR)
           .eq("is_active", true)
-          .order("id", { ascending: true });
+          .order("comm", { ascending: true });
 
         if (error) throw error;
         if (data) setMembers(data);
@@ -144,6 +144,7 @@ export default function CommitteeDirectory() {
   const totalItems = filteredMembers.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
   const paginatedMembers = filteredMembers.slice(
     startIndex,
     startIndex + itemsPerPage,
@@ -367,25 +368,28 @@ export default function CommitteeDirectory() {
       </motion.div>
 
       {totalPages > 1 && (
-        <div className="mt-12 flex flex-col items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-12 mb-2 gap-2">
           <p className="text-sm text-slate-500 font-ubuntu-mono">
             Showing {startIndex + 1} -{" "}
             {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}{" "}
             members
           </p>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => {
-              setCurrentPage(page);
-              headerRef.current?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-            }}
-          />
+          <p className="text-slate-500 font-ubuntu-mono text-sm">
+            Page {validCurrentPage} of {totalPages || 1}
+          </p>
         </div>
       )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          headerRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }}
+      />
     </div>
   );
 }
