@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
 import AddEventForm from "./addEventForm";
-import { useUser } from "@/components/context/userContext";
 import { createClient } from "@/lib/supabase/client";
 import LoadingState from "@/components/mainLoadingState";
+import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
+
+import { useUser } from "@/components/context/userContext";
 
 function AddEventContent() {
   const { user } = useUser();
@@ -33,7 +34,7 @@ function AddEventContent() {
     };
 
     fetchRole();
-  }, [user]);
+  }, [user, supabase]);
 
   if (isLoading) {
     return <LoadingState />;
@@ -49,7 +50,7 @@ function AddEventContent() {
 
   return (
     <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
+      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
@@ -57,7 +58,11 @@ function AddEventContent() {
       }}
     >
       <NavBar />
-      <AddEventForm />
+      
+      <div className="flex-1 flex flex-col">
+        <AddEventForm />
+      </div>
+
       <Footer />
     </div>
   );
@@ -66,7 +71,6 @@ function AddEventContent() {
 export default function AddEventPage() {
   const { user } = useUser();
 
-  // Show loading while user is being fetched
   if (!user) {
     return <LoadingState />;
   }
