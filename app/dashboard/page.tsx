@@ -207,7 +207,9 @@ function DashboardContent() {
         if (userRole === "superadmin") return <MemdirSuper />;
         if (userRole === "admin") return <MemdirAdmin />;
         return (
-          <p className="text-center py-10 italic text-gray-500">You do not have access to this page.</p>
+          <p className="text-center py-10 italic text-gray-500">
+            You do not have access to this page.
+          </p>
         );
       case "thesis":
         // if admin or super admin
@@ -266,9 +268,10 @@ function DashboardContent() {
                   <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
                     {memberData ? `${memberData.school}` : " "}
                   </p>
+
                   <span className="hidden md:block h-6 w-px bg-gray-300"></span>
                   {/*role*/}
-                  <p className="text-xs md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
+                  <p className="text-xs md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right hidden md:block">
                     {memberData ? `${memberData.role}` : "Member"}
                   </p>
                 </div>
