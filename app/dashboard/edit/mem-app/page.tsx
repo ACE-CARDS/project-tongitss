@@ -55,18 +55,27 @@ function EditMemAppForm() {
       return;
     }
 
-    if (formData.type !== 'video' && formData.type !== 'deadline') {
-      const { data: existingData } = await supabase
+    if (formData.type === 'instruction' || formData.type === 'reminder') {
+      const { data: otherItems } = await supabase
         .from("announce_memapp")
-        .select("id")
+        .select("*")
         .eq("type", formData.type)
-        .eq("order_index", finalSequence)
-        .neq("id", id);
+        .neq("id", id)
+        .order("order_index", { ascending: true });
 
-      if (existingData && existingData.length > 0) {
-        alert(`Error: Sequence number ${finalSequence} is already in use for a ${formData.type}. Please choose a different number.`);
-        setLoading(false);
-        return;
+      let itemsList = otherItems || [];
+
+      if (finalSequence > itemsList.length + 1) {
+        finalSequence = itemsList.length + 1;
+      }
+
+      itemsList.splice(finalSequence - 1, 0, { id: 'current', type: formData.type, description: '', order_index: 0, created_at: '' });
+
+      for (let i = 0; i < itemsList.length; i++) {
+        const expectedIndex = i + 1;
+        if (itemsList[i].id !== 'current' && itemsList[i].order_index !== expectedIndex) {
+          await supabase.from("announce_memapp").update({ order_index: expectedIndex }).eq("id", itemsList[i].id);
+        }
       }
     }
 
@@ -81,6 +90,7 @@ function EditMemAppForm() {
       alert("Error updating item: " + error.message);
       setLoading(false);
     } else {
+      router.refresh();
       router.push("/dashboard?tab=manage&section=memapp");
     }
   };
