@@ -259,16 +259,15 @@ export default function MembersPage() {
 
       setShowSaveSuccess(true);
 
-setTimeout(async () => {
-  setShowSaveSuccess(false);
+      setTimeout(async () => {
+        setShowSaveSuccess(false);
 
-  setMembers([]); 
-  await refreshMembers();
-}, 2000);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        await refreshMembers(); 
+      }, 2000);
+                } catch (error) {
+                  console.error(error);
+                }
+              };
 
   const refreshMembers = async () => {
     const { data } = await supabase
@@ -1086,7 +1085,7 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-visible">
             {/* grid start */}
             <div className="hidden sm:grid grid-cols-[minmax(140px,1.5fr)_minmax(140px,1.5fr)_minmax(110px,1fr)_minmax(70px,0.5fr)] font-semibold text-[#011638]/70 px-4 mb-2">
               <span className="text-center">Name</span>
@@ -1120,7 +1119,17 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                       "
                     >
                       <span className="font-bold text-[#141414] truncate max-w-full block">
-                        {member.mem_lname}, {member.mem_fname} {member.mem_minit}
+                        {member.mem_lname.toUpperCase()},{" "}
+                        {member.mem_fname
+                          .toLowerCase()
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {member.mem_minit?.trim()
+                          ? ` ${
+                              member.mem_minit.endsWith(".")
+                                ? member.mem_minit.toUpperCase()
+                                : `${member.mem_minit.toUpperCase()}.`
+                            }`
+                          : ""}
                       </span>
                       <div
                         className={`${getCommitteeStyle(commName)} font-medium rounded-xl`}
@@ -1222,21 +1231,52 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
 
                 {/* Page numbers */}
                 <div className="flex items-center space-x-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
-                          page === currentPage
-                            ? "bg-[#011638] text-white font-bold"
-                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  )}
+                  {(() => {
+                    const pages = [];
+
+                    if (totalPages <= 4) {
+                      for (let i = 1; i <= totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      const showLeft = currentPage <= 2;
+                      const showRight = currentPage >= totalPages - 1;
+
+                      if (showLeft) {
+                        pages.push(1, 2, "...", totalPages);
+                      } else if (showRight) {
+                        pages.push(1, "...", totalPages - 1, totalPages);
+                      } else {
+                        pages.push(
+                          1,
+                          "...",
+                          currentPage,
+                          "...",
+                          totalPages
+                        );
+                      }
+                    }
+
+                    return pages.map((page, idx) =>
+                      page === "..." ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                            page === currentPage
+                              ? "bg-[#011638] text-white font-bold"
+                              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    );
+                  })()}
                 </div>
 
                 {/* Next button */}

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import SuccessPageWrapper from "@/components/SuccessPageWrapper";
 
 export default function SuccessPage() {
   return (
+    <SuccessPageWrapper>
     <>
     <NavBar />
     <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col" 
@@ -55,5 +57,6 @@ export default function SuccessPage() {
     </div>
     <Footer />
     </>
+    </SuccessPageWrapper>
   );
 }

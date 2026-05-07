@@ -1,9 +1,15 @@
 import Link from "next/link";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import SuccessPageWrapper from "@/components/SuccessPageWrapper";
 
-export default function SuccessPage() {
+// Main export
+export default async function SuccessPage({ searchParams, }: { searchParams: Promise<{ returnTo?: string }> }) {
+  const { returnTo } = await searchParams;
+  const browseSurveysUrl = returnTo || "/survey";
+
   return (
+    <SuccessPageWrapper>
     <>
     <NavBar />
     <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col" 
@@ -43,7 +49,7 @@ export default function SuccessPage() {
           
           <div className="flex gap-4 justify-center">
             <Link
-              href="/survey"
+              href={browseSurveysUrl}
               className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
             >
               Browse Surveys
@@ -62,5 +68,6 @@ export default function SuccessPage() {
     </div>
     <Footer />
     </>
+    </SuccessPageWrapper>
   );
 }

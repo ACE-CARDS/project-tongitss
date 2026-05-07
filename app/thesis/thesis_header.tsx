@@ -501,7 +501,7 @@ export default function ThesisHeader({
 
           {isMounted && isAuthenticated && (
           <Link
-            href="/thesis/add"
+            href="/survey/add?returnTo=/thesis"
             className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
             onClick={() => sessionStorage.removeItem("thesisDraft")}
           >

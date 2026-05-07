@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -12,13 +12,15 @@ function EditAnnouncementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const errorRef = useRef<HTMLDivElement>(null);
 
-  // Get ID and Type (landing vs dashboard) from URL
   const announcementId = searchParams.get("id");
   const type = searchParams.get("type") as "landing" | "dashboard";
 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -36,6 +38,7 @@ function EditAnnouncementContent() {
 
   const fetchAnnouncement = async () => {
     setLoading(true);
+    setSubmitError("");
     try {
       const tableName = type === "landing" ? "announce_landing" : "announce_dash";
       
@@ -48,7 +51,6 @@ function EditAnnouncementContent() {
       if (error) throw error;
 
       if (data) {
-        // Map table-specific columns to local state
         setFormData({
           title: type === "landing" ? data.announce_landing_title : data.announce_dash_title,
           description: type === "landing" ? data.announce_landing_desc : data.announce_dash_desc,
@@ -58,7 +60,7 @@ function EditAnnouncementContent() {
       }
     } catch (err) {
       console.error("Error fetching announcement:", err);
-      alert("Failed to load announcement data");
+      setSubmitError("Failed to load announcement data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,21 +68,31 @@ function EditAnnouncementContent() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing again
+    if (submitError) setSubmitError("");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError("");
+
+    // Validation
+    if (!formData.title.trim() || !formData.description.trim()) {
+      setSubmitError("Title and Description are required.");
+      return;
+    }
+
+    if (new Date(formData.end_date) < new Date(formData.start_date)) {
+      setSubmitError("End date cannot be earlier than the start date.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      if (new Date(formData.end_date) < new Date(formData.start_date)) {
-        throw new Error("End date cannot be earlier than the start date.");
-      }
-
       const tableName = type === "landing" ? "announce_landing" : "announce_dash";
       
-      // Map local state back to table-specific columns
       const payload = type === "landing" 
         ? {
             announce_landing_title: formData.title,
@@ -104,9 +116,14 @@ function EditAnnouncementContent() {
 
       router.push("/dashboard/edit/success?type=announcement");
       router.refresh();
-    } catch (error) {
-      console.error("Update error:", error);
-      alert(error instanceof Error ? error.message : "Failed to update announcement");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setSubmitError(errorMessage);
+      console.error("Update error:", err);
+      
+      setTimeout(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +133,7 @@ function EditAnnouncementContent() {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-[#fbfaf8] overflow-y-auto"
+      className="min-h-screen bg-[#fbfaf8]"
       style={{
         backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
         backgroundSize: "20px 20px"
@@ -136,14 +153,24 @@ function EditAnnouncementContent() {
           </h1>
         </div>
 
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
+        <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Submit error display - MATCHES ADD FORM */}
+            {submitError && (
+              <div ref={errorRef} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <p className="font-ubuntu-mono text-sm">{submitError}</p>
+              </div>
+            )}
+
             <div>
-              <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                <h2 className="text-lg font-oswald font-semibold">Announcement Details</h2>
+              <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
+                <h2 className="text-lg font-oswald font-semibold">
+                  {type === "landing" ? "Public Landing" : "Internal Dashboard"} Details
+                </h2>
               </div>
               
-              <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+              <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -208,10 +235,10 @@ function EditAnnouncementContent() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
               <Link
                 href="/dashboard"
-                className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono flex items-center"
+                className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
               >
                 Cancel
               </Link>

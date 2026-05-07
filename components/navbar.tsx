@@ -68,6 +68,7 @@ export default function NavBar({ isOverHero = false }) {
   };
 
   return (
+    <>
     <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-[100000]`}>
 
       {/* Blur */}
@@ -381,5 +382,13 @@ export default function NavBar({ isOverHero = false }) {
       </style>
 
     </div>
+    <div className={`${isActive('/') ? "hidden" : "fixed"} bg-[#fbfaf8] top-0 z-[10000] h-14 min-w-[1920px] left-1/2 -translate-x-1/2`}
+      style={{
+        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+        backgroundAttachment: "fixed",
+      }}>
+    </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Pagination from "@/components/pagination"; // Ensure this path is correct
 
 interface NewsItem {
   id: number;
@@ -112,7 +113,6 @@ export default function NewsAdmin() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Pagination constants
   const itemsPerPage = 5; 
   const currentPage = parseInt(searchParams.get('page') || '1');
 
@@ -135,7 +135,7 @@ export default function NewsAdmin() {
     setFilteredNews(filtered);
   }, [searchTerm, news, sortField, sortOrder]);
 
-  // Reset to page 1 when searching
+  // Reset to page 1 on search without polluting history stack
   useEffect(() => {
     if (searchTerm) {
       const params = new URLSearchParams(searchParams.toString());
@@ -144,8 +144,11 @@ export default function NewsAdmin() {
     }
   }, [searchTerm]);
 
-  const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
-  const currentNewsItems = filteredNews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalItems = filteredNews.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentNewsItems = filteredNews.slice(startIndex, startIndex + itemsPerPage);
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const fetchNews = async () => {
     setLoading(true);
@@ -167,12 +170,6 @@ export default function NewsAdmin() {
       if (sortOrder === 'asc') setSortOrder('desc');
       else { setSortField(null); setSortOrder(null); }
     }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -207,8 +204,41 @@ export default function NewsAdmin() {
                 <thead className="bg-[#011638]">
                   <tr>
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">Image</th>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1]" onClick={() => handleSort('title')}>Title & Description</th>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] w-[180px]" onClick={() => handleSort('fb_post_date')}>Post Date</th>
+                    
+                    <th 
+                      className={`px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`} 
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Title & Description
+                        <div className="flex flex-col gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                      </div>
+                    </th>
+
+                    <th 
+                      className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[180px] ${sortField === 'fb_post_date' ? 'bg-[#0d21a1]' : ''}`} 
+                      onClick={() => handleSort('fb_post_date')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Post Date
+                        <div className="flex flex-col gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'fb_post_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'fb_post_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                      </div>
+                    </th>
+
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">Actions</th>
                   </tr>
                 </thead>
@@ -240,39 +270,24 @@ export default function NewsAdmin() {
             </div>
           </div>
 
+
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8 font-ubuntu-mono">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`w-10 h-10 rounded-lg transition-colors ${
-                    currentPage === i + 1 
-                    ? 'bg-[#011638] text-white shadow-md' 
-                    : 'text-[#475569] hover:bg-gray-100'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
+          {!loading && totalPages > 1 && (
+            <>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
+                <p className="text-[#475569] font-ubuntu-mono text-xs mb-2">
+                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}
+                </p>
+                <p className="text-[#475569] font-ubuntu-mono text-sm">
+                  Page {validCurrentPage} of {totalPages || 1}
+                </p>
+              </div>
+              
+              <Pagination 
+                currentPage={validCurrentPage} 
+                totalPages={totalPages || 1} 
+              />
+            </>
           )}
         </>
       )}

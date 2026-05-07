@@ -984,6 +984,7 @@ const hasEditChanges =
               </div>
             </div>
 
+            <div className="overflow-y-visible"></div>
             {/* grid start */}
             <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
               <span className="text-center">Name</span>
@@ -1011,8 +1012,18 @@ const hasEditChanges =
                       key={member.id}
                       className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-bold text-[#141414] text-sm sm:text-base">
-                      {member.mem_lname}, {member.mem_fname} {member.mem_minit}
+                      <span className="font-bold text-[#141414] truncate max-w-full block">
+                        {member.mem_lname.toUpperCase()},{" "}
+                        {member.mem_fname
+                          .toLowerCase()
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {member.mem_minit?.trim()
+                          ? ` ${
+                              member.mem_minit.endsWith(".")
+                                ? member.mem_minit.toUpperCase()
+                                : `${member.mem_minit.toUpperCase()}.`
+                            }`
+                          : ""}
                       </span>
                       <div
                         className={`${getCommitteeStyle(commName)} font-normal rounded-xl`}
@@ -1099,23 +1110,54 @@ const hasEditChanges =
                   </svg>
                 </button>
 
-                {/* Page numbers */}
+               {/* Page numbers */}
                 <div className="flex items-center space-x-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
-                          page === currentPage
-                            ? "bg-[#011638] text-white font-bold"
-                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  )}
+                  {(() => {
+                    const pages = [];
+
+                    if (totalPages <= 4) {
+                      for (let i = 1; i <= totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      const showLeft = currentPage <= 2;
+                      const showRight = currentPage >= totalPages - 1;
+
+                      if (showLeft) {
+                        pages.push(1, 2, "...", totalPages);
+                      } else if (showRight) {
+                        pages.push(1, "...", totalPages - 1, totalPages);
+                      } else {
+                        pages.push(
+                          1,
+                          "...",
+                          currentPage,
+                          "...",
+                          totalPages
+                        );
+                      }
+                    }
+
+                    return pages.map((page, idx) =>
+                      page === "..." ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                            page === currentPage
+                              ? "bg-[#011638] text-white font-bold"
+                              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    );
+                  })()}
                 </div>
 
                 {/* Next button */}
