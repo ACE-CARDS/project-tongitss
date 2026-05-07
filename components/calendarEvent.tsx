@@ -56,7 +56,7 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
           <div className="content relative z-10 w-full max-w-2xl bg-[#011638] rounded-xl p-8 text-white shadow-2xl border border-white/10">
             <button
               onClick={onClose}
-              className="absolute right-6 top-6 text-white/50 hover:text-white"
+              className="absolute right-6 top-6 text-white/50 hover:text-white cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

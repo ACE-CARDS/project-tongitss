@@ -1,6 +1,6 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { type FC, useRef } from "react";
+import { type FC, useRef, useState, useEffect } from "react";
 import { Transition } from "react-transition-group";
 import Link from "next/link";
 
@@ -19,7 +19,31 @@ const KidlaDialogue: FC<Props> = ({
   onRedirectMemApp,
 }) => {
   const container = useRef<HTMLDivElement>(null);
+  const [showTriangle, setShowTriangle] = useState(true);
   const { contextSafe } = useGSAP({ scope: container });
+
+  useEffect(() => {
+    const updateTriangle = () => {
+      if (typeof window === "undefined") return;
+
+      const viewportScale = window.visualViewport?.scale;
+      const screenRatio = window.screen.width
+        ? window.innerWidth / window.screen.width
+        : 1;
+      const zoomScale = viewportScale ?? screenRatio ?? 1;
+      const zoomedOut = zoomScale < 0.6;
+
+      setShowTriangle(!zoomedOut);
+    };
+
+    updateTriangle();
+    window.addEventListener("resize", updateTriangle);
+    window.visualViewport?.addEventListener("resize", updateTriangle);
+    return () => {
+      window.removeEventListener("resize", updateTriangle);
+      window.visualViewport?.removeEventListener("resize", updateTriangle);
+    };
+  }, []);
 
   const onEnter = contextSafe(() => {
     gsap
@@ -65,10 +89,12 @@ const KidlaDialogue: FC<Props> = ({
           />
 
           <div
-            className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[40vh] md:min-h-[50vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
+            className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
           border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center"
           >
-            <div className="hidden lg:block z-[-1] absolute -bottom-8 right-10 md:right-20 md:-bottom-1 w-12 h-12 bg-[#fbfaf8] triangle " />
+            {showTriangle && (
+              <div className="hidden lg:block z-[-1] absolute -bottom-8 right-10 md:right-20 md:-bottom-1 w-12 h-12 bg-[#fbfaf8] triangle" />
+            )}
             <div className="absolute top-3 right-3 z-10">
               <button
                 type="button"
