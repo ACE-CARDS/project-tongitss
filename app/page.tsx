@@ -1332,24 +1332,24 @@ export default function Home() {
                     <div className=" mt-10 flex flex-wrap justify-center lg:justify-start gap-6 mb-1">
                       <div
                         ref={surveySectionRef}
-                        className="text-center group cursor-pointer"
+                        className="text-center group"
                       >
-                        <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
+                        <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                           {displaySurveyCount}
                         </div>
-                        <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
+                        <div className="text-[#141414]/60 sm:font-bold text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
                           Research Surveys
                         </div>
                       </div>
 
                       <div
                         ref={thesesSectionRef}
-                        className="text-center group cursor-pointer"
+                        className="text-center group"
                       >
-                        <div className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
+                        <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                           {displayThesesCount}
                         </div>
-                        <div className="text-[#141414]/60 text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
+                        <div className="text-[#141414]/60 sm:font-bold text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
                           Research Thesis
                         </div>
                       </div>
@@ -1373,7 +1373,7 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       Take Survey →
                     </Link>
@@ -1386,7 +1386,7 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] text-[#011638] font-bold text-base sm:text-lg whitespace-nowrap hover:bg-[#011638] hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
                     >
                       View Thesis →
                     </Link>
