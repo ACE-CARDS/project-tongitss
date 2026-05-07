@@ -35,16 +35,29 @@ export default function AddMemApp() {
       return;
     }
 
-    if (formData.type !== 'video' && formData.type !== 'deadline') {
-      const { data: existingData } = await supabase.from("announce_memapp").select("id").eq("type", formData.type).eq("order_index", finalSequence);
-      if (existingData && existingData.length > 0) {
-        alert(`Error: Sequence number ${finalSequence} is already in use for a ${formData.type}. Please choose a different number.`);
-        setLoading(false);
-        return;
+    if (formData.type === 'instruction' || formData.type === 'reminder') {
+      const { data: otherItems } = await supabase
+        .from("announce_memapp")
+        .select("*")
+        .eq("type", formData.type)
+        .order("order_index", { ascending: true });
+
+      let itemsList = otherItems || [];
+
+      if (finalSequence > itemsList.length + 1) {
+        finalSequence = itemsList.length + 1;
+      }
+
+      itemsList.splice(finalSequence - 1, 0, { id: 'current', type: formData.type, description: '', order_index: 0, created_at: '' });
+
+      for (let i = 0; i < itemsList.length; i++) {
+        const expectedIndex = i + 1;
+        if (itemsList[i].id !== 'current' && itemsList[i].order_index !== expectedIndex) {
+          await supabase.from("announce_memapp").update({ order_index: expectedIndex }).eq("id", itemsList[i].id);
+        }
       }
     }
 
-    // NEW FIX: If a new video is added, automatically "retire" old videos to History
     if (formData.type === 'video') {
       await supabase.from("announce_memapp").update({ order_index: 0 }).eq("type", "video");
     }
@@ -92,7 +105,7 @@ export default function AddMemApp() {
 
             {formData.type !== 'video' && (
               <div className="min-w-0">
-                <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Sequence Order (1, 2, 3...)</label>
+                <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Sequence Order</label>
                 <input type="number" min="1" value={formData.order_index} onChange={(e) => setFormData({ ...formData, order_index: e.target.value })} className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono" required />
               </div>
             )}
