@@ -140,7 +140,7 @@ export default function MembersPage() {
     if (bInList) return 1;
 
     // alpabetical if wala s aprio list
-    return `${a.mem_fname} ${a.mem_lname}`
+    return `${a.mem_lname} ${a.mem_fname}`
       .toLowerCase()
       .localeCompare(`${b.mem_fname} ${b.mem_lname}`.toLowerCase());
   });
