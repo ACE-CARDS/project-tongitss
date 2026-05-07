@@ -63,8 +63,8 @@ const ShowMoreEventsModal: FC<Props> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eff0f2]/5 bg-[#eff0f2]/10 text-[#eff0f2] backdrop-blur-md 
-                transition hover:bg-[#eff0f2]/20 focus:outline-none"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#eff0f2] backdrop-blur-md 
+                 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
