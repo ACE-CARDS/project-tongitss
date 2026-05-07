@@ -72,7 +72,7 @@ function CommitteeContent() {
       {
         id: "rd",
         data: { label: <b>Regional Director</b> },
-        position: getPos(60, -50, 340, -80),
+        position: getPos(55, -50, 340, -80),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -85,14 +85,14 @@ function CommitteeContent() {
             <b>Director for Internal Affairs</b>
           ),
         },
-        position: getPos(0, 50, 180, 0),
+        position: getPos(-5, 50, 180, 0),
         style: nodeStyleYellow,
         type: "static",
       },
       {
         id: "sec",
         data: { label: <b>Secretariat</b> },
-        position: getPos(60, 100, 340, 0),
+        position: getPos(55, 100, 340, 0),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -100,7 +100,7 @@ function CommitteeContent() {
       {
         id: "mem-comm",
         data: { label: "Membership Comm." },
-        position: getPos(-70, 130, 20, 0),
+        position: getPos(-75, 130, 20, 0),
         style: nodeStyleBlue,
         type: "static",
       },
@@ -113,7 +113,7 @@ function CommitteeContent() {
             <b>Director for External Affairs</b>
           ),
         },
-        position: getPos(120, 50, 500, 0),
+        position: getPos(115, 50, 500, 0),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -121,7 +121,7 @@ function CommitteeContent() {
       {
         id: "ace-cards",
         data: { label: "ACE CARDS Alumni" },
-        position: getPos(-70, 210, 20, 80),
+        position: getPos(-75, 210, 20, 80),
         style: nodeStyleWhite,
         type: "static",
       },
@@ -136,7 +136,7 @@ function CommitteeContent() {
       {
         id: "h-fb",
         data: { label: "Finance and Business Head" },
-        position: getPos(-60, 300, 100, 140),
+        position: getPos(-75, 300, 100, 140),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -150,7 +150,7 @@ function CommitteeContent() {
       {
         id: "h-er",
         data: { label: "Education and Research Head" },
-        position: getPos(0, 370, 420, 140),
+        position: getPos(-5, 370, 420, 140),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -165,7 +165,7 @@ function CommitteeContent() {
       {
         id: "c-fb",
         data: { label: "Finance and Business Comm." },
-        position: getPos(-60, 460, 100, 220),
+        position: getPos(-75, 460, 100, 220),
         style: nodeStyleBlue,
         type: "static",
       },
@@ -179,7 +179,7 @@ function CommitteeContent() {
       {
         id: "c-er",
         data: { label: "Education and Research Comm." },
-        position: getPos(0, 530, 420, 220),
+        position: getPos(-5, 530, 420, 220),
         style: nodeStyleBlue,
         type: "static",
       },
@@ -193,7 +193,7 @@ function CommitteeContent() {
       {
         id: "bridge",
         data: { label: "" },
-        position: getPos(60, 270, 340, 100),
+        position: getPos(55, 270, 340, 100),
         style: nodeStyleSecret,
         type: "static",
       },
