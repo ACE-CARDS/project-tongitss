@@ -12,6 +12,9 @@ export default function EventsTimeline() {
   
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; 
+
   const fetchEvents = async () => {
     setIsLoading(true);
     const supabase = createClient();
@@ -41,6 +44,10 @@ export default function EventsTimeline() {
     return () => { document.body.style.overflow = 'auto'; };
   }, [selectedEvent]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter, activeYear, searchQuery]);
+
   const availableYears = Array.from(
     new Set(
       events.map((event) => 
@@ -65,6 +72,12 @@ export default function EventsTimeline() {
 
     return matchesStatus && matchesYear && matchesSearch;
   });
+
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const currentEvents = filteredEvents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const formatEventDateRange = (start: string, end: string) => {
     if (!start) return "";
@@ -177,109 +190,147 @@ export default function EventsTimeline() {
               No events found for the selected filters.
             </div>
           ) : (
-            /* GRID DISPLAY */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredEvents.map((event) => {
-                const completed = isEventCompleted(event);
-                const statusUpper = event.status?.toUpperCase() || "UPCOMING";
-                const hasValidImage = Boolean(event.image_url && typeof event.image_url === 'string' && event.image_url.trim() !== "");
+            <div className="w-full flex flex-col items-center">
+              {/* GRID DISPLAY */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl mx-auto">
+                {currentEvents.map((event) => {
+                  const completed = isEventCompleted(event);
+                  const statusUpper = event.status?.toUpperCase() || "UPCOMING";
+                  const hasValidImage = Boolean(event.image_url && typeof event.image_url === 'string' && event.image_url.trim() !== "");
 
-                return (
-                  <div
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    className="group relative rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md transition-all duration-300 ease-out hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white flex flex-col cursor-pointer overflow-hidden h-full w-full"
-                  >
-                    {/* Glow Effect */}
-                    <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent pointer-events-none z-0" />
+                  return (
+                    <div
+                      key={event.id}
+                      onClick={() => setSelectedEvent(event)}
+                      className="group relative rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200 shadow-md transition-all duration-300 ease-out hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 hover:bg-white flex flex-col cursor-pointer overflow-hidden h-full w-full"
+                    >
+                      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-indigo-100/40 to-transparent pointer-events-none z-0" />
 
-                    <div className="relative z-10 flex flex-col h-full w-full">
-                      {/* Image Header */}
-                      {hasValidImage ? (
-                        <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-200/60">
-                          <img 
-                            src={event.image_url} 
-                            alt={event.title} 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full h-4 bg-[#011638] shrink-0"></div>
-                      )}
+                      <div className="relative z-10 flex flex-col h-full w-full">
+                        {hasValidImage ? (
+                          <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-200/60">
+                            <img 
+                              src={event.image_url} 
+                              alt={event.title} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-full h-4 bg-[#011638] shrink-0"></div>
+                        )}
 
-                      {/* Content Body */}
-                      <div className="flex flex-col flex-grow p-6 sm:p-8 w-full">
-                        <div className="flex flex-col mb-4 w-full">
-                          <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
-                            Date
-                          </span>
-                          <span className="font-black text-lg leading-tight text-[#0d21a1] break-words line-clamp-2">
-                            {formatEventDateRange(event.start_date, event.end_date)}
-                          </span>
-                        </div>
-                        
-                        <h3 
-                          title={event.title}
-                          className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
-                        >
-                          {event.title}
-                        </h3>
-                        
-                        <p 
-                          title={event.location}
-                          className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
-                        >
-                          📍 {event.location}
-                        </p>
-                        
-                        <p 
-                          title={event.description}
-                          className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
-                        >
-                          {event.description}
-                        </p>
-                        
-                        {/* CARD FOOTER */}
-                        <div className="mt-6 pt-5 border-t border-slate-200/60 text-center shrink-0 w-full relative z-20">
-                          {completed ? (
-                            <span className="inline-block w-full py-2.5 rounded-xl font-black text-xs tracking-widest uppercase bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
-                              VIEW RECAP
+                        <div className="flex flex-col flex-grow p-6 sm:p-8 w-full">
+                          <div className="flex flex-col mb-4 w-full">
+                            <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
+                              Date
                             </span>
-                          ) : statusUpper === "ONGOING" ? (
-                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
-                              ● ONGOING
+                            <span className="font-black text-lg leading-tight text-[#0d21a1] break-words line-clamp-2">
+                              {formatEventDateRange(event.start_date, event.end_date)}
                             </span>
-                          ) : (
-                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047] shadow-sm">
-                              COMING SOON
-                            </span>
-                          )}
+                          </div>
+                          
+                          <h3 
+                            title={event.title}
+                            className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
+                          >
+                            {event.title}
+                          </h3>
+                          
+                          <p 
+                            title={event.location}
+                            className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
+                          >
+                            📍 {event.location}
+                          </p>
+                          
+                          <p 
+                            title={event.description}
+                            className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
+                          >
+                            {event.description}
+                          </p>
+                          
+                          {/* CARD FOOTER */}
+                          <div className="mt-6 pt-5 border-t border-slate-200/60 text-center shrink-0 w-full relative z-20">
+                            {completed ? (
+                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-slate-600 bg-slate-100 border border-slate-200 shadow-sm">
+                                ● COMPLETED
+                              </span>
+                            ) : statusUpper === "ONGOING" ? (
+                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
+                                ● ONGOING
+                              </span>
+                            ) : (
+                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047] shadow-sm">
+                                COMING SOON
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* PAGINATION CONTROLS */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12 mb-8 font-ubuntu-mono">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-10 h-10 rounded-xl font-bold transition-colors ${
+                        currentPage === i + 1 
+                        ? 'bg-[#011638] text-white shadow-md' 
+                        : 'text-[#475569] hover:bg-slate-200'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>
       )}
 
-      {/* MODAL POPUP */}
+      {/* MODAL POPUP FOR EVENT DETAILS */}
       {selectedEvent && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#011638]/60 backdrop-blur-sm p-4 sm:p-6 w-full"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#011638]/60 backdrop-blur-sm p-4 sm:p-6 w-full"
           onClick={() => setSelectedEvent(null)}
         >
           <div 
-            className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-3xl w-full max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header/Image */}
-            <div className="relative w-full shrink-0 overflow-hidden">
+            <div className="relative w-full shrink-0 overflow-hidden bg-[#011638]">
               <button 
                 onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors"
+                className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors"
               >
                 ✕
               </button>
@@ -301,14 +352,14 @@ export default function EventsTimeline() {
                     </span>
                     <h2 
                       title={selectedEvent.title}
-                      className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight drop-shadow-md break-all sm:break-words w-full line-clamp-3"
+                      className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight drop-shadow-md break-words overflow-wrap-anywhere line-clamp-4 w-full"
                     >
                       {selectedEvent.title}
                     </h2>
                   </div>
                 </div>
               ) : (
-                <div className="w-full pt-16 pb-6 px-6 sm:px-10 bg-[#011638] overflow-hidden">
+                <div className="w-full pt-16 pb-8 px-6 sm:px-10 bg-[#011638] relative">
                   <span 
                     title={selectedEvent.short_title}
                     className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] line-clamp-1 shadow-sm"
@@ -317,7 +368,7 @@ export default function EventsTimeline() {
                   </span>
                   <h2 
                     title={selectedEvent.title}
-                    className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight break-all sm:break-words w-full line-clamp-3"
+                    className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight break-words overflow-wrap-anywhere line-clamp-4 w-full"
                   >
                     {selectedEvent.title}
                   </h2>
@@ -361,14 +412,6 @@ export default function EventsTimeline() {
                 </p>
               </div>
 
-              {/* Action Button */}
-              {isEventCompleted(selectedEvent) && (
-                <div className="mt-4 pt-6 border-t border-slate-100 flex justify-center w-full">
-                  <button className="px-8 py-3 bg-[#011638] text-white font-oswald font-bold tracking-widest uppercase rounded-xl hover:bg-[#eec643] hover:text-[#011638] transition-colors shadow-md">
-                    View Recap Gallery
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
