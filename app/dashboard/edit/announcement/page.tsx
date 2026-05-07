@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -21,12 +21,25 @@ function EditAnnouncementContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   
+  // Track the initial state to compare against current state
+  const [initialData, setInitialData] = useState({
+    title: "",
+    description: "",
+    start_date: "",
+    end_date: "",
+  });
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     start_date: "",
     end_date: "",
   });
+
+  // Boolean check to see if anything has changed
+  const isUnchanged = useMemo(() => {
+    return JSON.stringify(initialData) === JSON.stringify(formData);
+  }, [initialData, formData]);
 
   useEffect(() => {
     if (announcementId && type) {
@@ -51,12 +64,14 @@ function EditAnnouncementContent() {
       if (error) throw error;
 
       if (data) {
-        setFormData({
+        const fetchedData = {
           title: type === "landing" ? data.announce_landing_title : data.announce_dash_title,
           description: type === "landing" ? data.announce_landing_desc : data.announce_dash_desc,
           start_date: type === "landing" ? data.announce_landing_start : data.announce_dash_start,
           end_date: type === "landing" ? data.announce_landing_end : data.announce_dash_end,
-        });
+        };
+        setFormData(fetchedData);
+        setInitialData(fetchedData); // Set initial baseline
       }
     } catch (err) {
       console.error("Error fetching announcement:", err);
@@ -69,7 +84,6 @@ function EditAnnouncementContent() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing again
     if (submitError) setSubmitError("");
   };
 
@@ -77,7 +91,6 @@ function EditAnnouncementContent() {
     e.preventDefault();
     setSubmitError("");
 
-    // Validation
     if (!formData.title.trim() || !formData.description.trim()) {
       setSubmitError("Title and Description are required.");
       return;
@@ -156,7 +169,6 @@ function EditAnnouncementContent() {
         <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Submit error display - MATCHES ADD FORM */}
             {submitError && (
               <div ref={errorRef} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
                 <p className="font-ubuntu-mono text-sm">{submitError}</p>
@@ -244,8 +256,8 @@ function EditAnnouncementContent() {
               </Link>
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting || isUnchanged}
+                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Updating..." : "Update Announcement"}
               </button>
