@@ -284,9 +284,10 @@ export default function CommitteeDirectory() {
           </p>
         ) : (
           paginatedMembers.map((person, index) => {
-            const fileName = `${normalizeName(person.mem_fname)}_${normalizeName(person.mem_lname)}`
-              .replace(/\s+/g, "")
-              .toLowerCase();
+            const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
+              /\s+/g,
+              "",
+            );
             const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
             const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
