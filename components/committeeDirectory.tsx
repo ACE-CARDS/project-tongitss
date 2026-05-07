@@ -90,7 +90,7 @@ export default function CommitteeDirectory() {
           )
           .eq("acadyear", ACADYEAR)
           .eq("is_active", true)
-          .order("id", { ascending: true });
+          .order("comm", { ascending: true });
 
         if (error) throw error;
         if (data) setMembers(data);
