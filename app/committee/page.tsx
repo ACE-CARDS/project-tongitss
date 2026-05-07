@@ -55,6 +55,13 @@ function CommitteeContent() {
     background: "#fff",
   };
 
+  const nodeStyleSecret = {
+    ...nodeStyleBase,
+    borderRadius: "10px",
+    border: "none",
+    background: "transparent",
+  };
+
   const nodes = useMemo(() => {
     const getPos = (mX, mY, dX, dY) => ({
       x: isMobile ? mX : dX,
@@ -129,14 +136,14 @@ function CommitteeContent() {
       {
         id: "h-fb",
         data: { label: "Finance and Business Head" },
-        position: getPos(10, 300, 100, 140),
+        position: getPos(-60, 300, 100, 140),
         style: nodeStyleYellow,
         type: "static",
       },
       {
         id: "h-pm",
         data: { label: "Publicity and Media Head" },
-        position: getPos(110, 300, 260, 140),
+        position: getPos(180, 300, 260, 140),
         style: nodeStyleYellow,
         type: "static",
       },
@@ -158,14 +165,14 @@ function CommitteeContent() {
       {
         id: "c-fb",
         data: { label: "Finance and Business Comm." },
-        position: getPos(0, 460, 100, 220),
+        position: getPos(-60, 460, 100, 220),
         style: nodeStyleBlue,
         type: "static",
       },
       {
         id: "c-pm",
         data: { label: "Publicity and Media Comm." },
-        position: getPos(120, 460, 260, 220),
+        position: getPos(180, 460, 260, 220),
         style: nodeStyleBlue,
         type: "static",
       },
@@ -183,36 +190,38 @@ function CommitteeContent() {
         style: nodeStyleBlue,
         type: "static",
       },
+      {
+        id: "bridge",
+        data: { label: "" },
+        position: getPos(60, 270, 340, 100),
+        style: nodeStyleSecret,
+        type: "static",
+      },
     ];
   }, [isMobile]);
 
   const initialEdges = [
-    {
-      id: "e1",
-      source: "rd",
-      target: "dir-int",
-      type: isMobile ? "smoothstep" : "straight",
-    },
-    { id: "e2", source: "rd", target: "sec", type: "step" },
-    {
-      id: "e3",
-      source: "rd",
-      target: "dir-ext",
-      type: isMobile ? "smoothstep" : "straight",
-    },
-    { id: "e4", source: "dir-int", target: "mem-comm", type: "step" },
-    { id: "e5", source: "mem-comm", target: "ace-cards", type: "step" },
-    { id: "e6", source: "dir-ext", target: "ext-comm", type: "step" },
-    { id: "e7", source: "dir-int", target: "h-fb", type: "step" },
-    { id: "e8", source: "dir-int", target: "h-pm", type: "step" },
-    { id: "e9", source: "sec", target: "h-pm", type: "step" },
-    { id: "e10", source: "sec", target: "h-er", type: "step" },
-    { id: "e11", source: "dir-ext", target: "h-er", type: "step" },
-    { id: "e12", source: "dir-ext", target: "h-el", type: "step" },
+    { id: "e1", source: "rd", target: "dir-int", type: "step" },
+    { id: "e2", source: "rd", target: "sec", type: "straight" },
+    { id: "e3", source: "rd", target: "dir-ext", type: "step" },
+
+    { id: "merge-1", source: "dir-int", target: "bridge", type: "step" },
+    { id: "merge-2", source: "sec", target: "bridge", type: "straight" },
+    { id: "merge-3", source: "dir-ext", target: "bridge", type: "step" },
+
+    { id: "split-1", source: "bridge", target: "h-fb", type: "straight" },
+    { id: "split-2", source: "bridge", target: "h-pm", type: "straight" },
+    { id: "split-3", source: "bridge", target: "h-er", type: "straight" },
+    { id: "split-4", source: "bridge", target: "h-el", type: "straight" },
+
     { id: "e13", source: "h-fb", target: "c-fb", type: "straight" },
     { id: "e14", source: "h-pm", target: "c-pm", type: "straight" },
     { id: "e15", source: "h-er", target: "c-er", type: "straight" },
     { id: "e16", source: "h-el", target: "c-el", type: "straight" },
+
+    { id: "e4", source: "dir-int", target: "mem-comm", type: "step" },
+    { id: "e5", source: "mem-comm", target: "ace-cards", type: "straight" },
+    { id: "e6", source: "dir-ext", target: "ext-comm", type: "step" },
   ];
 
   const StaticNode = ({ data }) => (
