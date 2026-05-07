@@ -1011,8 +1011,18 @@ const hasEditChanges =
                       key={member.id}
                       className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-bold text-[#141414] text-sm sm:text-base">
-                      {member.mem_lname}, {member.mem_fname} {member.mem_minit}
+                      <span className="font-bold text-[#141414] truncate max-w-full block">
+                        {member.mem_lname.toUpperCase()},{" "}
+                        {member.mem_fname
+                          .toLowerCase()
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {member.mem_minit?.trim()
+                          ? ` ${
+                              member.mem_minit.endsWith(".")
+                                ? member.mem_minit.toUpperCase()
+                                : `${member.mem_minit.toUpperCase()}.`
+                            }`
+                          : ""}
                       </span>
                       <div
                         className={`${getCommitteeStyle(commName)} font-normal rounded-xl`}

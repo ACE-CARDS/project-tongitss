@@ -259,16 +259,15 @@ export default function MembersPage() {
 
       setShowSaveSuccess(true);
 
-setTimeout(async () => {
-  setShowSaveSuccess(false);
+      setTimeout(async () => {
+        setShowSaveSuccess(false);
 
-  setMembers([]); 
-  await refreshMembers();
-}, 2000);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        await refreshMembers(); 
+      }, 2000);
+                } catch (error) {
+                  console.error(error);
+                }
+              };
 
   const refreshMembers = async () => {
     const { data } = await supabase
@@ -1120,7 +1119,17 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                       "
                     >
                       <span className="font-bold text-[#141414] truncate max-w-full block">
-                        {member.mem_lname}, {member.mem_fname} {member.mem_minit}
+                        {member.mem_lname.toUpperCase()},{" "}
+                        {member.mem_fname
+                          .toLowerCase()
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {member.mem_minit?.trim()
+                          ? ` ${
+                              member.mem_minit.endsWith(".")
+                                ? member.mem_minit.toUpperCase()
+                                : `${member.mem_minit.toUpperCase()}.`
+                            }`
+                          : ""}
                       </span>
                       <div
                         className={`${getCommitteeStyle(commName)} font-medium rounded-xl`}
