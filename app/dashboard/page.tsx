@@ -18,6 +18,7 @@ import MemberThesisView from "@/components/memberThesisView";
 import ManagePage from "./manage/page";
 import LoadingState from "@/components/mainLoadingState";
 import TabLoadingState from "@/components/tabLoadingState";
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 // Internal component to handle search params
 function DashboardContent() {
