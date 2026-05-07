@@ -206,7 +206,7 @@ function DashboardContent() {
         if (userRole === "superadmin") return <MemdirSuper />;
         if (userRole === "admin") return <MemdirAdmin />;
         return (
-          <p className="text-center py-10 italic text-gray-500">Testing</p>
+          <p className="text-center py-10 italic text-gray-500">You do not have access to this page.</p>
         );
       case "thesis":
         // if admin or super admin

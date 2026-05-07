@@ -34,6 +34,16 @@ function ExecutivesContent() {
     "Events and Logistics Committee Deputy",
   ];
 
+  const normalizeName = (str = "") => {
+    return str
+      .trim()
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   useEffect(() => {
     const fetchExecutives = async () => {
       setIsLoading(true);
@@ -63,14 +73,13 @@ function ExecutivesContent() {
 
       if (execData) {
         const formatted = execData.map((person) => {
-          const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
-            /\s+/g,
-            "",
-          );
+          const firstName = normalizeName(person.mem_fname);
+          const lastName = normalizeName(person.mem_lname);
+          const fileName = `${firstName}_${lastName}`.replace(/\s+/g, "");
           const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
 
           return {
-            name: `${person.mem_fname} ${person.mem_lname}`,
+            name: `${firstName} ${lastName}`,
             email: person.mem_email,
             acadyear: person.acadyear,
             fblink: person.fblink,
