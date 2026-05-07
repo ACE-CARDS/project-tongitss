@@ -67,7 +67,7 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, title }: { isOpen: boo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4"><h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3></div>
         <div className="px-6 py-6">
