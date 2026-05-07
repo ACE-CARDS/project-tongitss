@@ -36,6 +36,7 @@ function DashboardContent() {
     lname: string;
     comm: string;
     school: string;
+    role?: string;
   } | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true); // Track loading state
   const [isTabLoading, setIsTabLoading] = useState(false);
