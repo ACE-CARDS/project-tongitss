@@ -21,7 +21,6 @@ interface EventItem {
 type SortField = 'title' | 'start_date' | null;
 type SortOrder = 'asc' | 'desc' | null;
 
-// Read more component for description
 function EventDescription({ description }: { description: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,16 +29,16 @@ function EventDescription({ description }: { description: string | null }) {
   }
 
   if (description.length <= 100) {
-    return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">
+    return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words break-all whitespace-normal">
       {description}
     </p>;
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       {!isOpen ? (
-        <div>
-          <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-2 break-words">
+        <div className="w-full min-w-0">
+          <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-2 break-words break-all whitespace-normal">
             {description}
           </p>
           <button
@@ -50,8 +49,8 @@ function EventDescription({ description }: { description: string | null }) {
           </button>
         </div>
       ) : (
-        <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar">
+        <div className="w-full min-w-0">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words break-all whitespace-normal custom-scrollbar">
             {description}
           </div>
           <button
@@ -66,7 +65,6 @@ function EventDescription({ description }: { description: string | null }) {
   );
 }
 
-// Delete confirmation popup
 function DeleteConfirmPopup({ 
   isOpen, 
   onClose, 
@@ -98,8 +96,8 @@ function DeleteConfirmPopup({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
-      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
+      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-[#011638] px-6 py-4">
           <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3>
@@ -108,7 +106,7 @@ function DeleteConfirmPopup({
         {/* Body */}
         <div className="px-6 py-6">
           <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-            Are you sure you want to delete <span className="font-bold text-[#011638]">"{title}"</span>? This action will hide it from the public view.
+            Are you sure you want to delete <span className="font-bold text-[#011638]">&quot;{title}&quot;</span>? This action will hide it from the public view.
           </p>
           <div className="flex justify-end gap-3">
             <button
@@ -122,7 +120,7 @@ function DeleteConfirmPopup({
                 onConfirm();
                 onClose();
               }}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-oswald tracking-widest uppercase"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-oswald tracking-widest uppercase font-bold"
             >
               Delete
             </button>
@@ -133,7 +131,6 @@ function DeleteConfirmPopup({
   );
 }
 
-// Search Bar
 function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearchChange: (value: string) => void }) {
   return (
     <div className="relative flex-1">
@@ -151,7 +148,6 @@ function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearc
   );
 }
 
-// Main component
 export default function EventsAdmin() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
@@ -162,12 +158,19 @@ export default function EventsAdmin() {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortField, sortOrder]);
 
   useEffect(() => {
     let filtered = [...events];
@@ -211,7 +214,6 @@ export default function EventsAdmin() {
   };
 
   const handleDelete = async (id: number) => {
-    // Using soft delete (is_deleted: true) to match your previous event architecture
     await supabase.from('events').update({ is_deleted: true }).eq('id', id);
     setEvents(events.filter(item => item.id !== id));
   };
@@ -236,6 +238,12 @@ export default function EventsAdmin() {
     return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
   };
 
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const currentEvents = filteredEvents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -245,7 +253,7 @@ export default function EventsAdmin() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full overflow-hidden">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-oswald font-bold text-[#011638] uppercase tracking-wide">Event Management</h1>
@@ -279,9 +287,9 @@ export default function EventsAdmin() {
         </div>
       ) : (
         /* Event Table */
-        <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
+        <div className="bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200 w-full overflow-hidden flex flex-col">
+          <div className="overflow-x-auto w-full">
+            <table className="min-w-full table-fixed">
               
               {/* Table Headers */}
               <thead className="bg-[#011638]">
@@ -290,7 +298,7 @@ export default function EventsAdmin() {
                     Media
                   </th>
                   <th 
-                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${
+                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-auto ${
                       sortField === 'title' && sortOrder !== null ? 'bg-[#0d21a1]' : ''
                     }`}
                     onClick={() => handleSort('title')}
@@ -334,9 +342,8 @@ export default function EventsAdmin() {
                 </tr>
               </thead>
 
-              {/* Table Body */}
               <tbody className="divide-y divide-gray-200">
-                {filteredEvents.map((item, index) => (
+                {currentEvents.map((item, index) => (
                   <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#fbfaf8]'}>
 
                     {/* Image Column */}
@@ -361,18 +368,18 @@ export default function EventsAdmin() {
                       </div>
                     </td>
 
-                    {/* Title & Description Column */}
-                    <td className="px-4 py-4 align-top">
-                      <div className="flex flex-col h-full">
-                        <div className="mb-2">
-                          <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-wide block leading-tight">
+                    {/* Title & Description */}
+                    <td className="px-4 py-4 align-top w-full overflow-hidden min-w-0">
+                      <div className="flex flex-col h-full w-full min-w-0">
+                        <div className="mb-2 w-full min-w-0">
+                          <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-wide block leading-tight break-words break-all whitespace-normal">
                             {item.title}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block break-words break-all whitespace-normal mt-1">
                             {item.short_title}
                           </span>
                         </div>
-                        <div>
+                        <div className="w-full min-w-0">
                           {item.description ? (
                             <EventDescription description={item.description} />
                           ) : (
@@ -388,12 +395,12 @@ export default function EventsAdmin() {
                         <div className="text-sm text-[#011638] font-bold font-ubuntu-mono whitespace-nowrap bg-slate-100 px-3 py-1 rounded border border-slate-200">
                           {formatSchedule(item.start_date, item.end_date)}
                         </div>
-                        <div className="text-xs text-slate-500 font-ubuntu-mono flex items-center gap-1 mt-1">
-                          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="text-xs text-slate-500 font-ubuntu-mono flex items-center justify-center text-center gap-1 mt-1 break-words break-all">
+                          <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          {item.location}
+                          <span className="break-words line-clamp-2">{item.location}</span>
                         </div>
                       </div>
                     </td>
@@ -440,6 +447,47 @@ export default function EventsAdmin() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* PAGINATION CONTROLS */}
+      {!loading && totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8 font-ubuntu-mono w-full">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none custom-scrollbar pb-2 sm:pb-0">
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`w-10 h-10 shrink-0 rounded-xl font-bold transition-colors ${
+                  currentPage === i + 1 
+                  ? 'bg-[#011638] text-white shadow-md' 
+                  : 'text-[#475569] hover:bg-slate-200'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       )}
 
