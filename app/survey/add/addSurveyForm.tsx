@@ -1057,26 +1057,59 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         dateError ? 'border-red-500' : 'border-[#94a3b8]'
                       }`}
                       value={endDate}
-                      min={startDate ? (() => {
-                        // Min date = start date + 1 day
-                        const minDate = new Date(startDate);
-                        minDate.setDate(minDate.getDate() + 1);
-                        return minDate.toISOString().split('T')[0];
-                      })() : "2022-01-01"}
+                      min={(() => {
+                        // Get tomorrow's date as the minimum
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        tomorrow.setHours(0, 0, 0, 0);
+                        
+                        // If start date is selected, ensure min is the later of (tomorrow OR start date + 1 day)
+                        if (startDate) {
+                          const dayAfterStart = new Date(startDate);
+                          dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+                          dayAfterStart.setHours(0, 0, 0, 0);
+                          
+                          // Return the later date
+                          if (dayAfterStart > tomorrow) {
+                            return dayAfterStart.toISOString().split('T')[0];
+                          }
+                        }
+                        
+                        return tomorrow.toISOString().split('T')[0];
+                      })()}
                       onChange={(e) => {
                         const newEndDate = e.target.value;
                         setEndDate(newEndDate);
                         
-                        // Validate end date after start date
-                        if (startDate && newEndDate <= startDate) {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const endDateObj = new Date(newEndDate);
+                        endDateObj.setHours(0, 0, 0, 0);
+                        
+                        // Check if end date is <= today
+                        if (endDateObj <= today) {
+                          setDateError("End date must be after today");
+                          setEndDate("");
+                        } 
+                        // Check if end date is <= start date
+                        else if (startDate && newEndDate <= startDate) {
                           setDateError("End date must be after start date");
-                        } else {
+                          setEndDate("");
+                        } 
+                        else {
                           setDateError("");
                         }
                       }}
                       onBlur={() => {
-                        // Final validation
-                        if (startDate && endDate && endDate <= startDate) {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const endDateObj = endDate ? new Date(endDate) : null;
+                        endDateObj?.setHours(0, 0, 0, 0);
+                        
+                        if (endDateObj && endDateObj <= today) {
+                          setDateError("End date must be after today");
+                          setEndDate("");
+                        } else if (startDate && endDate && endDate <= startDate) {
                           setDateError("End date must be after start date");
                           setEndDate("");
                         }
@@ -1183,7 +1216,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       return;
                     }
                     
-                    if (!/[A-Za-z\s,.'-]/.test(e.key)) {
+                    if (!/[A-Za-z0-9\s,.'-]/.test(e.key)) {
                       e.preventDefault();
                     }
                   }}

@@ -11,6 +11,7 @@ import SpotlightCard from "@/components/SpotlightCard";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import BackButton from "@/components/backButton";
+import ResearchDataAdmin from "@/components/researchDataAdmin";
 
 export default function ManagePage() {
   const { user } = useUser();
@@ -61,12 +62,27 @@ export default function ManagePage() {
       color: "from-[#011638] to-[#011638]",
     },
     {
-      label: "Membership App",
+      label: "Membership Application",
       key: "memapp",
       description: "Manage instructions, deadlines, and videos for applicants",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      color: "from-[#011638] to-[#011638]",
+    },
+  ];
+
+  // Others
+  const othersOptions = [
+    {
+      label: "Categories & Schools",
+      key: "researchData",
+      description: "Manage categories and schools for surveys and theses",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -79,18 +95,21 @@ export default function ManagePage() {
       case "news": return <NewsAdmin />;
       case "events": return <EventsAdmin />;
       case "memapp": return <MemAppAdmin />;
+      case "researchData": return <ResearchDataAdmin />;
       default: return null;
     }
   };
 
-  if (activeSection && manageOptions.some(opt => opt.key === activeSection)) {
-    const currentOption = manageOptions.find((opt) => opt.key === activeSection);
+  const allOptions = [...manageOptions, ...othersOptions];
+  
+  if (activeSection && allOptions.some(opt => opt.key === activeSection)) {
+    const currentOption = allOptions.find((opt) => opt.key === activeSection);
     return (
       <div className="w-full">
         <div className="pt-8 pb-12 px-4 md:px-8">
           <main className="w-full max-w-[1400px] mx-auto">
             <BackButton href="/dashboard?tab=manage" />
-
+            <div className="mt-6"> 
             <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-[#011638] to-[#012a5a] text-white p-6">
                 <div className="flex items-center gap-3">
@@ -103,6 +122,7 @@ export default function ManagePage() {
               </div>
               <div className="p-6">{renderContent()}</div>
             </div>
+            </div>
           </main>
         </div>
       </div>
@@ -114,11 +134,11 @@ export default function ManagePage() {
       <div className="mb-8">
         <h1 className="text-3xl font-oswald font-bold text-[#011638]">Edit Management</h1>
         <p className="text-[#475569] font-ubuntu-mono mt-2">
-          Manage your content and keep your community updated with the latest news, events, and announcements
+          Manage your content and keep your community updated with the latest announcements, news, events, and membership application details.
         </p>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-12">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -193,6 +213,95 @@ export default function ManagePage() {
             </motion.div>
           ))}
         </motion.div>
+      </div>
+
+      {/* Line */}
+      <div className="relative my-12">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+      </div>
+
+      {/* Others Section */}
+      <div className="mb-8 mt-15">
+        <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-6">Others</h2>
+        
+        <div className="flex justify-center">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.3,
+                },
+              },
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full"
+          >
+            {othersOptions.map((option) => (
+              <motion.div
+                key={option.key}
+                variants={{
+                  hidden: {
+                    opacity: 0,
+                    y: 50,
+                    scale: 0.9,
+                  },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: {
+                      type: "spring",
+                      damping: 12,
+                      stiffness: 100,
+                      duration: 0.5,
+                    },
+                  },
+                }}
+              >
+                <Link href={`/dashboard?tab=manage&section=${option.key}`}>
+                  <SpotlightCard
+                    className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative cursor-pointer"
+                    spotlightColor="rgba(239, 240, 242, 0.16)"
+                  >
+                    <div className="flex flex-col h-full text-left">
+                      <div className={`bg-gradient-to-r ${option.color} p-6 text-white`}>
+                        <div className="flex items-center justify-start gap-4">
+                          <span className="text-white shrink-0">{option.icon}</span>
+                          <h3 className="text-xl font-bold text-white my-auto leading-tight">
+                            {option.label}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <div className="p-6 flex-1 flex flex-col">
+                        <p className="text-gray-600 text-sm mb-5 leading-relaxed">
+                          {option.description}
+                        </p>
+
+                        <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-[#011638] font-medium">
+                          <span className="text-sm">Manage</span>
+                          <svg
+                            className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </SpotlightCard>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
