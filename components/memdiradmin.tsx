@@ -984,6 +984,7 @@ const hasEditChanges =
               </div>
             </div>
 
+            <div className="overflow-y-visible"></div>
             {/* grid start */}
             <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
               <span className="text-center">Name</span>
@@ -1109,23 +1110,54 @@ const hasEditChanges =
                   </svg>
                 </button>
 
-                {/* Page numbers */}
+               {/* Page numbers */}
                 <div className="flex items-center space-x-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
-                          page === currentPage
-                            ? "bg-[#011638] text-white font-bold"
-                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  )}
+                  {(() => {
+                    const pages = [];
+
+                    if (totalPages <= 4) {
+                      for (let i = 1; i <= totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      const showLeft = currentPage <= 2;
+                      const showRight = currentPage >= totalPages - 1;
+
+                      if (showLeft) {
+                        pages.push(1, 2, "...", totalPages);
+                      } else if (showRight) {
+                        pages.push(1, "...", totalPages - 1, totalPages);
+                      } else {
+                        pages.push(
+                          1,
+                          "...",
+                          currentPage,
+                          "...",
+                          totalPages
+                        );
+                      }
+                    }
+
+                    return pages.map((page, idx) =>
+                      page === "..." ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                            page === currentPage
+                              ? "bg-[#011638] text-white font-bold"
+                              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    );
+                  })()}
                 </div>
 
                 {/* Next button */}

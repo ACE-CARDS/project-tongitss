@@ -23,6 +23,15 @@ const containerVariants = {
   exit: { opacity: 0, transition: { duration: 0.2 } },
 };
 
+//hehe normalize q lang po names 
+const normalizeName = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ") 
+    .replace(/\b\w/g, (c) => c.toUpperCase()); 
+};
+
 const itemVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: {
@@ -275,10 +284,9 @@ export default function CommitteeDirectory() {
           </p>
         ) : (
           paginatedMembers.map((person, index) => {
-            const fileName = `${person.mem_fname}_${person.mem_lname}`.replace(
-              /\s+/g,
-              "",
-            );
+            const fileName = `${normalizeName(person.mem_fname)}_${normalizeName(person.mem_lname)}`
+              .replace(/\s+/g, "")
+              .toLowerCase();
             const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
             const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
@@ -328,7 +336,7 @@ export default function CommitteeDirectory() {
                      line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words
                       hyphens-auto "
                   >
-                    {person.mem_fname} {person.mem_lname}
+                    {normalizeName(person.mem_fname)} {normalizeName(person.mem_lname)}
                   </h2>
 
                   {/* Committee */}
