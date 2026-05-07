@@ -1,7 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+
+const FilterDropdown = ({ value, options, onChange }: any) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLabel = options.find((o: any) => o.value === value)?.label || value;
+
+  return (
+    <div ref={ref} className="relative w-full z-[50] font-sans">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <svg 
+          className={`w-4 h-4 shrink-0 transition-transform ml-3 ${open ? "rotate-180" : ""}`} 
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute left-0 mt-2 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden">
+          <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+            {options.map((o: any) => (
+              <li
+                key={o.value}
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                className={`px-5 py-3 cursor-pointer transition-colors text-sm font-bold font-ubuntu-mono uppercase tracking-widest ${
+                  o.value === value ? "bg-[#011638] text-white" : "hover:bg-slate-100 text-[#011638]"
+                }`}
+              >
+                {o.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 export default function EventsTimeline() {
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -107,43 +158,48 @@ export default function EventsTimeline() {
     return currentDate > eventEndDate;
   };
 
-  return (
-    <div className="w-full flex flex-col">
-      
-      {/* SEARCH AND STATUS DROPDOWN */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto mb-8">
-        <div className="relative w-full sm:w-1/2">
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-5 py-3.5 rounded-xl bg-white border-2 border-slate-200 font-ubuntu-mono font-bold text-slate-800 placeholder:text-slate-400 focus:border-[#011638] focus:ring-0 outline-none shadow-sm transition-all"
-          />
-          <svg className="absolute right-4 top-3.5 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+  const statusOptions = [
+    { label: "ALL EVENTS", value: "ALL" },
+    { label: "UPCOMING", value: "UPCOMING" },
+    { label: "ACCOMPLISHED", value: "COMPLETED" }
+  ];
 
-        <div className="relative w-full sm:w-1/2">
-          <select
-            value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value)}
-            className="w-full appearance-none px-5 py-3.5 rounded-xl bg-white border-2 border-slate-200 text-slate-800 font-bold font-ubuntu-mono cursor-pointer tracking-widest text-sm uppercase outline-none focus:border-[#011638] transition-colors shadow-sm pr-10"
-          >
-            <option value="ALL">ALL EVENTS</option>
-            <option value="UPCOMING">UPCOMING</option>
-            <option value="COMPLETED">ACCOMPLISHED</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  return (
+    <div className="w-full flex flex-col -mt-8 md:-mt-4">
+      
+      {/* TOOLBAR */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
+        
+        {/* Search */}
+        <div className="w-full md:w-auto flex justify-center md:justify-start">
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-5 py-2.5 pl-11 border border-[#011638] rounded-xl text-[#011638] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#011638] bg-white shadow-sm transition-all font-ubuntu-mono font-bold"
+            />
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
         </div>
+
+        {/* Status Dropdown */}
+        <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-auto">
+            <FilterDropdown 
+              value={activeFilter} 
+              options={statusOptions} 
+              onChange={setActiveFilter} 
+            />
+          </div>
+        </div>
+        
       </div>
 
-      {/* TIMELINE */}
+      {/* HORIZONTAL YEAR TIMELINE */}
       {!isLoading && events.length > 0 && (
         <div className="relative w-full max-w-6xl mx-auto mb-14">
           <div className="overflow-x-auto pb-8 pt-12 px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -190,8 +246,7 @@ export default function EventsTimeline() {
               No events found for the selected filters.
             </div>
           ) : (
-            <div className="w-full flex flex-col items-center">
-              {/* GRID DISPLAY */}
+            <div className="w-full flex flex-col items-center px-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl mx-auto">
                 {currentEvents.map((event) => {
                   const completed = isEventCompleted(event);
@@ -219,8 +274,8 @@ export default function EventsTimeline() {
                           <div className="w-full h-4 bg-[#011638] shrink-0"></div>
                         )}
 
-                        <div className="flex flex-col flex-grow p-6 sm:p-8 w-full">
-                          <div className="flex flex-col mb-4 w-full">
+                        <div className="flex flex-col flex-grow p-6 sm:p-8 w-full min-w-0">
+                          <div className="flex flex-col mb-4 w-full min-w-0">
                             <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
                               Date
                             </span>
@@ -231,21 +286,24 @@ export default function EventsTimeline() {
                           
                           <h3 
                             title={event.title}
-                            className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-all sm:break-words w-full"
+                            className="text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-words overflow-wrap-anywhere w-full min-w-0"
                           >
                             {event.title}
                           </h3>
                           
-                          <p 
-                            title={event.location}
-                            className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 line-clamp-1 break-all sm:break-words w-full"
-                          >
-                            📍 {event.location}
-                          </p>
+                          <div className="flex items-start gap-1 mb-4 w-full min-w-0">
+                            <span className="shrink-0 text-xs mt-[1px]">📍</span>
+                            <p 
+                              title={event.location}
+                              className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate w-full min-w-0"
+                            >
+                              {event.location}
+                            </p>
+                          </div>
                           
                           <p 
                             title={event.description}
-                            className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full"
+                            className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed flex-grow line-clamp-3 break-words w-full min-w-0"
                           >
                             {event.description}
                           </p>
@@ -257,11 +315,11 @@ export default function EventsTimeline() {
                                 ● COMPLETED
                               </span>
                             ) : statusUpper === "ONGOING" ? (
-                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
+                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-blue-700 bg-blue-100 border border-blue-200 shadow-sm">
                                 ● ONGOING
                               </span>
                             ) : (
-                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-[#854d0e] bg-[#fef9c3] border border-[#fde047] shadow-sm">
+                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
                                 COMING SOON
                               </span>
                             )}
@@ -275,7 +333,7 @@ export default function EventsTimeline() {
 
               {/* PAGINATION CONTROLS */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12 mb-8 font-ubuntu-mono">
+                <div className="flex justify-center items-center gap-2 mt-12 mb-8 font-ubuntu-mono w-full">
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => prev - 1)}
@@ -286,19 +344,21 @@ export default function EventsTimeline() {
                     </svg>
                   </button>
 
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-10 h-10 rounded-xl font-bold transition-colors ${
-                        currentPage === i + 1 
-                        ? 'bg-[#011638] text-white shadow-md' 
-                        : 'text-[#475569] hover:bg-slate-200'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none custom-scrollbar pb-2 sm:pb-0">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-10 h-10 shrink-0 rounded-xl font-bold transition-colors ${
+                          currentPage === i + 1 
+                          ? 'bg-[#011638] text-white shadow-md' 
+                          : 'text-[#475569] hover:bg-slate-200'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
 
                   <button
                     disabled={currentPage === totalPages}
