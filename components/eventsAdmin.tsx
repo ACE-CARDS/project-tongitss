@@ -21,6 +21,7 @@ interface EventItem {
 type SortField = 'title' | 'start_date' | null;
 type SortOrder = 'asc' | 'desc' | null;
 
+// Read more component for description
 function EventDescription({ description }: { description: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -65,6 +66,7 @@ function EventDescription({ description }: { description: string | null }) {
   );
 }
 
+// Delete confirmation popup
 function DeleteConfirmPopup({ 
   isOpen, 
   onClose, 
@@ -131,6 +133,7 @@ function DeleteConfirmPopup({
   );
 }
 
+// Search Bar
 function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearchChange: (value: string) => void }) {
   return (
     <div className="relative flex-1">
@@ -148,6 +151,7 @@ function SearchBar({ searchTerm, onSearchChange }: { searchTerm: string; onSearc
   );
 }
 
+// Main component
 export default function EventsAdmin() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
@@ -158,6 +162,7 @@ export default function EventsAdmin() {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
+  // --- PAGINATION STATES ---
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -168,6 +173,7 @@ export default function EventsAdmin() {
     fetchEvents();
   }, []);
 
+  // Reset to page 1 whenever search or sort changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, sortField, sortOrder]);
@@ -238,6 +244,7 @@ export default function EventsAdmin() {
     return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
   };
 
+  // --- PAGINATION LOGIC ---
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const currentEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
@@ -289,16 +296,15 @@ export default function EventsAdmin() {
         /* Event Table */
         <div className="bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200 w-full overflow-hidden flex flex-col">
           <div className="overflow-x-auto w-full">
-            <table className="min-w-full table-fixed">
+            <table className="min-w-full table-fixed w-full">
               
-              {/* Table Headers */}
               <thead className="bg-[#011638]">
                 <tr>
-                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-32">
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">
                     Media
                   </th>
                   <th 
-                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-auto ${
+                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-full ${
                       sortField === 'title' && sortOrder !== null ? 'bg-[#0d21a1]' : ''
                     }`}
                     onClick={() => handleSort('title')}
@@ -316,7 +322,7 @@ export default function EventsAdmin() {
                     </div>
                   </th>
                   <th 
-                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-48 ${
+                    className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[220px] ${
                       sortField === 'start_date' && sortOrder !== null ? 'bg-[#0d21a1]' : ''
                     }`}
                     onClick={() => handleSort('start_date')}
@@ -333,10 +339,10 @@ export default function EventsAdmin() {
                       </div>
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-28">
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-24">
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">
                     Actions
                   </th>
                 </tr>
@@ -347,17 +353,17 @@ export default function EventsAdmin() {
                   <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#fbfaf8]'}>
 
                     {/* Image Column */}
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex justify-center">
+                    <td className="px-4 py-4 text-center align-top w-[120px]">
+                      <div className="flex justify-center w-full">
                         {item.image_url ? (
                           <img 
                             src={item.image_url} 
                             alt={item.title}
-                            className="w-24 h-24 object-cover rounded-md border border-slate-200 hover:scale-105 transition-transform duration-200 shadow-sm"
+                            className="w-24 h-24 min-w-[6rem] min-h-[6rem] shrink-0 object-cover rounded-md border border-slate-200 hover:scale-105 transition-transform duration-200 shadow-sm"
                             style={{ objectPosition: 'center' }}
                           />
                         ) : (
-                          <div className="w-24 h-24 bg-slate-100 flex items-center justify-center rounded-md border border-slate-200 shadow-sm">
+                          <div className="w-24 h-24 min-w-[6rem] min-h-[6rem] shrink-0 bg-slate-100 flex items-center justify-center rounded-md border border-slate-200 shadow-sm">
                             <img 
                               src="/assets/logos/ACE CARDS logo.png"
                               alt="ACE CARDS Logo"
@@ -368,7 +374,7 @@ export default function EventsAdmin() {
                       </div>
                     </td>
 
-                    {/* Title & Description */}
+                    {/* Title & Description Column */}
                     <td className="px-4 py-4 align-top w-full overflow-hidden min-w-0">
                       <div className="flex flex-col h-full w-full min-w-0">
                         <div className="mb-2 w-full min-w-0">
@@ -391,26 +397,29 @@ export default function EventsAdmin() {
 
                     {/* Schedule & Location Column */}
                     <td className="px-4 py-4 text-center align-top">
-                      <div className="flex flex-col items-center justify-center gap-2 h-full pt-1">
+                      <div className="flex flex-col items-center justify-center gap-2 h-full pt-1 w-full">
                         <div className="text-sm text-[#011638] font-bold font-ubuntu-mono whitespace-nowrap bg-slate-100 px-3 py-1 rounded border border-slate-200">
                           {formatSchedule(item.start_date, item.end_date)}
                         </div>
-                        <div className="text-xs text-slate-500 font-ubuntu-mono flex items-center justify-center text-center gap-1 mt-1 break-words break-all">
-                          <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        
+                        <div className="text-xs text-slate-500 font-ubuntu-mono flex items-start justify-center gap-1 mt-1 w-full max-w-[200px] mx-auto">
+                          <svg className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span className="break-words line-clamp-2">{item.location}</span>
+                          <span className="break-words line-clamp-2 text-left">{item.location}</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Status Column */}
                     <td className="px-4 py-4 text-center align-top pt-5">
-                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm ${
-                        item.status === 'Completed' || item.status === 'COMPLETED' 
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm whitespace-nowrap ${
+                        item.status?.toUpperCase() === 'COMPLETED' 
                           ? 'bg-slate-100 text-slate-500 border border-slate-200' 
-                          : 'bg-[#fef9c3] text-[#854d0e] border border-[#fde047]'
+                          : item.status?.toUpperCase() === 'ONGOING'
+                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'bg-green-100 text-green-700 border border-green-200'
                       }`}>
                         {item.status}
                       </span>

@@ -20,7 +20,7 @@ export default function AddMemApp() {
   const [formData, setFormData] = useState({
     type: "instruction",
     description: "",
-    order_index: "" as string | number, // Allow empty state while typing
+    order_index: "" as string | number, 
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,17 +36,17 @@ export default function AddMemApp() {
     }
 
     if (formData.type !== 'video' && formData.type !== 'deadline') {
-      const { data: existingData } = await supabase
-        .from("announce_memapp")
-        .select("id")
-        .eq("type", formData.type)
-        .eq("order_index", finalSequence);
-
+      const { data: existingData } = await supabase.from("announce_memapp").select("id").eq("type", formData.type).eq("order_index", finalSequence);
       if (existingData && existingData.length > 0) {
         alert(`Error: Sequence number ${finalSequence} is already in use for a ${formData.type}. Please choose a different number.`);
         setLoading(false);
         return;
       }
+    }
+
+    // NEW FIX: If a new video is added, automatically "retire" old videos to History
+    if (formData.type === 'video') {
+      await supabase.from("announce_memapp").update({ order_index: 0 }).eq("type", "video");
     }
 
     const submitData = {
@@ -61,6 +61,7 @@ export default function AddMemApp() {
       alert("Error saving item: " + error.message);
       setLoading(false);
     } else {
+      router.refresh();
       router.push("/dashboard?tab=manage&section=memapp");
     }
   };
@@ -69,14 +70,8 @@ export default function AddMemApp() {
 
   return (
     <div className="w-full max-w-3xl mx-auto py-10 px-6">
-      <button 
-        onClick={() => router.back()} 
-        className="mb-6 flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors"
-      >
-        <svg className="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-        </svg>
-        Back
+      <button onClick={() => router.back()} className="mb-6 flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors">
+        <svg className="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg> Back
       </button>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
@@ -88,74 +83,36 @@ export default function AddMemApp() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
             <div className={formData.type === 'video' ? "sm:col-span-2 min-w-0" : "min-w-0"}>
               <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Content Type</label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
-              >
+              <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono">
                 <option value="instruction">Instruction</option>
                 <option value="reminder">Reminder</option>
                 <option value="video">Video URL</option>
               </select>
             </div>
 
-            {/* HIDE SEQUENCE FOR VIDEO */}
             {formData.type !== 'video' && (
               <div className="min-w-0">
                 <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Sequence Order (1, 2, 3...)</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.order_index}
-                  onChange={(e) => setFormData({ ...formData, order_index: e.target.value })}
-                  className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
-                  required
-                />
+                <input type="number" min="1" value={formData.order_index} onChange={(e) => setFormData({ ...formData, order_index: e.target.value })} className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono" required />
               </div>
             )}
           </div>
 
           <div className="min-w-0">
-            <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
-              {formData.type === 'video' ? 'YouTube URL' : 'Description'}
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={formData.type === 'video' ? 2 : 5}
-              placeholder={formData.type === 'video' ? "https://youtube.com/..." : "Enter text here..."}
-              className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono resize-y break-all whitespace-pre-wrap"
-              required
-            />
+            <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">{formData.type === 'video' ? 'YouTube URL' : 'Description'}</label>
+            <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={formData.type === 'video' ? 2 : 5} placeholder={formData.type === 'video' ? "https://youtube.com/..." : "Enter text here..."} className="w-full px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono resize-y break-all whitespace-pre-wrap" required />
           </div>
 
-          {/* VIDEO PREVIEW PANEL */}
           {formData.type === 'video' && formData.description && (
             <div className="mt-2 p-4 bg-gray-100 rounded-lg border border-gray-200">
               <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">Preview</h3>
-              {embedUrl ? (
-                <iframe src={embedUrl} className="w-full aspect-video rounded-lg shadow-sm border-0" allowFullScreen></iframe>
-              ) : (
-                <p className="text-sm text-red-500 font-ubuntu-mono">Invalid YouTube URL</p>
-              )}
+              {embedUrl ? <iframe src={embedUrl} className="w-full aspect-video rounded-lg shadow-sm border-0" allowFullScreen></iframe> : <p className="text-sm text-red-500 font-ubuntu-mono">Invalid YouTube URL</p>}
             </div>
           )}
 
           <div className="mt-4 flex justify-end gap-3">
-            <button 
-              type="button" 
-              onClick={() => router.back()} 
-              className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50"
-            >
-              {loading ? "Saving..." : "Save Content"}
-            </button>
+            <button type="button" onClick={() => router.back()} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors">Cancel</button>
+            <button type="submit" disabled={loading} className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50">{loading ? "Saving..." : "Save Content"}</button>
           </div>
         </form>
       </div>
