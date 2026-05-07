@@ -45,7 +45,15 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, name, usageCount, isDe
   const hasUsage = usageCount.surveys > 0 || usageCount.theses > 0;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-[-20px] z-[99999] flex items-center justify-center p-4 sm:p-6"
+      style={{ 
+        backgroundColor: 'rgba(1, 22, 56, 0.85)', 
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      }}
+      onClick={onClose}
+    >
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4">
           <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3>
@@ -190,7 +198,15 @@ function EditPopup({ isOpen, onClose, onSave, category, categories, isSaving, sa
   if (!isOpen || !category) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-[-20px] z-[99999] flex items-center justify-center p-4 sm:p-6"
+      style={{ 
+        backgroundColor: 'rgba(1, 22, 56, 0.85)', 
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      }}
+      onClick={onClose}
+    >
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4">
           <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Edit Category</h3>
@@ -337,7 +353,15 @@ function AddPopup({ isOpen, onClose, onAdd, categories, isAdding, addError }: {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-[-20px] z-[99999] flex items-center justify-center p-4 sm:p-6"
+      style={{ 
+        backgroundColor: 'rgba(1, 22, 56, 0.85)', 
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      }}
+      onClick={onClose}
+    >
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4">
           <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Add New Category</h3>
