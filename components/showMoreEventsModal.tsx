@@ -52,10 +52,10 @@ const ShowMoreEventsModal: FC<Props> = ({
       {() => (
         <div
           ref={container}
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
         >
           <div
-            className="backdrop absolute inset-0 bg-black/40 backdrop-blur-[3px] opacity-0"
+            className="top-0 w-full h-full backdrop fixed inset-0 bg-black/40 backdrop-blur-[3px] opacity-0"
             onClick={onClose}
           />
           <div className="content relative z-10 w-full max-w-lg bg-[#011638] rounded-xl p-8 text-[#eff0f2] shadow-2xl">

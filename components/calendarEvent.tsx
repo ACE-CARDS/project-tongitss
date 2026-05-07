@@ -46,10 +46,10 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
       {() => (
         <div
           ref={container}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
         >
           <div
-            className="backdrop absolute inset-0 bg-black/40 backdrop-blur-[3px] opacity-0"
+            className="backdrop absolute inset-0 bg-black/40 backdrop-blur-[3px] opacity-0  "
             onClick={onClose}
           />
 
