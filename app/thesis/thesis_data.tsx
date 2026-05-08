@@ -152,6 +152,7 @@ export default async function ThesisData({
       hay += t.thesis_title ?? "";                    // Title
       hay += " " + (t.thesis_abstract ?? "");         // Abstract
       hay += " " + (t.thesis_keyword ?? "");          // Keywords
+      hay += " " + (t.thesis_phys ?? "");               // Physical copy
       hay += " " + (t.r_category?.r_category_name ?? ""); // Category name
       hay += " " + (t.school?.school_name ?? "");     // School name
       

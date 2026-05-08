@@ -147,6 +147,7 @@ export default function ThesisAdminWrapper() {
             hay += t.thesis_title ?? "";
             hay += " " + (t.thesis_abstract ?? "");
             hay += " " + (t.thesis_keyword ?? "");
+            hay += " " + (t.thesis_phys ?? "");
             hay += " " + (t.r_category?.r_category_name ?? "");
             hay += " " + (t.school?.school_name ?? "");
             if (t.thesis_author && Array.isArray(t.thesis_author)) {
