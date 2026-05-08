@@ -62,10 +62,13 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
             onClick={onClose}
           />
 
-          <div className="content relative z-10 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl border border-white/10 overflow-y-auto custom-scrollbar-white-nobg">
+          <div
+            className="content relative z-10 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl 
+          border border-white/10 flex flex-col overflow-hidden"
+          >
             <button
               onClick={onClose}
-              className="absolute right-6 top-6 text-white/50 hover:text-white cursor-pointer"
+              className="absolute right-6 top-6 text-white/50 hover:text-white cursor-pointer z-20"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -84,38 +87,41 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
             </button>
 
             {eventDetail && (
-              <div className="overflow-hidden break-words hyphens-auto">
-                <h2 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4  pr-5">
+              <div className="flex flex-col overflow-hidden min-w-0">
+                <h2 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4 pr-10 break-words hyphens-auto flex-shrink-0">
                   {eventDetail.title}
                 </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs uppercase opacity-50">
-                      Description
-                    </label>
-                    <p className="opacity-80 text-justify">
-                      {eventDetail.description || "No description available."}
-                    </p>
-                  </div>
-                  <div className=" grid grid-cols-2 gap-4">
-                    <div>
+
+                <div className="overflow-y-auto custom-scrollbar-white-nobg min-w-0">
+                  <div className="space-y-4 pr-2">
+                    <div className="min-w-0">
                       <label className="text-xs uppercase opacity-50">
-                        Start
+                        Description
                       </label>
-                      <p>{eventDetail.start_date}</p>
+                      <p className="opacity-80 text-justify break-words hyphens-auto">
+                        {eventDetail.description || "No description available."}
+                      </p>
                     </div>
-                    <div>
+                    <div className="grid grid-cols-2 gap-4 min-w-0">
+                      <div className="min-w-0">
+                        <label className="text-xs uppercase opacity-50">
+                          Start
+                        </label>
+                        <p>{eventDetail.start_date}</p>
+                      </div>
+                      <div className="min-w-0">
+                        <label className="text-xs uppercase opacity-50">
+                          End
+                        </label>
+                        <p>{eventDetail.end_date}</p>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
                       <label className="text-xs uppercase opacity-50">
-                        End
+                        Location
                       </label>
-                      <p>{eventDetail.end_date}</p>
+                      <p className="break-words">{eventDetail.location}</p>
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase opacity-50">
-                      Location
-                    </label>
-                    <p>{eventDetail.location}</p>
                   </div>
                 </div>
               </div>

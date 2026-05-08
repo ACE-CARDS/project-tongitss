@@ -113,7 +113,8 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 focus:outline-none"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white 
+                backdrop-blur-md transition hover:bg-white/20 focus:outline-none"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
