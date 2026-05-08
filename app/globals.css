@@ -65,6 +65,22 @@ p {
   background: #eff0f2;
 }
 
+.custom-scrollbar-blue::-webkit-scrollbar  {
+  width: 6px;
+}
+.custom-scrollbar-blue::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb {
+  background: #0b1763;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
+  background: #0b1763;
+}
+
 .custom-scrollbar-white::-webkit-scrollbar,
 .custom-scrollbar-white-nobg::-webkit-scrollbar {
   width: 10px;

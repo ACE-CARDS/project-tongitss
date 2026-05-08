@@ -40,7 +40,7 @@ function NewsDescription({ description }: { description: string | null }) {
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
             {description}
           </div>
           <button onClick={() => setIsOpen(false)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
