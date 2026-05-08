@@ -8,7 +8,7 @@ import { useUser } from "./context/userContext";
 
 const siteName = "ACE CARDS";
 
-export default function NavBar({ isOverHero = false }) {
+export default function NavBar({ isOverHero = false, isLoading = false}) {
   const { user } = useUser();
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
@@ -69,7 +69,7 @@ export default function NavBar({ isOverHero = false }) {
 
   return (
     <>
-    <div className={`${isActive("/") ? "fixed" : "sticky"} w-full top-0 z-[100000]`}>
+    <div className={`${(isActive('/') || isLoading) ? "fixed" : "sticky"} w-full top-0 z-[100000]`}>
 
       {/* Blur */}
       <div className="absolute inset-0 h-28 backdrop-blur-2xl bg-[#011638]/30 mask-[linear-gradient(to_bottom,black_20%,transparent)] pointer-events-none" />
