@@ -51,6 +51,11 @@ export default function BigCalendar() {
     setIsPopupShowing(true);
   };
 
+  const handleBackToMore = () => {
+    setIsPopupShowing(false);
+    setIsMorePopupOpen(true);
+  };
+
   useEffect(() => {
     async function getEvents() {
       const { data, error } = await supabase
@@ -244,7 +249,11 @@ export default function BigCalendar() {
         {/*Calendar Modal mhm*/}
         <CalendarEvent
           isShowing={isPopupShowing}
-          onClose={() => setIsPopupShowing(false)}
+          onClose={() => {
+            setIsPopupShowing(false);
+            setMoreEventsData([]);
+          }}
+          onBack={moreEventsData.length > 0 ? handleBackToMore : undefined} // Only show back if we came from a list
           eventDetail={selectedEventData}
         />
       </div>

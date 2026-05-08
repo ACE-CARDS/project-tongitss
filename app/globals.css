@@ -83,6 +83,7 @@ p {
   background-color: #011638;
   color: white;
   border-radius: 8px;
+  transition: background-color;
 }
 
 .btn-primary:hover {
@@ -93,6 +94,7 @@ p {
 .btn-secondary {
   background-color: #dbb32f;
   border-radius: 8px;
+  transition: background-color;
 }
 
 .btn-secondary:hover {

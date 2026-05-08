@@ -2,16 +2,19 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
+import BackButton from "./backButton";
 
 type Props = {
   isShowing: boolean;
   onClose: () => void;
+  onBack?: () => void;
 };
 
 const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
   isShowing,
   onClose,
   eventDetail,
+  onBack,
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
@@ -66,9 +69,33 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
             className="content relative z-10 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl 
           border border-white/10 flex flex-col overflow-hidden"
           >
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="absolute left-6 top-6 text-white/50 hover:text-white flex items-center gap-1 text-xs uppercase 
+                tracking-widest transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Back
+              </button>
+            )}
+
             <button
               onClick={onClose}
-              className="absolute right-6 top-6 text-white/50 hover:text-white cursor-pointer z-20"
+              className="absolute right-6 top-5 text-white/50 hover:text-white cursor-pointer z-20 transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -88,7 +115,7 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
 
             {eventDetail && (
               <div className="flex flex-col overflow-hidden min-w-0">
-                <h2 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4 pr-10 break-words hyphens-auto flex-shrink-0">
+                <h2 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4 pr-10 break-words hyphens-auto flex-shrink-0 pt-4">
                   {eventDetail.title}
                 </h2>
 

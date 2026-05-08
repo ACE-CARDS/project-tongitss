@@ -73,7 +73,7 @@ const ShowMoreEventsModal: FC<Props> = ({
                 type="button"
                 onClick={onClose}
                 className="flex h-10 w-10 items-center justify-center rounded-full text-[#eff0f2] backdrop-blur-md 
-                 cursor-pointer"
+                 cursor-pointer transition-colors text-white/50 hover:text-white"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@ const ShowMoreEventsModal: FC<Props> = ({
                 {moment(date).format("MMMM Do")}
               </h2>
             </div>
-            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar-white-nobg">
               {events.map((event, index) => (
                 <div
                   key={event.id || index}
