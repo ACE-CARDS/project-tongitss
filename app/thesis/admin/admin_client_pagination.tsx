@@ -292,7 +292,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                               : "";
                             return (
                               <div
-                                key={author.id || index}
+                                key={`${thesis.id}-${author.id || 'no-id'}-${index}`}
                                 className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono"
                               >
                                 <svg
