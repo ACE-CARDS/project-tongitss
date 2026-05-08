@@ -37,6 +37,15 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
     }
   }, [isShowing, supabase]);
 
+  useEffect(() => {
+    if (isShowing) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isShowing]);
+
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 

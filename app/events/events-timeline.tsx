@@ -102,6 +102,15 @@ export default function EventsTimeline() {
   }, []);
 
   useEffect(() => {
+    if (selectedEvent) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [selectedEvent]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [activeFilter, activeYear, searchQuery]);
 

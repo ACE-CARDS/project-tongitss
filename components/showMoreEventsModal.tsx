@@ -2,7 +2,7 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { type FC, useRef } from "react";
+import { type FC, useRef, useEffect } from "react";
 import { Transition } from "react-transition-group";
 import moment from "moment";
 
@@ -21,6 +21,15 @@ const ShowMoreEventsModal: FC<Props> = ({
   events,
   onEventClick,
 }) => {
+  useEffect(() => {
+    if (isShowing) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isShowing]);
+
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
 

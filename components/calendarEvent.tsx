@@ -33,6 +33,15 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
     gsap.to(".content", { opacity: 0, scale: 0.95, duration: 0.2 });
   });
 
+  useEffect(() => {
+    if (isShowing) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isShowing]);
+
   return (
     <Transition
       in={isShowing}
