@@ -367,7 +367,8 @@ export default function CommitteeDirectory() {
         )}
       </motion.div>
 
-      {totalPages > 1 && (
+      {/* pagination nijaerish  */}
+      {!isLoading && totalPages > 1 && (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-12 mb-2 gap-2">
           <p className="text-sm text-slate-500 font-ubuntu-mono">
             Showing {startIndex + 1} -{" "}
@@ -375,21 +376,104 @@ export default function CommitteeDirectory() {
             members
           </p>
           <p className="text-slate-500 font-ubuntu-mono text-sm">
-            Page {validCurrentPage} of {totalPages || 1}
+            Page {currentPage} of {totalPages}
           </p>
         </div>
       )}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={(page) => {
-          setCurrentPage(page);
-          headerRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }}
-      />
+
+      {!isLoading && totalPages > 1 && (
+        <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
+          {/* Prev button */}
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-2 rounded-lg text-sm transition ${
+              currentPage === 1
+                ? "text-[#94a3b8] cursor-not-allowed"
+                : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Page numbers */}
+          <div className="flex items-center space-x-1">
+            {(() => {
+              const pages: (number | string)[] = [];
+              if (totalPages <= 4) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                const showLeft = currentPage <= 2;
+                const showRight = currentPage >= totalPages - 1;
+                if (showLeft) {
+                  pages.push(1, 2, "...", totalPages);
+                } else if (showRight) {
+                  pages.push(1, "...", totalPages - 1, totalPages);
+                } else {
+                  pages.push(1, "...", currentPage, "...", totalPages);
+                }
+              }
+
+              return pages.map((page, idx) =>
+                page === "..." ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page as number)}
+                    className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                      page === currentPage
+                        ? "bg-[#011638] text-white font-bold"
+                        : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              );
+            })()}
+          </div>
+
+          {/* Next button */}
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-2 rounded-lg text-sm transition ${
+              currentPage === totalPages
+                ? "text-[#94a3b8] cursor-not-allowed"
+                : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </nav>
+      )}
     </div>
   );
 }
