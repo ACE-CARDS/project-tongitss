@@ -29,6 +29,9 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
   const [itemsPerPage, setItemsPerPage] = useState(6); 
   const [mounted, setMounted] = useState(false);
 
+  // Local state
+  const [currentPageLocal, setCurrentPageLocal] = useState(currentPage);
+
   // Handle responsive items per page
   useEffect(() => {
     setMounted(true); // Component mounted on client
@@ -47,10 +50,15 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
     return () => window.removeEventListener('resize', handleResize);
   }, []); // Onlu run once on mount
 
+    // Sync local page with prop when URL changes
+  useEffect(() => {
+    setCurrentPageLocal(currentPage);
+  }, [currentPage]);
+
   // Pagination values
   const totalItems = allTheses.length; 
   const totalPages = Math.ceil(totalItems / itemsPerPage); 
-  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1); // Page within bounds
+  const validCurrentPage = Math.min(Math.max(1, currentPageLocal), totalPages || 1); // Page within bounds
   
   // Slice indices for page
   const startIndex = (validCurrentPage - 1) * itemsPerPage; 
@@ -59,9 +67,17 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
 
   // Page change
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(window.location.search); // Get URL params
-    params.set('page', page.toString()); // Update
-    router.push(`?${params.toString()}`); // Nav to new URL
+     if (page < 1 || page > totalPages) return;
+    setCurrentPageLocal(page);
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page.toString());
+    
+    const scrollPosition = window.scrollY;
+    router.replace(`?${params.toString()}`, { scroll: false });
+    
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition);
+    }, 0);
   };
 
   return (
@@ -160,7 +176,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                           <span
                             key={index} 
                             // Blue pill
-                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
                           >
                             {keyword.trim()} 
                           </span>
@@ -193,7 +209,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                       {/* Category */}
                       <div>
                         <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                        <span className="font-ubuntu-mono text-[#011638]">
+                         <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                           {thesis.r_category?.r_category_name || "Uncategorized"} 
                         </span>
                       </div>
@@ -201,7 +217,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                       {/* School */}
                       <div>
                         <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-                        <span className="font-ubuntu-mono text-[#011638]">
+                        <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                           {thesis.school?.school_name || "No School"} 
                         </span>
                       </div>
@@ -220,7 +236,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                         <span className="text-[#475569] block font-ubuntu-mono">Physical Copy:</span>
                         {thesis.thesis_phys ? (
                           <div className="text-[#475569] font-ubuntu-mono">
-                            <span className="text-[#011638]">
+                            <span className="text-[#011638] break-words max-w-full whitespace-normal">
                               {thesis.thesis_phys}
                             </span>
                           </div>
@@ -240,7 +256,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                             href={thesis.thesis_digi}
                             target="_blank" // New tab
                             rel="noopener noreferrer"
-                            className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
+                            className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono break-words max-w-full whitespace-normal"
                           >
                             View Digital Copy
                             {/* External link icon SVG */}
@@ -271,21 +287,90 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
             ))}
           </div>
 
-          {/* Pagination info */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-            <p className="text-[#475569] font-ubuntu-mono text-sm">
-              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} theses
-            </p>
-            <p className="text-[#475569] font-ubuntu-mono text-sm">
-              Page {validCurrentPage} of {totalPages || 1}
-            </p>
-          </div>
-          
-          <Pagination 
-            currentPage={validCurrentPage} 
-            totalPages={totalPages || 1} 
-            onPageChange={handlePageChange} 
-          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
+              {/* Previous button */}
+              <button
+                onClick={() => handlePageChange(validCurrentPage - 1)}
+                disabled={validCurrentPage === 1}
+                className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+                  validCurrentPage === 1
+                    ? "text-[#94a3b8]"
+                    : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Page numbers */}
+              <div className="flex items-center space-x-1">
+                {(() => {
+                  const pages = [];
+
+                  if (totalPages <= 4) {
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
+                  } else {
+                    const showLeft = validCurrentPage <= 2;
+                    const showRight = validCurrentPage >= totalPages - 1;
+
+                    if (showLeft) {
+                      pages.push(1, 2, "...", totalPages);
+                    } else if (showRight) {
+                      pages.push(1, "...", totalPages - 1, totalPages);
+                    } else {
+                      pages.push(
+                        1,
+                        "...",
+                        validCurrentPage,
+                        "...",
+                        totalPages
+                      );
+                    }
+                  }
+
+                  return pages.map((page, idx) =>
+                    page === "..." ? (
+                      <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page as number)}
+                        className={`min-w-[40px] px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+                          page === validCurrentPage
+                            ? "bg-[#011638] text-[#fbfaf8] font-bold cursor-pointer"
+                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  );
+                })()}
+              </div>
+
+              {/* Next button */}
+              <button
+                onClick={() => handlePageChange(validCurrentPage + 1)}
+                disabled={validCurrentPage === totalPages}
+                className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+                  validCurrentPage === totalPages
+                    ? "text-[#94a3b8]"
+                    : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </nav>
+          )}
         </>
       )}
     </>

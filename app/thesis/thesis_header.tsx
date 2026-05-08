@@ -233,7 +233,7 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl"
+    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden"
   >
     <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
       <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
@@ -241,7 +241,7 @@ function LiveSuggestions({
       </span>
     </div>
 
-    <div className="max-h-60 overflow-y-auto custom-scrollbar">
+    <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
       {filteredKeywords.map((keyword, index) => (
         <button
           key={index}
@@ -501,7 +501,7 @@ export default function ThesisHeader({
 
           {isMounted && isAuthenticated && (
           <Link
-            href="/survey/add?returnTo=/thesis"
+            href="/thesis/add?returnTo=/thesis"
             className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
             onClick={() => sessionStorage.removeItem("thesisDraft")}
           >
