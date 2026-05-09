@@ -34,7 +34,7 @@ function CommitteeContent() {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: isMobile ? "35px" : "auto",
+    minHeight: isMobile ? "1px" : "auto",
   };
 
   const nodeStyleYellow = {
@@ -57,9 +57,11 @@ function CommitteeContent() {
 
   const nodeStyleSecret = {
     ...nodeStyleBase,
-    borderRadius: "10px",
     border: "none",
-    background: "transparent",
+    background: "#b1b1b7",
+    width: isMobile ? "1.5px" : "1px",
+    height: isMobile ? "8px" : "8px",
+    padding: "0.5px",
   };
 
   const nodes = useMemo(() => {
@@ -193,7 +195,7 @@ function CommitteeContent() {
       {
         id: "bridge",
         data: { label: "" },
-        position: getPos(55, 270, 340, 100),
+        position: getPos(99, 270, 409, 100),
         style: nodeStyleSecret,
         type: "static",
       },
