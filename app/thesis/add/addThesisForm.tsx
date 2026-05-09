@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import BackButton from "@/components/backButton";
 
 interface Category {
   id: string;
@@ -20,6 +21,7 @@ interface Author {
   middleInitial?: string;
   lastName?: string;
   email?: string;
+  memberId?: number | null;
 }
 
 interface AddThesisFormProps {
@@ -33,7 +35,11 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const supabase = createClient();
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
+  const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
+
   const [returnUrl, setReturnUrl] = useState<string>("/thesis");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
@@ -47,10 +53,134 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [schoolError, setSchoolError] = useState("");
   const [isCategoryTouched, setIsCategoryTouched] = useState(false);
   const [isSchoolTouched, setIsSchoolTouched] = useState(false);
-
   const [digitalLinkError, setDigitalLinkError] = useState("");
 
-  // Check duplicate authors
+  // Load current logged-in user's member info
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      setIsLoadingUser(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        setCurrentUserId(user.id);
+        
+        // Get member info from users table
+        const { data: userData } = await supabase
+          .from("users")
+          .select("member_id")
+          .eq("id", user.id)
+          .single();
+        
+        if (userData?.member_id) {
+          const { data: member } = await supabase
+            .from("member")
+            .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+            .eq("id", userData.member_id)
+            .single();
+          
+          if (member) {
+            setAuthors([{
+              id: 1,
+              firstName: member.mem_fname,
+              middleInitial: member.mem_minit || "",
+              lastName: member.mem_lname,
+              email: member.mem_email,
+              memberId: member.id
+            }]);
+          }
+        } else {
+          // Fallback: try to get from author table by email
+          const { data: userEmail } = await supabase.auth.getUser();
+          if (userEmail.user?.email) {
+            const { data: existingAuthor } = await supabase
+              .from("author")
+              .select("id, author_fname, author_lname, author_minit, author_email, mem_id")
+              .eq("author_email", userEmail.user.email)
+              .maybeSingle();
+            
+            if (existingAuthor) {
+              setAuthors([{
+                id: 1,
+                firstName: existingAuthor.author_fname,
+                middleInitial: existingAuthor.author_minit || "",
+                lastName: existingAuthor.author_lname,
+                email: existingAuthor.author_email,
+                memberId: existingAuthor.mem_id
+              }]);
+            }
+          }
+        }
+      }
+      setIsLoadingUser(false);
+    };
+    
+    loadCurrentUser();
+  }, [supabase]);
+
+  // Search for members in the database
+  const searchMembers = async (firstName: string, lastName: string, middleInitial: string, authorIndex: number) => {
+    if (!firstName || firstName.length < 2 || !lastName || lastName.length < 2) {
+      setSearchResults(prev => new Map(prev).set(authorIndex, []));
+      setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+      return;
+    }
+
+    let query = supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email");
+
+    query = query.ilike("mem_fname", `%${firstName}%`)
+      .ilike("mem_lname", `%${lastName}%`);
+
+    if (middleInitial && middleInitial.length >= 1) {
+      query = query.ilike("mem_minit", `${middleInitial.charAt(0)}%`);
+    }
+
+    const { data: members, error } = await query.limit(5);
+
+    if (!error && members && members.length > 0) {
+      const formattedMembers = members.map(m => ({
+        id: m.id,
+        fname: m.mem_fname,
+        lname: m.mem_lname,
+        minit: m.mem_minit,
+        email: m.mem_email
+      }));
+      setSearchResults(prev => new Map(prev).set(authorIndex, formattedMembers));
+      setShowSearchDropdown(prev => new Map(prev).set(authorIndex, true));
+    } else {
+      setSearchResults(prev => new Map(prev).set(authorIndex, []));
+      setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+    }
+  };
+
+  // Select a member from search results
+  const selectMember = (member: any, authorIndex: number) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex] = {
+      ...updatedAuthors[authorIndex],
+      firstName: member.fname,
+      middleInitial: member.minit || "",
+      lastName: member.lname,
+      email: member.email,
+      memberId: member.id
+    };
+    setAuthors(updatedAuthors);
+    setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+    
+    // Update input fields
+    const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
+    const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
+    const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
+    const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
+    
+    if (firstNameInput) firstNameInput.value = member.fname;
+    if (middleInitialInput) middleInitialInput.value = member.minit || "";
+    if (lastNameInput) lastNameInput.value = member.lname;
+    if (emailInput) emailInput.value = member.email;
+  };
+
+  // Check duplicate authors on each field
   const checkDuplicateAuthors = () => {
     const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
     const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
@@ -71,6 +201,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
             lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
           
+          // Check middle initials
           const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
           const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
           
@@ -162,7 +293,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             firstName: author.firstName,
             middleInitial: author.middleInitial,
             lastName: author.lastName,
-            email: author.email
+            email: author.email,
+            memberId: author.memberId
           })));
 
           setTimeout(() => {
@@ -201,7 +333,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   }, [returnTo]);
 
   const addAuthor = () => {
-    setAuthors([...authors, { id: authors.length + 1 }]);
+    setAuthors([...authors, { id: authors.length + 1, memberId: null }]);
   };
 
   const removeAuthor = (id: number) => {
@@ -212,7 +344,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
   const handleAddNewCategory = async () => {
     setCategoryError("");
-    
+
     if (!newCategoryName.trim()) {
       setCategoryError("Please enter a category name");
       return;
@@ -447,17 +579,18 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         throw new Error("Please fill in all required fields");
       }
 
+      // Check duplicate digital link
       if (digitalInput?.value) {
-      const { data: existingThesis } = await supabase
-        .from("thesis")
-        .select("id")
-        .ilike("thesis_digi", digitalInput.value)
-        .maybeSingle();
-      
-      if (existingThesis) {
-        throw new Error("This digital link is already in use. Please provide a unique link.");
+        const { data: existingThesis } = await supabase
+          .from("thesis")
+          .select("id")
+          .ilike("thesis_digi", digitalInput.value)
+          .maybeSingle();
+        
+        if (existingThesis) {
+          throw new Error("This digital link is already in use. Please provide a unique link.");
+        }
       }
-    }
 
       if (!categorySelect?.value) {
         throw new Error("Please select a category");
@@ -467,7 +600,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       if (!schoolSelect?.value) {
         throw new Error("Please select a school");
       }
-    
       const schoolId = schoolSelect.value;
 
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
@@ -495,6 +627,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       for (let i = 0; i < firstNameInputs.length; i++) {
         if (!firstNameInputs[i]?.value || !lastNameInputs[i]?.value || !emailInputs[i]?.value) continue;
 
+        const memberIdFromState = authors[i]?.memberId || null;
+        
+        // First check if author exists by email
         const { data: existingAuthor } = await supabase
           .from("author")
           .select("id")
@@ -504,13 +639,15 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         if (existingAuthor) {
           authorIds.push(existingAuthor.id);
         } else {
+          // Create new author with mem_id if available
           const { data: newAuthor, error: authorError } = await supabase
             .from("author")
             .insert({
               author_fname: firstNameInputs[i].value,
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
-              author_minit: null,
+              author_minit: (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || null,
+              mem_id: memberIdFromState || null
             })
             .select("id")
             .single();
@@ -550,8 +687,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       if (linkError) throw linkError;
 
       sessionStorage.removeItem("thesisDraft");
-      router.push(`/survey/add/thesis?returnTo=${encodeURIComponent(returnUrl)}`);
-
+      router.push(`/thesis/add/success?returnTo=${encodeURIComponent(returnUrl)}`);
+      
     } catch (error) {
       console.error("Submission error:", error);
       alert(error instanceof Error ? error.message : "Failed to submit thesis");
@@ -560,24 +697,24 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   };
 
+  if (isLoadingUser) {
+    return (
+      <main className="container mx-auto py-8 px-4 max-w-3xl">
+        <div className="flex justify-center items-center h-64">
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-6">
-        <button
-          onClick={() => {
-            sessionStorage.removeItem("thesisDraft");
-            router.back();
-          }}
-          className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono cursor-pointer"
-        >
-          ← Back
-        </button>
-        <h1 className="text-2xl font-oswald font-bold text-[#011638]">Add New Thesis</h1>
+        <BackButton />
+        <h1 className="text-2xl font-oswald font-bold text-[#011638] mt-6">Add New Thesis</h1>
       </div>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
@@ -593,9 +730,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     id="title"
                     name="title"
                     required
-                    maxLength={100}
+                    maxLength={300}
                     placeholder="Enter thesis title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    // Error handling
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
                       const errorSpan = document.getElementById('title-error');
@@ -609,8 +747,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         errorSpan!.style.display = 'none';
                       }
                     }}
-                  />
-                  <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                />
+                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -624,7 +762,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     rows={4}
                     maxLength={1500}
                     placeholder="Enter thesis abstract"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
+                    // Error handling
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
                       const errorSpan = document.getElementById('abstract-error');
@@ -638,8 +777,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         errorSpan!.style.display = 'none';
                       }
                     }}
-                  />
-                  <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                />
+                <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -651,38 +790,40 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     id="keywords"
                     name="keywords"
                     required
-                    maxLength={100}
+                    maxLength={300}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    // Key Limits
                     onKeyDown={(e) => {
                       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                         return;
                       }
+
                       if (!/[A-Za-z\s\-'.,]/.test(e.key)) {
                         e.preventDefault();
                       }
                     }}
+                    // Error handling
                     onInput={(e) => {
-                      const input = e.target as HTMLInputElement;
-                      const errorSpan = document.getElementById('keywords-error');
-                      if (input.value.length === 0) {
-                        errorSpan!.textContent = 'At least 1 keyword is required.';
-                        errorSpan!.style.display = 'block';
-                      } else if (input.value.length < 2) {
-                        errorSpan!.textContent = 'Keywords must be at least 2 characters.';
-                        errorSpan!.style.display = 'block';
-                      } else {
-                        errorSpan!.style.display = 'none';
-                      }
-                    }}
-                  />
-                  <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('keywords-error');
+                        if (input.value.length === 0) {
+                          errorSpan!.textContent = 'Atleast 1 keyword is required.';
+                          errorSpan!.style.display = 'block';
+                        } else if (input.value.length < 2) {
+                          errorSpan!.textContent = 'Keywords must be at least 2 characters.';
+                          errorSpan!.style.display = 'block';
+                        } else {
+                          errorSpan!.style.display = 'none';
+                        }
+                      }}
+                />
+                <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Authors Section */}
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Authors</h2>
@@ -692,7 +833,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                 <div key={author.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-oswald text-[#011638]">Author {index + 1}</h3>
-                    {authors.length > 1 && (
+                    {authors.length > 1 && index !== 0 && (
                       <button
                         type="button"
                         onClick={() => removeAuthor(author.id)}
@@ -714,18 +855,42 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           required
                           maxLength={20}
                           placeholder="First Name"
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          defaultValue={author.firstName || ""}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          onBlur={() => {
+                            if (index !== 0) {
+                              const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                              const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                              const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                              
+                              if (firstNameInput?.value && lastNameInput?.value) {
+                                searchMembers(
+                                  firstNameInput.value, 
+                                  lastNameInput.value, 
+                                  middleInitialInput?.value || "", 
+                                  index
+                                );
+                              }
+                            }
+                          }}
+                          // Key Limits
                           onKeyDown={(e) => {
+                            if (index === 0) return;
                             if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                               return;
                             }
+
                             if (!/[A-Za-z\s\-'.]/.test(e.key)) {
                               e.preventDefault();
                             }
                           }}
+                          // Error handling
                           onInput={(e) => {
+                            if (index === 0) return;
                             const input = e.target as HTMLInputElement;
                             const errorSpan = document.getElementById(`firstname-error-${index}`);
+
                             if (input.value.length === 0) {
                               if (errorSpan) {
                                 errorSpan.textContent = 'First Name is required.';
@@ -755,14 +920,49 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           name="middleInitial[]"
                           maxLength={4}
                           placeholder="M.I."
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                              return;
+                          defaultValue={author.middleInitial || ""}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          onBlur={() => {
+                            if (index !== 0) {
+                              const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                              const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                              const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                              
+                              if (firstNameInput?.value && lastNameInput?.value) {
+                                searchMembers(
+                                  firstNameInput.value, 
+                                  lastNameInput.value, 
+                                  middleInitialInput?.value || "", 
+                                  index
+                                );
+                              }
                             }
-                            if (!/[A-Za-z\s.]/.test(e.key)) {
-                              e.preventDefault();
+                          }}
+                          onChange={(e) => {
+                            if (index === 0) return;
+                            let value = e.target.value.toUpperCase();
+                            value = value.replace(/[^A-Z.]/g, '');
+                            
+                            // Format: letter dot letter dot
+                            if (value.length === 1 && /[A-Z]/.test(value)) {
+                              value = value + '.';
+                            } else if (value.length === 2 && value[1] === '.') {
+
+                            } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
+                              value = value[0] + '.' + value[1];
+                            } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
+                              value = value + '.';
+                            } else if (value.length >= 4) {
+
+                              value = value.slice(0, 2) + value.slice(2, 3) + '.';
+                              if (value.length > 4) value = value.slice(0, 4);
                             }
+                            
+                            e.target.value = value;
+                            
+                            const event = new Event('input', { bubbles: true });
+                            e.target.dispatchEvent(event);
                           }}
                         />
                       </div>
@@ -777,20 +977,45 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         required
                         maxLength={20}
                         placeholder="Last Name"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        defaultValue={author.lastName || ""}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        onBlur={() => {
+                          if (index !== 0) {
+                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                            const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                            
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              searchMembers(
+                                firstNameInput.value, 
+                                lastNameInput.value, 
+                                middleInitialInput?.value || "", 
+                                index
+                              );
+                            }
+                          }
+                        }}
+                        // Key Limits
                         onKeyDown={(e) => {
+                          if (index === 0) return;
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
                           }
+
                           if (!/[A-Za-z\s\-'.]/.test(e.key)) {
                             e.preventDefault();
                           }
                         }}
+                        // Error handling
                         onInput={(e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const errorSpan = document.getElementById(`lastname-error-${index}`);
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                          
+                          const lastNameInput = input;
+                          const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
+
                           if (input.value.length === 0) {
                             if (errorSpan) {
                               errorSpan.textContent = 'Last Name is required.';
@@ -805,14 +1030,15 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             return;
                           }
 
-                          // Check duplicate authors
+                          // Check duplicate authors 
                           const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
                           const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
                           const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
 
                           const currentFirstName = firstNameInput?.value?.trim();
-                          const currentLastName = input.value?.trim();
+                          const currentLastName = lastNameInput?.value?.trim();
                           const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
+
                           const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
 
                           for (let i = 0; i < allFirstNames.length; i++) {
@@ -820,24 +1046,32 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
                               const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
                               const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
+                              
                               const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
                               
+                              // Check name fields match
                               if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
                                 const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
                                 const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
                                 
-                                if (firstNameMatch && lastNameMatch && normalizedCurrentMiddle === normalizedOtherMiddle) {
-                                  if (errorSpan) {
-                                    const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
-                                    errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
-                                    errorSpan.style.display = 'block';
+                                if (firstNameMatch && lastNameMatch) {
+                                  // Check middle initial
+                                  const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
+                                  
+                                  if (middleMatch) {
+                                    if (errorSpan) {
+                                      const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
+                                      errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
+                                      errorSpan.style.display = 'block';
+                                    }
+                                    return;
                                   }
-                                  return;
                                 }
                               }
                             }
                           }
 
+                          // No duplicate
                           if (errorSpan) {
                             errorSpan.style.display = 'none';
                           }
@@ -854,15 +1088,20 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         type="email"
                         name="email[]"
                         required
-                        maxLength={30}
+                        maxLength={254}
                         placeholder="Email"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        defaultValue={author.email || ""}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        // Key Limits
                         onKeyUp={(e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const char = e.key;
                           const value = input.value;
                           const atCount = (value.match(/@/g) || []).length;
                           
+                          // Prevent second @
                           if (char === '@' && atCount >= 1) {
                             e.preventDefault();
                             return;
@@ -874,7 +1113,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             }
                           }
                         }}
+                        // Search trigger
                         onInput={async (e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const errorSpan = document.getElementById(`email-error-${index}`);
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
@@ -905,7 +1146,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               }
                             }
                           }
-
+                          
                           // Check existing author
                           const supabase = createClient();
                           const { data: existing } = await supabase
@@ -930,6 +1171,30 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         }}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      
+                      {/* Search Results Dropdown */}
+                      {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && index !== 0 && (
+                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden" style={{ position: 'relative' }}>
+                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
+                            <span className="text-xs font-oswald font-semibold text-white">MATCHING MEMBER(S)</span>
+                          </div>
+                          <div className="max-h-60 overflow-y-auto">
+                            {searchResults.get(index)!.map((member, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => selectMember(member, index)}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{member.fname} {member.minit ? member.minit + '. ' : ''}{member.lname}</span>
+                                  <span className="text-xs">{member.email}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
@@ -946,7 +1211,137 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             </div>
           </div>
 
-          {/* Classification */}
+          <div>
+            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
+              <h2 className="text-lg font-oswald font-semibold">Thesis Details</h2>
+            </div>
+            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Thesis Date <span className="text-[#eec643]">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    required
+                    min="2022-01-01"
+                    max={(() => {
+                      const now = new Date();
+                      const phTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+                      const year = phTime.getFullYear();
+                      const month = String(phTime.getMonth() + 1).padStart(2, '0');
+                      const day = String(phTime.getDate()).padStart(2, '0');
+                      return `${year}-${month}-${day}`;
+                    })()}
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('date-error');
+                      if (!input.value) {
+                        errorSpan!.textContent = 'Date is required.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
+                  />
+                  <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                </div>
+
+                <div>
+                  <label htmlFor="physical" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Physical Copy Location
+                  </label>
+                  <input
+                    type="text"
+                    id="physical"
+                    name="physical"
+                    maxLength={200}
+                    placeholder="Enter physical copy location"
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="digital" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Digital Copy Link
+                  </label>
+                  <input
+                    type="url"
+                    id="digital"
+                    name="digital"
+                    maxLength={300}
+                    placeholder="Enter digital copy URL"
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                      digitalLinkError ? 'border-red-500' : 'border-[#94a3b8]'
+                    }`}
+                    onChange={async (e) => {
+                      const input = e.target;
+                      const value = input.value;
+                      const errorSpan = document.getElementById('digital-link-error');
+                      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+                      
+                      setDigitalLinkError("");
+                      
+                      if (value.length === 0) {
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
+                        return;
+                      }
+                      
+                      // Check URL format
+                      let isValidUrl = false;
+                      try {
+                        new URL(value);
+                        isValidUrl = true;
+                      } catch {
+                        isValidUrl = false;
+                      }
+                      
+                      if (!isValidUrl) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please enter a valid URL.';
+                          errorSpan.style.display = 'block';
+                        }
+                        return;
+                      }
+                      
+                      // Hide error if valid
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
+                      }
+                      
+                      // Check for duplicate link
+                      const supabase = createClient();
+                      const { data: existingThesis } = await supabase
+                        .from("thesis")
+                        .select("id")
+                        .ilike("thesis_digi", value)
+                        .maybeSingle();
+                      
+                      if (existingThesis) {
+                        setDigitalLinkError("This digital link is already in use. Please provide a unique link.");
+                        if (errorSpan) {
+                          errorSpan.textContent = "This digital link is already in use. Please provide a unique link.";
+                          errorSpan.style.display = 'block';
+                        }
+                      } else {
+                        setDigitalLinkError("");
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
+                      }
+                    }}
+                  />
+                  <span id="digital-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">Classification</h2>
@@ -967,6 +1362,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         defaultValue=""
+                        // Error handling
                         onChange={(e) => {
                           setIsCategoryTouched(true);
                           if (!e.target.value) {
@@ -981,7 +1377,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             setCategoryError("Please select a category");
                             setIsCategoryTouched(true);
                           }
-                        }}
+                      }}
                       >
                         <option value="" disabled>Select a category</option>
                         {availableCategories.map((category) => (
@@ -1008,11 +1404,42 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           setCategoryError("");
                         }}
                         placeholder="Enter new category name"
-                        maxLength={30}
+                        maxLength={50}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         required
+                        // Key Limits
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        // Error Handling
+                        onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('category-error');
+                        
+                        if (!input.value.trim()) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Category name is required.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'Category name must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       />
                       <button
                         type="button"
@@ -1053,9 +1480,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         defaultValue=""
+                        // Error handling
                         onChange={(e) => {
-                          setIsSchoolTouched(true);
-                          if (!e.target.value) {
+                        setIsSchoolTouched(true);
+                        if (!e.target.value) {
                             setSchoolError("Please select a school");
                           } else {
                             setSchoolError("");
@@ -1094,11 +1522,42 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           setSchoolError("");
                         }}
                         placeholder="Enter new school name"
-                        maxLength={34}
+                        maxLength={50}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         required
+                        // Key Limits
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                          }
+                          
+                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        // Error Handling
+                        onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById('school-error');
+                        
+                        if (!input.value.trim()) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'School name is required.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else if (input.value.length < 2) {
+                          if (errorSpan) {
+                            errorSpan.textContent = 'School name must be at least 2 characters.';
+                            errorSpan.style.display = 'block';
+                          }
+                        } else {
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }
+                      }}
                       />
                       <button
                         type="button"
@@ -1113,6 +1572,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           setShowNewSchool(false);
                           setNewSchoolName("");
                           setSchoolError("");
+                          const errorSpan = document.getElementById('school-error');
+                          if (errorSpan) errorSpan.style.display = 'none';
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1128,140 +1589,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             </div>
           </div>
 
-          {/* Date */}
-          <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-              <h2 className="text-lg font-oswald font-semibold">Date</h2>
-            </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
-              <div>
-                <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Thesis Date <span className="text-[#eec643]">*</span>
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  required
-                  max={new Date().toISOString().split('T')[0]}
-                  className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  onInput={(e) => {
-                    const input = e.target as HTMLInputElement;
-                    const errorSpan = document.getElementById('date-error');
-                    if (!input.value) {
-                      errorSpan!.textContent = 'Date is required.';
-                      errorSpan!.style.display = 'block';
-                    } else {
-                      errorSpan!.style.display = 'none';
-                    }
-                  }}
-                />
-                <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div>
-            <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-              <h2 className="text-lg font-oswald font-semibold">Location</h2>
-            </div>
-            <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="physical" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Physical Copy Location
-                  </label>
-                  <input
-                    type="text"
-                    id="physical"
-                    name="physical"
-                    maxLength={20}
-                    placeholder="e.g., Library Section A"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="digital" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Digital Copy Link
-                  </label>
-                  <input
-                    type="url"
-                    id="digital"
-                    name="digital"
-                    maxLength={200}
-                    placeholder="e.g., https://example.com/"
-                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                      digitalLinkError ? 'border-red-500' : 'border-[#94a3b8]'
-                    }`}
-                    onChange={async (e) => {
-                      const input = e.target;
-                      const value = input.value;
-                      const errorSpan = document.getElementById('digital-error');
-                      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-                      
-                      // Clear previous errors first
-                      setDigitalLinkError("");
-                      
-                      if (value.length === 0) {
-                        if (errorSpan) {
-                          errorSpan.style.display = 'none';
-                        }
-                        return;
-                      }
-                      
-                      // Check URL format
-                      let isValidUrl = false;
-                      try {
-                        new URL(value);
-                        isValidUrl = true;
-                      } catch {
-                        isValidUrl = false;
-                      }
-                      
-                      if (!isValidUrl) {
-                        if (errorSpan) {
-                          errorSpan.textContent = 'Please enter a valid URL.';
-                          errorSpan.style.display = 'block';
-                        }
-                        return;
-                      }
-                      
-                      // Hide format error if URL is valid
-                      if (errorSpan) {
-                        errorSpan.style.display = 'none';
-                      }
-                      
-                      // Check for duplicate link
-                      const supabase = createClient();
-                      const { data: existingThesis } = await supabase
-                        .from("thesis")
-                        .select("id")
-                        .ilike("thesis_digi", value)
-                        .maybeSingle();
-                      
-                      if (existingThesis) {
-                        setDigitalLinkError("This digital link is already in use. Please provide a unique link.");
-                        if (errorSpan) {
-                          errorSpan.textContent = "This digital link is already in use. Please provide a unique link.";
-                          errorSpan.style.display = 'block';
-                        }
-                      } else {
-                        setDigitalLinkError("");
-                        if (errorSpan) {
-                          errorSpan.style.display = 'none';
-                        }
-                      }
-                    }}
-                  />
-                  <span id="digital-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Privacy Consent */}
           <div className="flex items-start gap-2">
             <div className="relative flex items-center justify-center mt-1">
               <input
@@ -1283,7 +1610,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             </label>
           </div>
 
-          {/* Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
             <button
               type="button"

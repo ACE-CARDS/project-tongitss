@@ -69,6 +69,56 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
     }, 0);
   };
 
+  // Get author display name from member or author table
+  const getAuthorDisplayName = (author: any) => {
+    if (author.mem_id && author.member) {
+      const member = author.member;
+      const middleInitial = member.mem_minit ? ` ${member.mem_minit}.` : "";
+      return {
+        name: `${member.mem_fname}${middleInitial} ${member.mem_lname}`,
+        email: member.mem_email
+      };
+    }
+    
+    // Fallback to author table data
+    const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
+    return {
+      name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
+      email: author.author_email
+    };
+  };
+
+  const getProcessedAuthors = (survey: any) => {
+    if (!survey.survey_author || survey.survey_author.length === 0) {
+      return [];
+    }
+
+    const authorsWithData = survey.survey_author.map((sa: any) => {
+      const author = sa.author;
+      if (!author) return null;
+      
+      let memberData = null;
+      if (author.mem_id && survey.members_data) {
+        memberData = survey.members_data.find((m: any) => m.id === author.mem_id);
+      }
+      
+      return {
+        ...author,
+        member: memberData,
+        displayName: getAuthorDisplayName({ ...author, member: memberData })
+      };
+    }).filter((a: any) => a !== null);
+
+    // Sort alphabetically
+    authorsWithData.sort((a: any, b: any) => {
+      const lastNameA = a.member?.mem_lname || a.author_lname;
+      const lastNameB = b.member?.mem_lname || b.author_lname;
+      return lastNameA.localeCompare(lastNameB);
+    });
+
+    return authorsWithData;
+  };
+
   return (
     <>
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
@@ -78,7 +128,10 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {paginatedSurveys.map((survey: any) => (
+            {paginatedSurveys.map((survey: any) => {
+              const processedAuthors = getProcessedAuthors(survey);
+              
+              return (
               <SpotlightCard
                 key={survey.id}
                 className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
@@ -96,22 +149,19 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
                       Author(s)
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {survey.survey_author && survey.survey_author.length > 0 ? (
-                        survey.survey_author.map((sa: any, index: number) => {
-                          const author = sa.author;
-                          if (!author) return null;
+                      {processedAuthors.length > 0 ? (
+                        processedAuthors.map((author: any, index: number) => {
+                          const displayInfo = author.displayName;
                           
-                          const middleInitial = author.author_minit
-                            ? ` ${author.author_minit}.`
-                            : "";
-                            
                           return (
-                            <div
+                            <a
                               key={`${survey.id}-${author.id || 'no-id'}-${index}`}
-                              className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono"
+                              href={`mailto:${displayInfo.email}`}
+                              className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group"
+                              title={`Email: ${displayInfo.email}`}
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-4 h-4 group-hover:scale-110 transition-transform"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -123,8 +173,8 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
                                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                 />
                               </svg>
-                              {author.author_fname} {middleInitial} {author.author_lname}
-                            </div>
+                              {displayInfo.name}
+                            </a>
                           );
                         })
                       ) : (
@@ -272,7 +322,8 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
                   </div>
                 </div>
               </SpotlightCard>
-            ))}
+            );
+            })}
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">

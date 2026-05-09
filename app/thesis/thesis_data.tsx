@@ -102,7 +102,8 @@ export default async function ThesisData({
           author_fname,
           author_lname,
           author_minit,
-          author_email
+          author_email,
+          mem_id
         )
       )
     `
@@ -126,6 +127,42 @@ export default async function ThesisData({
 
   let filteredTheses = fetchedTheses || [];
   
+  
+  // Collect all unique mem_ids from authors to fetch member data
+  const memIds = new Set();
+  filteredTheses.forEach((thesis: any) => {
+    if (thesis.thesis_author && Array.isArray(thesis.thesis_author)) {
+      thesis.thesis_author.forEach((ta: any) => {
+        if (ta.author?.mem_id) {
+          memIds.add(ta.author.mem_id);
+        }
+      });
+    }
+  });
+
+  // Fetch member data for all authors with mem_id
+  let membersData: any[] = [];
+  if (memIds.size > 0) {
+    const { data: members, error: membersError } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+      .in("id", Array.from(memIds));
+    
+    if (!membersError && members) {
+      membersData = members;
+    } else if (membersError) {
+      console.error("Error fetching member data:", membersError);
+    }
+  }
+
+  // Attach member data to each thesis for easy access
+  const thesesWithMemberData = filteredTheses.map((thesis: any) => ({
+    ...thesis,
+    members_data: membersData
+  }));
+
+  filteredTheses = thesesWithMemberData;
+
   // Year filtering
   if (selectedYears.length > 0) {
     filteredTheses = filteredTheses.filter((t: any) => {
@@ -159,8 +196,15 @@ export default async function ThesisData({
       // Author
       if (t.thesis_author && Array.isArray(t.thesis_author)) {
         t.thesis_author.forEach((ta: any) => {
-          const a = ta.author;
-          hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
+          const b = ta.author;
+          // Include member data in search if available
+          if (b?.mem_id && t.members_data) {
+            const member = t.members_data.find((m: any) => m.id === b.mem_id);
+            if (member) {
+              hay += " " + (member.mem_fname ?? "") + " " + (member.mem_lname ?? "");
+            }
+          }
+          hay += " " + (b?.author_fname ?? "") + " " + (b?.author_lname ?? "");
         });
       }
 

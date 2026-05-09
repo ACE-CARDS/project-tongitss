@@ -97,13 +97,14 @@ export default async function SurveyData({
           author_fname,
           author_lname,
           author_minit,
-          author_email
+          author_email,
+          mem_id
         )
       )
     `
     )
     .eq("survey_status", "accepted")  // Show ongoing survyes
-    .order("survey_start", { ascending: false });
+    .order("survey_end", { ascending: true }); // Prio are the ones that end first
 
   if (categoryId) {
     baseQuery = baseQuery.eq("r_category", categoryId);
@@ -119,6 +120,41 @@ export default async function SurveyData({
   console.log("Error:", error);
 
   let filteredSurveys = fetchedSurveys || [];
+  
+  // Collect all unique mem_ids from authors to fetch member data
+  const memIds = new Set();
+  filteredSurveys.forEach((survey: any) => {
+    if (survey.survey_author && Array.isArray(survey.survey_author)) {
+      survey.survey_author.forEach((sa: any) => {
+        if (sa.author?.mem_id) {
+          memIds.add(sa.author.mem_id);
+        }
+      });
+    }
+  });
+
+  // Fetch member data for all authors with mem_id
+  let membersData: any[] = [];
+  if (memIds.size > 0) {
+    const { data: members, error: membersError } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+      .in("id", Array.from(memIds));
+    
+    if (!membersError && members) {
+      membersData = members;
+    } else if (membersError) {
+      console.error("Error fetching member data:", membersError);
+    }
+  }
+
+  // Attach member data to each survey for easy access
+  const surveysWithMemberData = filteredSurveys.map((survey: any) => ({
+    ...survey,
+    members_data: membersData
+  }));
+
+  filteredSurveys = surveysWithMemberData;
   
   if (selectedYears.length > 0) {
     filteredSurveys = filteredSurveys.filter((s: any) => {
@@ -146,6 +182,13 @@ export default async function SurveyData({
       if (s.survey_author && Array.isArray(s.survey_author)) {
         s.survey_author.forEach((sa: any) => {
           const a = sa.author;
+          // Include member data in search if available
+          if (a?.mem_id && s.members_data) {
+            const member = s.members_data.find((m: any) => m.id === a.mem_id);
+            if (member) {
+              hay += " " + (member.mem_fname ?? "") + " " + (member.mem_lname ?? "");
+            }
+          }
           hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
         });
       }
@@ -157,11 +200,6 @@ export default async function SurveyData({
 
   if (error) {
     console.error("Error fetching surveys:", error);
-    return (
-      <div className="bg-[#b52f3f] bg-opacity-10 border border-[#b52f3f] text-[#9c2929] px-4 py-3 rounded">
-        Error loading surveys: {error.message}
-      </div>
-    );
   }
 
   return (

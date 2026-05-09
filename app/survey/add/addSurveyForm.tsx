@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import BackButton from "@/components/backButton";
 
 interface Category {
   id: string;
@@ -21,6 +22,7 @@ interface Author {
   middleInitial?: string;
   lastName?: string;
   email?: string;
+  memberId?: number | null;
 }
 
 interface AddSurveyFormProps {
@@ -34,6 +36,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const supabase = createClient();
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
+  const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/survey");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
@@ -54,56 +60,172 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const [endDate, setEndDate] = useState("");
   const [dateError, setDateError] = useState("");
 
-  // To check duplicate authors on each field
-  const checkDuplicateAuthors = () => {
-  const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
-  const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
-  const middleInitialInputs = document.querySelectorAll('input[name="middleInitial[]"]') as NodeListOf<HTMLInputElement>;
-  const emailInputs = document.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
-  
-  for (let i = 0; i < emailInputs.length; i++) {
-    for (let j = i + 1; j < emailInputs.length; j++) {
-      // Check duplicate emails
-      if (emailInputs[i]?.value && emailInputs[j]?.value && 
-          emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
-        return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
-      }
+  // Load current logged-in user's member info
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      setIsLoadingUser(true);
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Check duplicate names
-      if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
-          firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
-          firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
-          lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+      if (user) {
+        setCurrentUserId(user.id);
         
-        // Check middle initials
-        const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
-        const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
+        // Get member info from users table
+        const { data: userData } = await supabase
+          .from("users")
+          .select("member_id")
+          .eq("id", user.id)
+          .single();
         
-        if (middleI === middleJ) {
-          return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
+        if (userData?.member_id) {
+          const { data: member } = await supabase
+            .from("member")
+            .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+            .eq("id", userData.member_id)
+            .single();
+          
+          if (member) {
+            setAuthors([{
+              id: 1,
+              firstName: member.mem_fname,
+              middleInitial: member.mem_minit || "",
+              lastName: member.mem_lname,
+              email: member.mem_email,
+              memberId: member.id
+            }]);
+          }
+        } else {
+          // Fallback: try to get from author table by email
+          const { data: userEmail } = await supabase.auth.getUser();
+          if (userEmail.user?.email) {
+            const { data: existingAuthor } = await supabase
+              .from("author")
+              .select("id, author_fname, author_lname, author_minit, author_email, mem_id")
+              .eq("author_email", userEmail.user.email)
+              .maybeSingle();
+            
+            if (existingAuthor) {
+              setAuthors([{
+                id: 1,
+                firstName: existingAuthor.author_fname,
+                middleInitial: existingAuthor.author_minit || "",
+                lastName: existingAuthor.author_lname,
+                email: existingAuthor.author_email,
+                memberId: existingAuthor.mem_id
+              }]);
+            }
+          }
+        }
+      }
+      setIsLoadingUser(false);
+    };
+    
+    loadCurrentUser();
+  }, [supabase]);
+
+  // Search for members in the database
+  const searchMembers = async (searchTerm: string, authorIndex: number) => {
+    if (!searchTerm || searchTerm.length < 2) {
+      setSearchResults(prev => new Map(prev).set(authorIndex, []));
+      return;
+    }
+
+    const { data: members, error } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+      .or(`mem_fname.ilike.%${searchTerm}%,mem_lname.ilike.%${searchTerm}%,mem_email.ilike.%${searchTerm}%`)
+      .limit(5);
+
+    if (!error && members) {
+      const formattedMembers = members.map(m => ({
+        id: m.id,
+        fname: m.mem_fname,
+        lname: m.mem_lname,
+        minit: m.mem_minit,
+        email: m.mem_email
+      }));
+      setSearchResults(prev => new Map(prev).set(authorIndex, formattedMembers));
+      setShowSearchDropdown(prev => new Map(prev).set(authorIndex, true));
+    } else {
+      setSearchResults(prev => new Map(prev).set(authorIndex, []));
+    }
+  };
+
+  // Select a member from search results
+  const selectMember = (member: any, authorIndex: number) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex] = {
+      ...updatedAuthors[authorIndex],
+      firstName: member.fname,
+      middleInitial: member.minit || "",
+      lastName: member.lname,
+      email: member.email,
+      memberId: member.id
+    };
+    setAuthors(updatedAuthors);
+    setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+    
+    // Update input fields
+    const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
+    const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
+    const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
+    const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
+    
+    if (firstNameInput) firstNameInput.value = member.fname;
+    if (middleInitialInput) middleInitialInput.value = member.minit || "";
+    if (lastNameInput) lastNameInput.value = member.lname;
+    if (emailInput) emailInput.value = member.email;
+  };
+
+  // Check duplicate authors on each field
+  const checkDuplicateAuthors = () => {
+    const firstNameInputs = document.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
+    const lastNameInputs = document.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
+    const middleInitialInputs = document.querySelectorAll('input[name="middleInitial[]"]') as NodeListOf<HTMLInputElement>;
+    const emailInputs = document.querySelectorAll('input[name="email[]"]') as NodeListOf<HTMLInputElement>;
+    
+    for (let i = 0; i < emailInputs.length; i++) {
+      for (let j = i + 1; j < emailInputs.length; j++) {
+        // Check duplicate emails
+        if (emailInputs[i]?.value && emailInputs[j]?.value && 
+            emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
+          return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
+        }
+        
+        // Check duplicate names
+        if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
+            firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
+            firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
+            lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+          
+          // Check middle initials
+          const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
+          const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
+          
+          if (middleI === middleJ) {
+            return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
+          }
         }
       }
     }
-  }
-  return null;
-};
+    return null;
+  };
 
   const checkDuplicateSurveyLink = async (link: string) => {
-  if (!link) return;
-  
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("survey")
-    .select("id")
-    .ilike("survey_link", link) // .ilike for case-insensitivity
-    .maybeSingle();
-  
-  if (data) {
-    setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
-  } else {
-    setSurveyLinkError("");
-  }
-};
+    if (!link) return;
+    
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("survey")
+      .select("id")
+      .ilike("survey_link", link) // .ilike for case-insensitivity
+      .maybeSingle();
+    
+    if (data) {
+      setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
+    } else {
+      setSurveyLinkError("");
+    }
+  };
 
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("surveyDraft");
@@ -171,7 +293,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             firstName: author.firstName,
             middleInitial: author.middleInitial,
             lastName: author.lastName,
-            email: author.email
+            email: author.email,
+            memberId: author.memberId
           })));
 
           setTimeout(() => {
@@ -210,7 +333,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   }, [returnTo]);
 
   const addAuthor = () => {
-    setAuthors([...authors, { id: authors.length + 1 }]);
+    setAuthors([...authors, { id: authors.length + 1, memberId: null }]);
   };
 
   const removeAuthor = (id: number) => {
@@ -414,14 +537,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     e.preventDefault();
 
     if (startDate && endDate && endDate <= startDate) {
-    setDateError("End date must be after start date");
-    // Scroll to the error
-    const dateSection = document.getElementById('end_date');
-    if (dateSection) {
-      dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setDateError("End date must be after start date");
+      // Scroll to the error
+      const dateSection = document.getElementById('end_date');
+      if (dateSection) {
+        dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
     }
-    return;
-  }
 
     // Validate category and school before submission
     const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement | null;
@@ -473,16 +596,16 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
       // Check duplicate survey link
       if (surveyLinkInput.value) {
-      const { data: existingSurvey } = await supabase
-        .from("survey")
-        .select("id")
-        .ilike("survey_link", surveyLinkInput.value)
-        .maybeSingle();
-      
-      if (existingSurvey) {
-        throw new Error("This survey link is already in use. Please provide a unique link.");
+        const { data: existingSurvey } = await supabase
+          .from("survey")
+          .select("id")
+          .ilike("survey_link", surveyLinkInput.value)
+          .maybeSingle();
+        
+        if (existingSurvey) {
+          throw new Error("This survey link is already in use. Please provide a unique link.");
+        }
       }
-    }
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -522,6 +645,9 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       for (let i = 0; i < firstNameInputs.length; i++) {
         if (!firstNameInputs[i]?.value || !lastNameInputs[i]?.value || !emailInputs[i]?.value) continue;
 
+        const memberIdFromState = authors[i]?.memberId || null;
+        
+        // First check if author exists by email
         const { data: existingAuthor } = await supabase
           .from("author")
           .select("id")
@@ -531,13 +657,15 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         if (existingAuthor) {
           authorIds.push(existingAuthor.id);
         } else {
+          // Create new author with mem_id if available
           const { data: newAuthor, error: authorError } = await supabase
             .from("author")
             .insert({
               author_fname: firstNameInputs[i].value,
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
-              author_minit: null,
+              author_minit: (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || null,
+              mem_id: memberIdFromState || null
             })
             .select("id")
             .single();
@@ -589,19 +717,20 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     }
   };
 
+  if (isLoadingUser) {
+    return (
+      <main className="container mx-auto py-8 px-4 max-w-3xl">
+        <div className="flex justify-center items-center h-64">
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-6">
-        <button
-          onClick={() => {
-            sessionStorage.removeItem("surveyDraft");
-            router.back();
-          }}
-          className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono cursor-pointer"
-        >
-          ← Back
-        </button>
-        <h1 className="text-2xl font-oswald font-bold text-[#011638]">Add New Survey</h1>
+        <BackButton />
+        <h1 className="text-2xl font-oswald font-bold text-[#011638] mt-6">Add New Survey</h1>
       </div>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
@@ -621,7 +750,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     id="title"
                     name="title"
                     required
-                    maxLength={100}
+                    maxLength={300}
                     placeholder="Enter survey title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     // Error handling
@@ -653,7 +782,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     rows={4}
                     maxLength={1500}
                     placeholder="Enter survey description"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                     // Error handling
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
@@ -681,7 +810,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     id="keywords"
                     name="keywords"
                     required
-                    maxLength={100}
+                    maxLength={300}
                     placeholder="Enter keywords separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     // Key Limits
@@ -724,7 +853,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                 <div key={author.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-oswald text-[#011638]">Author {index + 1}</h3>
-                    {authors.length > 1 && (
+                    {authors.length > 1 && index !== 0 && (
                       <button
                         type="button"
                         onClick={() => removeAuthor(author.id)}
@@ -746,9 +875,12 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           required
                           maxLength={20}
                           placeholder="First Name"
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          defaultValue={author.firstName || ""}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           // Key Limits
                           onKeyDown={(e) => {
+                            if (index === 0) return;
                             if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                               return;
                             }
@@ -759,28 +891,29 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           }}
                           // Error handling
                           onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById(`firstname-error-${index}`);
+                            if (index === 0) return;
+                            const input = e.target as HTMLInputElement;
+                            const errorSpan = document.getElementById(`firstname-error-${index}`);
 
-                          if (input.value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'First Name is required.';
-                              errorSpan.style.display = 'block';
+                            if (input.value.length === 0) {
+                              if (errorSpan) {
+                                errorSpan.textContent = 'First Name is required.';
+                                errorSpan.style.display = 'block';
+                              }
+                            } else if (input.value.length < 2) {
+                              if (errorSpan) {
+                                errorSpan.textContent = 'First Name must be at least 2 characters.';
+                                errorSpan.style.display = 'block';
+                              }
+                            } else {
+                              if (errorSpan) {
+                                errorSpan.style.display = 'none';
+                              }
                             }
-                          } else if (input.value.length < 2) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'First Name must be at least 2 characters.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
-                        }}
-                      />
-                      <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                    </div>
+                          }}
+                        />
+                        <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      </div>
 
                       <div>
                         <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -791,16 +924,33 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           name="middleInitial[]"
                           maxLength={4}
                           placeholder="M.I."
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                          // Key Limits
-                          onKeyDown={(e) => {
-                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                              return;
-                            }
+                          defaultValue={author.middleInitial || ""}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          onChange={(e) => {
+                            if (index === 0) return;
+                            let value = e.target.value.toUpperCase();
+                            value = value.replace(/[^A-Z.]/g, '');
+                            
+                            // Format: letter dot letter dot
+                            if (value.length === 1 && /[A-Z]/.test(value)) {
+                              value = value + '.';
+                            } else if (value.length === 2 && value[1] === '.') {
 
-                            if (!/[A-Za-z\s.]/.test(e.key)) {
-                              e.preventDefault();
+                            } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
+                              value = value[0] + '.' + value[1];
+                            } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
+                              value = value + '.';
+                            } else if (value.length >= 4) {
+
+                              value = value.slice(0, 2) + value.slice(2, 3) + '.';
+                              if (value.length > 4) value = value.slice(0, 4);
                             }
+                            
+                            e.target.value = value;
+                            
+                            const event = new Event('input', { bubbles: true });
+                            e.target.dispatchEvent(event);
                           }}
                         />
                       </div>
@@ -815,89 +965,93 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         required
                         maxLength={20}
                         placeholder="Last Name"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        defaultValue={author.lastName || ""}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         // Key Limits
                         onKeyDown={(e) => {
-                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                          return;
-                        }
-
-                        if (!/[A-Za-z\s\-'.]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      // Error handling
-                      onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById(`lastname-error-${index}`);
-                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                        const lastNameInput = input;
-                        const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
-
-                        if (input.value.length === 0) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Last Name is required.';
-                            errorSpan.style.display = 'block';
+                          if (index === 0) return;
+                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
                           }
-                          return;
-                        } else if (input.value.length < 2) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Last Name must be at least 2 characters.';
-                            errorSpan.style.display = 'block';
+
+                          if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                            e.preventDefault();
                           }
-                          return;
-                        }
+                        }}
+                        // Error handling
+                        onInput={(e) => {
+                          if (index === 0) return;
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`lastname-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          const lastNameInput = input;
+                          const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
 
-                      // Check duplicate authors 
-                      const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
-                      const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
-                      const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
+                          if (input.value.length === 0) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Last Name is required.';
+                              errorSpan.style.display = 'block';
+                            }
+                            return;
+                          } else if (input.value.length < 2) {
+                            if (errorSpan) {
+                              errorSpan.textContent = 'Last Name must be at least 2 characters.';
+                              errorSpan.style.display = 'block';
+                            }
+                            return;
+                          }
 
-                      const currentFirstName = firstNameInput?.value?.trim();
-                      const currentLastName = lastNameInput?.value?.trim();
-                      const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
+                          // Check duplicate authors 
+                          const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
+                          const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
+                          const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
 
-                      const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
+                          const currentFirstName = firstNameInput?.value?.trim();
+                          const currentLastName = lastNameInput?.value?.trim();
+                          const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
 
-                      for (let i = 0; i < allFirstNames.length; i++) {
-                        if (i !== index) {
-                          const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
-                          const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
-                          const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
-                          
-                          const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
-                          
-                          // Check name fields match
-                          if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
-                            const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
-                            const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
-                            
-                            if (firstNameMatch && lastNameMatch) {
-                              // Check middle initial
-                              const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
+                          const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
+
+                          for (let i = 0; i < allFirstNames.length; i++) {
+                            if (i !== index) {
+                              const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
+                              const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
+                              const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
                               
-                              if (middleMatch) {
-                                if (errorSpan) {
-                                  const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
-                                  errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
-                                  errorSpan.style.display = 'block';
+                              const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
+                              
+                              // Check name fields match
+                              if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
+                                const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
+                                const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
+                                
+                                if (firstNameMatch && lastNameMatch) {
+                                  // Check middle initial
+                                  const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
+                                  
+                                  if (middleMatch) {
+                                    if (errorSpan) {
+                                      const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
+                                      errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
+                                      errorSpan.style.display = 'block';
+                                    }
+                                    return;
+                                  }
                                 }
-                                return;
                               }
                             }
                           }
-                        }
-                      }
 
-                        // No duplicate
-                        if (errorSpan) {
-                          errorSpan.style.display = 'none';
-                        }
-                      }}
-                    />
-                    <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                  </div>
-                  
+                          // No duplicate
+                          if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                          }
+                        }}
+                      />
+                      <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                    </div>
+                    
                     <div>
                       <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Email <span className="text-[#eec643]">*</span>
@@ -906,11 +1060,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         type="email"
                         name="email[]"
                         required
-                        maxLength={30}
+                        maxLength={254}
                         placeholder="Email"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        defaultValue={author.email || ""}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         // Key Limits
                         onKeyUp={(e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const char = e.key;
                           const value = input.value;
@@ -928,63 +1085,91 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             }
                           }
                         }}
-                        // Error handling
+                        // Search trigger
                         onInput={async (e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById(`email-error-${index}`);
-                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                        const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                          if (index === 0) return;
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`email-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-                        if (input.value.length === 0) {
-                          errorSpan!.textContent = 'Email is required.';
-                          errorSpan!.style.display = 'block';
-                          return;
-                        }
-                        
-                        if (!emailRegex.test(input.value)) {
-                          errorSpan!.textContent = 'Please enter a valid email address.';
-                          errorSpan!.style.display = 'block';
-                          return;
-                        }
+                          if (input.value.length === 0) {
+                            errorSpan!.textContent = 'Email is required.';
+                            errorSpan!.style.display = 'block';
+                            return;
+                          }
+                          
+                          if (!emailRegex.test(input.value)) {
+                            errorSpan!.textContent = 'Please enter a valid email address.';
+                            errorSpan!.style.display = 'block';
+                            return;
+                          }
 
-                        // Check duplicate emails
-                        const allEmails = document.querySelectorAll('input[name="email[]"]');
-                        for (let i = 0; i < allEmails.length; i++) {
-                          if (i !== index) {
-                            const otherEmail = (allEmails[i] as HTMLInputElement).value;
-                            if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
-                              errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
-                              errorSpan!.style.display = 'block';
-                              return;
+                          // Check duplicate emails
+                          const allEmails = document.querySelectorAll('input[name="email[]"]');
+                          for (let i = 0; i < allEmails.length; i++) {
+                            if (i !== index) {
+                              const otherEmail = (allEmails[i] as HTMLInputElement).value;
+                              if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
+                                errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                                errorSpan!.style.display = 'block';
+                                return;
+                              }
                             }
                           }
-                        }
 
-                        // Check existing author
-                        const supabase = createClient();
-                        const { data: existing } = await supabase
-                          .from("author")
-                          .select("id, author_fname, author_lname")
-                          .eq("author_email", input.value)
-                          .maybeSingle();
-                        
-                        if (existing) {
-                          const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
-                          const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                          // Search for member by email
+                          await searchMembers(input.value, index);
                           
-                          if (firstNameMatch && lastNameMatch) {
-                            errorSpan!.style.display = 'none';
+                          // Check existing author
+                          const supabase = createClient();
+                          const { data: existing } = await supabase
+                            .from("author")
+                            .select("id, author_fname, author_lname")
+                            .eq("author_email", input.value)
+                            .maybeSingle();
+                          
+                          if (existing) {
+                            const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
+                            const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                            
+                            if (firstNameMatch && lastNameMatch) {
+                              errorSpan!.style.display = 'none';
+                            } else {
+                              errorSpan!.textContent = 'This email is already registered to a different author.';
+                              errorSpan!.style.display = 'block';
+                            }
                           } else {
-                            errorSpan!.textContent = 'This email is already registered to a different author.';
-                            errorSpan!.style.display = 'block';
+                            errorSpan!.style.display = 'none';
                           }
-                        } else {
-                          errorSpan!.style.display = 'none';
-                        }
-                      }}
-                    />
-                    <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                        }}
+                      />
+                      <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      
+                      {/* Search Results Dropdown */}
+                      {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && index !== 0 && (
+                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden" style={{ position: 'relative' }}>
+                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
+                            <span className="text-xs font-oswald font-semibold text-white">MATCHING MEMBER(S)</span>
+                          </div>
+                          <div className="max-h-60 overflow-y-auto">
+                            {searchResults.get(index)!.map((member, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => selectMember(member, index)}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{member.fname} {member.minit ? member.minit + '. ' : ''}{member.lname}</span>
+                                  <span className="text-xs">{member.email}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
@@ -1130,7 +1315,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                   id="survey_link"
                   name="survey_link"
                   required
-                  maxLength={200}
+                  maxLength={300}
                   placeholder="Enter survey URL"
                   className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                     surveyLinkError ? 'border-red-500' : 'border-[#94a3b8]'
@@ -1207,7 +1392,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     id="respondents"
                     name="respondents"
                     required
-                    maxLength={34}
+                    maxLength={200}
                     placeholder="Enter respondent criteria separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     // Key Limits
@@ -1364,7 +1549,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           setCategoryError("");
                         }}
                         placeholder="Enter new category name"
-                        maxLength={30}
+                        maxLength={50}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
@@ -1482,7 +1667,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           setSchoolError("");
                         }}
                         placeholder="Enter new school name"
-                        maxLength={34}
+                        maxLength={50}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
