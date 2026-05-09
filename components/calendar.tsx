@@ -106,12 +106,16 @@ export default function BigCalendar() {
 
     useEffect(() => {
       if (open && listRef.current) {
-        const currentItem = listRef.current.querySelector(
-          `[data-value="${value}"]`,
-        );
-        if (currentItem) {
-          currentItem.scrollIntoView({ block: "center" });
-        }
+        requestAnimationFrame(() => {
+          const list = listRef.current;
+          const currentItem = list?.querySelector(
+            `[data-value="${value}"]`,
+          ) as HTMLElement;
+
+          if (list && currentItem) {
+            list.scrollTop = currentItem.offsetTop;
+          }
+        });
       }
     }, [open, value]);
 
@@ -142,7 +146,10 @@ export default function BigCalendar() {
         </button>
         {open && (
           <div className="absolute left-0 mt-2 w-32 bg-white border rounded-xl shadow-lg border-[#011638] overflow-hidden">
-            <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+            <ul
+              ref={listRef}
+              className="py-1 max-h-60 overflow-y-auto custom-scrollbar"
+            >
               {options.map((o: any) => (
                 <li
                   key={o.value}
@@ -253,7 +260,7 @@ export default function BigCalendar() {
             setIsPopupShowing(false);
             setMoreEventsData([]);
           }}
-          onBack={moreEventsData.length > 0 ? handleBackToMore : undefined} // Only show back if we came from a list
+          onBack={moreEventsData.length > 0 ? handleBackToMore : undefined}
           eventDetail={selectedEventData}
         />
       </div>
