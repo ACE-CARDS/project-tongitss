@@ -59,7 +59,7 @@ function CommitteeContent() {
     ...nodeStyleBase,
     border: "none",
     background: "#b1b1b7",
-    width: isMobile ? "1.5px" : "1px",
+    width: isMobile ? "1.1px" : "1.2px",
     height: isMobile ? "8px" : "8px",
     padding: "0.5px",
   };
