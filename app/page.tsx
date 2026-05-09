@@ -389,47 +389,30 @@ export default function Home() {
   const [isOverHero, setIsOverHero] = useState(true);
 
   useEffect(() => {
-    const el = provinceSectionRef.current;
-    if (!el) return;
-
-    let interval;
-    let hasAnimated = false;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        if (hasAnimated) return;
-
-        hasAnimated = true;
-
-        const target = provinceMembers || 0;
-
-        setProvinceDisplayCount(0);
-
-        let current = 0;
-        const step = target / 30;
-
-        interval = setInterval(() => {
-          current += step;
-
-          if (current >= target) {
-            setProvinceDisplayCount(target);
-            clearInterval(interval);
-          } else {
-            setProvinceDisplayCount(Math.floor(current));
-          }
-        }, 16);
-      },
-      { threshold: 0.4 },
-    );
-
-    observer.observe(el);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, [provinceMembers, selectedProvince]);
+    let start = 0;
+  
+    setProvinceDisplayCount(0);
+  
+    const end = provinceMembers;
+    if (end === 0) return;
+  
+    const duration = 1000;
+    const incrementTime = 20;
+    const step = Math.ceil(end / (duration / incrementTime));
+  
+    const timer = setInterval(() => {
+      start += step;
+  
+      if (start >= end) {
+        setProvinceDisplayCount(end);
+        clearInterval(timer);
+      } else {
+        setProvinceDisplayCount(start);
+      }
+    }, incrementTime);
+  
+    return () => clearInterval(timer);
+  }, [provinceMembers]);
 
   useEffect(() => {
     setProvinceDisplayCount(0);
@@ -481,7 +464,7 @@ export default function Home() {
                 .getElementById("hero")
                 ?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl border border-white/40 px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            className="bg-yellow-200 border-2 border-yellow-500 fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl border border-white/40 px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
           >
             {/* //https://heroicons.com/outline */}
             <svg
@@ -498,7 +481,7 @@ export default function Home() {
                 d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
               />
             </svg>
-            <span className="text-sm font-semibold text-[#011638] hidden sm:block">
+            <span className="text-sm font-semibold text-[#011638] hidden sm:block ">
               Back to Top
             </span>
           </button>
@@ -1142,7 +1125,7 @@ export default function Home() {
                             setProvinceMembers(0);
                             setProvinceSchools([]);
                           }}
-                          className="absolute bottom-15 right-4 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50 cursor-pointer"
+                          className="absolute bottom-30 right-10 group flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg pl-3 pr-2 py-2 rounded-full border border-white/50 hover:scale-105 transition-all duration-200 z-50 cursor-pointer"
                         >
                           {/* https://heroicons.com/outline */}
                           <svg
