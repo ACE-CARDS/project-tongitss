@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import LoadingState from "@/components/mainLoadingState";
 import Footer from "@/components/footer";

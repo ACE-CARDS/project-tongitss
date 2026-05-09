@@ -61,7 +61,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
     }
     
     // Logout
-    const { createClient } = await import("@/lib/supabase/client");
+    const { createClient } = await import("@/utils/supabase/client");
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/";

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import ThesisHeader from "./thesis_header";
 import ClientPagination from './client-pagination'; 
 

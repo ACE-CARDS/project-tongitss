@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import AdminThesisHeader from "./admin_thesis_header";
 import AdminClientPagination from "./admin_client_pagination";
 

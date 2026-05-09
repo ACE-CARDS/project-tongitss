@@ -1,6 +1,6 @@
 // Same logic as thesis
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import SurveyHeader from "./survey_header";
 import ClientPagination from './client-pagination';
 

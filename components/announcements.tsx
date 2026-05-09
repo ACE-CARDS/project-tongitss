@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import BigCalendar from "@/components/calendar";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import AnnounceMemberCard from "@/components/announceMemberCard";
 import { useUser } from "@/components/context/userContext";
 

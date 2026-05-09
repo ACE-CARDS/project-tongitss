@@ -1,7 +1,7 @@
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import ThesisData from "./thesis_data";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import BackButton from "@/components/backButton"; // For back button
 import ThesisPageClient from "./thesis-page-client";
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import SurveyDescription from "../survey_description";
 import SpotlightCard from "@/components/SpotlightCard";
 import Pagination from "@/components/pagination";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import EditSurveyModal from "./edit_survey_modal";
 import MoveSurveyModal from "./move_survey_modal";
 import ReviewSurveyModal from "./review_survey_modal";

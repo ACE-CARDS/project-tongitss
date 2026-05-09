@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 //filter popup
 function FilterPopup({

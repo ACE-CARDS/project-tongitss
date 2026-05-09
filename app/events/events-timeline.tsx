@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 const FilterDropdown = ({ value, options, onChange }: any) => {
   const [open, setOpen] = useState(false);

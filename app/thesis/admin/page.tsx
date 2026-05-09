@@ -1,6 +1,6 @@
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import BackButton from "@/components/backButton";
 import ThesisAdminWrapper from "./thesis_admin_wrapper";
 

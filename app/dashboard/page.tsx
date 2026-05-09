@@ -9,7 +9,7 @@ import Announcements from "@/components/announcements";
 import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 import MemdirSuper from "@/components/memdirsuper";
 import MemdirAdmin from "@/components/memdiradmin";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 import CommitteeDirectory from "@/components/committeeDirectory";
 import CrudButton from "@/components/crudButton";

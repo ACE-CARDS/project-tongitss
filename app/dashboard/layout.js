@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 export default function DashboardLayout({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

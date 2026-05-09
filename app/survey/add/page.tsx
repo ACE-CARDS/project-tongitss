@@ -1,6 +1,6 @@
 // Same logic as thesis
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import AddSurveyForm from "./addSurveyForm"; 

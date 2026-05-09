@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import CalendarEvent from "./calendarEvent";
 import Image from "next/image";
 import ShowMoreEventsModal from "./showMoreEventsModal";

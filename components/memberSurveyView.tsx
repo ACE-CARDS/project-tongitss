@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { useUser } from "./context/userContext";
 import SurveyDescription from '@/app/survey/survey_description';
 import SpotlightCard from "./SpotlightCard";

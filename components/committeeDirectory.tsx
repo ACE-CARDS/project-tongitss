@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import Pagination from "./pagination";
 import { BsSuitSpadeFill } from "react-icons/bs";
 

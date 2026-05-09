@@ -9,7 +9,7 @@ import Kidla from "@/components/kidlaButton";
 import KidlaDialogue from "@/components/kidlaDialogue";
 import Footer from "@/components/footer";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import GradualBlur from "@/components/GradualBlur";
 import NewsMedia from "@/components/newsMedia";
 

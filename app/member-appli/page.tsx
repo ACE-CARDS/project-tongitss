@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/backButton";
 import LoadingState from "@/components/mainLoadingState";
 

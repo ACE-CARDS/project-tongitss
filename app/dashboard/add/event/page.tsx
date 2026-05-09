@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import AddEventForm from "./addEventForm";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import LoadingState from "@/components/mainLoadingState";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ThesisAbstract from "../thesis_abstract";
 import SpotlightCard from "@/components/SpotlightCard";
 import Pagination from "@/components/pagination";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import EditThesisModal from "./edit_thesis_modal";
 import MoveThesisModal from "./move_thesis_modal";
 import ReviewThesisModal from "./review_thesis_modal";

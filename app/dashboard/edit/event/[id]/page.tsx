@@ -6,7 +6,7 @@ import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import EditEventForm from "./editEventForm";
 import { useUser } from "@/components/context/userContext";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import LoadingState from "@/components/mainLoadingState";
 
 function EditEventContent() {
