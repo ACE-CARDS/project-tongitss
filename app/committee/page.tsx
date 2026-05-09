@@ -8,6 +8,31 @@ import ReactFlow, { Handle, Position, Background } from "reactflow";
 import "reactflow/dist/style.css";
 import BackButton from "@/components/backButton";
 
+const Legend = ({ isMobile }: any) => {
+  return (
+    <div
+      className={`flex ${isMobile ? "flex-col gap-2 items-start" : "flex-row gap-6 items-center"} bg-white/80 p-3 rounded-lg border border-gray-200 shadow-sm`}
+    >
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-[#ffe599] border-[1px] border-[#f1c232]" />
+        <span className="text-xs font-medium text-gray-700">
+          Executive Committee
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-[#a4c2f4] border border-[transparent]" />
+        <span className="text-xs font-medium text-gray-700">Committees</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-[#fff] border-[1px] border-[#333]" />
+        <span className="text-xs font-medium text-gray-700">Alumni/Others</span>
+      </div>
+    </div>
+  );
+};
+
 function CommitteeContent() {
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1200,
@@ -250,8 +275,9 @@ function CommitteeContent() {
         }}
       >
         {" "}
-        <div className="container mx-auto py-8 px-4 max-w-7xl">
+        <div className="container mx-auto py-8 px-4 max-w-7xl flex justify-between">
           <BackButton />
+          <Legend isMobile={isMobile} />
         </div>
         <div
           className={`w-full ${isMobile ? "h-[700px]" : "h-[500px]"} max-w-5xl`}
