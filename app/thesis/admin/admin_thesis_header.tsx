@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useRef, useEffect } from "react";
 
 function FilterPopup({
@@ -500,7 +501,6 @@ export default function AdminThesisHeader({
       )}
       </div>
 
-      <div className="flex flex-col gap-1">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative" ref={filterButtonRef}>
             <button
@@ -612,7 +612,17 @@ export default function AdminThesisHeader({
               allKeywords={availableKeywords}
             />
           </div>
-          </div>
+
+          {/* Add button */}
+          <Link
+            href="/thesis/add?returnTo=/thesis/admin"
+            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Thesis
+          </Link>
         </div>
       </div>
   );
