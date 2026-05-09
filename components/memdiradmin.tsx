@@ -1093,16 +1093,13 @@ const hasEditChanges =
                   return (
                     <div
                       key={member.id}
-                      className={`
-                        flex flex-col gap-3
-                        sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
-                        px-4 py-3 rounded-xl border shadow-lg transition
-                        hover:shadow-xl
+                      className={`"flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition
+                      hover:shadow-xl
                         ${
                           isRowEdited(member)
                             ? "bg-yellow-50 border-yellow-300 ring-1 ring-yellow-200"
                             : "bg-white/80 border-white/40"
-                        }
+                        }" }
                       `}
                     >
                       <div className="my-auto">
