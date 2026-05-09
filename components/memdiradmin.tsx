@@ -882,7 +882,7 @@ const hasEditChanges =
     editMember,
   ]);
 
-  
+
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
@@ -1109,12 +1109,13 @@ const hasEditChanges =
                           .toLowerCase()
                           .replace(/\b\w/g, (c) => c.toUpperCase())}
                         {member.mem_minit?.trim()
-                          ? ` ${
-                              member.mem_minit.endsWith(".")
-                                ? member.mem_minit.toUpperCase()
-                                : `${member.mem_minit.toUpperCase()}.`
-                            }`
-                          : ""}
+                        ? ` ${member.mem_minit
+                            .replace(/\./g, "")
+                            .toUpperCase()
+                            .split("")
+                            .map((c) => `${c}.`)
+                            .join("")}`
+                        : ""}
                       </span>
 
                       <span className="text-xs text-gray-400 break-all mt-1 block">
@@ -1691,7 +1692,11 @@ const hasEditChanges =
               placeholder="Middle Initial"
               value={editForm.mem_minit}
               onChange={(e) => {
-                const value = e.target.value;
+                let value = e.target.value.toUpperCase();
+                value = value.replace(/[^A-Z]/g, "");
+                value = value.slice(0, 2);
+                
+                let formatted = "";
               
                 setEditForm((prev) => ({
                   ...prev,
@@ -1702,6 +1707,21 @@ const hasEditChanges =
                   ...prev,
                   mem_minit: value.trim() !== "" && value.length > 3,
                 }));
+              }}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Backspace" ||
+                  e.key === "Delete" ||
+                  e.key === "ArrowLeft" ||
+                  e.key === "ArrowRight" ||
+                  e.key === "Tab"
+                ) {
+                  return;
+                }
+            
+                if (!/^[A-Za-z]$/.test(e.key)) {
+                  e.preventDefault();
+                }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
