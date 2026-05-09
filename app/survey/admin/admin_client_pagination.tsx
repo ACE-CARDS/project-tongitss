@@ -214,12 +214,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                 className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
                 spotlightColor="rgba(239, 240, 242, 0.16)"
               >
-                <div
-                  onClick={survey.survey_status === "pending" ? () => setReviewingSurvey(survey) : undefined}
-                  className={`flex flex-col h-full ${
-                    survey.survey_status === "pending" ? "cursor-pointer" : ""
-                  }`}
-                >
+                <div className="flex flex-col h-full">
                   {/* Status and Action Buttons */}
                   <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
 
@@ -302,7 +297,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                             return (
                               <div
                                 key={`${survey.id}-${author.id || 'no-id'}-${index}`}
-                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono"
+                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono break-words max-w-full whitespace-normal"
                               >
                                 <svg
                                   className="w-4 h-4"
@@ -350,7 +345,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                           .map((keyword: string, index: number) => (
                             <span
                               key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
                             >
                               {keyword.trim()}
                             </span>
@@ -395,14 +390,14 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         {/* category n school */}
                         <div>
                           <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
+                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                             {survey.r_category?.r_category_name || "Uncategorized"}
                           </span>
                         </div>
 
                         <div>
                           <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
+                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                             {survey.school?.school_name || "No School"}
                           </span>
                         </div>
@@ -424,7 +419,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                           survey.survey_respondents.split(",").map((criteria: string, index: number) => (
                             <span
                               key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
                             >
                               {criteria.trim()}
                             </span>

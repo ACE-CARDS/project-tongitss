@@ -210,12 +210,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                 className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
                 spotlightColor="rgba(239, 240, 242, 0.16)"
               >
-                <div
-                  onClick={thesis.thesis_status === "pending" ? () => setReviewingThesis(thesis) : undefined}
-                  className={`flex flex-col h-full ${
-                    thesis.thesis_status === "pending" ? "cursor-pointer" : ""
-                  }`}
-                >
+                <div className="flex flex-col h-full">
                   <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
                     <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} flex items-center gap-2 shadow-sm`}>
                       <span className="relative flex size-2">
@@ -293,7 +288,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                             return (
                               <div
                                 key={`${thesis.id}-${author.id || 'no-id'}-${index}`}
-                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono"
+                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono break-words max-w-full whitespace-normal"
                               >
                                 <svg
                                   className="w-4 h-4"
@@ -339,7 +334,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           .map((keyword: string, index: number) => (
                             <span
                               key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
                             >
                               {keyword.trim()}
                             </span>
@@ -368,14 +363,14 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
 
                         <div>
                           <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
+                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                             {thesis.r_category?.r_category_name || "Uncategorized"}
                           </span>
                         </div>
 
                         <div>
                           <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
+                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                             {thesis.school?.school_name || "No School"}
                           </span>
                         </div>
@@ -394,7 +389,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                         </h4>
                         <div>
                           {thesis.thesis_phys ? (
-                            <span className="text-[#011638] text-sm font-ubuntu-mono">
+                            <span className="text-[#011638] text-sm font-ubuntu-mono break-words max-w-full whitespace-normal">
                               {thesis.thesis_phys}
                             </span>
                           ) : (
