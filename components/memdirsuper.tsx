@@ -165,6 +165,16 @@ export default function MembersPage() {
     return !o || m.role !== o.role || m.comm !== o.comm;
   });
 
+  const isRowEdited = (member: Member) => {
+    const original = originalMembers.find((o) => o.id === member.id);
+    if (!original) return false;
+  
+    return (
+      member.role !== original.role ||
+      member.comm !== original.comm
+    );
+  };
+
   //saving roles sa supabase
   const handleRoleChange = (id: number, newRole: string) => {
     setMembers((prev) =>
@@ -1146,11 +1156,17 @@ const [editErrorMessage, setEditErrorMessage] = useState("");
                   return (
                     <div
                       key={member.id}
-                      className="
+                      className={`
                         flex flex-col gap-3
                         sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
-                        bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition
-                      "
+                        px-4 py-3 rounded-xl border shadow-lg transition
+                        hover:shadow-xl
+                        ${
+                          isRowEdited(member)
+                            ? "bg-yellow-50 border-yellow-300 ring-1 ring-yellow-200"
+                            : "bg-white/80 border-white/40"
+                        }
+                      `}
                     >
                      <div className="my-auto">
                       <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">

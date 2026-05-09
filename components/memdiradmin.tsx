@@ -162,6 +162,16 @@ export default function MembersPage() {
     return !o || m.comm !== o.comm;
   });
 
+  const isRowEdited = (member: Member) => {
+    const original = originalMembers.find((o) => o.id === member.id);
+    if (!original) return false;
+  
+    return (
+      member.role !== original.role ||
+      member.comm !== original.comm
+    );
+  };
+
   const handleCommitteeChange = (
     id: number,
     newCommitteeId: number | string,
@@ -1044,7 +1054,17 @@ const hasEditChanges =
                   return (
                     <div
                       key={member.id}
-                      className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
+                      className={`
+                        flex flex-col gap-3
+                        sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
+                        px-4 py-3 rounded-xl border shadow-lg transition
+                        hover:shadow-xl
+                        ${
+                          isRowEdited(member)
+                            ? "bg-yellow-50 border-yellow-300 ring-1 ring-yellow-200"
+                            : "bg-white/80 border-white/40"
+                        }
+                      `}
                     >
                       <div className="my-auto">
                       <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
