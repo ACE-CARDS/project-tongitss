@@ -148,7 +148,7 @@ export default function BigCalendar() {
           <div className="absolute left-0 mt-2 w-32 bg-white border rounded-xl shadow-lg border-[#011638] overflow-hidden">
             <ul
               ref={listRef}
-              className="py-1 max-h-60 overflow-y-auto custom-scrollbar"
+              className="py-1 max-h-60 overflow-y-auto custom-scrollbar-blue"
             >
               {options.map((o: any) => (
                 <li

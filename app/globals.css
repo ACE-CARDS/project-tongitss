@@ -54,6 +54,7 @@ p {
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 1rem;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -63,22 +64,27 @@ p {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #eff0f2;
+  cursor: pointer;
 }
 
 .custom-scrollbar-blue::-webkit-scrollbar  {
-  width: 6px;
+  width: 10px;
 }
 .custom-scrollbar-blue::-webkit-scrollbar-track {
-  background: transparent;
+  background: #d6d7d8;
+  border-radius: 1rem;
 }
 
 .custom-scrollbar-blue::-webkit-scrollbar-thumb {
-  background: #0b1763;
+  background: #011638;
   border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
 
 .custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
-  background: #0b1763;
+  background: #011638;
+  cursor: pointer;
 }
 
 .custom-scrollbar-white::-webkit-scrollbar,
@@ -88,6 +94,7 @@ p {
 
 .custom-scrollbar-white::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
 }
 
 .custom-scrollbar-white::-webkit-scrollbar-thumb,
@@ -96,6 +103,12 @@ p {
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
+}
+
+.custom-scrollbar-white::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar-white-nobg::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
 }
 
 .btn-primary {
