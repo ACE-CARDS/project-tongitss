@@ -104,8 +104,8 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               flex xl:flex-row text-right
               xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full
               justify-end
-              bg-[#011638]/70 backdrop-blur-sm rounded-[50px] pl-2
-              xl:gap-4 gap-2
+              bg-[#011638]/70 backdrop-blur-sm rounded-[2rem] pl-2
+              xl:gap-4
               w-[220px] xl:w-auto
               overflow-hidden xl:overflow-visible
               ${menuOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 xl:scale-100 xl:opacity-100"}
@@ -159,7 +159,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               <li
                 ref={membersRef}
                 onClick={toggleMembers}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[25px] duration-200 transition-all
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[1rem] duration-200 transition-all
                   ${isActive("/executives") || isActive("/committee")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -193,7 +193,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                     whitespace-normal xl:whitespace-nowrap
                     xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
                     xl:bg-[#011638]/90 xl:backdrop-blur-sm
-                    p-1 xl:p-4 xl:rounded-[30px]
+                    p-1 xl:p-4 xl:rounded-[2rem]
                     xl:-left-5 xl:top-8 xl:w-40 xl:text-center
                   `}
                 >
@@ -215,7 +215,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[25px] duration-200 transition-all xl:mb-0 mb-3
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[1rem] duration-200 transition-all xl:mb-0 mb-3
                   ${isActive("/thesis") || isActive("/survey")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -250,7 +250,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                     whitespace-normal xl:whitespace-nowrap
                     xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
                     xl:bg-[#011638]/90 xl:backdrop-blur-sm
-                    p-1 xl:p-4 xl:rounded-[30px]
+                    p-1 xl:p-4 xl:rounded-[2rem]
                     xl:-left-10 xl:top-8 xl:w-50 xl:text-center
                   `}
                 >
