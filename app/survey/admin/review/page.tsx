@@ -17,6 +17,8 @@ function ReviewContent() {
   const [survey, setSurvey] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [rejectionError, setRejectionError] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,6 +42,7 @@ function ReviewContent() {
 
       if (error) {
         console.error("Error fetching survey:", error);
+        setSubmitError("Failed to load survey data.");
       } else {
         setSurvey(data);
       }
@@ -47,33 +50,111 @@ function ReviewContent() {
     }
 
     fetchSurvey();
-  }, [surveyId, supabase]);
+  }, [surveyId]);
 
-  const handleApprove = async () => {
-    setIsSubmitting(true);
-    const { error } = await supabase
-    .from("survey")
-    .update({ survey_status: "approved" })
-    .eq("id", surveyId);
-    
-    if (!error) router.push("/admin");
-    else setIsSubmitting(false);
+  const isPastDate = survey ? new Date(survey.survey_end) < new Date() : false;
+
+  // validate rejection reason in real-time
+  const validateRejectionReasonInput = (value: string): string => {
+    if (!value.trim()) {
+      return "Rejection reason is required.";
+    }
+    if (value.trim().length < 10) {
+      return "Rejection reason must be at least 10 characters.";
+    }
+    if (value.trim().length > 500) {
+      return "Rejection reason must not exceed 500 characters.";
+    }
+    return "";
   };
 
-  const handleReject = async () => {
-    if (!rejectionReason.trim()) return;
-    
-    setIsSubmitting(true);
-    const { error } = await supabase
-      .from("survey")
-      .update({ 
-        survey_status: "rejected",
-        rejection_reason: rejectionReason.trim() // Ensure this column exists in your DB
-      })
-      .eq("id", surveyId);
+  // handle rejection reason change
+  const handleRejectionReasonChange = (value: string) => {
+    setRejectionReason(value);
+    const error = validateRejectionReasonInput(value);
+    setRejectionError(error);
+  };
 
-    if (!error) router.push("/admin");
-    else setIsSubmitting(false);
+  // validate rejection reason
+const validateRejectionReason = (): boolean => {
+    const rejectionReasonInput = document.querySelector('textarea') as HTMLTextAreaElement;
+    const errorSpan = document.getElementById('rejection-reason-error');
+    
+    if (!rejectionReasonInput?.value.trim()) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason is required.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+    if (rejectionReasonInput.value.trim().length < 10) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason must be at least 10 characters.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+    if (rejectionReasonInput.value.trim().length > 500) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason must not exceed 500 characters.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+  return true;
+};
+
+  const handleApprove = async () => {
+    if (isPastDate) {
+      setSubmitError("Cannot approve a survey that has already reached its end date.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const { error } = await supabase
+        .from("survey")
+        .update({ 
+          survey_status: "accepted", // Matching the "accepted" label from your Modal
+          rejection_reason: null 
+        })
+        .eq("id", surveyId);
+
+      if (error) throw error;
+      router.push("/dashboard?tab=survey&page=1");
+    } catch (err: any) {
+      setSubmitError(err.message || "Failed to approve survey.");
+      setIsSubmitting(false);
+    }
+  };
+
+const handleReject = async () => {
+    const errorMsg = validateRejection(rejectionReason);
+    if (errorMsg) {
+      setRejectionError(errorMsg);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const { error } = await supabase
+        .from("survey")
+        .update({ 
+          survey_status: "rejected",
+          rejection_reason: rejectionReason.trim() 
+        })
+        .eq("id", surveyId);
+
+      if (error) throw error;
+      router.push("/dashboard?tab=survey&page=1");
+    } catch (err: any) {
+      setSubmitError(err.message || "Failed to reject survey.");
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Loading...</div>;
@@ -88,8 +169,9 @@ function ReviewContent() {
       <NavBar />
       <div className="pt-5">
         <main className="container mx-auto py-8 px-4 max-w-3xl">
+          <BackButton href="/dashboard?tab=survey&page=1" />
 
-          <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
+          <div className="bg-[#fbfaf8] mt-4 rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
             {/* Basic Information */}
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
@@ -166,6 +248,7 @@ function ReviewContent() {
 
             {/* Rejection Form */}
             {showRejectForm && (
+              <>
               <div className="pt-4">
                 <label className="block text-lg font-oswald font-medium text-[#011638] mb-1">Reason for Rejection <span className="text-red-500">*</span></label>
                 <textarea
@@ -175,8 +258,23 @@ function ReviewContent() {
                   maxLength={100}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-white"
                   placeholder="Indicate why this survey is being rejected..."
+                  onInput={(e) => {
+                    const input = e.target as HTMLTextAreaElement;
+                    const errorSpan = document.getElementById('rejection-reason-error');
+                    if (input.value.length === 0) {
+                      errorSpan!.textContent = 'Rejection reason is required.';
+                      errorSpan!.style.display = 'block';
+                    } else if (input.value.length < 10) {
+                      errorSpan!.textContent = 'Rejection reason must be at least 10 characters.';
+                      errorSpan!.style.display = 'block';
+                    } else {
+                      errorSpan!.style.display = 'none';
+                    }
+                  }}
                 />
               </div>
+                <span id="rejection-reason-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+              </>
             )}
 
             {/* Actions */}
