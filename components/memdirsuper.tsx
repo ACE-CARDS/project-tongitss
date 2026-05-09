@@ -371,7 +371,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`w-full px-2 sm:px-3 py-2 text-sm truncate border rounded-xl text-left shadow-sm font-normal relative ${styleClass}`}
+          className={`w-full px-2 sm:px-3 py-2 text-sm truncate border rounded-xl text-left shadow-sm font-normal relative ${styleClass} cursor-pointer`}
         >
           {selectedLabel}
           <span
@@ -382,7 +382,7 @@ export default function MembersPage() {
         </button>
 
         {open && (
-          <ul className="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-auto">
+          <ul className="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-auto custom-scrollbar-blue">
             {options.map((o) => (
               <li
                 key={o.value}
@@ -390,7 +390,7 @@ export default function MembersPage() {
                   onChange(o.value);
                   setOpen(false);
                 }}
-                className={`${getRoleStyle(o.value as string)} px-3 py-2 cursor-pointer hover:opacity-30`}
+                className={`${getRoleStyle(o.value as string)} px-3 py-2 hover:opacity-30`}
               >
                 {o.label}
               </li>
@@ -439,7 +439,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative"
+          className="w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative cursor-pointer"
         >
           {selectedLabel}
           <span
@@ -450,29 +450,31 @@ export default function MembersPage() {
         </button>
 
         {open && (
-          <div className="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-auto">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-              className="w-full px-3 py-2 border-b border-gray-300 focus:outline-none"
-            />
-            <ul>
-              {filteredOptions.map((o) => (
-                <li
-                  key={o.value}
-                  onClick={() => {
-                    onChange(o.value);
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                  className={`${getCommitteeStyle(o.label)} px-3 py-2 cursor-pointer hover:opacity-50`}
-                >
-                  {o.label}
-                </li>
-              ))}
-            </ul>
+          <div className="absolute z-50 mt-1 bg-white border rounded-xl shadow-lg overflow-hidden w-full">
+            <div className="custom-scrollbar-blue overflow-auto w-full max-h-60">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-full px-3 py-2 border-b border-gray-300 focus:outline-none"
+              />
+              <ul className="custom-scrollbar-blue">
+                {filteredOptions.map((o) => (
+                  <li
+                    key={o.value}
+                    onClick={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`${getCommitteeStyle(o.label)} px-3 py-2 cursor-pointer hover:opacity-50`}
+                  >
+                    {o.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>
@@ -1014,7 +1016,7 @@ const [schools, setSchools] = useState<School[]>([]);
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
-    <div className="w-full min-h-screen flex flex-col">
+    <div className="w-full flex flex-col">
       <main className="flex-1">
         <div className="relative w-full">
           {/* Header */}
@@ -1028,7 +1030,7 @@ const [schools, setSchools] = useState<School[]>([]);
           </div>
 
           {/* committee tabs */}
-          <div className="flex gap-2 flex-nowrap overflow-x-auto">
+          <div className="flex gap-2 flex-nowrap overflow-x-auto custom-scrollbar-blue">
             {committeeCategories.map((cat) => {
               const getTabColor = (key: string) => {
                 const name = key.toLowerCase();
@@ -1047,9 +1049,9 @@ const [schools, setSchools] = useState<School[]>([]);
                 <button
                   key={cat.key}
                   onClick={() => setSelectedFilter(cat.key)}
-                  className={`flex-shrink-0 px-5 py-2 rounded-t-xl font-semibold transition-all border ${
+                  className={`flex-shrink-0 px-5 py-2 rounded-t-xl font-semibold transition-all border cursor-pointer ${
                     selectedFilter === cat.key
-                      ? `bg-white shadow-md border-gray-300 border-b-white text-[#011638]`
+                      ? `bg-white shadow-md border-gray-300 border-b-transparent text-[#011638]`
                       : `${colorClass} border-gray-500 hover:shadow-sm hover:opacity-50`
                   }`}
                 >
@@ -1060,7 +1062,7 @@ const [schools, setSchools] = useState<School[]>([]);
           </div>
           
           {/* Members Table */}
-          <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-xxl p-6 pt-4 space-y-6">
+          <div className="bg-white/70 backdrop-blur-xl border border-gray-300 border-t-transparent rounded-b-xl shadow-[0_15px_15px_rgba(0,0,0,0.1)] p-6 pt-4 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               {/* Name Search */}
               <div className="w-full sm:flex-1 relative">
@@ -1226,16 +1228,15 @@ const [schools, setSchools] = useState<School[]>([]);
                       className={`
                         flex flex-col gap-3
                         sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
-                        px-4 py-3 rounded-xl border shadow-lg transition
-                        hover:shadow-xl
-                        ${
-                          isRowEdited(member)
-                            ? "bg-yellow-50 border-yellow-300 ring-1 ring-yellow-200"
-                            : "bg-white/80 border-white/40"
+                        px-4 py-3 rounded-xl ring shadow-0 ring-[#d7d7d7] ease-in-out duration-200 transition-all
+                        hover:shadow-lg border-l-4
+                        ${isRowEdited(member)
+                            ? "bg-yellow-50 ring-yellow-300 border-l-yellow-300"
+                            : "bg-white/80 border-l-transparent"
                         }
                       `}
                     >
-                     <div className="my-auto">
+                    <div className="my-auto">
                       <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
                         {member.mem_lname.toUpperCase()},{" "}
                         {member.mem_fname
@@ -1304,7 +1305,7 @@ const [schools, setSchools] = useState<School[]>([]);
                           });
 
                         }}
-                        className="text-[#011638] hover:scale-110 transition-transform p-1 sm:p-0"
+                        className="text-[#011638] hover:scale-110 transition-transform p-1 sm:p-0 cursor-pointer"
                       >
                           {/* edit icon */}
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1315,7 +1316,7 @@ const [schools, setSchools] = useState<School[]>([]);
 
                         <button
                           onClick={() => setDeleteMember(member)}
-                          className="text-red-500 hover:scale-110 transition-transform"
+                          className="text-red-500 hover:scale-110 transition-transform cursor-pointer"
                         >
                           {/* delete icon */}
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
