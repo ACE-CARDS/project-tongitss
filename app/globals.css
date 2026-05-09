@@ -67,7 +67,7 @@ p {
   cursor: pointer;
 }
 
-.custom-scrollbar-blue::-webkit-scrollbar  {
+.custom-scrollbar-blue::-webkit-scrollbar {
   width: 10px;
 }
 .custom-scrollbar-blue::-webkit-scrollbar-track {
@@ -189,6 +189,11 @@ p {
   width: 200x;
   height: 100px;
 }
+
+.react-flow__node {
+  cursor: pointer !important;
+}
+
 /*Animations that I did not do manually*/
 
 /* ----------------------------------------------

@@ -1,12 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useMemo } from "react";
+import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import LoadingState from "@/components/mainLoadingState";
-import ReactFlow, { Handle, Position, Background } from "reactflow";
+import ReactFlow, {
+  Handle,
+  Position,
+  useReactFlow,
+  ReactFlowProvider,
+} from "reactflow";
 import "reactflow/dist/style.css";
 import BackButton from "@/components/backButton";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { Transition } from "react-transition-group";
+
+const nodeDescriptions = {
+  rd: " Makin' my way downtown Walkin' fast Faces pass And I'm homebound Starin' blankly ahead Just makin' my way, makin' a way Through the crowd And I need you And I miss you And now I wonder If I could fall into the sky Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight ",
+  "dir-int":
+    " Makin' my way downtown Walkin' fast Faces pass And I'm homebound Starin' blankly ahead Just makin' my way, makin' a way Through the crowd And I need you And I miss you And now I wonder If I could fall into the sky Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight .",
+  sec: " Makin' my way downtown Walkin' fast Faces pass And I'm homebound ",
+  "mem-comm":
+    "Starin' blankly ahead Just makin' my way, makin' a way Through the crowd",
+  "dir-ext":
+    "DUHDUH DUHDUHDUH DUHDUH And I need you DUHDUH DUHDUHDUH DUHDUH And I miss you DUHDUH DUHDUHDUH DUHDUH And now I wonder If I could fall into the sky ",
+  "ace-cards":
+    "Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight",
+  "ext-comm": "~Tininininininin Tinininin Tinininnininin Tinininininin~",
+  "h-fb": "~Tininininininin Tinininin Tinininnininin Tinininininin~",
+  "h-pm": "Vanessa Carlton",
+  "h-er": "Superrrrrrrrrrrrrrrrrrr long description",
+  "h-el": "Pretend I wrote something here",
+  "c-fb": "Pretend I wrote something here",
+  "c-pm": "Pretend I wrote something here",
+  "c-er": "Pretend I wrote something here",
+  "c-el": "Pretend I wrote something here",
+};
 
 const Legend = ({ isMobile }: any) => {
   return (
@@ -34,10 +64,33 @@ const Legend = ({ isMobile }: any) => {
 };
 
 function CommitteeContent() {
+  //animations
+  const container = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: container });
+  const onEnter = contextSafe(() => {
+    gsap
+      .timeline()
+      .to(".backdrop", { opacity: 1, duration: 0.3 })
+      .fromTo(
+        ".content",
+        { opacity: 0, scale: 0.9, y: 20 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" },
+        0,
+      );
+  });
+
+  const onExit = contextSafe(() => {
+    gsap.to(".backdrop", { opacity: 0, duration: 0.2 });
+    gsap.to(".content", { opacity: 0, scale: 0.95, duration: 0.2 });
+  });
+
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1200,
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [modalNode, setModalNode] = useState(null);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -49,7 +102,52 @@ function CommitteeContent() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!selectedNode) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedNode]);
+
   const isMobile = windowWidth < 768;
+
+  const onClose = () => setSelectedNode(null);
+
+  const FlowCanvas = () => {
+    const flow = useReactFlow();
+
+    const onNodeClick = (_event, node) => {
+      if (node.id === "bridge") return;
+
+      const nodePosition = node.position ?? { x: 0, y: 0 };
+      const screenPosition = flow.flowToScreenPosition(nodePosition);
+
+      setModalPosition({
+        x: Math.min(screenPosition.x + 12, window.innerWidth - 340),
+        y: Math.min(screenPosition.y + 12, window.innerHeight - 220),
+      });
+      setModalNode(node);
+      setSelectedNode(node);
+    };
+
+    return (
+      <ReactFlow
+        nodes={nodes}
+        edges={initialEdges}
+        nodeTypes={nodeTypes}
+        fitView
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnDrag={isMobile}
+        zoomOnPinch={false}
+        style={{ pointerEvents: "none" }}
+        preventScrolling={false}
+        onNodeClick={onNodeClick}
+      ></ReactFlow>
+    );
+  };
 
   const nodeStyleBase = {
     fontSize: isMobile ? "9px" : "11px",
@@ -98,19 +196,16 @@ function CommitteeContent() {
     return [
       {
         id: "rd",
-        data: { label: <b>Regional Director</b> },
+        data: { label: "Regional Director" },
         position: getPos(55, -50, 340, -80),
         style: nodeStyleYellow,
         type: "static",
+        cursor: "pointer",
       },
       {
         id: "dir-int",
         data: {
-          label: isMobile ? (
-            <b>Director for Internal Affairs</b>
-          ) : (
-            <b>Director for Internal Affairs</b>
-          ),
+          label: "Director for Internal Affairs",
         },
         position: getPos(-5, 50, 180, 0),
         style: nodeStyleYellow,
@@ -118,7 +213,7 @@ function CommitteeContent() {
       },
       {
         id: "sec",
-        data: { label: <b>Secretariat</b> },
+        data: { label: "Secretariat" },
         position: getPos(55, 100, 340, 0),
         style: nodeStyleYellow,
         type: "static",
@@ -134,11 +229,7 @@ function CommitteeContent() {
       {
         id: "dir-ext",
         data: {
-          label: isMobile ? (
-            <b>Director for External Affairs</b>
-          ) : (
-            <b>Director for External Affairs</b>
-          ),
+          label: "Director for External Affairs",
         },
         position: getPos(115, 50, 500, 0),
         style: nodeStyleYellow,
@@ -282,20 +373,64 @@ function CommitteeContent() {
         <div
           className={`w-full ${isMobile ? "h-[700px]" : "h-[500px]"} max-w-5xl`}
         >
-          <ReactFlow
-            nodes={nodes}
-            edges={initialEdges}
-            nodeTypes={nodeTypes}
-            fitView
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            panOnDrag={isMobile}
-            zoomOnPinch={true}
-            style={{ pointerEvents: "none" }}
-            preventScrolling={false}
-          ></ReactFlow>
+          <ReactFlowProvider>
+            <FlowCanvas />
+          </ReactFlowProvider>
         </div>
+        {/* description modal */}
+        <Transition
+          in={Boolean(selectedNode)}
+          timeout={300}
+          mountOnEnter
+          unmountOnExit
+          onEnter={onEnter}
+          onExit={onExit}
+          nodeRef={container}
+        >
+          {() => (
+            <div
+              ref={container}
+              className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
+            >
+              <div
+                className="top-0 w-full h-full backdrop fixed inset-0 cursor-pointer opacity-0"
+                onClick={onClose}
+              />
+              <div
+                className="content absolute z-50 w-[80%] max-w-md bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6"
+                style={{ left: modalPosition.x, top: modalPosition.y }}
+              >
+                <button
+                  onClick={onClose}
+                  className="absolute right-6 top-5 text-slate-500/50 hover:text-slate-500/70 cursor-pointer z-20 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {modalNode?.data.label}
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {modalNode
+                    ? nodeDescriptions[modalNode.id]
+                    : "No description available for this role."}
+                </p>
+              </div>
+            </div>
+          )}
+        </Transition>
       </div>
       <Footer />
     </>
