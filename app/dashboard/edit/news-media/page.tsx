@@ -4,9 +4,9 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from "next/link";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
-import LoadingState from "@/components/mainLoadingState";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
 
 // Types
 interface NewsItem {

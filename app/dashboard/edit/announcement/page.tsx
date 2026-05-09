@@ -4,9 +4,9 @@ import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import LoadingState from "@/components/mainLoadingState";
-import Footer from "@/components/footer";
-import NavBar from "@/components/navbar";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 
 function EditAnnouncementContent() {
   const router = useRouter();

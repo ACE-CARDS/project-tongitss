@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { useUser } from "./context/userContext";
-import SpotlightCard from "./SpotlightCard";
-import Pagination from "./pagination";
+import { useUser } from "@/components/context/userContext";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import Pagination from "@/components/ui/pagination";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {

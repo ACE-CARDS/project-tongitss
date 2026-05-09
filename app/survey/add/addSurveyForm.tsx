@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import BackButton from "@/components/backButton";
+import BackButton from "@/components/ui/backButton";
 
 interface Category {
   id: string;

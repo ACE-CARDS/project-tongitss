@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import NavBar from "@/components/navbar";
+import NavBar from "@/components/layout/navbar";
 
 export default function LoadingState() {
   const [scale, setScale] = useState(1);

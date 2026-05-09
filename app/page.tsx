@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import NavBar from "@/components/navbar";
-import Popup from "@/components/pop-up";
-import Kidla from "@/components/kidlaButton";
-import KidlaDialogue from "@/components/kidlaDialogue";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Popup from "@/components/features/landing_page/announcements/pop-up";
+import Kidla from "@/components/ui/kidla/kidlaButton";
+import KidlaDialogue from "@/components/ui/kidla/kidlaDialogue";
+import Footer from "@/components/layout/footer";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import GradualBlur from "@/components/GradualBlur";
-import NewsMedia from "@/components/newsMedia";
+import GradualBlur from "@/components/ui/GradualBlur";
+import NewsMedia from "@/components/features/landing_page/newsMedia";
 
 const supabase = createClient();
 

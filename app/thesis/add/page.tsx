@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import AddThesisForm from "./addThesisForm";
 
 // Main export

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import AboutOrg from "./about-org";
 import AboutMission from "./about-mission";
 import AboutLogo from "./about-logo"; // <-- Missing import added here!
 import AboutMascot from "./about-mascot";
-import BackButton from "@/components/backButton";
-import LoadingState from "@/components/mainLoadingState"; 
+import BackButton from "@/components/ui/backButton";
+import LoadingState from "@/components/ui/loading/mainLoadingState"; 
 
 export default function AboutUs() {
   const [isLoading, setIsLoading] = useState(true);

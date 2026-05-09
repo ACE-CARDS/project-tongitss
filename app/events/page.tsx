@@ -1,9 +1,9 @@
 "use client";
 
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import EventsTimeline from "./events-timeline";
-import BackButton from "@/components/backButton";
+import BackButton from "@/components/ui/backButton";
 
 export default function EventsPage() {
   return (

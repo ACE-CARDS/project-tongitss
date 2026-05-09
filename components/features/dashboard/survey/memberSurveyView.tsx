@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { useUser } from "./context/userContext";
+import { useUser } from "../../../context/userContext";
 import SurveyDescription from '@/app/survey/survey_description';
-import SpotlightCard from "./SpotlightCard";
-import Pagination from "./pagination";
+import SpotlightCard from "../../../ui/SpotlightCard";
+import Pagination from "../../../ui/pagination";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {

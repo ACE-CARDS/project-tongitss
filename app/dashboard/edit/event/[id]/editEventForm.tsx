@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import LoadingState from "@/components/mainLoadingState";
-import Footer from "@/components/footer";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import Footer from "@/components/layout/footer";
 
 function EditEventContent({ eventId }: { eventId: string }) {
   const router = useRouter();

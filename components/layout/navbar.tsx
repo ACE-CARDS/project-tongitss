@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useUser } from "./context/userContext";
+import { useUser } from "../context/userContext";
 import { createClient } from "@/utils/supabase/client";
 
 const siteName = "ACE CARDS";

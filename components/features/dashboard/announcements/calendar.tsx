@@ -4,12 +4,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import { createClient } from "@/utils/supabase/client";
-import CalendarEvent from "./calendarEvent";
+import CalendarEvent from "@/components/features/dashboard/announcements/calendarEvent";
 import Image from "next/image";
-import ShowMoreEventsModal from "./showMoreEventsModal";
+import ShowMoreEventsModal from "@/components/features/dashboard/announcements/showMoreEventsModal";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./toolbar.css";
+import "@/components/features/dashboard/announcements/toolbar.css";
 
 const supabase = createClient();
 const localizer = momentLocalizer(moment);

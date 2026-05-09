@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
-import SuccessPageWrapper from "@/components/SuccessPageWrapper";
+import SuccessPageWrapper from "@/components/ui/wrapper/SuccessPageWrapper";
 
 export default function AddSuccessPage() {
   const { user } = useUser();

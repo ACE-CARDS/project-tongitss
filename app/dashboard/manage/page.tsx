@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
-import AnnouncementsAdmin from "@/components/announcementsAdmin";
-import EventsAdmin from "@/components/eventsAdmin";
-import NewsAdmin from "@/components/newsAdmin";
-import MemAppAdmin from "@/components/memappadmin";
-import SpotlightCard from "@/components/SpotlightCard";
+import AnnouncementsAdmin from "@/components/features/dashboard/manage/announcements/announcementsAdmin";
+import EventsAdmin from "@/components/features/dashboard/manage/events/eventsAdmin";
+import NewsAdmin from "@/components/features/dashboard/manage/news/newsAdmin";
+import MemAppAdmin from "@/components/features/dashboard/manage/member_application/memappadmin";
+import SpotlightCard from "@/components/ui/SpotlightCard";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import BackButton from "@/components/backButton";
-import ResearchDataAdmin from "@/components/researchDataAdmin";
+import BackButton from "@/components/ui/backButton";
+import ResearchDataAdmin from "@/components/features/dashboard/manage/category/researchDataAdmin";
 
 export default function ManagePage() {
   const { user } = useUser();

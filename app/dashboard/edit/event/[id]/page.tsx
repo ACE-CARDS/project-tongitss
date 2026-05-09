@@ -2,12 +2,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import EditEventForm from "./editEventForm";
 import { useUser } from "@/components/context/userContext";
 import { createClient } from "@/utils/supabase/client";
-import LoadingState from "@/components/mainLoadingState";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
 
 function EditEventContent() {
   const { user } = useUser();

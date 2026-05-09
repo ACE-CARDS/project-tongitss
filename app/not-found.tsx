@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import NavBar from '@/components/navbar';
+import NavBar from '@/components/layout/navbar';
 import Image from 'next/image';
-import Footer from '@/components/footer';
+import Footer from '@/components/layout/footer';
 
 export default function NotFound() {
   return (

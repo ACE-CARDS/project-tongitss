@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import Pagination from "@/components/pagination";
+import Pagination from "@/components/ui/pagination";
 
 interface School {
   id: number;

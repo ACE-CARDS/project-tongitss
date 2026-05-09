@@ -2,22 +2,21 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
-import Announcements from "@/components/announcements";
+import Announcements from "@/components/features/dashboard/announcements/announcements";
 import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
-import MemdirSuper from "@/components/memdirsuper";
-import MemdirAdmin from "@/components/memdiradmin";
+import MemdirSuper from "@/components/features/dashboard/member_directory/memdirsuper";
+import MemdirAdmin from "@/components/features/dashboard/member_directory/memdiradmin";
 import { createClient } from "@/utils/supabase/client";
 import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
-import CommitteeDirectory from "@/components/committeeDirectory";
-import CrudButton from "@/components/crudButton";
-import MemberSurveyView from "@/components/memberSurveyView";
-import MemberThesisView from "@/components/memberThesisView";
+import CommitteeDirectory from "@/components/features/dashboard/committee_directory/committeeDirectory";
+import MemberSurveyView from "@/components/features/dashboard/survey/memberSurveyView";
+import MemberThesisView from "@/components/features/dashboard/thesis/memberThesisView";
 import ManagePage from "./manage/page";
-import LoadingState from "@/components/mainLoadingState";
-import TabLoadingState from "@/components/tabLoadingState";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import TabLoadingState from "@/components/ui/loading/tabLoadingState";
 import { BsSuitSpadeFill } from "react-icons/bs";
 
 // Internal component to handle search params

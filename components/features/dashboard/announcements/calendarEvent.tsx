@@ -2,7 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
-import BackButton from "./backButton";
+import BackButton from "@/components/ui/backButton";
 
 type Props = {
   isShowing: boolean;

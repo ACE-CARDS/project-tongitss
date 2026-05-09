@@ -3,9 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import AddEventForm from "./addEventForm";
 import { createClient } from "@/utils/supabase/client";
-import LoadingState from "@/components/mainLoadingState";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 import { useUser } from "@/components/context/userContext";
 

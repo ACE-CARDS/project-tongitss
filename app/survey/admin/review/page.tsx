@@ -3,9 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
-import BackButton from "@/components/backButton";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
+import BackButton from "@/components/ui/backButton";
 
 function ReviewContent() {
   const router = useRouter();

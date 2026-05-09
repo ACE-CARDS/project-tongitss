@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Pagination from "@/components/pagination";
+import Pagination from "@/components/ui/pagination";
 
 interface AnnouncementItem {
   id: number;

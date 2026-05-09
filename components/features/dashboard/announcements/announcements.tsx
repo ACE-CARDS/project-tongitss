@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import BigCalendar from "@/components/calendar";
+import BigCalendar from "@/components/features/dashboard/announcements/calendar";
 import { createClient } from "@/utils/supabase/client";
-import AnnounceMemberCard from "@/components/announceMemberCard";
+import AnnounceMemberCard from "@/components/features/dashboard/announcements/announceMemberCard";
 import { useUser } from "@/components/context/userContext";
 
 const supabase = createClient();

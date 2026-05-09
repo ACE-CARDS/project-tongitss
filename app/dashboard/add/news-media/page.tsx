@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import AddNewsMediaForm from "../addNewsMediaForm";
 import { useUser } from "@/components/context/userContext";
-import LoadingState from "@/components/mainLoadingState";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
 
 function AddNewsMediaContent() {
   const { user } = useUser();

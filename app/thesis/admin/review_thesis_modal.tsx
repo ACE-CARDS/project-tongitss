@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 interface ReviewThesisModalProps {
   thesis: any;

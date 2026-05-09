@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
-import LoadingState from "@/components/mainLoadingState";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
 import ReactFlow, {
   Handle,
   Position,
@@ -11,7 +11,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import BackButton from "@/components/backButton";
+import BackButton from "@/components/ui/backButton";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Transition } from "react-transition-group";

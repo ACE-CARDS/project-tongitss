@@ -1,8 +1,8 @@
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import SurveyData from "./survey_data";
 import { createClient } from "@/utils/supabase/server";
-import BackButton from "@/components/backButton";
+import BackButton from "@/components/ui/backButton";
 import SurveyPageClient from "./survey-page-client";
 
 export default async function SurveyPage({

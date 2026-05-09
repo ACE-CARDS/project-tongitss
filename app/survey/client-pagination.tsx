@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import SurveyDescription from './survey_description';
-import SpotlightCard from "@/components/SpotlightCard";
+import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useRouter } from "next/navigation";
 
 interface ClientPaginationProps {

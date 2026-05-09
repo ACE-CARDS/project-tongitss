@@ -1,8 +1,8 @@
 // Much general, not for Announcements only
 "use client";
 
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
+import NavBar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
 
 export default function AddPage() {

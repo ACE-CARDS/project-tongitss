@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
 import { createClient } from "@/utils/supabase/client";
-import AnnounceCard from "./announceCard";
+import AnnounceCard from "@/components/features/landing_page/announcements/announceCard";
 import { BsSuitSpadeFill } from "react-icons/bs";
 
 type Props = {
