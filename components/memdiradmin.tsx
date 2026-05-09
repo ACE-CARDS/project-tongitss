@@ -844,6 +844,45 @@ const hasEditChanges =
   const [showEditError, setShowEditError] = useState(false);
   const [editErrorMessage, setEditErrorMessage] = useState("");
 
+
+  useEffect(() => {
+    const isAnyModalOpen =
+      showConfirm ||
+      showImportConfirm ||
+      showExportOptions ||
+      showImportError ||
+      showSaveSuccess ||
+      showDeleteSuccess ||
+      showRenameSuccess ||
+      showImportSuccess ||
+      showEditError ||
+      deleteMember ||
+      editMember;
+  
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [
+    showConfirm,
+    showImportConfirm,
+    showExportOptions,
+    showImportError,
+    showSaveSuccess,
+    showDeleteSuccess,
+    showRenameSuccess,
+    showImportSuccess,
+    showEditError,
+    deleteMember,
+    editMember,
+  ]);
+
+  
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full min-h-screen flex flex-col">
