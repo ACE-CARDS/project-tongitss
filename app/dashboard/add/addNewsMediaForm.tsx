@@ -271,7 +271,7 @@ export default function AddNewsMediaForm() {
 
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-              <h2 className="text-lg font-oswald font-semibold">News Details</h2>
+              <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               
@@ -292,14 +292,14 @@ export default function AddNewsMediaForm() {
 
                 {/* Content */}
                 <div>
-                  <label htmlFor="content" className="block text-sm font-oswald font-medium text-[#011638] mb-1">Content</label>
+                  <label htmlFor="content" className="block text-sm font-oswald font-medium text-[#011638] mb-1">Description</label>
                   <textarea
                     id="content"
                     ref={contentRef}
                     rows={5}
                     maxLength={1500}
                     placeholder="Enter news content"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                     onInput={() => validateTitleContent()}
                   />
                   <div ref={titleContentErrorRef}>
@@ -390,7 +390,7 @@ export default function AddNewsMediaForm() {
 
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-              <h2 className="text-lg font-oswald font-semibold">Source Information</h2>
+              <h2 className="text-lg font-oswald font-semibold">Source Details</h2>
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">

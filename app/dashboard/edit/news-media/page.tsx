@@ -303,7 +303,7 @@ function EditNewsMediaContent() {
                       value={formData.content}
                       onChange={handleChange}
                       rows={6}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                     />
                     {titleContentError && <span className="text-xs text-red-600 font-ubuntu-mono">{titleContentError}</span>}
                   </div>
@@ -341,11 +341,11 @@ function EditNewsMediaContent() {
 
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                  <h2 className="text-lg font-oswald font-semibold">Facebook Details</h2>
+                  <h2 className="text-lg font-oswald font-semibold">Source Details</h2>
                 </div>
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
                   <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Post URL *</label>
+                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Post URL <span className="text-[#eec643]">*</span></label>
                     <input
                       type="url"
                       name="post_url"
@@ -358,7 +358,7 @@ function EditNewsMediaContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Post Date *</label>
+                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Post Date <span className="text-[#eec643]">*</span></label>
                     <input
                       type="date"
                       name="fb_post_date"

@@ -21,11 +21,14 @@
   }
 } */
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
-  scrollbar-gutter: stable;
   background-image: radial-gradient(#d7dce2 1px, transparent 1px);
   background-size: 20px 20px;
   background-attachment: fixed;
@@ -60,6 +63,22 @@ p {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #eff0f2;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar  {
+  width: 6px;
+}
+.custom-scrollbar-blue::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb {
+  background: #0b1763;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
+  background: #0b1763;
 }
 
 .custom-scrollbar-white::-webkit-scrollbar,

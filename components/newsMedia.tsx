@@ -165,7 +165,7 @@ export default function NewsMedia() {
       if (idx >= carouselPosts.length) return;
       
       const cardRect = card.getBoundingClientRect();
-      // Mow much card is visible
+      // How much card is visible
       const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
       const totalWidth = cardRect.width;
       const visiblePercentage = visibleWidth / totalWidth; // % of visible
@@ -555,13 +555,15 @@ export default function NewsMedia() {
             {/* Scrollable Cards Container */}
             <div
               ref={scrollRef}
-              className="flex overflow-x-auto overflow-y-visible gap-4 sm:gap-5 pb-5 hide-scrollbar snap-mandatory px-8 sm:px-10"
+              className="flex overflow-x-auto overflow-y-visible gap-4 sm:gap-5 pb-8 hide-scrollbar snap-mandatory px-8 sm:px-10"
               style={{ 
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
                 scrollSnapType: 'x mandatory',
                 scrollPaddingLeft: 'calc(50% - 160px)',
-                scrollPaddingRight: 'calc(50% - 160px)'
+                scrollPaddingRight: 'calc(50% - 160px)',
+                paddingBottom: '32px',
+                paddingTop: '5px'
               }}
             >
               {carouselPosts.map((post, idx) => (
@@ -569,7 +571,7 @@ export default function NewsMedia() {
                   key={post.id} 
                   className="flex-none carousel-card snap-center"
                   style={{
-                    width: 'auto',
+                    width: '100%',
                     minWidth: '280px',
                     maxWidth: '90vw',
                     scrollSnapAlign: 'center',
@@ -811,11 +813,13 @@ export default function NewsMedia() {
 function FlippableNewsCard({ 
   post, 
   isFlipped,
-  index
+  index,
+  isCarouselCard = false
 }: { 
   post: NewsMedia;
   isFlipped: boolean;
   index: number;
+  isCarouselCard?: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
@@ -917,12 +921,18 @@ function FlippableNewsCard({
 
               {/* Content section */}
               <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-hidden">
-                <h3 className="font-bold text-base sm:text-lg text-[#011638] mb-2 line-clamp-2 hover:text-[#0d21a1] transition-colors text-left min-h-[48px] sm:min-h-[56px]">
+                {/* Title */}
+                <h3 
+                  className={`font-bold text-base sm:text-lg text-[#011638] mb-2 hover:text-[#0d21a1] transition-colors text-left [word-break:break-word] whitespace-normal line-clamp-2`}
+                  title={post.title}
+                >
                   {post.title}
                 </h3>
 
                 {post.content && (
-                  <p className="text-gray-600 text-xs sm:text-sm mb-0 line-clamp-2 text-left">
+                  <p className={`text-gray-600 text-xs sm:text-sm mb-0 text-left [word-break:break-word] whitespace-normal ${
+                    isCarouselCard ? 'line-clamp-2' : 'line-clamp-3'
+                  }`}>
                     {post.content}
                   </p>
                 )}
@@ -940,7 +950,7 @@ function FlippableNewsCard({
         </div>
       </div>
 
-      {/* CSS for 3D flip */}
+      {/* CSS */}
       <style jsx>{`
         .flip-card-wrapper {
           width: 100%;
@@ -978,6 +988,32 @@ function FlippableNewsCard({
         
         .flip-card-back {
           transform: rotateY(0deg); /* Back face is at default rotation */
+        }
+        
+        /* Text clamping */
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-break: break-word;
+          white-space: normal;
+        }
+        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-break: break-word;
+          white-space: normal;
+        }
+        
+        h3.line-clamp-2,
+        h3.line-clamp-3 {
+          word-break: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
         
         @keyframes cardFloat {

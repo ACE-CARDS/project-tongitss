@@ -40,7 +40,7 @@ function NewsDescription({ description }: { description: string | null }) {
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
             {description}
           </div>
           <button onClick={() => setIsOpen(false)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
@@ -252,8 +252,8 @@ export default function NewsAdmin() {
                           </a>
                         </div>
                       </td>
-                      <td className="px-4 py-4 align-top">
-                        <a href={item.post_url} target="_blank" className="text-sm font-oswald font-semibold text-[#011638] hover:underline block mb-1">{item.title || "Untitled Post"}</a>
+                      <td className="px-4 py-4 align-top break-words max-w-full whitespace-normal">
+                        <a href={item.post_url} target="_blank" className="text-sm font-oswald font-semibold text-[#011638] hover:underline block mb-1 break-words">{item.title || "Untitled Post"}</a>
                         <NewsDescription description={item.content} />
                       </td>
                       <td className="px-4 py-4 text-center text-sm text-[#475569] font-ubuntu-mono">{formatDate(item.fb_post_date)}</td>

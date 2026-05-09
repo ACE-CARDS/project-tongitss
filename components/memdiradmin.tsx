@@ -11,6 +11,8 @@ type Member = {
   mem_fname: string;
   mem_lname: string;
   mem_minit: string;
+  mem_email: string;
+  school: number | string;
   comm: number | string;
 };
 
@@ -386,15 +388,19 @@ export default function MembersPage() {
       mem_fname: "",
       mem_lname: "",
       mem_minit: "",
+      mem_email: "",
+      school: "",
     });
 
     const [editFieldErrors, setEditFieldErrors] = useState({
       mem_fname: false,
       mem_lname: false,
       mem_minit: false,
+      mem_email: false,
     });
   
     const handleEditSave = async () => {
+      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.mem_email);
       if (!editMember) return;
     
       try {
@@ -404,17 +410,22 @@ export default function MembersPage() {
           mem_minit:
             editForm.mem_minit.trim() !== "" &&
             editForm.mem_minit.trim().length > 3,
+          mem_email: !emailValid,
         };
     
         setEditFieldErrors(errors);
     
-        if (errors.mem_fname || errors.mem_lname || errors.mem_minit) {
-          let msg = "This field cannot be empty.";
-    
+        if (errors.mem_fname || errors.mem_lname || errors.mem_minit || errors.mem_email) {
+          let msg = "Please fill in required fields correctly.";
+        
           if (errors.mem_minit) {
             msg = "Middle Initial must not exceed 3 characters.";
           }
-    
+        
+          if (errors.mem_email) {
+            msg = "Please enter a valid email address.";
+          }
+        
           setEditErrorMessage(msg);
           setShowEditError(true);
           return;
@@ -442,6 +453,8 @@ export default function MembersPage() {
             mem_fname: editForm.mem_fname,
             mem_lname: editForm.mem_lname,
             mem_minit: editForm.mem_minit,
+            mem_email: editForm.mem_email,
+            school: Number(editForm.school),
           })
           .eq("id", editMember.id);
     
@@ -455,7 +468,11 @@ export default function MembersPage() {
         setMembers((prev) =>
           prev.map((m) =>
             m.id === editMember.id
-              ? { ...m, ...editForm }
+              ? {
+                ...m,
+                ...editForm,
+                school: Number(editForm.school),
+              }
               : m
           )
         );
@@ -803,7 +820,8 @@ const hasEditChanges =
   (
     editForm.mem_fname !== editMember.mem_fname ||
     editForm.mem_lname !== editMember.mem_lname ||
-    editForm.mem_minit !== (editMember.mem_minit || "")
+    editForm.mem_minit !== (editMember.mem_minit || "") ||
+    editForm.mem_email !== (editMember.mem_email || "")
   );
 
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
@@ -1028,7 +1046,8 @@ const hasEditChanges =
                       key={member.id}
                       className="flex flex-col sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] gap-3 sm:gap-4 bg-white/80 border shadow-lg px-4 py-3 rounded-xl hover:shadow-xl transition"
                     >
-                      <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight my-auto">
+                      <div className="my-auto">
+                      <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
                         {member.mem_lname.toUpperCase()},{" "}
                         {member.mem_fname
                           .toLowerCase()
@@ -1041,6 +1060,13 @@ const hasEditChanges =
                             }`
                           : ""}
                       </span>
+
+                      <span className="text-xs text-gray-400 break-all mt-1 block">
+                        {member.mem_email}
+                      </span>
+                    </div>
+
+                      
                       <div
                         className={`${getCommitteeStyle(commName)} font-normal rounded-xl my-auto`}
                       >
@@ -1064,8 +1090,10 @@ const hasEditChanges =
                             mem_fname: member.mem_fname,
                             mem_lname: member.mem_lname,
                             mem_minit: member.mem_minit || "",
+                            mem_email: member.mem_email || "",
+                            school: String(member.school || ""),
                           });
-                        
+
                           setEditFieldErrors({
                             mem_fname: false,
                             mem_lname: false,
@@ -1602,7 +1630,7 @@ const hasEditChanges =
               `}
             />
 
-            <input maxLength={3}
+            <input maxLength={2}
               type="text"
               placeholder="Middle Initial"
               value={editForm.mem_minit}
@@ -1622,6 +1650,25 @@ const hasEditChanges =
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
           </div>
+
+          <div className="mt-5 space-y-1">
+          <label className="text-sm text-gray-600">Email</label>
+          <input
+            type="email"
+            placeholder="Email"
+            value={editForm.mem_email}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, mem_email: e.target.value }))
+            }
+            className={`w-full px-3 py-2 border rounded-lg transition
+              ${
+                editFieldErrors.mem_email
+                  ? "border-red-500 ring-2 ring-red-200"
+                  : "border-gray-300"
+              }
+            `}
+          />
+        </div>
 
           <div className="flex justify-end gap-3 mt-6">
             <button
