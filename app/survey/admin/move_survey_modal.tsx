@@ -4,17 +4,22 @@ import { useState, useEffect } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
+import BackButton from "@/components/backButton";
 
 // prop types
 interface MoveSurveyModalProps {
   survey: any;
   onClose: () => void;
-  onMove: (newStatus: string) => void;
+  onMove: (newStatus: string, rejectionReason?: string) => void;
 }
 
 export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyModalProps) {
   const [selectedStatus, setSelectedStatus] = useState(survey.survey_status); // to check which status is selected
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // error message
+  const [showRejectForm, setShowRejectForm] = useState(false); // show rejection reason form
+  const [rejectionReason, setRejectionReason] = useState(survey.rejection_reason || ""); // rejection reason
+  const [rejectionError, setRejectionError] = useState<string>(""); // rejection reason error
+  const [isSubmitting, setIsSubmitting] = useState(false); // submit state
   const isPastDate = new Date(survey.survey_end) < new Date(); // check if end date is in the past
 
   // same from edit, prevent bg scroll
@@ -29,6 +34,17 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
     { value: "archived", label: "ARCHIVED", color: "bg-gray-100 text-gray-800", pingColor: "bg-gray-500" },
     { value: "rejected", label: "REJECTED", color: "bg-red-100 text-red-800", pingColor: "bg-red-500" },
   ];
+
+  // Reset rejection form when selecting rejected status
+  useEffect(() => {
+    if (selectedStatus === "rejected") {
+      setShowRejectForm(true);
+    } else {
+      setShowRejectForm(false);
+      setRejectionReason("");
+      setRejectionError("");
+    }
+  }, [selectedStatus]);
 
   // define which status can be moved to another
   const canMoveToStatus = (statusValue: string): { allowed: boolean; reason?: string } => {
@@ -113,23 +129,96 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
       // clear error
       setTimeout(() => setErrorMessage(null), 5000);
     } else {
-
       // allowed, clear error and set status
       setErrorMessage(null);
       setSelectedStatus(statusValue);
     }
   };
 
+  // validate rejection reason in real-time
+  const validateRejectionReasonInput = (value: string): string => {
+    if (!value.trim()) {
+      return "Rejection reason is required.";
+    }
+    if (value.trim().length < 10) {
+      return "Rejection reason must be at least 10 characters.";
+    }
+    if (value.trim().length > 500) {
+      return "Rejection reason must not exceed 500 characters.";
+    }
+    return "";
+  };
+
+  // handle rejection reason change
+  const handleRejectionReasonChange = (value: string) => {
+    setRejectionReason(value);
+    const error = validateRejectionReasonInput(value);
+    setRejectionError(error);
+  };
+
+  // validate rejection reason
+const validateRejectionReason = (): boolean => {
+  if (selectedStatus === "rejected") {
+    const rejectionReasonInput = document.querySelector('textarea') as HTMLTextAreaElement;
+    const errorSpan = document.getElementById('rejection-reason-error');
+    
+    if (!rejectionReasonInput?.value.trim()) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason is required.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+    if (rejectionReasonInput.value.trim().length < 10) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason must be at least 10 characters.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+    if (rejectionReasonInput.value.trim().length > 500) {
+      if (errorSpan) {
+        errorSpan.textContent = 'Rejection reason must not exceed 500 characters.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+  }
+  return true;
+};
+
   // call onMove
   const handleMove = async () => {
     if (selectedStatus !== survey.survey_status) {
-  
-      // If moving from rejected to another, 
+      // Validate rejection reason if moving to rejected
+      if (!validateRejectionReason()) {
+        return;
+      }
+
+      setIsSubmitting(true);
+      
+      // If moving to rejected, update rejection_reason
+      if (selectedStatus === "rejected") {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from("survey")
+          .update({ rejection_reason: rejectionReason.trim() })
+          .eq("id", survey.id);
+          
+        if (error) {
+          console.error("Error updating rejection reason:", error);
+          setErrorMessage("Failed to update rejection reason. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      // If moving from rejected to another status, clear rejection_reason
       if (survey.survey_status === "rejected" && selectedStatus !== "rejected") {
         const supabase = createClient();
         const { error } = await supabase
           .from("survey")
-          .update({ rejection_reason: null }) // Clear rejection_reason first
+          .update({ rejection_reason: null })
           .eq("id", survey.id);
           
         if (error) {
@@ -137,7 +226,8 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
         }
       }
       
-      onMove(selectedStatus);
+      onMove(selectedStatus, selectedStatus === "rejected" ? rejectionReason.trim() : undefined);
+      setIsSubmitting(false);
     } else {
       onClose();
     }
@@ -187,13 +277,8 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
       <NavBar />
       <main className="container mx-auto py-8 px-4 max-w-3xl">
         <div className="mb-6">
-          <button
-            onClick={onClose}
-            className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-          >
-            ← Back
-          </button>
-          <h1 className="text-2xl font-oswald font-bold text-[#011638] break-words">Move Survey</h1>
+          <BackButton />
+          <h1 className="text-2xl font-oswald font-bold text-[#011638] break-words mt-6">Move Survey</h1>
         </div>
 
         <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
@@ -273,22 +358,53 @@ export default function MoveSurveyModal({ survey, onClose, onMove }: MoveSurveyM
                   );
                 })}
               </div>
+
+              {/* Rejection Form */}
+              {showRejectForm && (
+                <div className="pt-4 border-t border-[#011638]">
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
+                    Reason for Rejection <span className="text-[#eec643]">*</span>
+                  </label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
+                    placeholder="Indicate why this survey is being rejected..."
+                    onInput={(e) => {
+                      const input = e.target as HTMLTextAreaElement;
+                      const errorSpan = document.getElementById('rejection-reason-error');
+                      if (input.value.length === 0) {
+                        errorSpan!.textContent = 'Rejection reason is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (input.value.length < 10) {
+                        errorSpan!.textContent = 'Rejection reason must be at least 10 characters.';
+                        errorSpan!.style.display = 'block';
+                      } else {
+                        errorSpan!.style.display = 'none';
+                      }
+                    }}
+                  />
+                  <span id="rejection-reason-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-[#e0e7ff]">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-[#011638] font-ubuntu-mono"
+              className="px-4 py-2 text-[#011638] font-ubuntu-mono cursor-pointer hover:text-[#1a2a4f] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleMove}
-              disabled={selectedStatus === survey.survey_status}
+              disabled={selectedStatus === survey.survey_status || isSubmitting || (selectedStatus === "rejected" && !!rejectionError)}
               className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-              Move Survey
+            >
+              {isSubmitting ? "Moving..." : "Move Survey"}
             </button>
           </div>
         </div>
