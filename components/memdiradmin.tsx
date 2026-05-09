@@ -40,8 +40,11 @@ export default function MembersPage() {
     const fetchData = async () => {
       const { data: memberData } = await supabase
         .from("member")
-        .select("*")
-        .eq("acadyear", "AY 2025-2026") //CHANGE AY here yung year thnx
+        .select(`
+          *,
+          school_rel:school (school_name)
+        `)
+        .eq("acadyear", "AY 2025-2026") //CHANGE AY here yung thnx
         .eq("is_active", true);
 
       const { data: committeeData } = await supabase
@@ -60,6 +63,25 @@ export default function MembersPage() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      const { data, error } = await supabase
+        .from("school")
+        .select("id, school_name")
+        .order("school_name");
+  
+      if (error) {
+        console.error(error);
+        return;
+      }
+  
+      if (data) setSchools(data);
+    };
+  
+    fetchSchools();
+  }, []);
+  
 
   //keywords for committee tabs
   const committeeCategories = [
@@ -144,7 +166,7 @@ export default function MembersPage() {
     // alpabetical if wala s aprio list
     return `${a.mem_lname} ${a.mem_fname}`
       .toLowerCase()
-      .localeCompare(`${b.mem_fname} ${b.mem_lname}`.toLowerCase());
+      .localeCompare(`${b.mem_lname} ${b.mem_fname}`.toLowerCase());
   });
 
   // pagination
@@ -831,7 +853,8 @@ const hasEditChanges =
     editForm.mem_fname !== editMember.mem_fname ||
     editForm.mem_lname !== editMember.mem_lname ||
     editForm.mem_minit !== (editMember.mem_minit || "") ||
-    editForm.mem_email !== (editMember.mem_email || "")
+    editForm.mem_email !== (editMember.mem_email || "") ||
+    String(editForm.school) !== String(editMember.school || "")
   );
 
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
@@ -882,6 +905,12 @@ const hasEditChanges =
     editMember,
   ]);
 
+  type School = {
+    id: number;
+    school_name: string;
+  };
+  
+  const [schools, setSchools] = useState<School[]>([]);
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -1120,6 +1149,10 @@ const hasEditChanges =
 
                       <span className="text-xs text-gray-400 break-all mt-1 block">
                         {member.mem_email}
+                      </span>
+
+                      <span className="mt-1.5 text-xs text-gray-500 break-all block">
+                        {member.school_rel?.school_name || member.school}
                       </span>
                     </div>
 
@@ -1745,6 +1778,28 @@ const hasEditChanges =
             `}
           />
         </div>
+
+        <div className="mt-5 space-y-1">
+            <label className="text-sm text-gray-600">School</label>
+
+            <select
+              value={editForm.school}
+              onChange={(e) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  school: e.target.value,
+                }))
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="">Select school</option>
+              {schools.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.school_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="flex justify-end gap-3 mt-6">
             <button
