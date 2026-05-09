@@ -44,7 +44,7 @@ export default function ThesisAbstract({ abstract }: { abstract: string | null }
       ) : (
         // EXPANDED
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2 break-words overflow-wrap-anywhere custom-scrollbar"> {/* Scroll full abstract */}
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2 break-words overflow-wrap-anywhere custom-scrollbar-blue"> {/* Scroll full abstract */}
             {abstract}
           </div>
           

@@ -35,7 +35,7 @@ export default function SurveyDescription({ description }: { description: string
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2 break-words overflow-wrap-anywhere custom-scrollbar">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-48 overflow-y-auto pr-2 break-words overflow-wrap-anywhere custom-scrollbar-blue">
             {description}
           </div>
           <button
