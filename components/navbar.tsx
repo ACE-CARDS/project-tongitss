@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "./context/userContext";
+import { createClient } from "@/utils/supabase/client";
 
 const siteName = "ACE CARDS";
 
 export default function NavBar({ isOverHero = false, isLoading = false}) {
   const { user } = useUser();
+  const router = useRouter();
+  const supabase = createClient();
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -17,7 +20,14 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   const membersRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return pathname === "/";
+    }
+    // const rootPath = `/${pathname.split('/')[1]}`;
+    // return rootPath === path;
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
 
   const toggleMenu = () => {
     setMenuisOpen(!menuOpen);
@@ -60,11 +70,8 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
       localStorage.removeItem(`dashboard_tab_${user.email}`);
     }
     
-    // Logout
-    const { createClient } = await import("@/utils/supabase/client");
-    const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = "/";
+    router.push("/");
   };
 
   return (
@@ -104,7 +111,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               flex xl:flex-row text-right
               xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full
               justify-end
-              bg-[#011638]/70 backdrop-blur-sm rounded-[2rem] pl-2
+              bg-[#011638]/70 backdrop-blur-sm rounded-[2rem]
               xl:gap-4
               w-[220px] xl:w-auto
               overflow-hidden xl:overflow-visible
@@ -118,7 +125,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               className={`
                 relative gap-2 flex xl:flex-row flex-col
                 xl:h-full xl:items-center
-                py-6 xl:py-0 px-4 xl:px-0
+                p-2 md:py-6 xl:py-0 px-4 xl:px-0
                 xl:whitespace-nowrap xl:opacity-100 xl:visible
                 overflow-y-auto xl:overflow-visible
                 max-h-[calc(100svh-100px)] xl:max-h-none
@@ -287,10 +294,10 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                 <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right p-[4px] pl-[6px] mr-0.5 rounded-[50px] bg-white/0 xl:bg-white/80 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs xl:hover:bg-white/100 xl:hover:scale-[1.04]">
                   <Link href="/dashboard">
                     <li
-                      className={`px-[13px] py-[6px] xl:py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-black bg-white/80 text-center backdrop-blur-xs xl:bg-
+                      className={`px-[13px] py-[6px] xl:py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-black text-center backdrop-blur-xs
                         ${isActive("/dashboard")
-                          ? "shadow-[0_0_15px_white] xl:shadow-0 xl:bg-[#a6a6a6]/35 xl:hover:bg-[#a6a6a6]/40 scale-[1.04]"
-                          : "hover:bg-[#a6a6a6]/30 xl:bg-[#a6a6a6]/35 hover:scale-[1.04]"
+                          ? "shadow-[0_0_15px_white] xl:shadow-[0_0_15px_white] xl:bg-[#a6a6a6]/35 xl:hover:bg-[#a6a6a6]/40 scale-[1.04] bg-white"
+                          : "hover:bg-white bg-white/80 hover:shadow-[0_0_15px_white] xl:shadow-0 xl:bg-[#a6a6a6]/35 hover:scale-[1.04]"
                         }`}
                     >
                       Dashboard
@@ -299,7 +306,8 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
 
                   <li
                     onClick={handleLogout}
-                    className="text-center cursor-pointer rounded-[50px] py-[6px] bg-red-500/60 xl:text-white text-white xl:text-red-500 duration-200 transition-all px-[13px] py-[4px] xl:hover:bg-red-500/90 xl:hover:scale-[1.04]"
+                    className={`text-center cursor-pointer rounded-[50px] bg-red-500/60  text-white duration-200 transition-all px-[13px] py-[4px]
+                      hover:bg-red-500/90 hover:scale-[1.04] hover:shadow-[0_0_15px_#fb2c36]`}
                   >
                     Logout
                   </li>

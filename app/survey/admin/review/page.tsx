@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import BackButton from "@/components/backButton";
 
 function ReviewContent() {
   const router = useRouter();
@@ -25,7 +26,7 @@ function ReviewContent() {
       if (!surveyId) return;
       
       const { data, error } = await supabase
-        .from("surveys")
+        .from("survey")
         .select(`
           *,
           r_category (r_category_name),
@@ -51,10 +52,10 @@ function ReviewContent() {
   const handleApprove = async () => {
     setIsSubmitting(true);
     const { error } = await supabase
-      .from("surveys")
-      .update({ survey_status: "approved" })
-      .eq("id", surveyId);
-
+    .from("survey")
+    .update({ survey_status: "approved" })
+    .eq("id", surveyId);
+    
     if (!error) router.push("/admin");
     else setIsSubmitting(false);
   };
@@ -64,7 +65,7 @@ function ReviewContent() {
     
     setIsSubmitting(true);
     const { error } = await supabase
-      .from("surveys")
+      .from("survey")
       .update({ 
         survey_status: "rejected",
         rejection_reason: rejectionReason.trim() // Ensure this column exists in your DB
@@ -87,12 +88,6 @@ function ReviewContent() {
       <NavBar />
       <div className="pt-5">
         <main className="container mx-auto py-8 px-4 max-w-3xl">
-          <div className="mb-6">
-            <button onClick={() => router.back()} className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono">
-              ← Back
-            </button>
-            <h1 className="text-2xl font-oswald font-bold text-[#011638]">Review Survey</h1>
-          </div>
 
           <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
             {/* Basic Information */}

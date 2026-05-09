@@ -43,7 +43,7 @@ export default function LoginPage() {
             <section className="md:w-[400px] relative w-full flex flex-col 
             items-center text-center md:items-start md:text-left
             bg-[#011638]/80 h-full md:p-10 p-8">
-              <BackButton className="absolute top-4 right-4"/>
+              <BackButton href="/" className="absolute top-4 right-4"/>
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
                 alt="ACE CARDS Logo"

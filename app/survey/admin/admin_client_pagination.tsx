@@ -7,7 +7,8 @@ import Pagination from "@/components/pagination";
 import { createClient } from "@/utils/supabase/client";
 import EditSurveyModal from "./edit_survey_modal";
 import MoveSurveyModal from "./move_survey_modal";
-import ReviewSurveyModal from "./review_survey_modal";
+import ReviewSurveyModal from "./review/page";
+import { useRouter } from "next/navigation";
 
 interface ClientPaginationProps {
   allSurveys: any[];
@@ -27,13 +28,14 @@ const getItemsPerPage = () => {
 
 export default function AdminClientPagination({ allSurveys, currentPage, onPageChange, onPendingCountChange }: ClientPaginationProps) {
   const supabase = createClient();
+  const router = useRouter();
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
   const [editingSurvey, setEditingSurvey] = useState<any>(null);
   const [movingSurvey, setMovingSurvey] = useState<any>(null);
-  const [reviewingSurvey, setReviewingSurvey] = useState<any>(null);
   const [surveys, setSurveys] = useState(allSurveys);
   const [isLoading, setIsLoading] = useState(true);
+  
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -233,7 +235,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setReviewingSurvey(survey);
+                            router.push(`/survey/admin/review?id=${survey.id}`); 
                           }}
                           className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                           title="Review"
@@ -515,22 +517,6 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
           onMove={(newStatus) => {
             handleUpdateStatus(movingSurvey.id, newStatus);
             setMovingSurvey(null);
-          }}
-        />
-      )}
-
-      {/* review modal */}
-      {reviewingSurvey && (
-        <ReviewSurveyModal
-          survey={reviewingSurvey}
-          onClose={() => setReviewingSurvey(null)}
-          onApprove={(id, reason) => {
-            handleApprove(id, reason);
-            setReviewingSurvey(null);
-          }}
-          onReject={(id, reason) => {
-            handleReject(id, reason);
-            setReviewingSurvey(null);
           }}
         />
       )}
