@@ -12,8 +12,8 @@ export default function AboutMission() {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
   const objectives = [
@@ -34,9 +34,10 @@ export default function AboutMission() {
           
           {/* Vision Text Card */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-[60%] h-full"
           >
             <div className="bg-[#011638] p-10 lg:p-14 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-center h-full group border border-white/10 transition-transform duration-500 hover:scale-[1.02]">
@@ -46,7 +47,7 @@ export default function AboutMission() {
 
               <div className="relative z-10">
                 <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
@@ -76,10 +77,10 @@ export default function AboutMission() {
 
           {/* Vision Images Stack */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-[40%] flex flex-col sm:flex-row lg:flex-col gap-6 h-[400px] sm:h-[300px] lg:h-full"
           >
             <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
@@ -105,9 +106,10 @@ export default function AboutMission() {
         <div className="flex flex-col lg:flex-row-reverse gap-6 lg:gap-8 lg:h-[480px]">
           
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-[60%] h-full"
           >
             <div className="bg-white/95 backdrop-blur-2xl border-2 border-white p-10 lg:p-14 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-center relative overflow-hidden group transition-transform duration-500 hover:scale-[1.02]">
@@ -117,7 +119,7 @@ export default function AboutMission() {
 
               <div className="relative z-10">
                 <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
@@ -152,10 +154,10 @@ export default function AboutMission() {
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-[40%] flex flex-col sm:flex-row lg:flex-col gap-6 h-[400px] sm:h-[300px] lg:h-full"
           >
             <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
@@ -179,11 +181,11 @@ export default function AboutMission() {
         </div>
 
         <div className="pt-10 lg:pt-16">
-          {/* Core Objectives header was already animated here */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-center mb-10"
           >
             <div className="inline-flex items-center justify-center gap-4">
@@ -206,8 +208,8 @@ export default function AboutMission() {
               <motion.div
                 key={i}
                 variants={itemVariants}
-                whileHover={{ scale: 1.03, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
-                className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex gap-4 ${
+                whileHover={{ scale: 1.02, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
+                className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-default ${
                   i === 6 ? "md:col-span-2 lg:col-span-3 lg:w-2/3 mx-auto" : ""
                 }`}
               >

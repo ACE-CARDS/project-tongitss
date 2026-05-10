@@ -9,9 +9,10 @@ export default function AboutLogo() {
         
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-16"
         >
           <div className="inline-flex items-center justify-center gap-4">
@@ -26,16 +27,20 @@ export default function AboutLogo() {
         {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           
-          {/* Left Side: Text Card */}
+          {/* Hoverable Text Card */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex-1 w-full"
           >
-            <div className="bg-white p-8 lg:p-12 rounded-[2rem] shadow-xl border border-slate-100 relative">
-              {/* Floating Quote Icon */}
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white p-8 lg:p-12 rounded-[2rem] shadow-xl hover:shadow-2xl border border-slate-100 relative cursor-default transition-shadow"
+            >
+              {/* Quote Icon */}
               <span className="absolute -top-6 left-8 text-8xl text-[#eec643]/30 font-serif leading-none select-none">
                 &ldquo;
               </span>
@@ -58,15 +63,15 @@ export default function AboutLogo() {
                   Finally, the blue and black colors give an illusion of movement, showing continual progress in Science and Technology, just like the official DOST logo.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
 
-          {/* Right Side: The Logo Image */}
+          {/* Logo Image */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+            transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
             className="w-full lg:w-[45%] flex justify-center lg:justify-end"
           >
             <div className="relative p-2">

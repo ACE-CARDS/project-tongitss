@@ -9,10 +9,10 @@ export default function AboutOrg() {
         
         {/* TITLE ANIMATION */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-10"
         >
           <div className="flex items-center justify-center gap-3">
@@ -44,10 +44,10 @@ export default function AboutOrg() {
 
         {/* IMAGE ENTRANCE */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1, type: "spring", bounce: 0.3 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
           className="w-full max-w-5xl shadow-2xl overflow-hidden rounded-[2.5rem] border-[6px] border-white relative z-20 aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9]"
         >
           <img  
@@ -60,36 +60,36 @@ export default function AboutOrg() {
 
         {/* CONTENT CARD ENTRANCE */}
         <motion.div 
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           className="w-full max-w-5xl mt-6 lg:mt-[-6rem] relative z-30 px-2 lg:px-6"
         >
           <div className="bg-white/95 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-2xl p-10 lg:p-16 flex flex-col lg:flex-row gap-12 items-stretch">
             
             <div className="flex-1 space-y-8 flex flex-col justify-center">
               <motion.p 
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
                 className="text-xl lg:text-2xl text-slate-800 leading-relaxed font-medium"
               >
                 The <strong className="text-[#011638] font-bold">Association of Competent and Empowered Cordillera Administrative Region DOST Scholars (ACE CARDS)</strong> serves as the official mother organization for all scholars across the Cordilleras.
               </motion.p>
               <motion.p 
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
                 className="text-lg lg:text-xl text-slate-600 leading-relaxed font-medium"
               >
                 We embody the ideals of a Patriot Scholar, committed to Professional Excellence, Servant Leadership, and Social Responsibility.
               </motion.p>
             </div>
 
-            <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#fefce8] to-white rounded-[2rem] p-10 lg:p-12 border border-[#fde047] shadow-lg relative overflow-hidden transition-transform duration-300 hover:scale-[1.02] flex flex-col justify-center text-center sm:text-left">
+            <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#fefce8] to-white rounded-[2rem] p-10 lg:p-12 border border-[#fde047] shadow-lg relative overflow-hidden transition-transform duration-300 hover:scale-[1.02] flex flex-col justify-center text-center sm:text-left cursor-default">
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                   <div className="size-12 rounded-full bg-[#011638] flex items-center justify-center text-white shadow-md shrink-0">

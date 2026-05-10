@@ -8,9 +8,10 @@ export default function AboutMascot() {
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 w-full">
         
         <motion.div 
-          initial={{ opacity: 0, x: -50 }}
+          initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex-1 text-center lg:text-left"
         >
           <motion.div 
@@ -22,7 +23,7 @@ export default function AboutMascot() {
           </motion.div>
 
           <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -33,7 +34,7 @@ export default function AboutMascot() {
           
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="bg-white/80 backdrop-blur-md border border-white px-8 py-6 rounded-3xl shadow-sm max-w-lg mx-auto lg:mx-0"
+            className="bg-white/80 backdrop-blur-md border border-white px-8 py-6 rounded-3xl shadow-sm max-w-lg mx-auto lg:mx-0 cursor-default transition-shadow hover:shadow-lg"
           >
             <p className="text-lg text-slate-700 font-medium">
               Running on caffeine but always delivering excellence—our mascot represents the true spirit of a DOST-SEI scholar in the Cordilleras.
@@ -43,9 +44,10 @@ export default function AboutMascot() {
 
         {/* FLOATING MASCOT IMAGE */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
           className="flex-1 flex justify-center relative"
         >
           <motion.div 
