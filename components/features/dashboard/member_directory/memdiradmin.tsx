@@ -358,7 +358,8 @@ export default function MembersPage() {
     );
 
     const selectedLabel =
-      options.find((o) => o.value === value)?.label || "Select";
+      options.find((o) => String(o.value) === String(value))?.label ||
+      "Select school";
 
     return (
       <div ref={ref} className="relative w-full">
@@ -406,6 +407,94 @@ export default function MembersPage() {
       </div>
     );
   };
+
+  const SchoolDropdown = ({
+    value,
+    options,
+    onChange,
+  }: {
+    value: string | number;
+    options: { label: string; value: string | number }[];
+    onChange: (val: string | number) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const ref = useRef<HTMLDivElement>(null);
+  
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpen(false);
+          setSearch("");
+        }
+      };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+  
+    const filteredOptions = options.filter((o) =>
+      o.label.toLowerCase().includes(search.toLowerCase())
+    );
+  
+    const selectedLabel =
+      options.find((o) => o.value === value)?.label || "Select school";
+  
+    return (
+      <div ref={ref} className="relative w-full">
+        <button
+          type="button"
+          onClick={() => setOpen((p) => !p)}
+          className="w-full px-3 py-2 border rounded-xl text-left relative cursor-pointer"
+        >
+          {selectedLabel}
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45" />
+        </button>
+  
+        {open && (
+          <div className="absolute z-50 mt-1 bg-white border rounded-xl shadow-lg w-full max-h-60 overflow-hidden">
+            
+            {/* search */}
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search school..."
+              className="w-full px-3 py-2 border-b focus:outline-none"
+            />
+  
+            <ul className="max-h-52 overflow-auto">
+              {filteredOptions.map((o) => (
+                <li
+                  key={o.value}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  {o.label}
+                </li>
+              ))}
+  
+              <li
+                onClick={() => {
+                  onChange("other");
+                  setOpen(false);
+                }}
+                className="px-3 py-2 text-blue-600 hover:bg-gray-100 cursor-pointer"
+              >
+                Other
+              </li>
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -1263,7 +1352,7 @@ const hasEditChanges =
                             mem_lname: member.mem_lname,
                             mem_minit: member.mem_minit || "",
                             mem_email: member.mem_email || "",
-                            school: String(member.school || ""),
+                            school: member.school,
                           });
 
                           setEditFieldErrors({
@@ -1864,35 +1953,26 @@ const hasEditChanges =
         <div className="mt-5 space-y-1">
             <label className="text-sm text-gray-600">School</label>
 
-            <select
+            <SchoolDropdown
               value={editForm.school}
-              onChange={(e) => {
-                const value = e.target.value;
-
+              options={schools.map((s) => ({
+                label: s.school_name,
+                value: s.id,
+              }))}
+              onChange={(val) => {
                 setEditForm((prev) => ({
                   ...prev,
-                  school: value,
+                  school: val,
                 }));
 
-                if (value === "other") {
+                if (val === "other") {
                   setIsAddingSchool(true);
                 } else {
                   setIsAddingSchool(false);
                   setCustomSchool("");
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            >
-              <option value="">Select school</option>
-
-              {schools.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.school_name}
-                </option>
-              ))}
-
-              <option value="other">Other</option>
-            </select>
+            />
 
             {isAddingSchool && (
               <input
