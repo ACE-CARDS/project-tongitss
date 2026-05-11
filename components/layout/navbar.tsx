@@ -72,6 +72,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
     
     await supabase.auth.signOut();
     router.push("/");
+    router.refresh();
   };
 
   return (
