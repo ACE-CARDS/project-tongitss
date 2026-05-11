@@ -21,6 +21,33 @@ type Committee = {
   comm_name: string;
 };
 
+  //current acad year
+  const getCurrentAcademicYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+
+    // around oct siya since mostly september ang membership drive
+    if (month >= 10) {
+      return `AY ${year}-${year + 1}`;
+    } else {
+      return `AY ${year - 1}-${year}`;
+    }
+  };
+
+  const currentAcademicYear = getCurrentAcademicYear();
+
+  const currentYear = new Date().getFullYear();
+
+  const academicYears = Array.from({ length: 4 }, (_, i) => {
+    const startYear =
+      new Date().getMonth() + 1 >= 10
+        ? currentYear - i
+        : currentYear - 1 - i;
+
+    return `AY ${startYear}-${startYear + 1}`;
+  });
+
 export default function MembersPage() {
   const supabase = createClient();
 
@@ -44,7 +71,7 @@ export default function MembersPage() {
           *,
           school_rel:school (school_name)
         `)
-        .eq("acadyear", "AY 2025-2026") //CHANGE AY here yung thnx
+        .eq("acadyear", currentAcademicYear) //CHANGE AY here yung thnx
         .eq("is_active", true);
 
       const { data: committeeData } = await supabase
@@ -209,7 +236,7 @@ export default function MembersPage() {
     try {
       const importedNew = members.filter((m: any) => m.isImported);
       const existing = members.filter((m: any) => !m.isImported); 
-      const DEFAULT_ACADYEAR = "AY 2025-2026";
+      const DEFAULT_ACADYEAR = currentAcademicYear;
       const DEFAULT_COMM = 23;
       const DEFAULT_SCHOL_TYPE = "Merit";
       const DEFAULT_SCHOL_YEAR = 2023;
@@ -267,7 +294,7 @@ export default function MembersPage() {
         const { data } = await supabase
         .from("member")
         .select("*")
-        .eq("acadyear", "AY 2025-2026");
+        .eq("acadyear", currentAcademicYear);
 
         if (data) {
         const cloned = structuredClone(data);
@@ -602,7 +629,7 @@ export default function MembersPage() {
               committee:comm (comm_name),
               school_rel:school (school_name)
             `)
-            .eq("acadyear", "AY 2025-2026") //change ay
+            .eq("acadyear", currentAcademicYear) //change ay
             .then(({ data, error }) => {
               if (error || !data) return;
       
@@ -636,7 +663,7 @@ export default function MembersPage() {
               doc.setTextColor(1, 22, 56);
               doc.setFont("helvetica", "normal");
               doc.setFontSize(15);
-              doc.text("AY 2025–2026", pageWidth - 10, 20, { //change AY
+              doc.text(currentAcademicYear, pageWidth - 10, 20, { //change AY
                 align: "right",
               });
       
@@ -790,7 +817,7 @@ export default function MembersPage() {
                 );
               }
       
-              doc.save("Membership Directory (2025-2026).pdf");
+              doc.save(`Membership Directory (${currentAcademicYear}).pdf`);
             });
         };
       };
@@ -799,7 +826,7 @@ export default function MembersPage() {
         const { data, error } = await supabase
           .from("member")
           .select("*")
-          .eq("acadyear", "AY 2025-2026");
+          .eq("acadyear", currentAcademicYear);
       
         if (error || !data) return;
       
@@ -837,7 +864,7 @@ export default function MembersPage() {
       
         const a = document.createElement("a");
         a.href = url;
-        a.download = "Membership Directory (2025-2026).csv";
+        a.download = `Membership Directory (${currentAcademicYear}).csv`;
         a.click();
       
         URL.revokeObjectURL(url);
@@ -866,7 +893,7 @@ const handleConfirmImport = async () => {
     const { data: refreshed, error: fetchError } = await supabase
       .from("member")
       .select("*")
-      .eq("acadyear", "AY 2025-2026")
+      .eq("acadyear", currentAcademicYear)
       .eq("is_active", true);
 
     if (fetchError) {
@@ -1100,7 +1127,7 @@ const hasEditChanges =
                     const rows = parseCSV(text);
                     const headers = rows[0].map((h) => h.trim());
                   
-                    const DEFAULT_ACADYEAR = "AY 2025-2026";
+                    const DEFAULT_ACADYEAR = currentAcademicYear;
                     const DEFAULT_COMM = 23;
                     const DEFAULT_SCHOL_TYPE = "Merit";
                     const DEFAULT_SCHOL_YEAR = 2023;

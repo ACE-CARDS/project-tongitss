@@ -57,15 +57,40 @@ export default function Home() {
     return count;
   }
 
+  //current acad year
+  const getCurrentAcademicYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+
+    //around oct siya since mostly september ang membership drive
+    if (month >= 10) {
+      return `${year}-${year + 1}`;
+    } else {
+      return `${year - 1}-${year}`;
+    }
+  };
+
+  const currentYear = new Date().getFullYear();
+  const academicYears = Array.from({ length: 4 }, (_, i) => {
+  const startYear =
+    new Date().getMonth() + 1 >= 10
+      ? currentYear - i
+      : currentYear - 1 - i;
+
+  return `AY ${startYear}-${startYear + 1}`;
+});
+
   //Counts poexcz for events and members separate si province kasi wait lang iiyaq aq dyan
   const [eventCount, setEventCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
   const [surveyCount, setSurveyCount] = useState(0);
   const [thesesCount, setThesesCount] = useState(0);
-  const [selectedAY, setSelectedAY] = useState("AY 2025-2026"); //here ichchange po yung current year thnx for province  section
+  const CURRENT_AY = `AY ${getCurrentAcademicYear()}`;
+  const [selectedAY, setSelectedAY] = useState(CURRENT_AY); //here ichchange po yung current year thnx for province  section
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [provinceMembers, setProvinceMembers] = useState(0);
-  const FIXED_MEMBER_AY = "AY 2025-2026"; //here ichchange current year for member section
+  const FIXED_MEMBER_AY = CURRENT_AY; //here ichchange current year for member section
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -431,20 +456,6 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  //current acad year
-  const getCurrentAcademicYear = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-
-    //around oct siya since mostly september ang membership drive
-    if (month >= 10) {
-      return `${year}-${year + 1}`;
-    } else {
-      return `${year - 1}-${year}`;
-    }
-  };
 
   //balikan for not pulsing circles sa map
   const getProvinceHasMembers = (name) => {
@@ -991,30 +1002,15 @@ export default function Home() {
                         onChange={(e) => setSelectedAY(e.target.value)}
                         style={{ colorScheme: "dark" }}
                       >
+                        {academicYears.map((year) => (
                         <option
-                          value="AY 2025-2026"
-                          className="bg-[#0a1a3a] text-white"
+                          key={year}
+                          value={year}
+                          className="text-[#011638]"
                         >
-                          AY 2025-2026
+                          {year}
                         </option>
-                        <option
-                          value="AY 2024-2025"
-                          className="bg-[#0a1a3a] text-white"
-                        >
-                          AY 2024-2025
-                        </option>
-                        <option
-                          value="AY 2023-2024"
-                          className="bg-[#0a1a3a] text-white"
-                        >
-                          AY 2023-2024
-                        </option>
-                        <option
-                          value="AY 2022-2023"
-                          className="bg-[#0a1a3a] text-white"
-                        >
-                          AY 2022-2023
-                        </option>
+                      ))}
                       </select>
                     </div>
 
@@ -1083,18 +1079,15 @@ export default function Home() {
                         onChange={(e) => setSelectedAY(e.target.value)}
                         className="border border-white/20 rounded-xl px-4 py-2 bg-white/90 backdrop-blur-md font-semibold text-black text-sm shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer hover:scale-105 transition-all duration-200 z-50"
                       >
-                        <option value="AY 2025-2026" className="text-[#011638]">
-                          AY 2025-2026
-                        </option>
-                        <option value="AY 2024-2025" className="text-[#011638]">
-                          AY 2024-2025
-                        </option>
-                        <option value="AY 2023-2024" className="text-[#011638]">
-                          AY 2023-2024
-                        </option>
-                        <option value="AY 2022-2023" className="text-[#011638]">
-                          AY 2022-2023
-                        </option>
+                        {academicYears.map((year) => (
+                          <option
+                            key={year}
+                            value={year}
+                            className="bg-[#0a1a3a] text-white"
+                          >
+                            {year}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
