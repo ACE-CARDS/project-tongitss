@@ -581,6 +581,53 @@ export default function MembersPage() {
         return;
       }
   
+      let finalSchoolId = Number(editForm.school);
+
+      if (editForm.school === "other") {
+        const normalizedCustomSchool = customSchool
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!normalizedCustomSchool) {
+        setCustomSchoolError(true);
+        return;
+      }
+
+      const existingSchool = schools.find(
+        (s) =>
+          s.school_name
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim() === normalizedCustomSchool
+      );
+
+      if (existingSchool) {
+        setCustomSchoolError(true);
+        return;
+      }
+      
+        const { data: newSchool, error: schoolError } = await supabase
+          .from("school")
+          .insert({
+            school_name: customSchool.trim(),
+          })
+          .select()
+          .single();
+      
+        if (schoolError || !newSchool) {
+          console.error(schoolError);
+      
+          setEditErrorMessage("Failed to add school.");
+          setShowEditError(true);
+          return;
+        }
+      
+        finalSchoolId = newSchool.id;
+      
+        setSchools((prev) => [...prev, newSchool]);
+      }
+
       const { error } = await supabase
         .from("member")
         .update({
@@ -588,7 +635,7 @@ export default function MembersPage() {
           mem_lname: editForm.mem_lname,
           mem_minit: editForm.mem_minit,
           mem_email: editForm.mem_email,
-          school: Number(editForm.school),
+          school: finalSchoolId,
         })
         .eq("id", editMember.id);
   
@@ -605,7 +652,7 @@ export default function MembersPage() {
             ? {
               ...m,
               ...editForm,
-              school: Number(editForm.school),
+              school: finalSchoolId,
             }
             : m
         )
@@ -1013,6 +1060,10 @@ type School = {
 };
 
 const [schools, setSchools] = useState<School[]>([]);
+
+const [customSchool, setCustomSchool] = useState("");
+const [isAddingSchool, setIsAddingSchool] = useState(false);
+const [customSchoolError, setCustomSchoolError] = useState(false);
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -1861,21 +1912,52 @@ const [schools, setSchools] = useState<School[]>([]);
 
             <select
               value={editForm.school}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = e.target.value;
+
                 setEditForm((prev) => ({
                   ...prev,
-                  school: e.target.value,
-                }))
-              }
+                  school: value,
+                }));
+
+                if (value === "other") {
+                  setIsAddingSchool(true);
+                } else {
+                  setIsAddingSchool(false);
+                  setCustomSchool("");
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="">Select school</option>
+
               {schools.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.school_name}
                 </option>
               ))}
+
+              <option value="other">Other</option>
             </select>
+
+            {isAddingSchool && (
+              <input
+              type="text"
+              placeholder="Enter new school"
+              value={customSchool}
+              onChange={(e) => {
+                setCustomSchool(e.target.value);
+                setCustomSchoolError(false);
+              }}
+              className={`w-full px-3 py-2 rounded-lg mt-2 border transition
+                ${
+                  customSchoolError
+                    ? "border-red-500 ring-2 ring-red-200"
+                    : "border-gray-300"
+                }
+              `}
+            />
+            )}
           </div>
 
         </div>

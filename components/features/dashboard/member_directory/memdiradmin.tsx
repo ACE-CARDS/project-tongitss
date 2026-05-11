@@ -481,16 +481,63 @@ export default function MembersPage() {
           return;
         }
     
-        const { error } = await supabase
-          .from("member")
-          .update({
-            mem_fname: editForm.mem_fname,
-            mem_lname: editForm.mem_lname,
-            mem_minit: editForm.mem_minit,
-            mem_email: editForm.mem_email,
-            school: Number(editForm.school),
+        let finalSchoolId = Number(editForm.school);
+
+      if (editForm.school === "other") {
+        const normalizedCustomSchool = customSchool
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!normalizedCustomSchool) {
+        setCustomSchoolError(true);
+        return;
+      }
+
+      const existingSchool = schools.find(
+        (s) =>
+          s.school_name
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim() === normalizedCustomSchool
+      );
+
+      if (existingSchool) {
+        setCustomSchoolError(true);
+        return;
+      }
+      
+        const { data: newSchool, error: schoolError } = await supabase
+          .from("school")
+          .insert({
+            school_name: customSchool.trim(),
           })
-          .eq("id", editMember.id);
+          .select()
+          .single();
+      
+        if (schoolError || !newSchool) {
+          console.error(schoolError);
+      
+          setEditErrorMessage("Failed to add school.");
+          setShowEditError(true);
+          return;
+        }
+      
+        finalSchoolId = newSchool.id;
+      
+        setSchools((prev) => [...prev, newSchool]);
+      }
+
+      const { error } = await supabase
+        .from("member")
+        .update({
+          mem_fname: editForm.mem_fname,
+          mem_lname: editForm.mem_lname,
+          mem_minit: editForm.mem_minit,
+          mem_email: editForm.mem_email,
+          school: finalSchoolId,
+        })
+        .eq("id", editMember.id);
     
         if (error) {
           console.error("Supabase update error:", error);
@@ -914,6 +961,10 @@ const hasEditChanges =
   
   const [schools, setSchools] = useState<School[]>([]);
 
+  const [customSchool, setCustomSchool] = useState("");
+  const [isAddingSchool, setIsAddingSchool] = useState(false);
+  const [customSchoolError, setCustomSchoolError] = useState(false);
+
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
     <div className="w-full flex flex-col">
@@ -1108,7 +1159,7 @@ const hasEditChanges =
 
             <div className="space-y-4">
               {isLoading ? (
-                <div className="min-h-[200px]"></div> // ← Blank while loading
+                <div className="min-h-[200px]"></div> 
               ) : paginatedMembers.length === 0 ? (
                 <p className="text-center text-gray-500 text-lg py-6">
                   No members found.
@@ -1126,7 +1177,7 @@ const hasEditChanges =
                       key={member.id}
                       className={`
                         flex flex-col gap-3
-                        sm:grid sm:grid-cols-[1.5fr_1.5fr_1fr_0.5fr] sm:items-start
+                        sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] sm:items-start
                         px-4 py-3 rounded-xl ring shadow-0 ring-[#d7d7d7] ease-in-out duration-200 transition-all
                         hover:shadow-lg border-l-4
                         ${isRowEdited(member)
@@ -1788,21 +1839,52 @@ const hasEditChanges =
 
             <select
               value={editForm.school}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = e.target.value;
+
                 setEditForm((prev) => ({
                   ...prev,
-                  school: e.target.value,
-                }))
-              }
+                  school: value,
+                }));
+
+                if (value === "other") {
+                  setIsAddingSchool(true);
+                } else {
+                  setIsAddingSchool(false);
+                  setCustomSchool("");
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="">Select school</option>
+
               {schools.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.school_name}
                 </option>
               ))}
+
+              <option value="other">Other</option>
             </select>
+
+            {isAddingSchool && (
+              <input
+              type="text"
+              placeholder="Enter new school"
+              value={customSchool}
+              onChange={(e) => {
+                setCustomSchool(e.target.value);
+                setCustomSchoolError(false);
+              }}
+              className={`w-full px-3 py-2 rounded-lg mt-2 border transition
+                ${
+                  customSchoolError
+                    ? "border-red-500 ring-2 ring-red-200"
+                    : "border-gray-300"
+                }
+              `}
+            />
+            )}
           </div>
 
           <div className="flex justify-end gap-3 mt-6">
