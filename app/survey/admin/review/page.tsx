@@ -266,7 +266,7 @@ function ReviewContent() {
               ) : (
                 <>
                   <button onClick={() => setShowRejectForm(false)} className="px-4 py-2 text-[#011638] font-ubuntu-mono">Cancel</button>
-                  <button onClick={handleReject} disabled={!rejectionReason.trim() || isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Confirm Rejection</button>
+                  <button onClick={handleReject} disabled={!!rejectionError || !rejectionReason.trim() || isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Confirm Rejection</button>
                 </>
               )}
             </div>
