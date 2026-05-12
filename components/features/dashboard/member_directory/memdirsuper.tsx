@@ -196,6 +196,8 @@ export default function MembersPage() {
     "Events and Logistics Committee Deputy",
   ].map(normalize);
 
+  const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc");
+
   const getPriorityIndex = (commName: string) =>
     priority.indexOf(normalize(commName));
 
@@ -220,9 +222,15 @@ export default function MembersPage() {
     if (aInList) return -1;
     if (bInList) return 1;
 
-    return `${a.mem_lname} ${a.mem_fname}`
-      .toLowerCase()
-      .localeCompare(`${b.mem_lname} ${b.mem_fname}`.toLowerCase());
+    const nameCompare = `${a.mem_lname} ${a.mem_fname}`
+  .toLowerCase()
+  .localeCompare(
+    `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
+  );
+
+return nameSortOrder === "asc"
+  ? nameCompare
+  : -nameCompare;
   });
 
   // pagination
@@ -1527,7 +1535,6 @@ export default function MembersPage() {
   const [isAddingSchool, setIsAddingSchool] = useState(false);
   const [customSchoolError, setCustomSchoolError] = useState(false);
 
-  const [nameSort, setNameSort] = useState<"asc" | "desc">("asc");
   const [roleSort, setRoleSort] = useState<"asc" | "desc">("asc");
 
   const [courses, setCourses] = useState([]);
@@ -1762,7 +1769,17 @@ const [customCourseError, setCustomCourseError] = useState(false);
             <div className="overflow-y-visible">
               {/* grid start */}
               <div className="hidden sm:grid grid-cols-[minmax(140px,1.5fr)_minmax(140px,1.5fr)_minmax(110px,1fr)_minmax(70px,0.5fr)] font-semibold text-[#011638]/70 px-4 mb-2">
-                <span className="text-center">Name</span>
+              <button
+                onClick={() =>
+                  setNameSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+                }
+                className="flex items-center justify-center gap-1 text-center cursor-pointer select-none hover:opacity-70 transition"
+              >
+                Name
+                <span className="text-[10px] font-semibold bg-[#011638]/10 px-1.5 py-0.5 rounded">
+                  {nameSortOrder === "asc" ? "A-Z" : "Z-A"}
+                </span>
+              </button>
                 <span className="text-center">Committee</span>
                 <span className="text-center">Role</span>
                 <span className="text-center">Actions</span>
