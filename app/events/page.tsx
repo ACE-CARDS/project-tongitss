@@ -8,40 +8,39 @@ import BackButton from "@/components/ui/backButton";
 export default function EventsPage() {
   return (
     <>
-    <NavBar />
-    <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
+      <NavBar />
+      <div
+        className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <main className="flex-grow px-4 sm:px-10 lg:px-20 py-8">
+          <div className="max-w-7xl mx-auto w-full">
+            <BackButton />
 
-      <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
-        <div className="max-w-7xl mx-auto w-full">
-          <BackButton />
+            {/* INTRO PARAGRAPH SECTION */}
+            <section className="relative pb-12 px-2 sm:px-5 flex flex-col items-center justify-center text-center overflow-hidden">
+              
+              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-4 w-full">
+                <span className="text-3xl md:text-5xl text-[#eec643] shrink-0">♠</span>
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-black font-oswald bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight text-center">
+                  Events & Activities
+                </h1>
+                <span className="text-3xl md:text-5xl text-[#eec643] shrink-0">♠</span>
+              </div>
+              
+              <p className="max-w-3xl text-lg text-slate-600 font-ubuntu-mono leading-relaxed font-medium">
+              </p>
+            </section>
 
-          {/* INTRO PARAGRAPH SECTION */}
-          <section className="relative pb-12 px-5 flex flex-col items-center justify-center text-center overflow-hidden">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <span className="text-3xl md:text-4xl text-[#eec643]">♠</span>
-              <h1 className="text-4xl md:text-6xl font-black font-oswald bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
-                Events & Activities
-              </h1>
-              <span className="text-3xl md:text-4xl text-[#eec643]">♠</span>
-            </div>
-            
-            <p className="max-w-3xl text-lg text-slate-600 font-ubuntu-mono leading-relaxed font-medium">
-            </p>
-          </section>
-
-          <EventsTimeline />
-        </div>
-      </main>
-
-    </div>
-    <Footer />
+            <EventsTimeline />
+          </div>
+        </main>
+      </div>
+      <Footer />
     </>
   );
 }

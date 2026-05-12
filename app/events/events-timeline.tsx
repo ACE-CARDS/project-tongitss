@@ -19,11 +19,11 @@ const FilterDropdown = ({ value, options, onChange }: any) => {
   const selectedLabel = options.find((o: any) => o.value === value)?.label || value;
 
   return (
-    <div ref={ref} className="relative w-full z-[50] font-sans">
+    <div ref={ref} className="relative w-full md:w-auto z-[50] font-sans">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
+        className="w-full md:w-auto px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
       >
         <span className="truncate">{selectedLabel}</span>
         <svg
@@ -36,7 +36,7 @@ const FilterDropdown = ({ value, options, onChange }: any) => {
         </svg>
       </button>
       {open && (
-        <div className="absolute left-0 mt-2 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute right-0 md:left-0 mt-2 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden">
           <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
             {options.map((o: any) => (
               <li
@@ -71,14 +71,24 @@ export default function EventsTimeline() {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const DEFAULT_IMAGE = "/assets/logos/Ace Cards logo.png"; 
+
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerPage(window.innerWidth < 768 ? 3 : 6);
+    };
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -87,7 +97,7 @@ export default function EventsTimeline() {
       .from("events")
       .select("*")
       .eq("is_deleted", false)
-      .order("start_date", { ascending: false });
+      .order("start_date", { ascending: false }); 
 
     if (data && !error) setEvents(data);
     setIsLoading(false);
@@ -99,13 +109,13 @@ export default function EventsTimeline() {
 
   useEffect(() => {
     if (selectedEvent) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
+    else document.body.style.overflow = "auto";
+    return () => { document.body.style.overflow = "auto"; };
   }, [selectedEvent]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter, activeYear, searchQuery]);
+  }, [activeFilter, activeYear, searchQuery, itemsPerPage]);
 
   const checkScroll = () => {
     if (timelineRef.current) {
@@ -143,9 +153,7 @@ export default function EventsTimeline() {
   };
 
   const availableYears = Array.from(
-    new Set(
-      events.map((event) => event.year || new Date(event.start_date).getFullYear().toString())
-    )
+    new Set(events.map((event) => event.year || new Date(event.start_date).getFullYear().toString()))
   ).sort((a, b) => Number(b) - Number(a));
 
   useEffect(() => {
@@ -158,14 +166,9 @@ export default function EventsTimeline() {
     const completed = isEventCompleted(event);
     const eventYear = event.year || new Date(event.start_date).getFullYear().toString();
     
-    const matchesStatus =
-      activeFilter === "ALL" ||
-      (activeFilter === "COMPLETED" ? completed : !completed);
-      
+    const matchesStatus = activeFilter === "ALL" || (activeFilter === "COMPLETED" ? completed : !completed);
     const matchesYear = activeYear === "ALL" || eventYear === activeYear;
-    const matchesSearch =
-      searchQuery === "" ||
-      event.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = searchQuery === "" || event.title.toLowerCase().includes(searchQuery.toLowerCase());
       
     return matchesStatus && matchesYear && matchesSearch;
   });
@@ -202,8 +205,8 @@ export default function EventsTimeline() {
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
       {/* TOOLBAR FILTERS */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
-        <div className="w-full md:w-auto flex justify-center md:justify-start">
-          <div className="relative w-full sm:w-80">
+        <div className="w-full flex-1 flex justify-center md:justify-start">
+          <div className="relative w-full max-w-xl">
             <input
               type="text"
               placeholder="Search events..."
@@ -222,13 +225,14 @@ export default function EventsTimeline() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto shrink-0">
           <div className="w-full sm:w-auto">
             <FilterDropdown value={activeFilter} options={statusOptions} onChange={setActiveFilter} />
           </div>
         </div>
       </div>
 
+      {/* HORIZONTAL YEAR TIMELINE CAROUSEL */}
       {!isLoading && events.length > 0 && (
         <div className="relative w-full max-w-6xl mx-auto mb-14 px-4 sm:px-12 group">
           {canScrollLeft && (
@@ -253,6 +257,7 @@ export default function EventsTimeline() {
             ref={timelineRef}
             onScroll={checkScroll}
             className="overflow-x-auto scroll-smooth py-12 relative [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{ WebkitOverflowScrolling: "touch" }}
           >
             <div className="absolute top-1/2 left-0 right-0 h-1.5 bg-slate-200 -translate-y-1/2 z-0 rounded-full" style={{ minWidth: '100%' }}></div>
             <div className="flex justify-between items-center w-full min-w-max px-4">
@@ -293,7 +298,7 @@ export default function EventsTimeline() {
       ) : (
         <>
           {filteredEvents.length === 0 ? (
-            <div className="w-full text-center py-20 text-slate-500 font-bold text-xl font-ubuntu-mono">
+            <div className="w-full text-center py-20 text-slate-500 font-bold text-xl font-ubuntu-mono animate-in fade-in duration-500">
               No events found for the selected filters.
             </div>
           ) : (
@@ -310,9 +315,8 @@ export default function EventsTimeline() {
                       onClick={() => setSelectedEvent(event)}
                       className="group relative rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200 
                       shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-200 
-                      hover:bg-white flex flex-col cursor-pointer overflow-hidden h-[500px] w-full"
+                      hover:bg-white flex flex-col cursor-pointer overflow-hidden h-[500px] sm:h-[520px] w-full animate-in fade-in zoom-in-95 duration-500"
                     >
-                      {/* Image section */}
                       <div className="w-full h-48 shrink-0 relative overflow-hidden bg-slate-50 border-b border-slate-200/60 flex items-center justify-center">
                         <img
                           src={hasValidImage ? event.image_url : DEFAULT_IMAGE}
@@ -327,99 +331,135 @@ export default function EventsTimeline() {
                         />
                       </div>
                         
-                      {/* Content wrapper */}
-                      <div className="flex flex-col flex-1 p-6 w-full min-w-0 overflow-hidden">
-                        
-                        {/* Meta Date */}
-                        <div className="flex flex-col mb-3 w-full shrink-0">
-                          <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">Date</span>
+                      <div className="flex flex-col flex-1 p-5 w-full min-w-0 overflow-hidden">
+                        <div className="flex flex-col mb-2 w-full shrink-0">
                           <span className="font-black text-sm sm:text-base leading-tight text-[#0d21a1] truncate">
                             {formatEventDateRange(event.start_date, event.end_date)}
                           </span>
                         </div>
                         
-                        {/* Title */}
-                        <h3 className="text-xl sm:text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-3 line-clamp-2 break-words shrink-0" title={event.title}>
+                        <h3 className="text-xl sm:text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-words shrink-0" title={event.title}>
                           {event.title}
                         </h3>
                         
-                        {/* Location */}
-                        <div className="flex items-center gap-1 mb-3 w-full shrink-0">
-                          <span className="shrink-0 text-xs">📍</span>
-                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate flex-1 min-w-0" title={event.location || "TBA"}>
+                        <div className="flex items-center gap-1.5 mb-3 w-full shrink-0 text-slate-500">
+                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <p className="text-xs font-bold uppercase tracking-widest truncate flex-1 min-w-0" title={event.location || "TBA"}>
                             {event.location || "TBA"}
                           </p>
                         </div>
                         
-                        {/* Description */}
                         <div className="flex-1 min-h-0 overflow-hidden">
-                          <p className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed line-clamp-2 sm:line-clamp-3 break-words w-full">
+                          <p className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed line-clamp-3 break-words w-full">
                             {event.description}
                           </p>
                         </div>
 
-                        {/* Status Footer */}
-                        <div className="mt-4 pt-4 border-t border-slate-200/60 text-center w-full shrink-0">
+                        <div className="mt-auto pt-4 border-t border-slate-200/60 text-center w-full shrink-0">
                           {completed ? (
-                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-slate-600 bg-slate-100 border border-slate-200 shadow-sm">
-                              ● COMPLETED
+                            <span className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-slate-600 bg-slate-100 border border-slate-200 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span> COMPLETED
                             </span>
                           ) : statusUpper === "ONGOING" ? (
-                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-blue-700 bg-blue-100 border border-blue-200 shadow-sm">
-                              ● ONGOING
+                            <span className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-blue-700 bg-blue-100 border border-blue-200 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> ONGOING
                             </span>
                           ) : (
-                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
+                            <span className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
                               COMING SOON
                             </span>
                           )}
                         </div>
-                        
                       </div>
                     </div>
                   );
                 })}
 
                 {emptyCardsCount > 0 && Array.from({ length: emptyCardsCount }).map((_, idx) => (
-                  <div key={`ghost-${idx}`} className="hidden md:block w-full h-[500px] invisible pointer-events-none aria-hidden"></div>
+                  <div key={`ghost-${idx}`} className="w-full h-[500px] sm:h-[520px] invisible pointer-events-none aria-hidden"></div>
                 ))}
               </div>
 
-              {/* PAGINATION */}
+              {/* SPAMMABLE PAGINATION FROM MEMBERS DIRECTORY */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12 mb-8 font-ubuntu-mono w-full">
+                <nav className="flex justify-center items-center space-x-2 mt-12 mb-8 w-full">
+                  {/* Prev button */}
                   <button
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                    className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                    className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
+                      currentPage === 1
+                        ? "text-[#94a3b8] cursor-not-allowed"
+                        : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                    }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none custom-scrollbar pb-2 sm:pb-0">
-                    {[...Array(totalPages)].map((_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 shrink-0 rounded-xl font-bold transition-colors ${
-                          currentPage === i + 1 ? "bg-[#011638] text-white shadow-md" : "text-[#475569] hover:bg-slate-200"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
+
+                  {/* Page numbers with Ellipses logic */}
+                  <div className="flex items-center space-x-1 font-ubuntu-mono">
+                    {(() => {
+                      const pages = [];
+
+                      if (totalPages <= 4) {
+                        for (let i = 1; i <= totalPages; i++) {
+                          pages.push(i);
+                        }
+                      } else {
+                        const showLeft = currentPage <= 2;
+                        const showRight = currentPage >= totalPages - 1;
+
+                        if (showLeft) {
+                          pages.push(1, 2, "...", totalPages);
+                        } else if (showRight) {
+                          pages.push(1, "...", totalPages - 1, totalPages);
+                        } else {
+                          pages.push(1, "...", currentPage, "...", totalPages);
+                        }
+                      }
+
+                      return pages.map((page, idx) =>
+                        page === "..." ? (
+                          <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+                            ...
+                          </span>
+                        ) : (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page as number)}
+                            className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
+                              page === currentPage
+                                ? "bg-[#011638] text-white font-bold"
+                                : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ),
+                      );
+                    })()}
                   </div>
+
+                  {/* Next button */}
                   <button
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                    className="p-2 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                    className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
+                      currentPage === totalPages
+                        ? "text-[#94a3b8] cursor-not-allowed"
+                        : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
+                    }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
-                </div>
+                </nav>
               )}
             </div>
           )}
@@ -431,9 +471,9 @@ export default function EventsTimeline() {
         <div
           className="fixed inset-[-10px] z-[99999] flex items-center justify-center p-4 sm:p-6"
           style={{
-            backgroundColor: "rgba(1, 22, 56, 0.8)",
-            backdropFilter: "blur(5px)",
-            WebkitBackdropFilter: "blur(5px)",
+            backgroundColor: "rgba(1, 22, 56, 0.85)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
           }}
           onClick={() => setSelectedEvent(null)}
         >
@@ -446,7 +486,7 @@ export default function EventsTimeline() {
             <div className="relative w-full shrink-0 overflow-hidden bg-[#011638]">
               <button
                 onClick={() => setSelectedEvent(null)}
-                className="cursor-pointer absolute top-4 right-4 z-[100] w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors"
+                className="cursor-pointer absolute top-4 right-4 z-[100] w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors font-bold text-xl"
               >
                 ✕
               </button>
@@ -480,10 +520,7 @@ export default function EventsTimeline() {
                     Date
                   </p>
                   <p className="font-bold text-[#0d21a1] text-lg font-ubuntu-mono break-words">
-                    {formatEventDateRange(
-                      selectedEvent.start_date,
-                      selectedEvent.end_date
-                    )}
+                    {formatEventDateRange(selectedEvent.start_date, selectedEvent.end_date)}
                   </p>
                 </div>
                 <div className="w-full sm:w-1/3 min-w-0">
