@@ -194,7 +194,7 @@ export default function CommitteeDirectory() {
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           className="w-full bg-white/70 backdrop-blur-xl px-6 py-3 border border-[#0b1763] 
-          rounded-xl text-[#0b1763] font-medium font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center"
+          rounded-xl text-[#0b1763] font-medium font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center cursor-pointer"
         >
           {selectedLabel}
           <svg
