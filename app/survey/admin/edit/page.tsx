@@ -922,7 +922,12 @@ const handleSubmit = async (e: React.FormEvent) => {
       const firstName = firstNameInputs[i]?.value?.trim();
       const lastName = lastNameInputs[i]?.value?.trim();
       const email = emailInputs[i]?.value?.trim();
-      const middleInitial = middleInitialInputs[i]?.value?.trim();
+      const rawMinit = (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || "";
+      
+      const cleanMinit = rawMinit
+        .replace(/[^a-zA-Z]/g, "") 
+        .substring(0, 2)
+        .toUpperCase() || null;
       const memberIdFromState = authors[i]?.memberId || null;
       
       if (!firstName || !lastName || !email) continue;
@@ -952,7 +957,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             author_fname: firstName,
             author_lname: lastName,
             author_email: email,
-            author_minit: middleInitial || null,
+            author_minit: cleanMinit || null,
             mem_id: memberIdFromState || null
           })
           .select("id")

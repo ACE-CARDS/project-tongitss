@@ -807,7 +807,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         if (existingAuthor) {
           authorIds.push(existingAuthor.id);
         } else {
-          // Create new author with mem_id if available
           const rawMinit = (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || "";
           
           const cleanMinit = rawMinit
@@ -821,7 +820,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
               author_fname: firstNameInputs[i].value,
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
-              author_minit: cleanMinit,
+              author_minit: cleanMinit || null,
               mem_id: memberIdFromState || null
             })
             .select("id")
