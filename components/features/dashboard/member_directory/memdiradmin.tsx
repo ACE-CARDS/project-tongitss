@@ -14,6 +14,7 @@ type Member = {
   mem_email: string;
   school: number | string;
   comm: number | string;
+  course: number | string; 
 };
 
 type Committee = {
@@ -68,7 +69,8 @@ export default function MembersPage() {
         .select(
           `
           *,
-          school_rel:school (school_name)
+          school_rel:school (school_name),
+          course_rel:course (course_name)
         `,
         )
         .eq("acadyear", currentAcademicYear) //CHANGE AY here yung thnx
@@ -108,6 +110,25 @@ export default function MembersPage() {
 
     fetchSchools();
   }, []);
+  
+    useEffect(() => {
+      const fetchCourses = async () => {
+        const { data, error } = await supabase
+        .from("course")
+        .select("id, course_name")
+        .order("course_name");
+      
+        if (error) {
+          console.error("Error fetching courses:", error);
+          return;
+        }
+      
+        if (data) setCourses(data);
+      };
+  
+      fetchCourses();
+      
+    }, []);
 
   //keywords for committee tabs
   const committeeCategories = [
@@ -496,6 +517,87 @@ export default function MembersPage() {
     );
   };
 
+  const CourseDropdown = ({
+      value,
+      options,
+      onChange,
+    }: {
+      value: string | number;
+      options: { label: string; value: string | number }[];
+      onChange: (val: string | number) => void;
+    }) => {
+      const [open, setOpen] = useState(false);
+      const [search, setSearch] = useState("");
+      const ref = useRef<HTMLDivElement>(null);
+    
+      useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+          if (ref.current && !ref.current.contains(e.target as Node)) {
+            setOpen(false);
+            setSearch("");
+          }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+    
+      const filteredOptions = options.filter((o) =>
+        o.label.toLowerCase().includes(search.toLowerCase())
+      );
+    
+      const selectedLabel = options.find((o) => String(o.value) === String(value))?.label || "Select course";
+    
+      return (
+        <div ref={ref} className="relative w-full">
+          <button
+            type="button"
+            onClick={() => setOpen((p) => !p)}
+            className="w-full px-3 py-2 border rounded-xl text-left relative cursor-pointer"
+          >
+            {selectedLabel}
+            <span className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45 transition-transform ${open ? "rotate-225" : "rotate-45"}`} />
+          </button>
+    
+          {open && (
+            <div className="absolute bottom-full mb-1 z-[9999] bg-white border rounded-xl shadow-lg w-full max-h-60 overflow-hidden">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search course..."
+                className="w-full px-3 py-2 border-b focus:outline-none"
+              />
+              <ul className="max-h-52 overflow-auto custom-scrollbar-blue">
+                {filteredOptions.map((o) => (
+                  <li
+                    key={o.value}
+                    onClick={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {o.label}
+                  </li>
+                ))}
+                <li
+                  onClick={() => {
+                    onChange("other");
+                    setOpen(false);
+                  }}
+                  className="px-3 py-2 text-blue-600 hover:bg-gray-100 cursor-pointer font-medium"
+                >
+                  Other
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    };
+  
+
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedFilter, searchName]);
@@ -537,6 +639,7 @@ export default function MembersPage() {
     mem_minit: "",
     mem_email: "",
     school: "",
+    course: ""
   });
 
   const [editFieldErrors, setEditFieldErrors] = useState({
@@ -596,6 +699,7 @@ export default function MembersPage() {
       }
 
       let finalSchoolId = Number(editForm.school);
+      let finalCourseId = Number(editForm.course);
 
       if (editForm.school === "other") {
         const normalizedCustomSchool = customSchool
@@ -640,6 +744,49 @@ export default function MembersPage() {
         setSchools((prev) => [...prev, newSchool]);
       }
 
+      if (editForm.course === "other") {
+        const normalizedCustomCourse = customCourse
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+      
+        if (!normalizedCustomCourse) {
+          setCustomCourseError(true);
+          return;
+        }
+      
+        const existingCourse = courses.find(
+          (c) =>
+            c.course_name.toLowerCase().replace(/\s+/g, " ").trim() ===
+            normalizedCustomCourse,
+        );
+      
+        if (existingCourse) {
+          setCustomCourseError(true);
+          return;
+        }
+      
+        const { data: newCourse, error: courseError } = await supabase
+          .from("course")
+          .insert({
+            course_name: customCourse.trim(),
+          })
+          .select()
+          .single();
+      
+        if (courseError || !newCourse) {
+          console.error(courseError);
+      
+          setEditErrorMessage("Failed to add course.");
+          setShowEditError(true);
+          return;
+        }
+      
+        finalCourseId = newCourse.id;
+      
+        setCourses((prev) => [...prev, newCourse]);
+      }
+
       const { error } = await supabase
         .from("member")
         .update({
@@ -648,6 +795,7 @@ export default function MembersPage() {
           mem_minit: editForm.mem_minit,
           mem_email: editForm.mem_email,
           school: finalSchoolId,
+          course: finalCourseId,
         })
         .eq("id", editMember.id);
 
@@ -1001,12 +1149,13 @@ export default function MembersPage() {
   const [showRenameSuccess, setShowRenameSuccess] = useState(false);
 
   const hasEditChanges =
-    editMember &&
-    (editForm.mem_fname !== editMember.mem_fname ||
-      editForm.mem_lname !== editMember.mem_lname ||
-      editForm.mem_minit !== (editMember.mem_minit || "") ||
-      editForm.mem_email !== (editMember.mem_email || "") ||
-      String(editForm.school) !== String(editMember.school || ""));
+  editMember &&
+  (editForm.mem_fname !== editMember.mem_fname ||
+    editForm.mem_lname !== editMember.mem_lname ||
+    editForm.mem_minit !== (editMember.mem_minit || "") ||
+    editForm.mem_email !== (editMember.mem_email || "") ||
+    String(editForm.school) !== String(editMember.school || "") ||
+    String(editForm.course) !== String(editMember.course || ""));
 
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
@@ -1131,6 +1280,14 @@ export default function MembersPage() {
   const [customSchool, setCustomSchool] = useState("");
   const [isAddingSchool, setIsAddingSchool] = useState(false);
   const [customSchoolError, setCustomSchoolError] = useState(false);
+
+    const [nameSort, setNameSort] = useState<"asc" | "desc">("asc");
+    const [roleSort, setRoleSort] = useState<"asc" | "desc">("asc");
+  
+    const [courses, setCourses] = useState([]);
+    const [isAddingCourse, setIsAddingCourse] = useState(false);
+  const [customCourse, setCustomCourse] = useState("");
+  const [customCourseError, setCustomCourseError] = useState(false);
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -1407,9 +1564,15 @@ export default function MembersPage() {
                           {member.mem_email}
                         </span>
 
-                        <span className="mt-1.5 text-xs text-gray-500 break-all block">
-                          {member.school_rel?.school_name || member.school}
-                        </span>
+                        <span
+                            className="mt-1.5 text-xs text-gray-500 break-all block"
+                            title={`${member.school_rel?.school_name || member.school}${
+                              member.course_rel?.course_name ? ` | ${member.course_rel.course_name}` : ""
+                            }`}
+                          >
+                            {member.school_rel?.school_name || member.school}
+                            {member.course_rel?.course_name ? ` | ${member.course_rel.course_name}` : ""}
+                          </span>
                       </div>
 
                       <div
@@ -1436,6 +1599,7 @@ export default function MembersPage() {
                               mem_minit: member.mem_minit || "",
                               mem_email: member.mem_email || "",
                               school: member.school,
+                              course: member.course
                             });
 
                             setEditFieldErrors({
@@ -2081,6 +2245,46 @@ export default function MembersPage() {
               `}
                 />
               )}
+            </div>
+
+            <div className="mt-5 space-y-1">
+              <label className="text-sm text-gray-600">Course</label>
+
+              <CourseDropdown
+                value={editForm.course}
+                options={courses.map((c) => ({ label: c.course_name, value: c.id }))}
+                onChange={(val) => {
+                  setEditForm((prev) => ({
+                    ...prev,
+                    course: val,
+                  }));
+                
+                  if (val === "other") {
+                    setIsAddingCourse(true);
+                  } else {
+                    setIsAddingCourse(false);
+                    setCustomCourse("");
+                  }
+                }}
+              />
+                
+              {isAddingCourse && (
+                  <input
+                    type="text"
+                    placeholder="Enter new course"
+                    value={customCourse}
+                    onChange={(e) => {
+                      setCustomCourse(e.target.value);
+                      setCustomCourseError(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg mt-2 border transition
+                      ${
+                        customCourseError
+                          ? "border-red-500 ring-2 ring-red-200"
+                          : "border-gray-300"
+                      }`}
+                  />
+                )}
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
