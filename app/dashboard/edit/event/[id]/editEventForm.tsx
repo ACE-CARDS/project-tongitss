@@ -10,11 +10,13 @@ import Footer from "@/components/layout/footer";
 function EditEventContent({ eventId }: { eventId: string }) {
   const router = useRouter();
   const supabase = createClient();
-  const errorRef = useRef<HTMLDivElement>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>("");
+  
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [invalidFields, setInvalidFields] = useState<string[]>([]); 
 
   const [initialData, setInitialData] = useState({
     title: "",
@@ -50,7 +52,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
 
   const fetchEvent = async () => {
     setLoading(true);
-    setSubmitError("");
+    setErrorMsg("");
     try {
       const { data, error } = await supabase
         .from("events")
@@ -75,43 +77,71 @@ function EditEventContent({ eventId }: { eventId: string }) {
       }
     } catch (err) {
       console.error("Error fetching event:", err);
-      setSubmitError("Failed to load event data.");
+      setErrorMsg("Failed to load event data.");
     } finally {
       setLoading(false);
     }
   };
 
+  const getFieldClass = (fieldName: string) => {
+    const baseClass = "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none bg-[#fbfaf8]";
+    const borderClass = invalidFields.includes(fieldName) 
+      ? "border-red-500 ring-1 ring-red-500" 
+      : "border-[#94a3b8] focus:border-[#011638]";
+    return `${baseClass} ${borderClass}`;
+  };
+
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (submitError) setSubmitError("");
+    if (errorMsg) setErrorMsg(null);
+    if (invalidFields.includes(name)) {
+      setInvalidFields(prev => prev.filter(f => f !== name));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitError("");
+    setErrorMsg(null);
+    setInvalidFields([]);
 
-    // Validations
-    if (new Date(formData.end_date) < new Date(formData.start_date)) {
-      setSubmitError("End date cannot be earlier than the start date.");
+    const startDateObj = new Date(formData.start_date);
+    const endDateObj = new Date(formData.end_date);
+    const today = new Date();
+    
+    startDateObj.setHours(0, 0, 0, 0);
+    endDateObj.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+
+    if (endDateObj < startDateObj) {
+      setInvalidFields(["end_date", "start_date"]);
+      setErrorMsg("End date cannot be earlier than the start date.");
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
 
-    if (formData.status === "Completed") {
-      const endDateObj = new Date(formData.end_date);
-      const today = new Date();
-      endDateObj.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      if (endDateObj > today) {
-        setSubmitError(
-          "Cannot mark as 'Completed' if end date is in the future.",
-        );
-        return;
-      }
+    if (formData.status === "Completed" && endDateObj >= today) {
+      setInvalidFields(["status", "end_date"]);
+      setErrorMsg("Cannot mark as 'Completed'. The end date must be strictly in the past.");
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    if (formData.status === "Upcoming" && startDateObj <= today) {
+      setInvalidFields(["status", "start_date"]);
+      setErrorMsg("Cannot mark as 'Upcoming'. The start date must be strictly in the future.");
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    if (formData.status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
+      setInvalidFields(["status", "start_date", "end_date"]);
+      setErrorMsg("Cannot mark as 'Ongoing'. Today's date must fall between the start and end dates.");
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
     }
 
     setIsSubmitting(true);
@@ -119,7 +149,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
     try {
       const payload = {
         ...formData,
-        year: new Date(formData.start_date).getFullYear().toString(),
+        year: startDateObj.getFullYear().toString(),
       };
 
       const { error } = await supabase
@@ -132,15 +162,9 @@ function EditEventContent({ eventId }: { eventId: string }) {
       router.push("/dashboard/edit/success?type=event");
       router.refresh();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
-      setSubmitError(errorMessage);
-      setTimeout(() => {
-        errorRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 100);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setErrorMsg(errorMessage);
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } finally {
       setIsSubmitting(false);
     }
@@ -157,7 +181,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
       }}
     >
       <main className="container mx-auto py-8 px-4 max-w-3xl">
-        <div className="mb-6">
+        <div ref={formTopRef} className="mb-6">
           <Link
             href="/dashboard?tab=events"
             className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
@@ -170,21 +194,21 @@ function EditEventContent({ eventId }: { eventId: string }) {
         </div>
 
         <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {submitError && (
-              <div
-                ref={errorRef}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"
-              >
-                <p className="font-ubuntu-mono text-sm">{submitError}</p>
+          {errorMsg && (
+            <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm text-red-700 font-ubuntu-mono font-bold">{errorMsg}</p>
               </div>
-            )}
+            </div>
+          )}
 
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-                <h2 className="text-lg font-oswald font-semibold">
-                  Event Details
-                </h2>
+                <h2 className="text-lg font-oswald font-semibold">Event Details</h2>
               </div>
 
               <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
@@ -200,7 +224,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
                       value={formData.title}
                       onChange={handleChange}
                       required
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("title")}
                     />
                   </div>
                   <div>
@@ -212,7 +236,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
                       name="short_title"
                       value={formData.short_title}
                       onChange={handleChange}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("short_title")}
                     />
                   </div>
                 </div>
@@ -227,7 +251,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
                     value={formData.description}
                     onChange={handleChange}
                     rows={4}
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    className={getFieldClass("description")}
                   />
                 </div>
 
@@ -242,18 +266,18 @@ function EditEventContent({ eventId }: { eventId: string }) {
                       name="location"
                       value={formData.location}
                       onChange={handleChange}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("location")}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Status
+                      Status <span className="text-[#eec643]">*</span>
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("status")}
                     >
                       <option value="Upcoming">Upcoming</option>
                       <option value="Ongoing">Ongoing</option>
@@ -274,7 +298,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
                       value={formData.start_date}
                       onChange={handleChange}
                       required
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("start_date")}
                     />
                   </div>
                   <div>
@@ -287,7 +311,7 @@ function EditEventContent({ eventId }: { eventId: string }) {
                       value={formData.end_date}
                       onChange={handleChange}
                       required
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      className={getFieldClass("end_date")}
                     />
                   </div>
                 </div>

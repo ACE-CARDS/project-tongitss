@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -14,10 +14,6 @@ export default function AddEventForm() {
   const formTopRef = useRef<HTMLDivElement>(null);
   
   const [isSuccess, setIsSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [hasFile, setHasFile] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getFieldClass = (fieldName: string) => {
     const baseClass = "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none bg-[#fbfaf8]";
@@ -43,23 +39,30 @@ export default function AddEventForm() {
       const startDateObj = new Date(start);
       const endDateObj = new Date(end);
       const today = new Date();
+      
       startDateObj.setHours(0, 0, 0, 0);
       endDateObj.setHours(0, 0, 0, 0);
       today.setHours(0, 0, 0, 0);
+
 
       if (endDateObj < startDateObj) {
         setInvalidFields(["end_date", "start_date"]);
         throw new Error("End date cannot be earlier than the start date.");
       }
 
-      if (status === "Completed" && endDateObj > today) {
+      if (status === "Completed" && endDateObj >= today) {
         setInvalidFields(["status", "end_date"]);
-        throw new Error("Cannot mark as 'Completed' because the event hasn't ended yet.");
+        throw new Error("Cannot mark as 'Completed'. The end date must be strictly in the past.");
       }
 
-      if (status === "Upcoming" && startDateObj < today) {
+      if (status === "Upcoming" && startDateObj <= today) {
         setInvalidFields(["status", "start_date"]);
-        throw new Error("Cannot mark as 'Upcoming' because the start date has already passed.");
+        throw new Error("Cannot mark as 'Upcoming'. The start date must be strictly in the future.");
+      }
+
+      if (status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
+        setInvalidFields(["status", "start_date", "end_date"]);
+        throw new Error("Cannot mark as 'Ongoing'. Today's date must fall between the start and end dates.");
       }
 
       let imageUrl = null;
@@ -148,33 +151,33 @@ export default function AddEventForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Full Title <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="title" required className={getFieldClass("title")} />
+                <input type="text" name="title" required className={getFieldClass("title")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'title'))} />
               </div>
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Short Title <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="short_title" required className={getFieldClass("short_title")} />
+                <input type="text" name="short_title" required className={getFieldClass("short_title")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'short_title'))} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Start Date <span className="text-[#eec643]">*</span></label>
-                <input type="date" name="start_date" required className={getFieldClass("start_date")} />
+                <input type="date" name="start_date" required className={getFieldClass("start_date")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'start_date'))} />
               </div>
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">End Date <span className="text-[#eec643]">*</span></label>
-                <input type="date" name="end_date" required className={getFieldClass("end_date")} />
+                <input type="date" name="end_date" required className={getFieldClass("end_date")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'end_date'))} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Location <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="location" required className={getFieldClass("location")} />
+                <input type="text" name="location" required className={getFieldClass("location")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'location'))} />
               </div>
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Event Status <span className="text-[#eec643]">*</span></label>
-                <select name="status" required className={getFieldClass("status")}>
+                <select name="status" required className={getFieldClass("status")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'status'))}>
                   <option value="Upcoming">Upcoming</option>
                   <option value="Ongoing">Ongoing</option>
                   <option value="Completed">Completed</option>
@@ -184,7 +187,12 @@ export default function AddEventForm() {
 
             <div>
               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Description <span className="text-[#eec643]">*</span></label>
-              <textarea name="description" required rows={4} className={getFieldClass("description")} />
+              <textarea name="description" required rows={4} className={getFieldClass("description")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'description'))} />
+            </div>
+            
+            <div>
+               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Cover Image (Optional)</label>
+               <input type="file" name="image" accept="image/*" className={getFieldClass("image")} />
             </div>
           </div>
 
