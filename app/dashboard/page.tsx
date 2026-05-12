@@ -55,7 +55,7 @@ function DashboardContent() {
     const { data, error } = await supabase
       .from("member")
       .select(
-        "role, mem_fname, mem_lname, committee:committee (comm_name), school:school (school_name)",
+        "role, mem_fname, mem_lname, committee:committee (comm_name), school:school (school_name), mem_email, mem_schol_year, mem_schol_type",
       )
       .eq("mem_email", email)
       .single();
@@ -73,6 +73,9 @@ function DashboardContent() {
       comm: data.committee?.comm_name || "Member",
       school: data.school?.school_name || "No School",
       role: data.role,
+      email: data.mem_email,
+      year: data.mem_schol_year,
+      schol: data.mem_schol_type,
     });
     setUserRole(data.role);
     setIsLoadingRole(false);
@@ -247,8 +250,8 @@ function DashboardContent() {
             <div className="w-full h-1 bg-[#0b1763] my-2"></div>
             <div className="w-full h-0.5 bg-[#eec643] my-2"></div>
 
-            <div className=" mt-8 mb-8 mx-auto w-[95%] lg:w-[90%] max-w-[1400px]">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-4">
+            <div className="mt-8 mb-8 mx-auto w-[80%] lg:w-[90%] max-w-[1400px] overflow-hidden">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
                 {/*User Name*/}
                 <div className="w-full md:w-auto">
                   <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
@@ -257,23 +260,39 @@ function DashboardContent() {
                       : user.user_metadata.name || "User"}
                   </h2>
                 </div>
-                {/*Committee Name*/}
-                <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
-                  <p className="text-sm md:text-lg font-ubuntu-mono text-[#475569] whitespace-nowrap">
-                    {memberData ? `${memberData.comm}` : "Member"}
-                  </p>
 
-                  <span className="hidden md:block h-6 w-px bg-gray-300"></span>
-                  {/*University*/}
-                  <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right">
-                    {memberData ? `${memberData.school}` : " "}
-                  </p>
+                <div className="flex flex-col items-center md:items-end gap-y-2 mb-1">
+                  <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+                    {/*Committee Name*/}
+                    <p className="text-sm md:text-lg font-medium text-[#475569] font-ubuntu-mono">
+                      {memberData?.comm || "Member"}
+                    </p>
 
-                  <span className="hidden md:block h-6 w-px bg-gray-300"></span>
-                  {/*role*/}
-                  <p className="text-xs md:text-lg text-[#475569] font-ubuntu-mono text-center md:text-right hidden md:block">
-                    {memberData ? `${memberData.role}` : "Member"}
-                  </p>
+                    <span className="hidden md:block h-4 w-px bg-gray-300"></span>
+                    {/*University*/}
+                    <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono">
+                      {memberData?.school || "No School"}
+                    </p>
+                    <span className="hidden md:block h-4 w-px bg-gray-300"></span>
+                    {/*Scholarship*/}
+                    <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono">
+                      {memberData
+                        ? `${memberData.year} ${memberData.schol}`
+                        : ""}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 opacity-70">
+                    {/*Role*/}
+                    <p className="text-xs md:text-sm text-[#64748b] font-ubuntu-mono uppercase tracking-wider">
+                      {memberData?.role || "Member"}
+                    </p>
+                    <span className="hidden md:block h-3 w-px bg-gray-300"></span>
+                    {/*email*/}
+                    <p className="text-xs md:text-sm text-[#64748b] font-ubuntu-mono italic">
+                      {memberData?.email || " "}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
