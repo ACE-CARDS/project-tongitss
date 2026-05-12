@@ -17,25 +17,34 @@ import gsap from "gsap";
 import { Transition } from "react-transition-group";
 
 const nodeDescriptions = {
-  rd: " Makin' my way downtown Walkin' fast Faces pass And I'm homebound Starin' blankly ahead Just makin' my way, makin' a way Through the crowd And I need you And I miss you And now I wonder If I could fall into the sky Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight ",
+  rd: " The Regional Director serves as the head of the Executive Committee and the chairperson of the Board of Directors. They preside over all meetings, assign duties to other officers and members of the organization, sign documents on behalf of the organization and take charge of other duties and responsibilities as needed in their position.",
   "dir-int":
-    " Makin' my way downtown Walkin' fast Faces pass And I'm homebound Starin' blankly ahead Just makin' my way, makin' a way Through the crowd And I need you And I miss you And now I wonder If I could fall into the sky Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight .",
-  sec: " Makin' my way downtown Walkin' fast Faces pass And I'm homebound ",
+    " The Director for Internal Affairs presides over all meetings and fulfills duties and responsibilities in the absence of the Regional Director. They maintain relationships among members of the organization, handle the application/recruitment process and take charge of other duties and responsibilities as needed in their position.",
+  sec: " The Secretary shall keep a record of the attendance and minutes of every meeting, keep a complete directory of members, file documents of the organization, and take charge of other duties and responsibilities as needed in their position.",
   "mem-comm":
-    "Starin' blankly ahead Just makin' my way, makin' a way Through the crowd",
+    " This committee shall facilitate the application or recruitment process of new scholar-members and other events that concern the members within the organization and establish and maintain linkages with the ACE CARDS alumni.",
   "dir-ext":
-    "DUHDUH DUHDUHDUH DUHDUH And I need you DUHDUH DUHDUHDUH DUHDUH And I miss you DUHDUH DUHDUHDUH DUHDUH And now I wonder If I could fall into the sky ",
-  "ace-cards":
-    "Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight",
-  "ext-comm": "~Tininininininin Tinininin Tinininnininin Tinininininin~",
-  "h-fb": "~Tininininininin Tinininin Tinininnininin Tinininininin~",
-  "h-pm": "Vanessa Carlton",
-  "h-er": "Superrrrrrrrrrrrrrrrrrr long description",
-  "h-el": "Pretend I wrote something here",
-  "c-fb": "Pretend I wrote something here",
-  "c-pm": "Pretend I wrote something here",
-  "c-er": "Pretend I wrote something here",
-  "c-el": "Pretend I wrote something here",
+    "The Director for External Affairs maintains the relationship of the body with other affiliated organizations and institutions inside and outside the Cordillera Administrative Region. They are in charge of monitoring the organization's email and notify the Executive committee about partnerships and other concerns, spearheading organizing activities outside the university, serving as the Head of the Externals Committee and delegate and assign such tasks to its members as deemed necessary and taking charge of other duties and responsibilities as needed in their position.",
+  alum: "Do you think time Would pass me by? 'Cause you know I'd walk a thousand miles If I could just see you Tonight",
+  "ext-comm":
+    "This committee shall be responsible for coordinating and building partnerships with other organizations within and outside DOST-CAR.",
+
+  "h-er":
+    "The Education and Research Committee Head shall handle the content of academic-related activities, be responsible for planning and supervising research projects, be the Head of the Education and Research Committee and delegate and assign such tasks to its members as deemed necessary and take charge of other duties and responsibilities as needed in their position.",
+  "h-el":
+    "The Events and Logistics Committee Head shall be responsible for planning and managing organizational events, oversee buying and supplying the resources needed during events, be the Head of the Event and Logistics Committee and delegate and assign such tasks to its members as deemed necessary and take charge of other duties and responsibilities as needed in their position.",
+  "h-fb":
+    "The Finance and Business Committee Head shall collect membership and other fees audit, oversee, and record all financial transactions responsible for handling the organization's income-generating projects,  be the Head of the Finance and Business Committee and delegate and assign such tasks to its members as deemed necessary, and take charge of other duties and responsibilities as needed in their position.",
+  "h-pm":
+    "The Publicity and Media Committee Head shall handle the organization's social media accounts and inform the organization of updates, be responsible for the production of publication materials and event designs, be the Head of the Publicity and Media Committee Head and delegate and assign such tasks to its members as deemed necessary and take charge of other duties and responsibilities as needed in their position.",
+  "c-er":
+    "This committee shall usher in ACE CARDS in managing academic activities and research inside and outside DOST-CAR. It shall facilitate academic support by linking members who may be struggling in their coursework or research to peers, mentors, or senior students who can provide guidance.",
+  "c-el":
+    "This committee shall be responsible for supervising the organization in the overall planning of events and the acquisition of the materials needed.",
+  "c-fb":
+    "This committee shall manage fundraising activities, collect membership and other fees, and oversee the purchase of materials needed for every event.",
+  "c-pm":
+    " This committee shall be in charge of managing ACE CARDS' official social media accounts and monitoring its members' participation in official publications.",
 };
 
 const Legend = ({ isMobile }: any) => {
@@ -101,7 +110,7 @@ function CommitteeContent() {
       clearTimeout(timer);
     };
   }, []);
-
+  /*
   useEffect(() => {
     if (!selectedNode) return;
     document.body.style.overflow = "hidden";
@@ -109,6 +118,7 @@ function CommitteeContent() {
       document.body.style.overflow = "";
     };
   }, [selectedNode]);
+  */
 
   const isMobile = windowWidth < 768;
 
@@ -237,7 +247,7 @@ function CommitteeContent() {
       },
 
       {
-        id: "ace-cards",
+        id: "alum",
         data: { label: "ACE CARDS Alumni" },
         position: getPos(-75, 210, 20, 80),
         style: nodeStyleWhite,
@@ -338,7 +348,7 @@ function CommitteeContent() {
     { id: "e16", source: "h-el", target: "c-el", type: "straight" },
 
     { id: "e4", source: "dir-int", target: "mem-comm", type: "step" },
-    { id: "e5", source: "mem-comm", target: "ace-cards", type: "straight" },
+    { id: "e5", source: "mem-comm", target: "alum", type: "straight" },
     { id: "e6", source: "dir-ext", target: "ext-comm", type: "step" },
   ];
 
