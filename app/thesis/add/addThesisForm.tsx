@@ -332,13 +332,27 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   }, [returnTo]);
 
-  const addAuthor = () => {
-    setAuthors([...authors, { id: authors.length + 1, memberId: null }]);
+   const addAuthor = () => {
+    const newId = authors.length + 1;
+    setAuthors([...authors, { 
+      id: newId, 
+      firstName: "",
+      middleInitial: "",
+      lastName: "",
+      email: "",
+      memberId: null
+    }]);
   };
 
   const removeAuthor = (id: number) => {
     if (authors.length > 1) {
-      setAuthors(authors.filter(author => author.id !== id));
+      const updatedAuthors = authors.filter(author => author.id !== id);
+      // Re-index
+      const reindexedAuthors = updatedAuthors.map((author, idx) => ({ 
+        ...author, 
+        id: idx + 1
+      }));
+      setAuthors(reindexedAuthors);
     }
   };
 
