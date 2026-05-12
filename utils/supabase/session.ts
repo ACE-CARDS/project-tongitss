@@ -15,24 +15,26 @@ export async function getUserWithRole() {
     .from('users')
     .select(`
       member_id, 
-      member (
+      member!inner (
         role,
-        acadyear
+        acadyear,
+        is_active
       )
     `)
     .eq('id', user.id)
+    .eq('member.is_active', true)
     .order('acadyear', { foreignTable: 'member', ascending: false }) // Sort the related member records
     .limit(1, { foreignTable: 'member' }) // Ensure we only get the latest record from the join
     .single();
 
   console.log("Auth User ID:", user.id);
   console.log("Public Profile Data (Latest Year):", profile);
-
-  if (dbError) {
-    console.error("Database Error:", dbError);
-    return { ...user, role: null };
+  
+  if (dbError || !profile) {
+    console.error("Access Denied or Database Error:", dbError);
+    return null; 
   }
-
+  
   // Handle both single object or array return depending on your Supabase relationship config
   const memberData = Array.isArray(profile?.member) ? profile.member[0] : profile?.member;
 
