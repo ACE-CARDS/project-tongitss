@@ -634,17 +634,17 @@ export default function Home() {
                 <div className="absolute w-[clamp(250px,40vw,500px)] h-[clamp(250px,40vw,500px)] bg-[#eec643]/25 blur-[140px] rounded-full" />
 
                 <div className="relative z-10 group flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[#eec643]/20 blur-2xl rounded-3xl opacity-0 group-hover:opacity-100 transition" />
-
-                  <img
+                  <Image
                     src="/assets/logos/ACE CARDS logo.png"
+                    width={406}
+                    height={406}
                     alt="Ace Cards Logo"
                     className="
-                    w-[clamp(220px,30vw,420px)]
-                    rounded-3xl shadow-5xl
-                    transition-all duration-700 ease-out
-                    hover:scale-105 hover:-translate-y-1
-                  "
+                    bg-[#e0ae04]
+                      w-[clamp(220px,30vw,420px)]
+                      transition-all duration-700 ease-out
+                      hover:scale-105 hover:shadow-[0_0_100px_#d9b237] rounded-full
+                    "
                   />
                 </div>
               </div>
