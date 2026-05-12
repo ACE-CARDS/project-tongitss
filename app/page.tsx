@@ -462,7 +462,9 @@ export default function Home() {
     if (selectedProvince === name) {
       return provinceMembers > 0;
     }
-    return true;
+  
+    const province = provinceSchools.find((s) => s.province === name);
+    return province ? province.memberCount > 0 : true;
   };
 
   return (

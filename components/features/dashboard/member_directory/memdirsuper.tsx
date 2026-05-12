@@ -51,7 +51,7 @@ export default function MembersPage() {
   const supabase = createClient();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
   const [members, setMembers] = useState<Member[]>([]);
   const [originalMembers, setOriginalMembers] = useState<Member[]>([]);
   const [committees, setCommittees] = useState<Committee[]>([]);
@@ -178,24 +178,31 @@ export default function MembersPage() {
     priority.indexOf(normalize(commName));
 
   const sortedMembers = [...filteredMembers].sort((a, b) => {
-    const commA = getCommName(a.comm);
-    const commB = getCommName(b.comm);
-
+    const originalA =
+      originalMembers.find((o) => o.id === a.id)?.comm ?? a.comm;
+  
+    const originalB =
+      originalMembers.find((o) => o.id === b.id)?.comm ?? b.comm;
+  
+    const commA = getCommName(originalA);
+    const commB = getCommName(originalB);
+  
     const indexA = getPriorityIndex(commA);
     const indexB = getPriorityIndex(commB);
-
+  
     const aInList = indexA !== -1;
     const bInList = indexB !== -1;
-
+  
     if (aInList && bInList) return indexA - indexB;
-
+  
     if (aInList) return -1;
     if (bInList) return 1;
-
-    // alpabetical if wala s aprio list
+  
     return `${a.mem_lname} ${a.mem_fname}`
       .toLowerCase()
-      .localeCompare(`${b.mem_lname} ${b.mem_fname}`.toLowerCase());
+      .localeCompare(
+        `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
+      );
   });
 
   // pagination
@@ -389,11 +396,11 @@ export default function MembersPage() {
       options.find((o) => o.value === value)?.label || "Select";
 
     return (
-      <div ref={ref} className="relative w-full min-w-0 my-auto">
+      <div ref={ref} className="relative w-full my-auto">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`w-full px-2 sm:px-3 py-2 text-sm truncate border rounded-xl text-left shadow-sm font-normal relative ${styleClass} cursor-pointer`}
+          className={`w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative cursor-pointer ${styleClass}`}
         >
           {selectedLabel}
           <span
