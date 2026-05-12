@@ -40,6 +40,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
+  const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/survey");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
@@ -59,6 +60,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dateError, setDateError] = useState("");
+
+  const [isFormValid, setIsFormValid] = useState(false);
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -150,6 +153,43 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     }
   };
 
+  const searchMembersByFullName = async (firstName: string, lastName: string, middleInitial: string, authorIndex: number) => {
+    if (!firstName || !lastName) {
+      setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+      return;
+    }
+
+    const normalizedMiddle = middleInitial ? middleInitial.charAt(0).toUpperCase() : '';
+    
+    const { data: members, error } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+      .ilike("mem_fname", firstName)
+      .ilike("mem_lname", lastName)
+      .limit(3);
+
+    if (!error && members) {
+      const matchingMembers = members.filter(m => {
+        const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+        return memberMiddle === normalizedMiddle;
+      });
+      
+      if (matchingMembers.length > 0) {
+        setEmailSuggestions(prev => new Map(prev).set(authorIndex, matchingMembers.map(m => ({
+          email: m.mem_email,
+          memberId: m.id,
+          fname: m.mem_fname,
+          lname: m.mem_lname,
+          minit: m.mem_minit
+        }))));
+      } else {
+        setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+      }
+    } else {
+      setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+    }
+  };
+
   // Select a member from search results
   const selectMember = (member: any, authorIndex: number) => {
     const updatedAuthors = [...authors];
@@ -163,6 +203,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     };
     setAuthors(updatedAuthors);
     setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+    setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
     
     // Update input fields
     const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
@@ -175,6 +216,50 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     if (lastNameInput) lastNameInput.value = member.lname;
     if (emailInput) emailInput.value = member.email;
   };
+
+  // Select email suggestion
+  const selectEmailSuggestion = (suggestion: {email: string, memberId: number, fname: string, lname: string, minit: string | null}, authorIndex: number) => {
+  const updatedAuthors = [...authors];
+  updatedAuthors[authorIndex] = {
+    ...updatedAuthors[authorIndex],
+    email: suggestion.email,
+    memberId: suggestion.memberId,
+    firstName: suggestion.fname,
+    lastName: suggestion.lname,
+    middleInitial: suggestion.minit || ""
+  };
+  setAuthors(updatedAuthors);
+  setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+  
+  // Update email input field
+  const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
+  if (emailInput) {
+    emailInput.value = suggestion.email;
+    // Trigger validation and clear error
+    const errorSpan = document.getElementById(`email-error-${authorIndex}`);
+    if (errorSpan) {
+      errorSpan.style.display = 'none';
+    }
+  }
+  
+  // Update name fields if they're empty or mismatched
+  const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
+  const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
+  const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
+  
+  if (firstNameInput && (!firstNameInput.value || firstNameInput.value !== suggestion.fname)) {
+    firstNameInput.value = suggestion.fname;
+  }
+  if (lastNameInput && (!lastNameInput.value || lastNameInput.value !== suggestion.lname)) {
+    lastNameInput.value = suggestion.lname;
+  }
+  if (middleInitialInput && (!middleInitialInput.value || middleInitialInput.value !== (suggestion.minit || ""))) {
+    middleInitialInput.value = suggestion.minit || "";
+  }
+  
+  // Re-validate
+  validateForm();
+};
 
   // Check duplicate authors on each field
   const checkDuplicateAuthors = () => {
@@ -191,15 +276,13 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
           return `Author ${i + 1} and Author ${j + 1} have the same email address.`;
         }
         
-        // Check duplicate names
         if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
             firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
             firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
             lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
           
-          // Check middle initials
-          const middleI = (middleInitialInputs[i]?.value || '').toLowerCase();
-          const middleJ = (middleInitialInputs[j]?.value || '').toLowerCase();
+          const middleI = (middleInitialInputs[i]?.value || '').trim().charAt(0).toUpperCase();
+          const middleJ = (middleInitialInputs[j]?.value || '').trim().charAt(0).toUpperCase();
           
           if (middleI === middleJ) {
             return `Author ${i + 1} and Author ${j + 1} have the same full name.`;
@@ -225,6 +308,68 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     } else {
       setSurveyLinkError("");
     }
+  };
+
+  // Validate entire form
+  const validateForm = () => {
+    const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
+    const titleValid = titleInput?.value && titleInput.value.length >= 5;
+    const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
+    const descriptionValid = descriptionInput?.value && descriptionInput.value.length >= 10;
+    const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
+    const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
+    const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+    const categoryValid = !!categorySelect?.value;
+    const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+    const schoolValid = !!schoolSelect?.value;
+    const surveyLinkValid = !surveyLinkError;
+    const respondentsInput = document.querySelector('input[name="respondents"]') as HTMLInputElement;
+    const respondentsValid = respondentsInput?.value && respondentsInput.value.length >= 2;
+    const datesValid = !!startDate && !!endDate && !dateError;
+    const firstNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="firstName[]"]');
+    const lastNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="lastName[]"]');
+    const emailInputs = document.querySelectorAll<HTMLInputElement>('input[name="email[]"]');
+  
+    let hasValidAuthor = false;
+    for (let i = 0; i < firstNameInputs.length; i++) {
+      if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && emailInputs[i]?.value) {
+        hasValidAuthor = true;
+        break;
+      }
+    }
+    
+    let hasDuplicateAuthor = false;
+    for (let i = 0; i < emailInputs.length; i++) {
+      for (let j = i + 1; j < emailInputs.length; j++) {
+        if (emailInputs[i]?.value && emailInputs[j]?.value && 
+            emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
+          hasDuplicateAuthor = true;
+          break;
+        }
+        
+        if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
+            firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
+            firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
+            lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+          
+          const middleInitialsInputs = document.querySelectorAll<HTMLInputElement>('input[name="middleInitial[]"]');
+          const middleI = (middleInitialsInputs[i]?.value || '').trim().charAt(0).toUpperCase();
+          const middleJ = (middleInitialsInputs[j]?.value || '').trim().charAt(0).toUpperCase();
+          
+          if (middleI === middleJ) {
+            hasDuplicateAuthor = true;
+            break;
+          }
+        }
+      }
+      if (hasDuplicateAuthor) break;
+    }
+    
+    const hasErrors = !titleValid || !descriptionValid || !keywordsValid || !categoryValid || 
+                      !schoolValid || !surveyLinkValid || !respondentsValid || !datesValid || 
+                      !hasValidAuthor || !!categoryError || !!schoolError || hasDuplicateAuthor;
+    
+    setIsFormValid(!hasErrors);
   };
 
   useEffect(() => {
@@ -331,6 +476,11 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       }
     }
   }, [returnTo]);
+
+  // Validate form when states change
+  useEffect(() => {
+    validateForm();
+  }, [startDate, endDate, dateError, surveyLinkError, categoryError, schoolError, authors]);
 
   const addAuthor = () => {
     setAuthors([...authors, { id: authors.length + 1, memberId: null }]);
@@ -766,6 +916,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       } else {
                         errorSpan!.style.display = 'none';
                       }
+                      validateForm();
                     }}
                 />
                 <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -796,6 +947,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       } else {
                         errorSpan!.style.display = 'none';
                       }
+                      validateForm();
                     }}
                 />
                 <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -836,6 +988,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         } else {
                           errorSpan!.style.display = 'none';
                         }
+                        validateForm();
                       }}
                 />
                 <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -894,6 +1047,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             if (index === 0) return;
                             const input = e.target as HTMLInputElement;
                             const errorSpan = document.getElementById(`firstname-error-${index}`);
+                            const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
 
                             if (input.value.length === 0) {
                               if (errorSpan) {
@@ -909,7 +1064,11 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                               if (errorSpan) {
                                 errorSpan.style.display = 'none';
                               }
+                              if (lastNameInput?.value && lastNameInput.value.length >= 2) {
+                                searchMembersByFullName(input.value, lastNameInput.value, middleInitialInput?.value || '', index);
+                              }
                             }
+                            validateForm();
                           }}
                         />
                         <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -952,6 +1111,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             const event = new Event('input', { bubbles: true });
                             e.target.dispatchEvent(event);
                           }}
+                          onInput={(e) => {
+                            if (index === 0) return;
+                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, index);
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -987,19 +1154,26 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                           const lastNameInput = input;
                           const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
+                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
 
                           if (input.value.length === 0) {
                             if (errorSpan) {
                               errorSpan.textContent = 'Last Name is required.';
                               errorSpan.style.display = 'block';
                             }
+                            validateForm();
                             return;
                           } else if (input.value.length < 2) {
                             if (errorSpan) {
                               errorSpan.textContent = 'Last Name must be at least 2 characters.';
                               errorSpan.style.display = 'block';
                             }
+                            validateForm();
                             return;
+                          }
+
+                          if (firstNameInput?.value) {
+                            searchMembersByFullName(firstNameInput.value, input.value, middleInitialInput?.value || '', index);
                           }
 
                           // Check duplicate authors 
@@ -1036,6 +1210,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                                       errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
                                       errorSpan.style.display = 'block';
                                     }
+                                    validateForm();
                                     return;
                                   }
                                 }
@@ -1047,12 +1222,13 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           if (errorSpan) {
                             errorSpan.style.display = 'none';
                           }
+                          validateForm();
                         }}
                       />
                       <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                     
-                    <div>
+                    <div className="relative">
                       <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Email <span className="text-[#eec643]">*</span>
                       </label>
@@ -1064,7 +1240,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         placeholder="Email"
                         defaultValue={author.email || ""}
                         disabled={index === 0}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         // Key Limits
                         onKeyUp={(e) => {
                           if (index === 0) return;
@@ -1087,65 +1263,191 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         }}
                         // Search trigger
                         onInput={async (e) => {
-                          if (index === 0) return;
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById(`email-error-${index}`);
-                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                          if (input.value.length === 0) {
-                            errorSpan!.textContent = 'Email is required.';
-                            errorSpan!.style.display = 'block';
-                            return;
-                          }
+                        if (index === 0) return;
+                        const input = e.target as HTMLInputElement;
+                        const errorSpan = document.getElementById(`email-error-${index}`);
+                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                        const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                        const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        
+                        if (input.value.length === 0) {
+                          errorSpan!.textContent = 'Email is required.';
+                          errorSpan!.style.display = 'block';
+                          validateForm();
                           
-                          if (!emailRegex.test(input.value)) {
-                            errorSpan!.textContent = 'Please enter a valid email address.';
-                            errorSpan!.style.display = 'block';
-                            return;
-                          }
-
-                          // Check duplicate emails
-                          const allEmails = document.querySelectorAll('input[name="email[]"]');
-                          for (let i = 0; i < allEmails.length; i++) {
-                            if (i !== index) {
-                              const otherEmail = (allEmails[i] as HTMLInputElement).value;
-                              if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
-                                errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
-                                errorSpan!.style.display = 'block';
-                                return;
+                          if (firstNameInput?.value && lastNameInput?.value) {
+                            const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
+                            
+                            const { data: matchingMembers } = await supabase
+                              .from("member")
+                              .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                              .ilike("mem_fname", firstNameInput.value)
+                              .ilike("mem_lname", lastNameInput.value)
+                              .limit(1);
+                            
+                            if (matchingMembers && matchingMembers.length > 0) {
+                              const exactMatch = matchingMembers.find(m => {
+                                const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+                                return memberMiddle === normalizedMiddle;
+                              });
+                              
+                              if (exactMatch) {
+                                setEmailSuggestions(prev => new Map(prev).set(index, [{
+                                  email: exactMatch.mem_email,
+                                  memberId: exactMatch.id,
+                                  fname: exactMatch.mem_fname,
+                                  lname: exactMatch.mem_lname,
+                                  minit: exactMatch.mem_minit
+                                }]));
+                              } else {
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
                               }
+                            } else {
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
+                            }
+                          } else {
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }
+                          return;
+                        }
+                        
+                        // Validate email
+                        if (!emailRegex.test(input.value)) {
+                          errorSpan!.textContent = 'Please enter a valid email address.';
+                          errorSpan!.style.display = 'block';
+                          validateForm();
+                          setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          return;
+                        }
+
+                        // Check duplicate emails
+                        const allEmails = document.querySelectorAll('input[name="email[]"]');
+                        for (let i = 0; i < allEmails.length; i++) {
+                          if (i !== index) {
+                            const otherEmail = (allEmails[i] as HTMLInputElement).value;
+                            if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
+                              errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                              errorSpan!.style.display = 'block';
+                              validateForm();
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              return;
                             }
                           }
+                        }
 
-                          // Search for member by email
-                          await searchMembers(input.value, index);
+                        // Check if full name matches a member and show suggestions
+                        if (firstNameInput?.value && lastNameInput?.value) {
+                          const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
                           
-                          // Check existing author
-                          const supabase = createClient();
-                          const { data: existing } = await supabase
-                            .from("author")
-                            .select("id, author_fname, author_lname")
-                            .eq("author_email", input.value)
-                            .maybeSingle();
+                          const { data: matchingMembers } = await supabase
+                            .from("member")
+                            .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                            .ilike("mem_fname", firstNameInput.value)
+                            .ilike("mem_lname", lastNameInput.value)
+                            .limit(3);
                           
-                          if (existing) {
-                            const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
-                            const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                          if (matchingMembers && matchingMembers.length > 0) {
+                            const exactMatch = matchingMembers.find(m => {
+                              const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+                              return memberMiddle === normalizedMiddle;
+                            });
                             
-                            if (firstNameMatch && lastNameMatch) {
+                            // Check if email matches any member email
+                            const memberWithTypedEmail = matchingMembers.find(m => 
+                              m.mem_email.toLowerCase() === input.value.toLowerCase()
+                            );
+                            
+                            if (memberWithTypedEmail) {
                               errorSpan!.style.display = 'none';
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              validateForm();
+                            } else if (exactMatch && input.value.length > 0 && 
+                                      exactMatch.mem_email.toLowerCase().includes(input.value.toLowerCase())) {
+                              setEmailSuggestions(prev => new Map(prev).set(index, [{
+                                email: exactMatch.mem_email,
+                                memberId: exactMatch.id,
+                                fname: exactMatch.mem_fname,
+                                lname: exactMatch.mem_lname,
+                                minit: exactMatch.mem_minit
+                              }]));
+                              errorSpan!.style.display = 'none';
+                              validateForm();
                             } else {
-                              errorSpan!.textContent = 'This email is already registered to a different author.';
-                              errorSpan!.style.display = 'block';
+                              errorSpan!.style.display = 'none';
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
                           } else {
                             errorSpan!.style.display = 'none';
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }
-                        }}
+                        } else {
+                          errorSpan!.style.display = 'none';
+                          setEmailSuggestions(prev => new Map(prev).set(index, []));
+                        }
+                        
+                        // Check existing author
+                        const { data: existing } = await supabase
+                          .from("author")
+                          .select("id, author_fname, author_lname")
+                          .eq("author_email", input.value)
+                          .maybeSingle();
+                        
+                        if (existing) {
+                          const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
+                          const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                          
+                          if (!firstNameMatch || !lastNameMatch) {
+                            errorSpan!.textContent = 'This email is already registered to a different author.';
+                            errorSpan!.style.display = 'block';
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }
+                        }
+                        validateForm();
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setEmailSuggestions(prev => new Map(prev).set(index, []));
+                        }, 200);
+                      }}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      
+                      {/* Email Suggestions Dropdown */}
+                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && index !== 0 && 
+                      !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
+                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
+                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
+                            <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                setShowSearchDropdown(prev => new Map(prev).set(index, false));
+                              }}
+                              className="text-white hover:text-gray-200 text-lg leading-none"
+                              aria-label="Close"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+                            {emailSuggestions.get(index)!.map((suggestion, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => selectEmailSuggestion(suggestion, index)}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{suggestion.email}</span>
+                                  <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Search Results Dropdown */}
                       {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && index !== 0 && (
@@ -1225,85 +1527,91 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         } else {
                           setDateError("");
                         }
+                        validateForm();
                       }}
                     />
                   </div>
                   
                   <div>
-                    <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      End Date <span className="text-[#eec643]">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="end_date"
-                      name="end_date"
-                      required
-                      className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                        dateError ? 'border-red-500' : 'border-[#94a3b8]'
-                      }`}
-                      value={endDate}
-                      min={(() => {
-                        // Get tomorrow's date as the minimum
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        tomorrow.setHours(0, 0, 0, 0);
-                        
-                        // If start date is selected, ensure min is the later of (tomorrow OR start date + 1 day)
-                        if (startDate) {
-                          const dayAfterStart = new Date(startDate);
-                          dayAfterStart.setDate(dayAfterStart.getDate() + 1);
-                          dayAfterStart.setHours(0, 0, 0, 0);
-                          
-                          // Return the later date
-                          if (dayAfterStart > tomorrow) {
-                            return dayAfterStart.toISOString().split('T')[0];
-                          }
-                        }
-                        
-                        return tomorrow.toISOString().split('T')[0];
-                      })()}
-                      onChange={(e) => {
-                        const newEndDate = e.target.value;
-                        setEndDate(newEndDate);
-                        
+                  <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    End Date <span className="text-[#eec643]">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="end_date"
+                    name="end_date"
+                    required
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                      dateError ? 'border-red-500' : 'border-[#94a3b8]'
+                    }`}
+                    value={endDate}
+                    min={(() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      tomorrow.setHours(0, 0, 0, 0);
+                      
+                      if (startDate) {
+                        const startDateObj = new Date(startDate);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-                        const endDateObj = new Date(newEndDate);
-                        endDateObj.setHours(0, 0, 0, 0);
                         
-                        // Check if end date is <= today
-                        if (endDateObj <= today) {
-                          setDateError("End date must be after today");
-                          setEndDate("");
-                        } 
-                        // Check if end date is <= start date
-                        else if (startDate && newEndDate <= startDate) {
-                          setDateError("End date must be after start date");
-                          setEndDate("");
-                        } 
-                        else {
-                          setDateError("");
+                        if (startDateObj.getTime() === today.getTime()) {
+                          return tomorrow.toISOString().split('T')[0];
                         }
-                      }}
-                      onBlur={() => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const endDateObj = endDate ? new Date(endDate) : null;
-                        endDateObj?.setHours(0, 0, 0, 0);
                         
-                        if (endDateObj && endDateObj <= today) {
-                          setDateError("End date must be after today");
-                          setEndDate("");
-                        } else if (startDate && endDate && endDate <= startDate) {
-                          setDateError("End date must be after start date");
-                          setEndDate("");
+                        const dayAfterStart = new Date(startDate);
+                        dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+                        dayAfterStart.setHours(0, 0, 0, 0);
+                        
+                        if (dayAfterStart > tomorrow) {
+                          return dayAfterStart.toISOString().split('T')[0];
                         }
-                      }}
-                    />
-                    {dateError && (
-                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
-                    )}
-                  </div>
+                      }
+                      
+                      return tomorrow.toISOString().split('T')[0];
+                    })()}
+                    onChange={(e) => {
+                      const newEndDate = e.target.value;
+                      setEndDate(newEndDate);
+                      
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const endDateObj = new Date(newEndDate);
+                      endDateObj.setHours(0, 0, 0, 0);
+                      
+                      if (endDateObj <= today) {
+                        setDateError("End date must be after today");
+                        setEndDate("");
+                      } 
+                      else if (startDate && newEndDate <= startDate) {
+                        setDateError("End date must be after start date");
+                        setEndDate("");
+                      } 
+                      else {
+                        setDateError("");
+                      }
+                      validateForm();
+                    }}
+                    onBlur={() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const endDateObj = endDate ? new Date(endDate) : null;
+                      endDateObj?.setHours(0, 0, 0, 0);
+                      
+                      if (endDateObj && endDateObj <= today) {
+                        setDateError("End date must be after today");
+                        setEndDate("");
+                      } else if (startDate && endDate && endDate <= startDate) {
+                        setDateError("End date must be after start date");
+                        setEndDate("");
+                      }
+                      validateForm();
+                    }}
+                  />
+                  {dateError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
+                  )}
+                </div>
                 </div>
 
                 <div>
@@ -1333,6 +1641,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         errorSpan.textContent = 'Survey link is required.';
                         errorSpan.style.display = 'block';
                       }
+                      validateForm();
                       return;
                     }
                     
@@ -1350,6 +1659,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         errorSpan.textContent = 'Please enter a valid URL.';
                         errorSpan.style.display = 'block';
                       }
+                      validateForm();
                       return;
                     }
                     
@@ -1378,6 +1688,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         errorSpan.style.display = 'none';
                       }
                     }
+                    validateForm();
                   }}
                 />
                 <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1433,6 +1744,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         errorSpan.style.display = 'none';
                       }
                     }
+                    validateForm();
                   }}
                 />
                 <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1479,6 +1791,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         errorSpan.style.display = 'none';
                       }
                     }
+                    validateForm();
                   }}
                 />
                 <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1494,122 +1807,109 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Category <span className="text-[#eec643]">*</span>
-                  </label>
-                  {!showNewCategory ? (
-                    <div className="flex gap-2">
-                      <select
-                        id="category"
-                        name="category"
-                        required
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
-                        defaultValue=""
-                        // Error handling
-                        onChange={(e) => {
-                          setIsCategoryTouched(true);
-                          if (!e.target.value) {
-                            setCategoryError("Please select a category");
-                          } else {
-                            setCategoryError("");
-                          }
-                        }}
-                        onBlur={() => {
-                          const select = document.getElementById('category') as HTMLSelectElement;
-                          if (!select?.value) {
-                            setCategoryError("Please select a category");
-                            setIsCategoryTouched(true);
-                          }
-                      }}
-                      >
-                        <option value="" disabled>Select a category</option>
-                        {availableCategories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.r_category_name}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewCategory(true)}
-                        className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
-                      >
-                        + New
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newCategoryName}
-                        onChange={(e) => {
-                          setNewCategoryName(e.target.value);
-                          setCategoryError("");
-                        }}
-                        placeholder="Enter new category name"
-                        maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
-                        required
-                        // Key Limits
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          
-                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        // Error Handling
-                        onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById('category-error');
-                        
-                        if (!input.value.trim()) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Category name is required.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else if (input.value.length < 2) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Category name must be at least 2 characters.';
-                            errorSpan.style.display = 'block';
-                          }
+                <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  Category <span className="text-[#eec643]">*</span>
+                </label>
+                {!showNewCategory ? (
+                  <div className="flex gap-2">
+                    <select
+                      id="category"
+                      name="category"
+                      required
+                      className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
+                        categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                      }`}
+                      defaultValue=""
+                      onChange={(e) => {
+                        setIsCategoryTouched(true);
+                        if (!e.target.value) {
+                          setCategoryError("Please select a category");
                         } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
+                          setCategoryError("");
+                        }
+                        validateForm();
+                      }}
+                      onBlur={() => {
+                        const select = document.getElementById('category') as HTMLSelectElement;
+                        if (!select?.value) {
+                          setCategoryError("Please select a category");
+                          setIsCategoryTouched(true);
+                        }
+                        validateForm();
+                      }}
+                    >
+                      <option value="" disabled>Select a category</option>
+                      {availableCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.r_category_name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCategory(true)}
+                      className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
+                    >
+                      + New
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => {
+                        setNewCategoryName(e.target.value);
+                        if (!e.target.value.trim()) {
+                          setCategoryError("Category name is required");
+                        } else if (e.target.value.length < 2) {
+                          setCategoryError("Category name must be at least 2 characters");
+                        } else {
+                          setCategoryError("");
+                        }
+                        validateForm();
+                      }}
+                      placeholder="Enter new category name"
+                      maxLength={50}
+                      className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                        categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                      }`}
+                      required
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                          return;
+                        }
+                        
+                        if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                          e.preventDefault();
                         }
                       }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddNewCategory}
-                        className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                      >
-                        Add
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowNewCategory(false);
-                          setNewCategoryName("");
-                          setCategoryError("");
-                        }}
-                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                  {isCategoryTouched && categoryError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
-                  )}
-                </div>
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddNewCategory}
+                      className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewCategory(false);
+                        setNewCategoryName("");
+                        setCategoryError("");
+                        validateForm();
+                      }}
+                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {categoryError && (
+                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                )}
+              </div>
 
                 <div>
                   <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -1621,18 +1921,18 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         id="school"
                         name="school"
                         required
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
+                          schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         defaultValue=""
-                        // Error handling
                         onChange={(e) => {
-                        setIsSchoolTouched(true);
-                        if (!e.target.value) {
+                          setIsSchoolTouched(true);
+                          if (!e.target.value) {
                             setSchoolError("Please select a school");
                           } else {
                             setSchoolError("");
                           }
+                          validateForm();
                         }}
                         onBlur={() => {
                           const select = document.getElementById('school') as HTMLSelectElement;
@@ -1640,6 +1940,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             setSchoolError("Please select a school");
                             setIsSchoolTouched(true);
                           }
+                          validateForm();
                         }}
                       >
                         <option value="" disabled>Select a school</option>
@@ -1664,7 +1965,15 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         value={newSchoolName}
                         onChange={(e) => {
                           setNewSchoolName(e.target.value);
-                          setSchoolError("");
+                          // Validate while typing
+                          if (!e.target.value.trim()) {
+                            setSchoolError("School name is required");
+                          } else if (e.target.value.length < 2) {
+                            setSchoolError("School name must be at least 2 characters");
+                          } else {
+                            setSchoolError("");
+                          }
+                          validateForm();
                         }}
                         placeholder="Enter new school name"
                         maxLength={50}
@@ -1672,7 +1981,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         required
-                        // Key Limits
                         onKeyDown={(e) => {
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
@@ -1682,27 +1990,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             e.preventDefault();
                           }
                         }}
-                        // Error Handling
-                        onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById('school-error');
-                        
-                        if (!input.value.trim()) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'School name is required.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else if (input.value.length < 2) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'School name must be at least 2 characters.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
-                        }
-                      }}
                       />
                       <button
                         type="button"
@@ -1717,8 +2004,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           setShowNewSchool(false);
                           setNewSchoolName("");
                           setSchoolError("");
-                          const errorSpan = document.getElementById('school-error');
-                          if (errorSpan) errorSpan.style.display = 'none';
+                          validateForm();
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1726,7 +2012,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       </button>
                     </div>
                   )}
-                  {isSchoolTouched && schoolError && (
+                  {schoolError && (
                     <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
                   )}
                 </div>
@@ -1769,8 +2055,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !isFormValid}
+              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Submitting..." : "Submit Survey"}
             </button>
