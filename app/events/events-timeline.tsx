@@ -16,8 +16,7 @@ const FilterDropdown = ({ value, options, onChange }: any) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedLabel =
-    options.find((o: any) => o.value === value)?.label || value;
+  const selectedLabel = options.find((o: any) => o.value === value)?.label || value;
 
   return (
     <div ref={ref} className="relative w-full z-[50] font-sans">
@@ -33,12 +32,7 @@ const FilterDropdown = ({ value, options, onChange }: any) => {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
@@ -93,7 +87,7 @@ export default function EventsTimeline() {
       .from("events")
       .select("*")
       .eq("is_deleted", false)
-      .order("start_date", { ascending: true });
+      .order("start_date", { ascending: false });
 
     if (data && !error) setEvents(data);
     setIsLoading(false);
@@ -104,18 +98,9 @@ export default function EventsTimeline() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
-  useEffect(() => {
-    if (selectedEvent) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
+    if (selectedEvent) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+    return () => { document.body.style.overflow = "auto"; };
   }, [selectedEvent]);
 
   useEffect(() => {
@@ -159,12 +144,9 @@ export default function EventsTimeline() {
 
   const availableYears = Array.from(
     new Set(
-      events.map(
-        (event) =>
-          event.year || new Date(event.start_date).getFullYear().toString()
-      )
+      events.map((event) => event.year || new Date(event.start_date).getFullYear().toString())
     )
-  ).sort((a, b) => Number(a) - Number(b));
+  ).sort((a, b) => Number(b) - Number(a));
 
   useEffect(() => {
     checkScroll();
@@ -194,6 +176,8 @@ export default function EventsTimeline() {
     currentPage * itemsPerPage
   );
 
+  const emptyCardsCount = itemsPerPage - currentEvents.length;
+
   const formatEventDateRange = (start: string, end: string) => {
     if (!start) return "";
     const d1 = new Date(start);
@@ -216,6 +200,7 @@ export default function EventsTimeline() {
 
   return (
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
+      {/* TOOLBAR FILTERS */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
         <div className="w-full md:w-auto flex justify-center md:justify-start">
           <div className="relative w-full sm:w-80">
@@ -244,11 +229,8 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      {/* HORIZONTAL YEAR TIMELINE CAROUSEL */}
       {!isLoading && events.length > 0 && (
         <div className="relative w-full max-w-6xl mx-auto mb-14 px-4 sm:px-12 group">
-          
-          {/* Carousel Left Button */}
           {canScrollLeft && (
             <button 
               onClick={() => scrollTimeline("left")} 
@@ -258,7 +240,6 @@ export default function EventsTimeline() {
             </button>
           )}
 
-          {/* Carousel Right Button */}
           {canScrollRight && (
             <button 
               onClick={() => scrollTimeline("right")} 
@@ -268,14 +249,12 @@ export default function EventsTimeline() {
             </button>
           )}
 
-          {/* Scrolling Timeline Container */}
           <div 
             ref={timelineRef}
             onScroll={checkScroll}
             className="overflow-x-auto scroll-smooth py-12 relative [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div className="absolute top-1/2 left-0 right-0 h-1.5 bg-slate-200 -translate-y-1/2 z-0 rounded-full" style={{ minWidth: '100%' }}></div>
-            
             <div className="flex justify-between items-center w-full min-w-max px-4">
               {["ALL", ...availableYears].map((year) => (
                 <div
@@ -330,68 +309,80 @@ export default function EventsTimeline() {
                       key={event.id}
                       onClick={() => setSelectedEvent(event)}
                       className="group relative rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200 
-                      shadow-md transition-all duration-300 ease-out hover:-translate-y-3 hover:shadow-2xl hover:border-indigo-200 
+                      shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-200 
                       hover:bg-white flex flex-col cursor-pointer overflow-hidden h-[500px] w-full"
                     >
-                      <div className="relative z-10 flex flex-col h-full w-full">
+                      {/* Image section */}
+                      <div className="w-full h-48 shrink-0 relative overflow-hidden bg-slate-50 border-b border-slate-200/60 flex items-center justify-center">
+                        <img
+                          src={hasValidImage ? event.image_url : DEFAULT_IMAGE}
+                          alt={event.title}
+                          onError={(e: any) => {
+                            e.currentTarget.src = DEFAULT_IMAGE;
+                            e.currentTarget.className = "w-full h-full transition-transform duration-500 group-hover:scale-105 object-contain p-8 opacity-40";
+                          }}
+                          className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${
+                            hasValidImage ? 'object-cover' : 'object-contain p-8 opacity-40'
+                          }`}
+                        />
+                      </div>
                         
-                        <div className="w-full h-56 shrink-0 relative overflow-hidden bg-slate-100 border-b border-slate-200/60 flex items-center justify-center">
-                          <img
-                            src={hasValidImage ? event.image_url : DEFAULT_IMAGE}
-                            alt={event.title}
-                            className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${
-                              hasValidImage ? 'object-cover' : 'object-contain p-8 opacity-40'
-                            }`}
-                          />
+                      {/* Content wrapper */}
+                      <div className="flex flex-col flex-1 p-6 w-full min-w-0 overflow-hidden">
+                        
+                        {/* Meta Date */}
+                        <div className="flex flex-col mb-3 w-full shrink-0">
+                          <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">Date</span>
+                          <span className="font-black text-sm sm:text-base leading-tight text-[#0d21a1] truncate">
+                            {formatEventDateRange(event.start_date, event.end_date)}
+                          </span>
                         </div>
                         
-                        <div className="flex flex-col flex-grow p-6 w-full min-w-0">
-                          <div className="flex-grow flex flex-col min-w-0">
-                            <div className="flex flex-col mb-3 w-full min-w-0 shrink-0">
-                              <span className="font-black text-[10px] uppercase tracking-widest text-[#eec643] mb-1">
-                                Date
-                              </span>
-                              <span className="font-black text-sm sm:text-base leading-tight text-[#0d21a1] break-words line-clamp-1">
-                                {formatEventDateRange(event.start_date, event.end_date)}
-                              </span>
-                            </div>
-                            
-                            <h3 className="text-xl sm:text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-2 line-clamp-2 break-words w-full min-w-0 shrink-0">
-                              {event.title}
-                            </h3>
-                            
-                            <div className="flex items-center gap-1 mb-2 w-full min-w-0 shrink-0">
-                              <span className="shrink-0 text-xs">📍</span>
-                              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate flex-1 min-w-0" title={event.location || "TBA"}>
-                                {event.location || "TBA"}
-                              </p>
-                            </div>
-                            
-                            <p className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed line-clamp-3 break-words w-full min-w-0">
-                              {event.description}
-                            </p>
-                          </div>
+                        {/* Title */}
+                        <h3 className="text-xl sm:text-2xl font-black text-[#011638] font-oswald uppercase leading-tight mb-3 line-clamp-2 break-words shrink-0" title={event.title}>
+                          {event.title}
+                        </h3>
+                        
+                        {/* Location */}
+                        <div className="flex items-center gap-1 mb-3 w-full shrink-0">
+                          <span className="shrink-0 text-xs">📍</span>
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate flex-1 min-w-0" title={event.location || "TBA"}>
+                            {event.location || "TBA"}
+                          </p>
+                        </div>
+                        
+                        {/* Description */}
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                          <p className="text-slate-600 font-ubuntu-mono text-sm leading-relaxed line-clamp-2 sm:line-clamp-3 break-words w-full">
+                            {event.description}
+                          </p>
+                        </div>
 
-                          <div className="mt-auto pt-4 border-t border-slate-200/60 text-center shrink-0 w-full relative z-20">
-                            {completed ? (
-                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-slate-600 bg-slate-100 border border-slate-200 shadow-sm">
-                                ● COMPLETED
-                              </span>
-                            ) : statusUpper === "ONGOING" ? (
-                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-blue-700 bg-blue-100 border border-blue-200 shadow-sm">
-                                ● ONGOING
-                              </span>
-                            ) : (
-                              <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
-                                COMING SOON
-                              </span>
-                            )}
-                          </div>
+                        {/* Status Footer */}
+                        <div className="mt-4 pt-4 border-t border-slate-200/60 text-center w-full shrink-0">
+                          {completed ? (
+                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-slate-600 bg-slate-100 border border-slate-200 shadow-sm">
+                              ● COMPLETED
+                            </span>
+                          ) : statusUpper === "ONGOING" ? (
+                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-blue-700 bg-blue-100 border border-blue-200 shadow-sm">
+                              ● ONGOING
+                            </span>
+                          ) : (
+                            <span className="inline-block px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
+                              COMING SOON
+                            </span>
+                          )}
                         </div>
+                        
                       </div>
                     </div>
                   );
                 })}
+
+                {emptyCardsCount > 0 && Array.from({ length: emptyCardsCount }).map((_, idx) => (
+                  <div key={`ghost-${idx}`} className="hidden md:block w-full h-[500px] invisible pointer-events-none aria-hidden"></div>
+                ))}
               </div>
 
               {/* PAGINATION */}
@@ -435,19 +426,22 @@ export default function EventsTimeline() {
         </>
       )}
 
+      {/* MODAL POPUP */}
       {selectedEvent && (
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-[-10px] z-[99999] flex items-center justify-center p-4 sm:p-6"
           style={{
-            backgroundColor: "transparent",
-            backdropFilter: "blur(3px)",
-            WebkitBackdropFilter: "blur(3px)",
+            backgroundColor: "rgba(1, 22, 56, 0.8)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
           }}
+          onClick={() => setSelectedEvent(null)}
         >
           <div
             className="pointer-events-auto bg-white border border-[#011638] rounded-3xl w-full max-w-3xl max-h-[85vh] 
             overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col animate-in fade-in 
             zoom-in-95 duration-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="relative w-full shrink-0 overflow-hidden bg-[#011638]">
               <button
@@ -461,6 +455,10 @@ export default function EventsTimeline() {
                 <img
                   src={selectedEvent.image_url || DEFAULT_IMAGE}
                   alt={selectedEvent.title}
+                  onError={(e: any) => {
+                    e.currentTarget.src = DEFAULT_IMAGE;
+                    e.currentTarget.className = "w-full h-full object-contain p-12 opacity-30";
+                  }}
                   className={`w-full h-full ${!selectedEvent.image_url ? 'object-contain p-12 opacity-30' : 'object-cover'}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
