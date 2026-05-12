@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import ThesisAbstract from "../thesis_abstract";
+import { useRouter } from "next/navigation";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
 import EditThesisModal from "./edit_thesis_modal";
 import MoveThesisModal from "./move_thesis_modal";
-import ReviewThesisModal from "./review_thesis_modal";
 
 interface ClientPaginationProps {
   allTheses: any[];
@@ -26,12 +26,12 @@ const getItemsPerPage = () => {
 };
 
 export default function AdminClientPagination({ allTheses, currentPage, onPageChange, onPendingCountChange }: ClientPaginationProps) {
+  const router = useRouter();
   const supabase = createClient();
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
   const [editingThesis, setEditingThesis] = useState<any>(null);
   const [movingThesis, setMovingThesis] = useState<any>(null);
-  const [reviewingThesis, setReviewingThesis] = useState<any>(null);
   const [theses, setTheses] = useState(allTheses);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -225,7 +225,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setReviewingThesis(thesis);
+                            router.push(`/thesis/admin/review?id=${thesis.id}`); 
                           }}
                           className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                           title="Review"
@@ -483,21 +483,6 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
           onMove={(newStatus) => {
             handleUpdateStatus(movingThesis.id, newStatus);
             setMovingThesis(null);
-          }}
-        />
-      )}
-
-      {reviewingThesis && (
-        <ReviewThesisModal
-          thesis={reviewingThesis}
-          onClose={() => setReviewingThesis(null)}
-          onApprove={(id, reason) => {
-            handleApprove(id, reason);
-            setReviewingThesis(null);
-          }}
-          onReject={(id, reason) => {
-            handleReject(id, reason);
-            setReviewingThesis(null);
           }}
         />
       )}

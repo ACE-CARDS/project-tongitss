@@ -62,8 +62,8 @@ function ReviewContent() {
     if (reason.trim().length < 10) {
       return "Rejection reason must be at least 10 characters.";
     }
-    if (reason.trim().length > 500) {
-      return "Rejection reason must not exceed 500 characters.";
+    if (reason.trim().length > 300) {
+      return "Rejection reason must not exceed 300 characters.";
     }
     return null;
   };
@@ -121,7 +121,16 @@ function ReviewContent() {
     }
   };
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
+      <NavBar />
+      <div className="pt-5">
+        <main className="container mx-auto py-8 px-4 max-w-3xl">
+          <div className="min-h-[400px]"></div>
+        </main>
+      </div>
+    </div>
+  );
   if (!survey) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Survey not found.</div>;
 
   const keywords = survey.survey_keyword 
@@ -234,7 +243,7 @@ function ReviewContent() {
                       setRejectionError(error || "");
                     }}
                     rows={4}
-                    maxLength={500}
+                    maxLength={300}
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-white"
                     placeholder="Indicate why this survey is being rejected..."
                   />
