@@ -378,34 +378,34 @@ function EditSurveyContent() {
     if (!survey) return;
     
     const fetchAuthors = async () => {
-      const { data, error } = await supabase
+        const { data, error } = await supabase
         .from("survey_author")
         .select(`
-          author (
+            author (
             id,
             author_fname,
             author_lname,
             author_minit,
             author_email,
             mem_id
-          )
+            )
         `)
         .eq("survey", survey.id);
 
-      if (data && data.length > 0) {
-        const surveyAuthors = data.map((item: any, index: number) => ({
-          id: index + 1,
-          firstName: item.author.author_fname,
-          middleInitial: item.author.author_minit || "",
-          lastName: item.author.author_lname,
-          email: item.author.author_email,
-          memberId: item.author.mem_id
+        if (data && data.length > 0) {
+        const surveyAuthors = data.map((item: any) => ({
+            id: Date.now() + Math.random() * 10000 + item.author.id, 
+            firstName: item.author.author_fname,
+            middleInitial: item.author.author_minit || "",
+            lastName: item.author.author_lname,
+            email: item.author.author_email,
+            memberId: item.author.mem_id
         }));
         setAuthors(surveyAuthors);
-      }
+        }
     };
     fetchAuthors();
-  }, [survey, supabase]);
+    }, [survey, supabase]);
 
   // Check if end date is past
   const [isPastDate, setIsPastDate] = useState(false);
@@ -458,20 +458,45 @@ function EditSurveyContent() {
   }, [formData.survey_end, formData.survey_status]);
 
   const addAuthor = () => {
-    const maxId = authors.length > 0 ? Math.max(...authors.map(a => a.id)) : 0;
-    setAuthors([...authors, { id: maxId + 1, memberId: null }]);
-  };
+    const newId = Date.now() + Math.random();
+    setAuthors([...authors, { 
+        id: newId, 
+        firstName: "",
+        middleInitial: "",
+        lastName: "",
+        email: "",
+        memberId: null
+    }]);
+    };
 
-  const removeAuthor = (id: number) => {
+    const removeAuthor = (id: number) => {
     if (authors.length > 1) {
-      const updatedAuthors = authors.filter(author => author.id !== id);
-      const reindexedAuthors = updatedAuthors.map((author, idx) => ({
-        ...author,
-        id: idx + 1
-      }));
-      setAuthors(reindexedAuthors);
+        const updatedAuthors = authors.filter(author => author.id !== id);
+        setAuthors(updatedAuthors);
+        
+        // Find the index of removed author for cleanup
+        const removedIndex = authors.findIndex(author => author.id === id);
+        
+        // Clear any suggestions for removed authors
+        setEmailSuggestions(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(removedIndex);
+        return newMap;
+        });
+        
+        setShowSearchDropdown(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(removedIndex);
+        return newMap;
+        });
+        
+        setSearchResults(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(removedIndex);
+        return newMap;
+        });
     }
-  };
+    };
 
   const checkDuplicateSurveyLink = async (link: string) => {
     if (!link) return;
@@ -1240,450 +1265,303 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <h2 className="text-lg font-oswald font-semibold">Author(s)</h2>
                 </div>
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
-                  {authors.map((author, index) => (
-                    <div key={author.id} className="mb-6 last:mb-0">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-oswald text-[#011638]">Author {index + 1}</h3>
-                        {authors.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeAuthor(author.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                              First Name <span className="text-[#eec643]">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              name="firstName[]"
-                              defaultValue={author.firstName || ""}
-                              required
-                              maxLength={20}
-                              placeholder="First Name"
-                              className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                                  return;
-                                }
-                                if (!/[A-Za-z\s\-'.]/.test(e.key)) {
-                                  e.preventDefault();
-                                }
-                              }}
-                              onInput={(e) => {
-                                const input = e.target as HTMLInputElement;
-                                const errorSpan = document.getElementById(`firstname-error-${index}`);
-                                const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-                                const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-
-                                if (input.value.length === 0) {
-                                  if (errorSpan) {
-                                    errorSpan.textContent = 'First Name is required.';
-                                    errorSpan.style.display = 'block';
-                                  }
-                                } else if (input.value.length < 2) {
-                                  if (errorSpan) {
-                                    errorSpan.textContent = 'First Name must be at least 2 characters.';
-                                    errorSpan.style.display = 'block';
-                                  }
-                                } else {
-                                  if (errorSpan) {
-                                    errorSpan.style.display = 'none';
-                                  }
-                                  if (lastNameInput?.value && lastNameInput.value.length >= 2) {
-                                    searchMembersByFullName(input.value, lastNameInput.value, middleInitialInput?.value || '', index);
-                                  }
-                                }
-                                validateForm();
-                              }}
-                            />
-                            <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                              Middle Initial
-                            </label>
-                            <input
-                              type="text"
-                              name="middleInitial[]"
-                              defaultValue={author.middleInitial || ""}
-                              maxLength={4}
-                              placeholder="M.I."
-                              className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                              onChange={(e) => {
-                                let value = e.target.value.toUpperCase();
-                                value = value.replace(/[^A-Z.]/g, '');
-                                
-                                if (value.length === 1 && /[A-Z]/.test(value)) {
-                                  value = value + '.';
-                                } else if (value.length === 2 && value[1] === '.') {
-                                } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
-                                  value = value[0] + '.' + value[1];
-                                } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
-                                  value = value + '.';
-                                } else if (value.length >= 4) {
-                                  value = value.slice(0, 2) + value.slice(2, 3) + '.';
-                                  if (value.length > 4) value = value.slice(0, 4);
-                                }
-                                
-                                e.target.value = value;
-                                
-                                const event = new Event('input', { bubbles: true });
-                                e.target.dispatchEvent(event);
-                              }}
-                              onInput={(e) => {
-                                const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                                const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                                if (firstNameInput?.value && lastNameInput?.value) {
-                                  searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, index);
-                                }
-                              }}
-                            />
-                          </div>
-                        </div>
+                {authors.map((author, index) => (
+                <div key={author.id} className="mb-6 last:mb-0">
+                    <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-oswald text-[#011638]">Author {index + 1}</h3>
+                    {authors.length > 1 && (
+                        <button
+                        type="button"
+                        onClick={() => {
+                            const newAuthors = authors.filter((_, idx) => idx !== index);
+                            const reindexed = newAuthors.map((auth, idx) => ({ ...auth, id: idx + 1 }));
+                            setAuthors(reindexed);
+                            // Clear any suggestions for removed authors
+                            setEmailSuggestions(prev => {
+                            const newMap = new Map(prev);
+                            newMap.delete(index);
+                            return newMap;
+                            });
+                            setShowSearchDropdown(prev => {
+                            const newMap = new Map(prev);
+                            newMap.delete(index);
+                            return newMap;
+                            });
+                            setSearchResults(prev => {
+                            const newMap = new Map(prev);
+                            newMap.delete(index);
+                            return newMap;
+                            });
+                        }}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                        Remove
+                        </button>
+                    )}
+                    </div>
+                    <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                            Last Name <span className="text-[#eec643]">*</span>
-                          </label>
-                          <input
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                            First Name <span className="text-[#eec643]">*</span>
+                        </label>
+                        <input
                             type="text"
-                            name="lastName[]"
-                            defaultValue={author.lastName || ""}
+                            name="firstName[]"
+                            value={author.firstName || ""}
+                            onChange={(e) => {
+                            const newAuthors = [...authors];
+                            newAuthors[index] = { ...newAuthors[index], firstName: e.target.value };
+                            setAuthors(newAuthors);
+                            // Trigger search if needed
+                            if (e.target.value && author.lastName && author.lastName.length >= 2) {
+                                searchMembersByFullName(e.target.value, author.lastName, author.middleInitial || '', index);
+                            }
+                            }}
                             required
                             maxLength={20}
-                            placeholder="Last Name"
+                            placeholder="First Name"
                             className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                             onKeyDown={(e) => {
-                              if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                                 return;
-                              }
-                              if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                            }
+                            if (!/[A-Za-z\s\-'.]/.test(e.key)) {
                                 e.preventDefault();
-                              }
+                            }
                             }}
-                            onInput={(e) => {
-                              const input = e.target as HTMLInputElement;
-                              const errorSpan = document.getElementById(`lastname-error-${index}`);
-                              const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                              const lastNameInput = input;
-                              const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-
-                              if (input.value.length === 0) {
-                                if (errorSpan) {
-                                  errorSpan.textContent = 'Last Name is required.';
-                                  errorSpan.style.display = 'block';
-                                }
-                                validateForm();
-                                return;
-                              } else if (input.value.length < 2) {
-                                if (errorSpan) {
-                                  errorSpan.textContent = 'Last Name must be at least 2 characters.';
-                                  errorSpan.style.display = 'block';
-                                }
-                                validateForm();
-                                return;
-                              }
-
-                              if (firstNameInput?.value) {
-                                searchMembersByFullName(firstNameInput.value, input.value, middleInitialInput?.value || '', index);
-                              }
-
-                              // Check duplicate authors 
-                              const allFirstNames = document.querySelectorAll('input[name="firstName[]"]');
-                              const allLastNames = document.querySelectorAll('input[name="lastName[]"]');
-                              const allMiddleInitials = document.querySelectorAll('input[name="middleInitial[]"]');
-
-                              const currentFirstName = firstNameInput?.value?.trim();
-                              const currentLastName = lastNameInput?.value?.trim();
-                              const currentMiddleInitial = (allMiddleInitials[index] as HTMLInputElement)?.value?.trim();
-
-                              const normalizedCurrentMiddle = currentMiddleInitial ? currentMiddleInitial.charAt(0).toUpperCase() : '';
-
-                              for (let i = 0; i < allFirstNames.length; i++) {
-                                if (i !== index) {
-                                  const otherFirstName = (allFirstNames[i] as HTMLInputElement).value?.trim();
-                                  const otherLastName = (allLastNames[i] as HTMLInputElement).value?.trim();
-                                  const otherMiddleInitial = (allMiddleInitials[i] as HTMLInputElement)?.value?.trim();
-                                  
-                                  const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
-                                  
-                                  if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
-                                    const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
-                                    const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
-                                    
-                                    if (firstNameMatch && lastNameMatch) {
-                                      const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
-                                      
-                                      if (middleMatch) {
-                                        if (errorSpan) {
-                                          const authorName = `${currentFirstName} ${normalizedCurrentMiddle ? normalizedCurrentMiddle + '. ' : ''}${currentLastName}`;
-                                          errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
-                                          errorSpan.style.display = 'block';
-                                        }
-                                        validateForm();
-                                        return;
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-
-                              if (errorSpan) {
-                                errorSpan.style.display = 'none';
-                              }
-                              validateForm();
-                            }}
-                          />
-                          <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                        />
+                        <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                         </div>
-                        
-                        <div className="relative">
-                          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                            Email <span className="text-[#eec643]">*</span>
-                          </label>
-                          <input
-                            type="email"
-                            name="email[]"
-                            defaultValue={author.email || ""}
-                            required
-                            maxLength={254}
-                            placeholder="Email"
+
+                        <div>
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                            Middle Initial
+                        </label>
+                        <input
+                            type="text"
+                            name="middleInitial[]"
+                            value={author.middleInitial || ""}
+                            onChange={(e) => {
+                            let value = e.target.value.toUpperCase();
+                            value = value.replace(/[^A-Z.]/g, '');
+                            
+                            if (value.length === 1 && /[A-Z]/.test(value)) {
+                                value = value + '.';
+                            } else if (value.length === 2 && value[1] === '.') {
+                            } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
+                                value = value[0] + '.' + value[1];
+                            } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
+                                value = value + '.';
+                            } else if (value.length >= 4) {
+                                value = value.slice(0, 2) + value.slice(2, 3) + '.';
+                                if (value.length > 4) value = value.slice(0, 4);
+                            }
+                            
+                            const newAuthors = [...authors];
+                            newAuthors[index] = { ...newAuthors[index], middleInitial: value };
+                            setAuthors(newAuthors);
+                            
+                            if (author.firstName && author.lastName) {
+                                searchMembersByFullName(author.firstName, author.lastName, value, index);
+                            }
+                            }}
+                            maxLength={4}
+                            placeholder="M.I."
                             className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                            onKeyUp={(e) => {
-                              const input = e.target as HTMLInputElement;
-                              const char = e.key;
-                              const value = input.value;
-                              const atCount = (value.match(/@/g) || []).length;
-                              
-                              if (char === '@' && atCount >= 1) {
-                                e.preventDefault();
-                                return;
-                              }
-                              
-                              if (!value.includes('@')) {
-                                if (!/[a-zA-Z0-9.]/.test(char) && char !== '@') {
-                                  e.preventDefault();
-                                }
-                              }
-                            }}
-                            onInput={async (e) => {
-                              const input = e.target as HTMLInputElement;
-                              const errorSpan = document.getElementById(`email-error-${index}`);
-                              const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                              const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                              const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-                              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                              
-                              if (input.value.length === 0) {
-                                errorSpan!.textContent = 'Email is required.';
-                                errorSpan!.style.display = 'block';
-                                validateForm();
-                                
-                                if (firstNameInput?.value && lastNameInput?.value) {
-                                  const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
-                                  
-                                  const { data: matchingMembers } = await supabase
-                                    .from("member")
-                                    .select("id, mem_fname, mem_lname, mem_minit, mem_email")
-                                    .ilike("mem_fname", firstNameInput.value)
-                                    .ilike("mem_lname", lastNameInput.value)
-                                    .limit(1);
-                                  
-                                  if (matchingMembers && matchingMembers.length > 0) {
-                                    const exactMatch = matchingMembers.find(m => {
-                                      const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
-                                      return memberMiddle === normalizedMiddle;
-                                    });
-                                    
-                                    if (exactMatch) {
-                                      setEmailSuggestions(prev => new Map(prev).set(index, [{
-                                        email: exactMatch.mem_email,
-                                        memberId: exactMatch.id,
-                                        fname: exactMatch.mem_fname,
-                                        lname: exactMatch.mem_lname,
-                                        minit: exactMatch.mem_minit
-                                      }]));
-                                    } else {
-                                      setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                    }
-                                  } else {
-                                    setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                  }
-                                } else {
-                                  setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                }
-                                return;
-                              }
-                              
-                              if (!emailRegex.test(input.value)) {
-                                errorSpan!.textContent = 'Please enter a valid email address.';
-                                errorSpan!.style.display = 'block';
-                                validateForm();
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                return;
-                              }
-
-                              // Check duplicate emails
-                              const allEmails = document.querySelectorAll('input[name="email[]"]');
-                              for (let i = 0; i < allEmails.length; i++) {
-                                if (i !== index) {
-                                  const otherEmail = (allEmails[i] as HTMLInputElement).value;
-                                  if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
-                                    errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
-                                    errorSpan!.style.display = 'block';
-                                    validateForm();
-                                    setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                    return;
-                                  }
-                                }
-                              }
-
-                              if (firstNameInput?.value && lastNameInput?.value) {
-                                const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
-                                
-                                const { data: matchingMembers } = await supabase
-                                  .from("member")
-                                  .select("id, mem_fname, mem_lname, mem_minit, mem_email")
-                                  .ilike("mem_fname", firstNameInput.value)
-                                  .ilike("mem_lname", lastNameInput.value)
-                                  .limit(3);
-                                
-                                if (matchingMembers && matchingMembers.length > 0) {
-                                  const exactMatch = matchingMembers.find(m => {
-                                    const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
-                                    return memberMiddle === normalizedMiddle;
-                                  });
-                                  
-                                  const memberWithTypedEmail = matchingMembers.find(m => 
-                                    m.mem_email.toLowerCase() === input.value.toLowerCase()
-                                  );
-                                  
-                                  if (memberWithTypedEmail) {
-                                    errorSpan!.style.display = 'none';
-                                    setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                    validateForm();
-                                  } else if (exactMatch && input.value.length > 0 && 
-                                            exactMatch.mem_email.toLowerCase().includes(input.value.toLowerCase())) {
-                                    setEmailSuggestions(prev => new Map(prev).set(index, [{
-                                      email: exactMatch.mem_email,
-                                      memberId: exactMatch.id,
-                                      fname: exactMatch.mem_fname,
-                                      lname: exactMatch.mem_lname,
-                                      minit: exactMatch.mem_minit
-                                    }]));
-                                    errorSpan!.style.display = 'none';
-                                    validateForm();
-                                  } else {
-                                    errorSpan!.style.display = 'none';
-                                    setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                  }
-                                } else {
-                                  errorSpan!.style.display = 'none';
-                                  setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                }
-                              } else {
-                                errorSpan!.style.display = 'none';
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
-                              }
-                              
-                              // Check existing author
-                              const { data: existing } = await supabase
-                                .from("author")
-                                .select("id, author_fname, author_lname")
-                                .eq("author_email", input.value)
-                                .maybeSingle();
-                              
-                              if (existing) {
-                                const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
-                                const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
-                                
-                                if (!firstNameMatch || !lastNameMatch) {
-                                  errorSpan!.textContent = 'This email is already registered to a different author.';
-                                  errorSpan!.style.display = 'block';
-                                  setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                }
-                              }
-                              validateForm();
-                            }}
-                            onBlur={() => {
-                              setTimeout(() => {
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
-                              }, 200);
-                            }}
-                          />
-                          <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                          
-                          {/* Email Suggestions Dropdown */}
-                          {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && 
-                          !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
-                            <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
-                              <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
-                                <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                    setShowSearchDropdown(prev => new Map(prev).set(index, false));
-                                  }}
-                                  className="text-white hover:text-gray-200 text-lg leading-none"
-                                  aria-label="Close"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                              <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
-                                {emailSuggestions.get(index)!.map((suggestion, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => selectEmailSuggestion(suggestion, index)}
-                                    className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="font-medium">{suggestion.email}</span>
-                                      <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Search Results Dropdown */}
-                          {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && (
-                            <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
-                              <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
-                                <span className="text-xs font-oswald font-semibold text-white">MATCHING MEMBER(S)</span>
-                              </div>
-                              <div className="max-h-60 overflow-y-auto">
-                                {searchResults.get(index)!.map((member, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => selectMember(member, index)}
-                                    className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="font-medium">{member.fname} {member.minit ? member.minit + '. ' : ''}{member.lname}</span>
-                                      <span className="text-xs">{member.email}</span>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                        />
                         </div>
-                      </div>
-                      {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                     </div>
-                  ))}
+                    <div>
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Last Name <span className="text-[#eec643]">*</span>
+                        </label>
+                        <input
+                        type="text"
+                        name="lastName[]"
+                        value={author.lastName || ""}
+                        onChange={(e) => {
+                            const newAuthors = [...authors];
+                            newAuthors[index] = { ...newAuthors[index], lastName: e.target.value };
+                            setAuthors(newAuthors);
+                            
+                            if (author.firstName && e.target.value) {
+                            searchMembersByFullName(author.firstName, e.target.value, author.middleInitial || '', index);
+                            }
+                            
+                            // Check for duplicate names
+                            const errorSpan = document.getElementById(`lastname-error-${index}`);
+                            for (let i = 0; i < authors.length; i++) {
+                            if (i !== index && authors[i].firstName === author.firstName && authors[i].lastName === e.target.value) {
+                                const middleI = (authors[i].middleInitial || '').charAt(0).toUpperCase();
+                                const middleCurrent = (author.middleInitial || '').charAt(0).toUpperCase();
+                                if (middleI === middleCurrent) {
+                                if (errorSpan) {
+                                    errorSpan.textContent = `Author with the same name already exists (Author ${i + 1}).`;
+                                    errorSpan.style.display = 'block';
+                                }
+                                return;
+                                }
+                            }
+                            }
+                            if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                            }
+                        }}
+                        required
+                        maxLength={20}
+                        placeholder="Last Name"
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            return;
+                            }
+                            if (!/[A-Za-z\s\-'.]/.test(e.key)) {
+                            e.preventDefault();
+                            }
+                        }}
+                        />
+                        <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                    </div>
+                    
+                    <div className="relative">
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Email <span className="text-[#eec643]">*</span>
+                        </label>
+                        <input
+                        type="email"
+                        name="email[]"
+                        value={author.email || ""}
+                        onChange={async (e) => {
+                            const newAuthors = [...authors];
+                            newAuthors[index] = { ...newAuthors[index], email: e.target.value };
+                            setAuthors(newAuthors);
+                            
+                            // Your existing email validation logic here
+                            const errorSpan = document.getElementById(`email-error-${index}`);
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            
+                            if (!e.target.value) {
+                            if (errorSpan) {
+                                errorSpan.textContent = 'Email is required.';
+                                errorSpan.style.display = 'block';
+                            }
+                            return;
+                            }
+                            
+                            if (!emailRegex.test(e.target.value)) {
+                            if (errorSpan) {
+                                errorSpan.textContent = 'Please enter a valid email address.';
+                                errorSpan.style.display = 'block';
+                            }
+                            return;
+                            }
+                            
+                            // Check duplicate emails
+                            for (let i = 0; i < authors.length; i++) {
+                            if (i !== index && authors[i].email === e.target.value) {
+                                if (errorSpan) {
+                                errorSpan.textContent = `This email is already used for Author ${i + 1}.`;
+                                errorSpan.style.display = 'block';
+                                }
+                                return;
+                            }
+                            }
+                            
+                            if (errorSpan) {
+                            errorSpan.style.display = 'none';
+                            }
+                            
+                            // Check existing author in database
+                            const { data: existing } = await supabase
+                            .from("author")
+                            .select("id, author_fname, author_lname")
+                            .eq("author_email", e.target.value)
+                            .maybeSingle();
+                            
+                            if (existing && existing.author_fname !== author.firstName) {
+                            if (errorSpan) {
+                                errorSpan.textContent = 'This email is already registered to a different author.';
+                                errorSpan.style.display = 'block';
+                            }
+                            }
+                        }}
+                        required
+                        maxLength={254}
+                        placeholder="Email"
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        onKeyUp={(e) => {
+                            const input = e.target as HTMLInputElement;
+                            const char = e.key;
+                            const value = input.value;
+                            const atCount = (value.match(/@/g) || []).length;
+                            
+                            if (char === '@' && atCount >= 1) {
+                            e.preventDefault();
+                            return;
+                            }
+                        }}
+                        />
+                        <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                        
+                        {/* Email Suggestions Dropdown */}
+                        {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && (
+                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
+                            <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
+                            <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                setEmailSuggestions(prev => {
+                                    const newMap = new Map(prev);
+                                    newMap.delete(index);
+                                    return newMap;
+                                });
+                                }}
+                                className="text-white hover:text-gray-200 text-lg leading-none"
+                                aria-label="Close"
+                            >
+                                ×
+                            </button>
+                            </div>
+                            <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+                            {emailSuggestions.get(index)!.map((suggestion, idx) => (
+                                <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                    const newAuthors = [...authors];
+                                    newAuthors[index] = {
+                                    ...newAuthors[index],
+                                    email: suggestion.email,
+                                    memberId: suggestion.memberId,
+                                    firstName: suggestion.fname,
+                                    lastName: suggestion.lname,
+                                    middleInitial: suggestion.minit || ""
+                                    };
+                                    setAuthors(newAuthors);
+                                    setEmailSuggestions(prev => {
+                                    const newMap = new Map(prev);
+                                    newMap.delete(index);
+                                    return newMap;
+                                    });
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                                >
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{suggestion.email}</span>
+                                    <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
+                                </div>
+                                </button>
+                            ))}
+                            </div>
+                        </div>
+                        )}
+                    </div>
+                    </div>
+                    {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
+                </div>
+                ))}
                   
                   <button
                     type="button"
