@@ -1011,27 +1011,66 @@ export default function MembersPage() {
   const [showEditError, setShowEditError] = useState(false);
   const [editErrorMessage, setEditErrorMessage] = useState("");
 
-  //for import pics
+  //for import images
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [showImagesConfirm, setShowImagesConfirm] = useState(false);
   const [showImagesSuccess, setShowImagesSuccess] = useState(false);
+
   const handleConfirmImagesImport = async () => {
     setShowImagesConfirm(false);
+    try {
+      for (const file of pendingImages) {
+        const fileExtension = file.name.split(".").pop()?.toLowerCase();
+        const baseName = file.name
+          .split(".")
+          .slice(0, -1)
+          .join(".")
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "_");
+        const standardizedName = `${baseName}.${fileExtension}`;
 
-    for (const file of pendingImages) {
-      const { error } = await supabase.storage
-        .from("member-photos")
-        .upload(file.name, file, {
-          upsert: true,
-          cacheControl: "0",
-        });
+        const { data: existingFiles, error: listError } = await supabase.storage
+          .from("member-photos")
+          .list("", { search: baseName });
 
-      if (error) console.error(`Error uploading ${file.name}:`, error.message);
+        if (listError) throw listError;
+
+        if (existingFiles && existingFiles.length > 0) {
+          const filesToDelete = existingFiles
+            .filter(
+              (f) => f.name.split(".").slice(0, -1).join(".") === baseName,
+            )
+            .map((f) => f.name);
+
+          if (filesToDelete.length > 0) {
+            const { error: delError } = await supabase.storage
+              .from("member-photos")
+              .remove(filesToDelete);
+            if (delError) throw delError;
+          }
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("member-photos")
+          .upload(standardizedName, file, {
+            upsert: true,
+            cacheControl: "0",
+          });
+
+        if (uploadError) throw uploadError;
+      }
+
+      setPendingImages([]);
+      setShowImagesSuccess(true);
+      setTimeout(() => setShowImagesSuccess(false), 2500);
+    } catch (err: any) {
+      console.error("Image import failed:", err);
+      setImportErrorMessage(
+        err.message || "An unexpected error occurred during image upload.",
+      );
+      setShowImportError(true);
     }
-
-    setPendingImages([]);
-    setShowImagesSuccess(true);
-    setTimeout(() => setShowImagesSuccess(false), 2500);
   };
 
   useEffect(() => {
@@ -1176,61 +1215,13 @@ export default function MembersPage() {
                     multiple
                     accept="image/*"
                     className="hidden"
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const files = Array.from(e.target.files || []);
                       if (files.length === 0) return;
 
-                      for (const file of files) {
-                        try {
-                          const fileExtension = file.name
-                            .split(".")
-                            .pop()
-                            ?.toLowerCase();
-                          const baseName = file.name
-                            .split(".")
-                            .slice(0, -1)
-                            .join(".")
-                            .toLowerCase()
-                            .trim()
-                            .replace(/\s+/g, "_");
-
-                          const standardizedName = `${baseName}.${fileExtension}`;
-                          const { data: existingFiles } = await supabase.storage
-                            .from("member-photos")
-                            .list("", { search: baseName });
-
-                          if (existingFiles && existingFiles.length > 0) {
-                            const filesToDelete = existingFiles
-                              .filter((f) => {
-                                const existingBase = f.name
-                                  .split(".")
-                                  .slice(0, -1)
-                                  .join(".");
-                                return existingBase === baseName;
-                              })
-                              .map((f) => f.name);
-
-                            if (filesToDelete.length > 0) {
-                              await supabase.storage
-                                .from("member-photos")
-                                .remove(filesToDelete);
-                              console.log(
-                                `Deleted old versions: ${filesToDelete.join(", ")}`,
-                              );
-                            }
-                          }
-
-                          const { error: uploadError } = await supabase.storage
-                            .from("member-photos")
-                            .upload(standardizedName, file, { upsert: true });
-
-                          if (uploadError) throw uploadError;
-                        } catch (err) {
-                          console.error(`Failed to process ${file.name}:`, err);
-                        }
-                      }
                       setPendingImages(files);
                       setShowImagesConfirm(true);
+
                       e.target.value = "";
                     }}
                   />
