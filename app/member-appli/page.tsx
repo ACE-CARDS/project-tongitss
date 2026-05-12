@@ -18,6 +18,7 @@ function MembershipApplicationContent() {
     instructions: [] as string[],
     videoUrl: "",
     deadline: "To Be Announced",
+    signupLink: "https://docs.google.com/forms/d/e/1FAIpQLSe62P_W6Z3hW7UFqDQjFIqrN1K015lX7ECl75B9psF2yC0IXA/viewform?pli=1" // Default Fallback
   });
   const [isLoadingContent, setIsLoadingContent] = useState(true);
 
@@ -32,6 +33,9 @@ function MembershipApplicationContent() {
       if (data && !error) {
         const fetchedDeadline = data.find((row) => row.type?.toLowerCase().trim() === "deadline")?.description;
         
+        // Grab Custom Signup Link if provided
+        const customLink = data.find((row) => row.type?.toLowerCase().trim() === "signup_link")?.description;
+        
         const fetchedReminders = data
           .filter((row) => row.type?.toLowerCase().trim() === "reminder")
           .map((row) => row.description);
@@ -40,7 +44,10 @@ function MembershipApplicationContent() {
           .filter((row) => row.type?.toLowerCase().trim() === "instruction")
           .map((row) => row.description);
           
-        const fetchedVideo = data.find((row) => row.type?.toLowerCase().trim() === "video")?.description;
+        // Active Video Logic: Look for order_index === 1. If none, grab the latest video as fallback.
+        const allVideos = data.filter((row) => row.type?.toLowerCase().trim() === "video");
+        const activeVideoRow = allVideos.find((v) => v.order_index === 1) || allVideos[allVideos.length - 1];
+        const fetchedVideo = activeVideoRow?.description;
 
         let finalVideoUrl = "";
         if (fetchedVideo) {
@@ -57,6 +64,7 @@ function MembershipApplicationContent() {
           reminders: fetchedReminders,
           instructions: fetchedInstructions,
           videoUrl: finalVideoUrl,
+          signupLink: customLink || "https://docs.google.com/forms/d/e/1FAIpQLSe62P_W6Z3hW7UFqDQjFIqrN1K015lX7ECl75B9psF2yC0IXA/viewform?pli=1"
         });
       }
 
@@ -89,7 +97,10 @@ function MembershipApplicationContent() {
             <BackButton />
           </div>
 
-          <ApplicationHero deadline={pageContent.deadline} />
+          <ApplicationHero 
+            deadline={pageContent.deadline} 
+            signupLink={pageContent.signupLink} 
+          />
           
           <ApplicationInfo 
             reminders={pageContent.reminders} 

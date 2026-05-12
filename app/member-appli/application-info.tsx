@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 export default function ApplicationInfo({ reminders, instructions }: { reminders: string[], instructions: string[] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      
+      {/* Reminders Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -13,7 +15,6 @@ export default function ApplicationInfo({ reminders, instructions }: { reminders
       >
         <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
           <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shadow-sm shrink-0">
-            {/* SVG Icon replacing reminders.png (Notification Bell) */}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-6 h-6 text-red-600">
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
@@ -26,7 +27,7 @@ export default function ApplicationInfo({ reminders, instructions }: { reminders
         <ul className="space-y-4 text-slate-700 font-medium list-disc ml-6 marker:text-red-500 text-lg">
           {reminders.length > 0 ? (
             reminders.map((reminder, idx) => (
-              <li key={idx} className="pl-2 leading-relaxed">
+              <li key={idx} className="pl-2 leading-relaxed whitespace-pre-wrap break-words">
                 {reminder}
               </li>
             ))
@@ -59,7 +60,7 @@ export default function ApplicationInfo({ reminders, instructions }: { reminders
         <ol className="relative z-10 space-y-4 text-slate-300 font-medium list-decimal ml-6 marker:text-[#eec643] marker:font-black text-lg marker:text-xl">
           {instructions.length > 0 ? (
             instructions.map((instruction, idx) => (
-              <li key={idx} className="pl-2 leading-relaxed">
+              <li key={idx} className="pl-2 leading-relaxed whitespace-pre-wrap break-words">
                 {instruction}
               </li>
             ))

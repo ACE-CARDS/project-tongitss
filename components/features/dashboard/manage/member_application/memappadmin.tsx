@@ -12,6 +12,16 @@ interface MemAppItem {
   order_index: number;
 }
 
+function Toast({ message, type, onClose }: { message: string | null; type: 'error' | 'success'; onClose: () => void }) {
+  if (!message) return null;
+  return (
+    <div className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg font-ubuntu-mono font-bold z-[100] flex items-center gap-3 ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>
+      <span>{message}</span>
+      <button onClick={onClose} className="text-xl leading-none">&times;</button>
+    </div>
+  );
+}
+
 function DeleteConfirmPopup({ isOpen, onClose, onConfirm, title }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; }) {
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -65,11 +75,17 @@ export default function MemAppAdmin() {
   const [deadlineDate, setDeadlineDate] = useState("");
   const [savingDeadline, setSavingDeadline] = useState(false);
 
+  const [signupLinkItem, setSignupLinkItem] = useState<MemAppItem | null>(null);
+  const [signupLink, setSignupLink] = useState("");
+  const [savingLink, setSavingLink] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
   
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const supabase = createClient();
 
@@ -77,8 +93,15 @@ export default function MemAppAdmin() {
     fetchItems();
   }, []);
 
+  // Set default Google Form link if it doesn't exist
   useEffect(() => {
-    let filtered = items.filter(item => item.type !== 'deadline'); 
+    if (!loading && !signupLinkItem && signupLink === "") {
+        setSignupLink("https://docs.google.com/forms/d/e/1FAIpQLSe62P_W6Z3hW7UFqDQjFIqrN1K015lX7ECl75B9psF2yC0IXA/viewform?pli=1");
+    }
+  }, [loading, signupLinkItem, signupLink]);
+
+  useEffect(() => {
+    let filtered = items.filter(item => item.type !== 'deadline' && item.type !== 'signup_link'); 
     if (typeFilter !== 'ALL') filtered = filtered.filter(item => item.type === typeFilter);
     if (searchTerm.trim() !== '') filtered = filtered.filter(item => item.description.toLowerCase().includes(searchTerm.toLowerCase()));
     setFilteredItems(filtered);
@@ -86,65 +109,99 @@ export default function MemAppAdmin() {
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('announce_memapp')
-      .select('*')
-      .order('type', { ascending: true })
-      .order('order_index', { ascending: true })
-      .order('id', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('announce_memapp')
+        .select('*')
+        .order('type', { ascending: true })
+        .order('order_index', { ascending: true })
+        .order('id', { ascending: true });
 
-    if (!error && data) {
-      setItems(data);
-      const dl = data.find(d => d.type === 'deadline');
-      if (dl) {
-        setDeadlineItem(dl);
-        try {
-          const parsed = new Date(dl.description);
-          if (!isNaN(parsed.getTime())) setDeadlineDate(parsed.toISOString().split('T')[0]);
-        } catch (e) {}
+      if (error) throw new Error(error.message);
+      
+      if (data) {
+        setItems(data);
+        
+        const dl = data.find(d => d.type === 'deadline');
+        if (dl) {
+          setDeadlineItem(dl);
+          try {
+            const parsed = new Date(dl.description);
+            if (!isNaN(parsed.getTime())) setDeadlineDate(parsed.toISOString().split('T')[0]);
+          } catch (e) {}
+        }
+
+        const sl = data.find(d => d.type === 'signup_link');
+        if (sl) {
+          setSignupLinkItem(sl);
+          setSignupLink(sl.description);
+        }
       }
+    } catch (err: any) {
+      setToast({ message: "Failed to load database: " + err.message, type: 'error' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const saveDeadline = async () => {
-    if (!deadlineDate) return alert("Please select a date.");
+    if (!deadlineDate) return setToast({ message: "Please select a date first.", type: 'error' });
     setSavingDeadline(true);
-    const formattedDate = new Date(deadlineDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
-
-    if (deadlineItem) {
-      await supabase.from('announce_memapp').update({ description: formattedDate }).eq('id', deadlineItem.id);
-    } else {
-      await supabase.from('announce_memapp').insert([{ type: 'deadline', description: formattedDate, order_index: 0 }]);
-    }
     
-    alert("Deadline updated successfully!");
-    fetchItems();
-    setSavingDeadline(false);
+    try {
+      const formattedDate = new Date(deadlineDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
+
+      if (deadlineItem) {
+        const { error } = await supabase.from('announce_memapp').update({ description: formattedDate }).eq('id', deadlineItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('announce_memapp').insert([{ type: 'deadline', description: formattedDate, order_index: 0 }]);
+        if (error) throw error;
+      }
+      
+      setToast({ message: "Deadline updated successfully!", type: 'success' });
+      fetchItems();
+    } catch (err: any) {
+      setToast({ message: "Failed to save deadline: " + err.message, type: 'error' });
+    } finally {
+      setSavingDeadline(false);
+    }
+  };
+
+  const saveSignupLink = async () => {
+    if (!signupLink.trim()) return setToast({ message: "Link cannot be empty.", type: 'error' });
+    setSavingLink(true);
+    
+    try {
+      if (signupLinkItem) {
+        const { error } = await supabase.from('announce_memapp').update({ description: signupLink.trim() }).eq('id', signupLinkItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('announce_memapp').insert([{ type: 'signup_link', description: signupLink.trim(), order_index: 0 }]);
+        if (error) throw error;
+      }
+      
+      setToast({ message: "Signup Link saved successfully!", type: 'success' });
+      fetchItems();
+    } catch (err: any) {
+      setToast({ message: "Failed to save link: " + err.message, type: 'error' });
+    } finally {
+      setSavingLink(false);
+    }
   };
 
   const handleSetActiveVideo = async (id: number) => {
-    setItems(prevItems => prevItems.map(item => {
-      if (item.type === 'video') {
-        return { ...item, order_index: item.id === id ? 1 : 0 };
-      }
-      return item;
-    }));
+    try {
+      const { error: resetError } = await supabase.from('announce_memapp').update({ order_index: 0 }).eq('type', 'video');
+      if (resetError) throw new Error("Could not reset old videos: " + resetError.message);
 
-    const { error: err1 } = await supabase.from('announce_memapp').update({ order_index: 0 }).eq('type', 'video');
-    if (err1) {
-      console.error(err1);
-      alert("Failed to reset old videos.");
-      fetchItems(); 
-      return;
-    }
+      const { error: activeError } = await supabase.from('announce_memapp').update({ order_index: 1 }).eq('id', id);
+      if (activeError) throw new Error("Could not set active video: " + activeError.message);
 
-    const { error: err2 } = await supabase.from('announce_memapp').update({ order_index: 1 }).eq('id', id);
-    if (err2) {
-      console.error(err2);
-      alert("Failed to set active video.");
+      setToast({ message: "Video is now active!", type: 'success' });
       fetchItems(); 
-      return;
+    } catch (err: any) {
+      setToast({ message: err.message, type: 'error' });
     }
   };
 
@@ -153,32 +210,41 @@ export default function MemAppAdmin() {
     const itemToDelete = items.find(i => i.id === selectedId);
     if (!itemToDelete) return;
     
-    const { error } = await supabase.from('announce_memapp').delete().eq('id', selectedId);
-    
-    if (!error) {
-        if (itemToDelete.type === 'instruction' || itemToDelete.type === 'reminder') {
-            const remaining = items
-               .filter(i => i.type === itemToDelete.type && i.id !== selectedId)
-               .sort((a,b) => a.order_index - b.order_index);
-               
-            for (let i = 0; i < remaining.length; i++) {
-                const newIndex = i + 1;
-                if (remaining[i].order_index !== newIndex) {
-                    await supabase.from('announce_memapp').update({ order_index: newIndex }).eq('id', remaining[i].id);
-                }
-            }
-        }
-        setDeletePopupOpen(false);
-        setSelectedId(null);
-        fetchItems(); 
-    } else {
-        alert("Failed to delete item.");
+    try {
+      const { error } = await supabase.from('announce_memapp').delete().eq('id', selectedId);
+      if (error) throw error;
+      
+      if (itemToDelete.type === 'instruction') {
+          const remaining = items
+             .filter(i => i.type === itemToDelete.type && i.id !== selectedId)
+             .sort((a,b) => a.order_index - b.order_index);
+             
+          for (let i = 0; i < remaining.length; i++) {
+              const newIndex = i + 1;
+              if (remaining[i].order_index !== newIndex) {
+                  await supabase.from('announce_memapp').update({ order_index: newIndex }).eq('id', remaining[i].id);
+              }
+          }
+      }
+
+      setToast({ message: "Content deleted successfully.", type: 'success' });
+      setDeletePopupOpen(false);
+      setSelectedId(null);
+      fetchItems(); 
+    } catch (err: any) {
+      setToast({ message: "Failed to delete: " + err.message, type: 'error' });
     }
   };
 
   const renderTableBody = () => {
     if (loading) return <tr><td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569] animate-pulse">Loading content...</td></tr>;
     if (filteredItems.length === 0) return <tr><td colSpan={4} className="py-10 text-center font-ubuntu-mono text-[#475569]">No content found.</td></tr>;
+
+    const videos = items.filter(i => i.type === 'video');
+    const hasActiveVideo = videos.some(v => v.order_index === 1);
+    if (videos.length > 0 && !hasActiveVideo && !loading) {
+       handleSetActiveVideo(videos[videos.length - 1].id);
+    }
 
     return filteredItems.map((item, index) => {
       return (
@@ -190,8 +256,10 @@ export default function MemAppAdmin() {
               ) : (
                 <span className="text-slate-400 text-[10px] tracking-widest uppercase bg-slate-100 px-2 py-1 rounded-md border border-slate-200">History</span>
               )
+            ) : item.type === 'reminder' ? (
+                <span className="text-slate-400 text-lg">•</span> 
             ) : (
-              item.order_index
+              item.order_index 
             )}
           </td>
           <td className="px-4 py-4 text-left align-top pt-5">
@@ -208,12 +276,12 @@ export default function MemAppAdmin() {
               <a 
                 href={item.description} 
                 target="_blank" 
-                className="text-[#0d21a1] hover:text-[#011638] underline break-all line-clamp-2 max-w-[200px] sm:max-w-none"
+                className="text-[#0d21a1] hover:text-[#011638] underline break-all line-clamp-2 max-w-[150px] sm:max-w-xs md:max-w-sm"
               >
                 {item.description}
               </a>
             ) : (
-              <div className="break-words whitespace-normal">
+              <div className="break-words whitespace-pre-wrap max-w-[150px] sm:max-w-xs md:max-w-md lg:max-w-lg">
                 {item.description}
               </div>
             )}
@@ -221,7 +289,6 @@ export default function MemAppAdmin() {
           
           <td className="px-4 py-4 align-top pt-4">
             <div className="grid grid-cols-[85px_65px] gap-3 mx-auto w-[162px]">
-              
               <div className="w-[85px] h-[30px] flex items-center justify-end">
                 {item.type === 'video' && item.order_index !== 1 ? (
                   <button 
@@ -252,44 +319,68 @@ export default function MemAppAdmin() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-full overflow-hidden">
+      <Toast message={toast?.message || null} type={toast?.type || 'success'} onClose={() => setToast(null)} />
+      
       <div className="mb-8">
         <h1 className="text-2xl font-oswald font-bold text-[#011638] uppercase tracking-wide">Membership App Content</h1>
         <p className="text-[#475569] font-ubuntu-mono mt-1">Control instructions, reminders, deadlines, and videos</p>
       </div>
 
-      <div className="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest hidden md:block">Set Deadline:</span>
-            <input type="date" value={deadlineDate} onChange={(e) => setDeadlineDate(e.target.value)} className="w-full sm:w-auto px-4 py-2 rounded-lg border border-[#011638] focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono" />
-          </div>
-          <button onClick={saveDeadline} disabled={savingDeadline} className="w-full sm:w-auto px-6 py-2 bg-[#011638] text-white rounded-lg hover:bg-[#0d21a1] transition-colors flex items-center justify-center font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50">
-            {savingDeadline ? "Saving..." : "Save Deadline"}
-          </button>
+      <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-8 flex flex-col gap-4">
+        
+        {/* Deadline Row */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
+                <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest min-w-[120px]">Set Deadline:</span>
+                <input type="date" value={deadlineDate} onChange={(e) => setDeadlineDate(e.target.value)} className="w-full sm:w-auto px-4 py-2 rounded-lg border border-[#011638] focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono" />
+                <button onClick={saveDeadline} disabled={savingDeadline} className="w-full sm:w-auto px-6 py-2 bg-[#011638] text-white rounded-lg hover:bg-[#0d21a1] transition-colors flex items-center justify-center font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50">
+                    {savingDeadline ? "Saving..." : "Save Deadline"}
+                </button>
+            </div>
+            {deadlineItem && (
+                <span className="text-xs text-[#475569] font-ubuntu-mono whitespace-nowrap mt-2 sm:mt-0">Current: <strong className="text-red-600">{deadlineItem.description}</strong></span>
+            )}
         </div>
 
-        <Link href="/dashboard/add/mem-app" className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm">
+        <hr className="border-gray-100" />
+
+        {/* Signup Link Row */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto flex-1">
+                <span className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest min-w-[120px]">Google Form:</span>
+                <input 
+                    type="url" 
+                    value={signupLink} 
+                    onChange={(e) => setSignupLink(e.target.value)} 
+                    placeholder="https://docs.google.com/forms/..."
+                    className="w-full max-w-lg px-4 py-2 rounded-lg border border-[#011638] focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono" 
+                />
+                <button onClick={saveSignupLink} disabled={savingLink} className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50">
+                    {savingLink ? "Saving..." : "Save Link"}
+                </button>
+            </div>
+        </div>
+
+      </div>
+
+      {/* FILTER & ADD BUTTON */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto flex-1">
+            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="w-full sm:w-auto px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono min-w-[160px]">
+            <option value="ALL">All Types</option>
+            <option value="instruction">Instructions</option>
+            <option value="reminder">Reminders</option>
+            <option value="video">Videos</option>
+            </select>
+        </div>
+        <Link href="/dashboard/add/mem-app" className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm shrink-0">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Content
         </Link>
       </div>
 
-      {deadlineItem && (
-        <div className="mb-6 -mt-3 text-left w-full">
-          <span className="text-sm text-[#475569] font-ubuntu-mono">Currently Displayed As: <strong className="text-red-600 ml-1">{deadlineItem.description}</strong></span>
-        </div>
-      )}
-
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
-        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="w-full sm:w-auto px-4 py-2 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono min-w-[160px]">
-          <option value="ALL">All Types</option>
-          <option value="instruction">Instructions</option>
-          <option value="reminder">Reminders</option>
-          <option value="video">Videos</option>
-        </select>
-      </div>
-
+      {/* TABLE */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200 w-full">
         <div className="overflow-x-auto w-full">
           <table className="min-w-full table-fixed">
