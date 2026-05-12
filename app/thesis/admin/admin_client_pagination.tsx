@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
-import EditThesisModal from "./edit_thesis_modal";
-import MoveThesisModal from "./move_thesis_modal";
 
 interface ClientPaginationProps {
   allTheses: any[];
@@ -239,7 +237,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setEditingThesis(thesis);
+                              router.push(`/thesis/admin/edit?id=${thesis.id}`); 
                             }}
                             className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                             title="Edit"
@@ -460,33 +458,6 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
             onPageChange={handlePageChange}
           />
         </>
-      )}
-
-      {editingThesis && (
-        <EditThesisModal
-          thesis={editingThesis}
-          onClose={() => setEditingThesis(null)}
-          onUpdate={(updatedThesis) => {
-            setTheses((prev) => {
-              const updated = prev.map((t) =>
-                t.id === updatedThesis.id ? updatedThesis : t
-              );
-              return sortTheses(updated);
-            });
-            setEditingThesis(null);
-          }}
-        />
-      )}
-
-      {movingThesis && (
-        <MoveThesisModal
-          thesis={movingThesis}
-          onClose={() => setMovingThesis(null)}
-          onMove={(newStatus) => {
-            handleUpdateStatus(movingThesis.id, newStatus);
-            setMovingThesis(null);
-          }}
-        />
       )}
     </>
   );

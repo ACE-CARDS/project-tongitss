@@ -26,14 +26,14 @@ interface Author {
   memberId?: number | null;
 }
 
-function EditSurveyContent() {
+function EditThesisContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
   
-  const surveyId = searchParams.get("id");
+  const thesisId = searchParams.get("id");
 
-  const [survey, setSurvey] = useState<any>(null);
+  const [thesis, setThesis] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
@@ -43,27 +43,22 @@ function EditSurveyContent() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
-  const [surveyLinkError, setSurveyLinkError] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState("");
   const [schoolError, setSchoolError] = useState("");
-  const [dateError, setDateError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
   const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [pubDate, setPubDate] = useState("");
 
   const [formData, setFormData] = useState({
-    survey_title: "",
-    survey_desc: "",
-    survey_keyword: "",
-    survey_start: "",
-    survey_end: "",
-    survey_link: "",
-    survey_respondents: "",
-    max_respondents: "",
+    thesis_title: "",
+    thesis_abstract: "",
+    thesis_keyword: "",
+    thesis_date: "",
+    thesis_phys: "",
+    thesis_digi: "",
     r_category: "",
     school: "",
   });
@@ -199,24 +194,21 @@ function EditSurveyContent() {
         }
     }
     return null;
-    };
+  };
 
   // Validate entire form
   const validateForm = () => {
     const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
     const titleValid = titleInput?.value && titleInput.value.length >= 5;
-    const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
-    const descriptionValid = descriptionInput?.value && descriptionInput.value.length >= 10;
+    const abstractInput = document.querySelector('textarea[name="abstract"]') as HTMLTextAreaElement;
+    const abstractValid = abstractInput?.value && abstractInput.value.length >= 10;
     const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
     const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
     const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
     const categoryValid = !!categorySelect?.value;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
     const schoolValid = !!schoolSelect?.value;
-    const surveyLinkValid = !surveyLinkError;
-    const respondentsInput = document.querySelector('input[name="respondents"]') as HTMLInputElement;
-    const respondentsValid = respondentsInput?.value && respondentsInput.value.length >= 2;
-    const datesValid = !!startDate && !!endDate && !dateError;
+    const pubDateValid = !!pubDate;
     
     // Check authors
     let hasValidAuthor = false;
@@ -231,9 +223,9 @@ function EditSurveyContent() {
     }
     
     const duplicateError = checkDuplicateAuthors();
-    const hasErrors = !titleValid || !descriptionValid || !keywordsValid || !categoryValid || 
-                      !schoolValid || !surveyLinkValid || !respondentsValid || !datesValid || 
-                      !hasValidAuthor || !!categoryError || !!schoolError || !!duplicateError;
+    const hasErrors = !titleValid || !abstractValid || !keywordsValid || !categoryValid || 
+                      !schoolValid || !pubDateValid || !hasValidAuthor || 
+                      !!categoryError || !!schoolError || !!duplicateError;
     
     setIsFormValid(!hasErrors);
     return !hasErrors;
@@ -241,19 +233,19 @@ function EditSurveyContent() {
 
   useEffect(() => {
     validateForm();
-  }, [startDate, endDate, dateError, surveyLinkError, categoryError, schoolError, authors]);
+  }, [pubDate, categoryError, schoolError, authors]);
 
   useEffect(() => {
-    async function fetchSurvey() {
-      if (!surveyId) return;
+    async function fetchThesis() {
+      if (!thesisId) return;
       
       const { data, error } = await supabase
-        .from("survey")
+        .from("thesis")
         .select(`
           *,
           r_category (id, r_category_name),
           school (id, school_name),
-          survey_author (
+          thesis_author (
             author (
               id,
               author_fname,
@@ -264,27 +256,23 @@ function EditSurveyContent() {
             )
           )
         `)
-        .eq("id", surveyId)
+        .eq("id", thesisId)
         .single();
 
       if (error) {
-        console.error("Error fetching survey:", error);
-        setSubmitError("Failed to load survey data.");
+        console.error("Error fetching thesis:", error);
+        setSubmitError("Failed to load thesis data.");
       } else {
-        setSurvey(data);
-        const start = data.survey_start.split("T")[0];
-        const end = data.survey_end.split("T")[0];
-        setStartDate(start);
-        setEndDate(end);
+        setThesis(data);
+        const date = data.thesis_date.split("T")[0];
+        setPubDate(date);
         setFormData({
-          survey_title: data.survey_title,
-          survey_desc: data.survey_desc,
-          survey_keyword: data.survey_keyword,
-          survey_start: start,
-          survey_end: end,
-          survey_link: data.survey_link,
-          survey_respondents: data.survey_respondents,
-          max_respondents: data.max_respondents || "",
+          thesis_title: data.thesis_title,
+          thesis_abstract: data.thesis_abstract,
+          thesis_keyword: data.thesis_keyword,
+          thesis_date: date,
+          thesis_phys: data.thesis_phys || "",
+          thesis_digi: data.thesis_digi || "",
           r_category: data.r_category?.id.toString() || "",
           school: data.school?.id.toString() || "",
         });
@@ -292,8 +280,8 @@ function EditSurveyContent() {
       setLoading(false);
     }
 
-    fetchSurvey();
-  }, [surveyId, supabase]);
+    fetchThesis();
+  }, [thesisId, supabase]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -309,11 +297,11 @@ function EditSurveyContent() {
 
   // fetch authors
   useEffect(() => {
-    if (!survey) return;
+    if (!thesis) return;
     
     const fetchAuthors = async () => {
       const { data, error } = await supabase
-        .from("survey_author")
+        .from("thesis_author")
         .select(`
           author (
             id,
@@ -324,10 +312,10 @@ function EditSurveyContent() {
             mem_id
           )
         `)
-        .eq("survey", survey.id);
+        .eq("thesis", thesis.id);
 
       if (data && data.length > 0) {
-        const surveyAuthors = data.map((item: any, index: number) => ({
+        const thesisAuthors = data.map((item: any, index: number) => ({
           id: index + 1,
           firstName: item.author.author_fname,
           middleInitial: item.author.author_minit || "",
@@ -335,23 +323,11 @@ function EditSurveyContent() {
           email: item.author.author_email,
           memberId: item.author.mem_id
         }));
-        setAuthors(surveyAuthors);
+        setAuthors(thesisAuthors);
       }
     };
     fetchAuthors();
-  }, [survey, supabase]);
-
-  // Check if end date is past
-  const [isPastDate, setIsPastDate] = useState(false);
-
-  useEffect(() => {
-    if (!formData.survey_end) return;
-    const endDateObj = new Date(formData.survey_end);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const newIsPastDate = endDateObj < today;
-    setIsPastDate(newIsPastDate);
-  }, [formData.survey_end]);
+  }, [thesis, supabase]);
 
   const addAuthor = () => {
     const newId = authors.length + 1;
@@ -374,23 +350,6 @@ function EditSurveyContent() {
         id: idx + 1
       }));
       setAuthors(reindexedAuthors);
-    }
-  };
-
-  const checkDuplicateSurveyLink = async (link: string) => {
-    if (!link) return;
-    
-    const { data, error } = await supabase
-      .from("survey")
-      .select("id")
-      .ilike("survey_link", link)
-      .neq("id", survey.id)
-      .maybeSingle();
-    
-    if (data) {
-      setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
-    } else {
-      setSurveyLinkError("");
     }
   };
 
@@ -544,15 +503,6 @@ function EditSurveyContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (startDate && endDate && endDate <= startDate) {
-      setDateError("End date must be after start date");
-      const dateSection = document.getElementById('end_date');
-      if (dateSection) {
-        dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
-    }
-
     // Validate duplicate authors
     const duplicateError = checkDuplicateAuthors();
     if (duplicateError) {
@@ -581,17 +531,14 @@ function EditSurveyContent() {
       
       // get form values
       const titleInput = form.elements.namedItem("title") as HTMLInputElement;
-      const descriptionInput = form.elements.namedItem("description") as HTMLTextAreaElement;
+      const abstractInput = form.elements.namedItem("abstract") as HTMLTextAreaElement;
       const keywordsInput = form.elements.namedItem("keywords") as HTMLInputElement;
-      const startDateInput = form.elements.namedItem("start_date") as HTMLInputElement;
-      const endDateInput = form.elements.namedItem("end_date") as HTMLInputElement;
-      const surveyLinkInput = form.elements.namedItem("survey_link") as HTMLInputElement;
-      const respondentsInput = form.elements.namedItem("respondents") as HTMLInputElement;
-      const maxRespondentsInput = form.elements.namedItem("max_respondents") as HTMLInputElement;
+      const pubDateInput = form.elements.namedItem("pub_date") as HTMLInputElement;
+      const physLinkInput = form.elements.namedItem("phys_link") as HTMLInputElement;
+      const digiLinkInput = form.elements.namedItem("digi_link") as HTMLInputElement;
 
       // validation
-      if (!titleInput?.value || !descriptionInput?.value || !keywordsInput?.value || 
-          !startDateInput?.value || !endDateInput?.value || !surveyLinkInput?.value || !respondentsInput?.value) {
+      if (!titleInput?.value || !abstractInput?.value || !keywordsInput?.value || !pubDateInput?.value) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -599,27 +546,9 @@ function EditSurveyContent() {
         throw new Error("Title must be at least 5 characters");
       }
 
-      if (descriptionInput.value.length < 10) {
-        throw new Error("Description must be at least 10 characters");
+      if (abstractInput.value.length < 10) {
+        throw new Error("Abstract must be at least 10 characters");
       }
-
-      // check duplicate survey link
-      if (surveyLinkInput.value) {
-        const { data: existingSurvey } = await supabase
-          .from("survey")
-          .select("id")
-          .ilike("survey_link", surveyLinkInput.value)
-          .neq("id", survey.id)
-          .maybeSingle();
-        
-        if (existingSurvey) {
-          throw new Error("This survey link is already in use. Please provide a unique link.");
-        }
-      }
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const endDateObj = new Date(endDateInput.value);
 
       if (!formData.r_category) {
         throw new Error("Please select a category");
@@ -631,24 +560,22 @@ function EditSurveyContent() {
       }
       const schoolId = formData.school;
 
-      // Update survey
-      const { error: surveyError } = await supabase
-        .from("survey")
+      // Update thesis
+      const { error: thesisError } = await supabase
+        .from("thesis")
         .update({
-          survey_title: titleInput.value,
-          survey_desc: descriptionInput.value,
-          survey_keyword: keywordsInput.value,
-          survey_start: startDateInput.value,
-          survey_end: endDateInput.value,
-          survey_link: surveyLinkInput.value,
-          survey_respondents: respondentsInput.value,
-          max_respondents: maxRespondentsInput?.value ? parseInt(maxRespondentsInput.value) : null,
+          thesis_title: titleInput.value,
+          thesis_abstract: abstractInput.value,
+          thesis_keyword: keywordsInput.value,
+          thesis_date: pubDateInput.value,
+          thesis_phys: physLinkInput?.value || null,
+          thesis_digi: digiLinkInput?.value || null,
           r_category: parseInt(categoryId),
           school: parseInt(schoolId),
         })
-        .eq("id", survey.id);
+        .eq("id", thesis.id);
 
-      if (surveyError) throw surveyError;
+      if (thesisError) throw thesisError;
 
       // Process authors
       const desiredAuthorIds: number[] = [];
@@ -721,9 +648,9 @@ function EditSurveyContent() {
 
       // Get current author links
       const { data: currentLinks, error: fetchError } = await supabase
-        .from("survey_author")
+        .from("thesis_author")
         .select("author")
-        .eq("survey", survey.id);
+        .eq("thesis", thesis.id);
 
       if (fetchError) throw fetchError;
 
@@ -736,9 +663,9 @@ function EditSurveyContent() {
       // Remove authors
       if (toRemove.length > 0) {
         const { error: removeError } = await supabase
-          .from("survey_author")
+          .from("thesis_author")
           .delete()
-          .eq("survey", survey.id)
+          .eq("thesis", thesis.id)
           .in("author", toRemove);
         
         if (removeError) throw removeError;
@@ -747,48 +674,46 @@ function EditSurveyContent() {
       // Add new authors
       if (toAdd.length > 0) {
         const newLinks = toAdd.map(authorId => ({
-          survey: survey.id,
+          thesis: thesis.id,
           author: authorId
         }));
         
         const { error: addError } = await supabase
-          .from("survey_author")
+          .from("thesis_author")
           .insert(newLinks);
         
         if (addError) throw addError;
       }
 
-      router.push("/survey/admin/edit/success");
+      router.push("/thesis/admin/edit/success");
       
     } catch (error) {
-      console.error("Error updating survey:", error);
-      setSubmitError(error instanceof Error ? error.message : "Failed to update survey");
+      console.error("Error updating thesis:", error);
+      setSubmitError(error instanceof Error ? error.message : "Failed to update thesis");
       setIsSubmitting(false);
     }
   };
 
   const checkForChanges = () => {
-    if (!survey) return false;
+    if (!thesis) return false;
     
     // Check basic fields
     const basicFieldsChanged = 
-      formData.survey_title !== survey.survey_title ||
-      formData.survey_desc !== survey.survey_desc ||
-      formData.survey_keyword !== survey.survey_keyword ||
-      startDate !== survey.survey_start.split("T")[0] ||
-      endDate !== survey.survey_end.split("T")[0] ||
-      formData.survey_link !== survey.survey_link ||
-      formData.survey_respondents !== survey.survey_respondents ||
-      formData.max_respondents !== (survey.max_respondents?.toString() || "") ||
-      formData.r_category !== survey.r_category?.id?.toString() ||
-      formData.school !== survey.school?.id?.toString();
+      formData.thesis_title !== thesis.thesis_title ||
+      formData.thesis_abstract !== thesis.thesis_abstract ||
+      formData.thesis_keyword !== thesis.thesis_keyword ||
+      pubDate !== thesis.thesis_date.split("T")[0] ||
+      formData.thesis_phys !== (thesis.thesis_phys || "") ||
+      formData.thesis_digi !== (thesis.thesis_digi || "") ||
+      formData.r_category !== thesis.r_category?.id?.toString() ||
+      formData.school !== thesis.school?.id?.toString();
     
     if (basicFieldsChanged) return true;
     
-    // Get original authors from the survey data
-    let originalAuthorsFromSurvey: any[] = [];
-    if (survey.survey_author && survey.survey_author.length > 0) {
-      originalAuthorsFromSurvey = survey.survey_author.map((sa: any) => {
+    // Get original authors from the thesis data
+    let originalAuthorsFromThesis: any[] = [];
+    if (thesis.thesis_author && thesis.thesis_author.length > 0) {
+      originalAuthorsFromThesis = thesis.thesis_author.map((sa: any) => {
         const authorData = sa.author || sa;
         return {
           firstName: authorData.author_fname || "",
@@ -801,15 +726,14 @@ function EditSurveyContent() {
     }
     
     // Check if number of authors changed
-    if (authors.length !== originalAuthorsFromSurvey.length) {
-      console.log("Number of authors changed");
+    if (authors.length !== originalAuthorsFromThesis.length) {
       return true;
     }
     
     // Check each author field
     for (let i = 0; i < authors.length; i++) {
       const currentAuthor = authors[i];
-      const originalAuthor = originalAuthorsFromSurvey[i];
+      const originalAuthor = originalAuthorsFromThesis[i];
       
       if (!originalAuthor) return true;
       
@@ -817,7 +741,6 @@ function EditSurveyContent() {
           (currentAuthor.lastName || "") !== (originalAuthor.lastName || "") ||
           (currentAuthor.middleInitial || "") !== (originalAuthor.middleInitial || "") ||
           (currentAuthor.email || "") !== (originalAuthor.email || "")) {
-        console.log(`Author ${i + 1} changed:`, currentAuthor, originalAuthor);
         return true;
       }
     }
@@ -841,7 +764,7 @@ function EditSurveyContent() {
     </div>
   );
   
-  if (!survey) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Survey not found.</div>;
+  if (!thesis) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Thesis not found.</div>;
 
   return (
     <div className="w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
@@ -849,13 +772,13 @@ function EditSurveyContent() {
       <div className="pt-5">
         <main className="container mx-auto py-8 px-4 max-w-3xl">
           <div>
-            <BackButton href="/dashboard?tab=survey&page=1" />
+            <BackButton href="/dashboard?tab=thesis&page=1" />
             <div className="mt-5">
               <h1 className="text-3xl font-oswald font-bold text-[#011638]">
-                Edit Survey
+                Edit Thesis
               </h1>
               <p className="text-[#475569] font-ubuntu-mono mt-2 break-words">
-                Edit "<span className="font-bold italic text-[#011638]">{survey.survey_title}</span>"
+                Edit "<span className="font-bold italic text-[#011638]">{thesis.thesis_title}</span>"
               </p>
             </div>
           </div>
@@ -877,19 +800,19 @@ function EditSurveyContent() {
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="title" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Survey Title <span className="text-[#eec643]">*</span>
+                        Thesis Title <span className="text-[#eec643]">*</span>
                       </label>
                       <input
                         type="text"
                         id="title"
                         name="title"
-                        defaultValue={formData.survey_title}
+                        defaultValue={formData.thesis_title}
                         required
                         maxLength={300}
-                        placeholder="Enter survey title"
+                        placeholder="Enter thesis title"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         onChange={(e) => {
-                          setFormData(prev => ({ ...prev, survey_title: e.target.value }));
+                          setFormData(prev => ({ ...prev, thesis_title: e.target.value }));
                           const errorSpan = document.getElementById('title-error');
                           if (e.target.value.length === 0) {
                             errorSpan!.textContent = 'Title is required.';
@@ -907,26 +830,26 @@ function EditSurveyContent() {
                     </div>
 
                     <div>
-                      <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Description <span className="text-[#eec643]">*</span>
+                      <label htmlFor="abstract" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Abstract <span className="text-[#eec643]">*</span>
                       </label>
                       <textarea
-                        id="description"
-                        name="description"
-                        defaultValue={formData.survey_desc}
+                        id="abstract"
+                        name="abstract"
+                        defaultValue={formData.thesis_abstract}
                         required
                         rows={4}
                         maxLength={1500}
-                        placeholder="Enter survey description"
+                        placeholder="Enter thesis abstract"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                         onChange={(e) => {
-                          setFormData(prev => ({ ...prev, survey_desc: e.target.value }));
-                          const errorSpan = document.getElementById('description-error');
+                          setFormData(prev => ({ ...prev, thesis_abstract: e.target.value }));
+                          const errorSpan = document.getElementById('abstract-error');
                           if (e.target.value.length === 0) {
-                            errorSpan!.textContent = 'Description is required.';
+                            errorSpan!.textContent = 'Abstract is required.';
                             errorSpan!.style.display = 'block';
                           } else if (e.target.value.length < 10) {
-                            errorSpan!.textContent = 'Description must be at least 10 characters.';
+                            errorSpan!.textContent = 'Abstract must be at least 10 characters.';
                             errorSpan!.style.display = 'block';
                           } else {
                             errorSpan!.style.display = 'none';
@@ -934,7 +857,7 @@ function EditSurveyContent() {
                           validateForm();
                         }}
                       />
-                      <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
                     <div>
@@ -945,7 +868,7 @@ function EditSurveyContent() {
                         type="text"
                         id="keywords"
                         name="keywords"
-                        defaultValue={formData.survey_keyword}
+                        defaultValue={formData.thesis_keyword}
                         required
                         maxLength={300}
                         placeholder="Enter keywords separated by commas"
@@ -959,7 +882,7 @@ function EditSurveyContent() {
                           }
                         }}
                         onChange={(e) => {
-                          setFormData(prev => ({ ...prev, survey_keyword: e.target.value }));
+                          setFormData(prev => ({ ...prev, thesis_keyword: e.target.value }));
                           const errorSpan = document.getElementById('keywords-error');
                           if (e.target.value.length === 0) {
                             errorSpan!.textContent = 'Atleast 1 keyword is required.';
@@ -1012,7 +935,7 @@ function EditSurveyContent() {
                                 maxLength={20}
                                 placeholder="First Name"
                                 defaultValue={author.firstName || ""}
-    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                                className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                                     return;
@@ -1280,43 +1203,43 @@ function EditSurveyContent() {
                           />
                           <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                           
-                        {/* Email Suggestions Dropdown */}
-                        {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && (
-                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
-                            <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
-                            <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                setEmailSuggestions(prev => {
-                                    const newMap = new Map(prev);
-                                    newMap.delete(index);
-                                    return newMap;
-                                });
-                                }}
-                                className="text-white hover:text-gray-200 text-lg leading-none"
-                                aria-label="Close"
-                            >
-                                ×
-                            </button>
-                            </div>
-                            <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
-                            {emailSuggestions.get(index)!.map((suggestion, idx) => (
+                          {/* Email Suggestions Dropdown */}
+                          {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && (
+                            <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
+                              <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
+                                <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
                                 <button
-                                key={idx}
-                                type="button"
-                                onClick={() => selectEmailSuggestion(suggestion, index)}
-                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                                  type="button"
+                                  onClick={() => {
+                                    setEmailSuggestions(prev => {
+                                      const newMap = new Map(prev);
+                                      newMap.delete(index);
+                                      return newMap;
+                                    });
+                                  }}
+                                  className="text-white hover:text-gray-200 text-lg leading-none"
+                                  aria-label="Close"
                                 >
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{suggestion.email}</span>
-                                    <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
-                                </div>
+                                  ×
                                 </button>
-                            ))}
+                              </div>
+                              <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+                                {emailSuggestions.get(index)!.map((suggestion, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => selectEmailSuggestion(suggestion, index)}
+                                    className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{suggestion.email}</span>
+                                      <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                        </div>
-                        )}
+                          )}
                           
                           {/* Search Results Dropdown */}
                           {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && (
@@ -1357,305 +1280,85 @@ function EditSurveyContent() {
                 </div>
               </div>
 
-              {/* survey details section */}
+              {/* thesis details section */}
               <div>
                 <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                  <h2 className="text-lg font-oswald font-semibold">Survey Details</h2>
+                  <h2 className="text-lg font-oswald font-semibold">Thesis Details</h2>
                 </div>
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="start_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          Start Date <span className="text-[#eec643]">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="start_date"
-                          name="start_date"
-                          required
-                          min="2022-01-01"
-                          max={(() => {
-                            const now = new Date();
-                            const phTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-                            const year = phTime.getFullYear();
-                            const month = String(phTime.getMonth() + 1).padStart(2, '0');
-                            const day = String(phTime.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                          })()}
-                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                          value={startDate}
-                          onChange={(e) => {
-                            const newStartDate = e.target.value;
-                            setStartDate(newStartDate);
-                            setFormData(prev => ({ ...prev, survey_start: newStartDate }));
-                            
-                            if (endDate && newStartDate >= endDate) {
-                              setEndDate("");
-                              setDateError("End date must be after start date");
-                            } else {
-                              setDateError("");
-                            }
-                            validateForm();
-                          }}
-                        />
-                      </div>
-                      
-                      <div>
-                        <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          End Date <span className="text-[#eec643]">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="end_date"
-                          name="end_date"
-                          required
-                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                            dateError ? 'border-red-500' : 'border-[#94a3b8]'
-                          }`}
-                          value={endDate}
-                          min={(() => {
-                            const tomorrow = new Date();
-                            tomorrow.setDate(tomorrow.getDate() + 1);
-                            tomorrow.setHours(0, 0, 0, 0);
-                            
-                            if (startDate) {
-                              const startDateObj = new Date(startDate);
-                              const today = new Date();
-                              today.setHours(0, 0, 0, 0);
-                              
-                              if (startDateObj.getTime() === today.getTime()) {
-                                return tomorrow.toISOString().split('T')[0];
-                              }
-                              
-                              const dayAfterStart = new Date(startDate);
-                              dayAfterStart.setDate(dayAfterStart.getDate() + 1);
-                              dayAfterStart.setHours(0, 0, 0, 0);
-                              
-                              if (dayAfterStart > tomorrow) {
-                                return dayAfterStart.toISOString().split('T')[0];
-                              }
-                            }
-                            
-                            return tomorrow.toISOString().split('T')[0];
-                          })()}
-                          onChange={(e) => {
-                            const newEndDate = e.target.value;
-                            setEndDate(newEndDate);
-                            setFormData(prev => ({ ...prev, survey_end: newEndDate }));
-                            
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            const endDateObj = new Date(newEndDate);
-                            endDateObj.setHours(0, 0, 0, 0);
-                            
-                            if (endDateObj <= today) {
-                              setDateError("End date must be after today");
-                              setEndDate("");
-                            } 
-                            else if (startDate && newEndDate <= startDate) {
-                              setDateError("End date must be after start date");
-                              setEndDate("");
-                            } 
-                            else {
-                              setDateError("");
-                            }
-                            validateForm();
-                          }}
-                          onBlur={() => {
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            const endDateObj = endDate ? new Date(endDate) : null;
-                            endDateObj?.setHours(0, 0, 0, 0);
-                            
-                            if (endDateObj && endDateObj <= today) {
-                              setDateError("End date must be after today");
-                              setEndDate("");
-                            } else if (startDate && endDate && endDate <= startDate) {
-                              setDateError("End date must be after start date");
-                              setEndDate("");
-                            }
-                            validateForm();
-                          }}
-                        />
-                        {dateError && (
-                          <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
-                        )}
-                      </div>
-                    </div>
-
                     <div>
-                      <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Survey Link <span className="text-[#eec643]">*</span>
+                      <label htmlFor="pub_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Publication Date <span className="text-[#eec643]">*</span>
                       </label>
                       <input
-                        type="url"
-                        id="survey_link"
-                        name="survey_link"
-                        defaultValue={formData.survey_link}
+                        type="date"
+                        id="pub_date"
+                        name="pub_date"
                         required
-                        maxLength={300}
-                        placeholder="Enter survey URL"
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          surveyLinkError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
-                        onChange={async (e) => {
-                          const value = e.target.value;
-                          setFormData(prev => ({ ...prev, survey_link: value }));
+                        min="2022-01-01"
+                        max={new Date().toISOString().split('T')[0]}
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                        value={pubDate}
+                        onChange={(e) => {
+                          const newPubDate = e.target.value;
+                          setPubDate(newPubDate);
+                          setFormData(prev => ({ ...prev, thesis_date: newPubDate }));
                           
-                          const errorSpan = document.getElementById('survey-link-error');
-                          
-                          setSurveyLinkError("");
-                          
-                          if (value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Survey link is required.';
-                              errorSpan.style.display = 'block';
-                            }
-                            validateForm();
-                            return;
-                          }
-                          
-                          let isValidUrl = false;
-                          try {
-                            new URL(value);
-                            isValidUrl = true;
-                          } catch {
-                            isValidUrl = false;
-                          }
-                          
-                          if (!isValidUrl) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Please enter a valid URL.';
-                              errorSpan.style.display = 'block';
-                            }
-                            validateForm();
-                            return;
-                          }
-                          
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
-                          
-                          const supabaseClient = createClient();
-                          const { data: existingSurvey } = await supabaseClient
-                            .from("survey")
-                            .select("id")
-                            .ilike("survey_link", value)
-                            .neq("id", survey.id)
-                            .maybeSingle();
-                          
-                          if (existingSurvey) {
-                            setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
-                            if (errorSpan) {
-                              errorSpan.textContent = "This survey link is already in use. Please provide a unique link.";
-                              errorSpan.style.display = 'block';
-                            }
+                          const errorSpan = document.getElementById('pubdate-error');
+                          if (!newPubDate) {
+                            errorSpan!.textContent = 'Publication date is required.';
+                            errorSpan!.style.display = 'block';
                           } else {
-                            setSurveyLinkError("");
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
+                            errorSpan!.style.display = 'none';
                           }
                           validateForm();
                         }}
                       />
-                      <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      <span id="pubdate-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
                     <div>
-                      <label htmlFor="respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Target Respondents <span className="text-[#eec643]">*</span>
+                      <label htmlFor="phys_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Physical Copy
                       </label>
                       <input
                         type="text"
-                        id="respondents"
-                        name="respondents"
-                        defaultValue={formData.survey_respondents}
-                        required
+                        id="phys_link"
+                        name="phys_link"
+                        defaultValue={formData.thesis_phys}
                         maxLength={200}
-                        placeholder="Enter respondent criteria separated by commas"
+                        placeholder="Enter physical copy location"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          if (!/[A-Za-z0-9\s,.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
                         onChange={(e) => {
-                          setFormData(prev => ({ ...prev, survey_respondents: e.target.value }));
-                          const errorSpan = document.getElementById('respondents-error');
-                          
-                          if (e.target.value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Target respondents are required.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (e.target.value.length < 2) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Please provide at least 1 respondent criteria.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else if (e.target.value.length > 200) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Target respondents must not exceed 200 characters.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
+                          setFormData(prev => ({ ...prev, thesis_phys: e.target.value }));
                           validateForm();
                         }}
                       />
-                      <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
                     <div>
-                      <label htmlFor="max_respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Maximum Respondents
+                      <label htmlFor="digi_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Digital Copy Link
                       </label>
                       <input
-                        type="number"
-                        id="max_respondents"
-                        name="max_respondents"
-                        defaultValue={formData.max_respondents}
-                        min="1"
-                        max="10000"
-                        maxLength={6}
-                        placeholder="e.g., 100"
+                        type="url"
+                        id="digi_link"
+                        name="digi_link"
+                        defaultValue={formData.thesis_digi}
+                        maxLength={200}
+                        placeholder="Enter digital copy URL"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                         onKeyDown={(e) => {
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
                           }
-                          const input = e.target as HTMLInputElement;
-                          if (input.value.length >= 5 && /[0-9]/.test(e.key)) {
-                            e.preventDefault();
-                          }
                         }}
                         onChange={(e) => {
-                          setFormData(prev => ({ ...prev, max_respondents: e.target.value }));
-                          const errorSpan = document.getElementById('max-respondents-error');
-                          const value = parseInt(e.target.value);
-                          
-                          if (e.target.value && (value < 1 || value > 10000)) {
-                            if (errorSpan) {
-                              errorSpan.textContent = 'Maximum respondents must be between 1 and 10,000.';
-                              errorSpan.style.display = 'block';
-                            }
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = 'none';
-                            }
-                          }
+                          setFormData(prev => ({ ...prev, thesis_digi: e.target.value }));
                           validateForm();
                         }}
                       />
-                      <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                   </div>
                 </div>
@@ -1879,7 +1582,7 @@ function EditSurveyContent() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
                 <button
                   type="button"
-                  onClick={() => router.push("/dashboard?tab=survey&page=1")}
+                  onClick={() => router.push("/dashboard?tab=thesis&page=1")}
                   className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
                 >
                   Cancel
@@ -1902,10 +1605,10 @@ function EditSurveyContent() {
   );
 }
 
-export default function EditSurveyPage() {
+export default function EditThesisPage() {
   return (
     <Suspense>
-      <EditSurveyContent />
+      <EditThesisContent />
     </Suspense>
   );
 }
