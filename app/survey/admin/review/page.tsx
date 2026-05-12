@@ -260,13 +260,41 @@ function ReviewContent() {
             <div className="flex justify-end gap-3 pt-6 border-t border-[#e0e7ff]">
               {!showRejectForm ? (
                 <>
-                  <button onClick={() => setShowRejectForm(true)} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Reject</button>
-                  <button onClick={handleApprove} disabled={isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed">Approve Survey</button>
+                  <button 
+                    onClick={() => setShowRejectForm(true)} 
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    onClick={handleApprove} 
+                    disabled={isSubmitting} 
+                    className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Approving..." : "Approve Survey"}
+                  </button>
                 </>
               ) : (
                 <>
-                  <button onClick={() => setShowRejectForm(false)} className="px-4 py-2 text-[#011638] font-ubuntu-mono">Cancel</button>
-                  <button onClick={handleReject} disabled={!!rejectionError || !rejectionReason.trim() || isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Confirm Rejection</button>
+                  <button 
+                    onClick={() => {
+                      setShowRejectForm(false);
+                      setRejectionReason("");
+                      setRejectionError("");
+                    }} 
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-[#011638] font-ubuntu-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleReject} 
+                    disabled={!!rejectionError || !rejectionReason.trim() || isSubmitting} 
+                    className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Rejecting..." : "Reject Survey"}
+                  </button>
                 </>
               )}
             </div>
@@ -280,7 +308,7 @@ function ReviewContent() {
 
 export default function ReviewPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <ReviewContent />
     </Suspense>
   );

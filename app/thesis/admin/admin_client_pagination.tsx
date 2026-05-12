@@ -251,7 +251,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setMovingThesis(thesis);
+                              router.push(`/thesis/admin/move?id=${thesis.id}`); 
                             }}
                             className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                             title="Move"

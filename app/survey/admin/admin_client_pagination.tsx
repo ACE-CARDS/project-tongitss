@@ -6,7 +6,6 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
 import EditSurveyModal from "./edit_survey_modal";
-import MoveSurveyModal from "./move_survey_modal";
 import { useRouter } from "next/navigation";
 
 interface ClientPaginationProps {
@@ -260,7 +259,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setMovingSurvey(survey);
+                              router.push(`/survey/admin/move?id=${survey.id}`); 
                             }}
                             className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
                             title="Move"
@@ -506,18 +505,6 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
               return sortSurveys(updated);
             });
             setEditingSurvey(null);
-          }}
-        />
-      )}
-
-      {/* move modal */}
-      {movingSurvey && (
-        <MoveSurveyModal
-          survey={movingSurvey}
-          onClose={() => setMovingSurvey(null)}
-          onMove={(newStatus) => {
-            handleUpdateStatus(movingSurvey.id, newStatus);
-            setMovingSurvey(null);
           }}
         />
       )}
