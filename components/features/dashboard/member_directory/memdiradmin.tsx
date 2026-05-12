@@ -1562,7 +1562,19 @@ export default function MembersPage() {
                       `}
                     >
                       <div className="my-auto">
-                        <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
+                      <span
+                          className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight"
+                          title={`${member.mem_lname}, ${member.mem_fname}${
+                            member.mem_minit?.trim()
+                              ? ` ${member.mem_minit
+                                  .replace(/\./g, "")
+                                  .toUpperCase()
+                                  .split("")
+                                  .map((c) => `${c}.`)
+                                  .join("")}`
+                              : ""
+                          }`}
+                        >
                           {member.mem_lname.toUpperCase()},{" "}
                           {member.mem_fname
                             .toLowerCase()
