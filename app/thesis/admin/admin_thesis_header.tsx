@@ -615,7 +615,7 @@ export default function AdminThesisHeader({
 
           {/* Add button */}
           <Link
-            href="/thesis/add?returnTo=/thesis/admin"
+            href="/thesis/add?returnTo=/dashboard"
             className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

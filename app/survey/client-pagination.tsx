@@ -275,7 +275,7 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
                         survey.survey_respondents.split(',').map((criteria: string, index: number) => (
                           <span 
                             key={index} 
-                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono"
+                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words overflow-hidden"
                           >
                             {criteria.trim()}
                           </span>
