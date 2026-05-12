@@ -211,6 +211,7 @@ function ExecutivesContent() {
                             alt={`${exec.fname} ${exec.lname}`}
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
+                              console.log("Image failed:", e.currentTarget.src);
 
                               if (img.src === photoUrlJpg) {
                                 img.src = photoUrlPng;

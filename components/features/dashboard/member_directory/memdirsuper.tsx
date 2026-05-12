@@ -180,29 +180,27 @@ export default function MembersPage() {
   const sortedMembers = [...filteredMembers].sort((a, b) => {
     const originalA =
       originalMembers.find((o) => o.id === a.id)?.comm ?? a.comm;
-  
+
     const originalB =
       originalMembers.find((o) => o.id === b.id)?.comm ?? b.comm;
-  
+
     const commA = getCommName(originalA);
     const commB = getCommName(originalB);
-  
+
     const indexA = getPriorityIndex(commA);
     const indexB = getPriorityIndex(commB);
-  
+
     const aInList = indexA !== -1;
     const bInList = indexB !== -1;
-  
+
     if (aInList && bInList) return indexA - indexB;
-  
+
     if (aInList) return -1;
     if (bInList) return 1;
-  
+
     return `${a.mem_lname} ${a.mem_fname}`
       .toLowerCase()
-      .localeCompare(
-        `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
-      );
+      .localeCompare(`${b.mem_lname} ${b.mem_fname}`.toLowerCase());
   });
 
   // pagination
@@ -1179,6 +1177,151 @@ export default function MembersPage() {
     }
   };
 
+  //transition to new AY
+
+  const [showTransitionConfirm, setShowTransitionConfirm] = useState(false);
+  const [showTransitionSuccess, setShowTransitionSuccess] = useState(false);
+  const [selectedTransitionYear, setSelectedTransitionYear] =
+    useState(currentAcademicYear);
+
+  const handleAYTransition = async () => {
+    setShowTransitionConfirm(false);
+
+    const targetCommitteeIds = [1];
+    const yearSuffix = selectedTransitionYear
+      .replace("AY ", "")
+      .replace("-", "_");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: membersToUpdate, error: fetchError } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_email")
+      .eq("acadyear", selectedTransitionYear)
+      .in("comm", targetCommitteeIds);
+
+    if (fetchError) throw fetchError;
+    if (!membersToUpdate || membersToUpdate.length === 0) return;
+    const isCurrentUserExec = membersToUpdate.some(
+      (m) => m.mem_email.toLowerCase() === user?.email?.toLowerCase(),
+    );
+
+    try {
+      const { data: membersToUpdate, error: fetchError } = await supabase
+        .from("member")
+        .select("id, mem_fname, mem_lname")
+        .eq("acadyear", selectedTransitionYear)
+        .in("comm", targetCommitteeIds);
+
+      if (fetchError) throw fetchError;
+
+      if (!membersToUpdate || membersToUpdate.length === 0) {
+        setShowTransitionSuccess(true);
+        return;
+      }
+
+      const updates = membersToUpdate.map((m) => {
+        const firstName = m.mem_fname.toLowerCase().replace(/\s+/g, "");
+        const lastName = m.mem_lname.toLowerCase().replace(/\s+/g, "");
+        const archivedEmail = `${firstName}_${lastName}-${yearSuffix}-@email.com`;
+
+        return supabase
+          .from("member")
+          .update({
+            mem_email: archivedEmail,
+            is_active: false,
+          })
+          .eq("id", m.id);
+      });
+
+      await Promise.all(updates);
+
+      if (isCurrentUserExec) {
+        await supabase.auth.signOut();
+        window.location.href = "/";
+        return;
+      }
+
+      const { data: refreshed } = await supabase
+        .from("member")
+        .select("*")
+        .eq("acadyear", currentAcademicYear);
+      if (refreshed) setMembers(refreshed);
+
+      setShowTransitionSuccess(true);
+    } catch (err: any) {
+      console.error("Transition failed:", err);
+      setShowImportError(true);
+    }
+  };
+
+  const YearTransitionDropdown = ({ value, options, onChange }: any) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node))
+          setOpen(false);
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selectedLabel =
+      options.find((o: any) => o.value === value)?.label || "Select Year";
+
+    return (
+      <div ref={ref} className="relative w-full font-sans text-left">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="w-full bg-white px-6 py-3 border border-[#0b1763] rounded-xl text-[#0b1763] font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center cursor-pointer"
+        >
+          {selectedLabel}
+          <svg
+            className={`w-5 h-5 text-[#0b1763] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {open && (
+          <div className="absolute z-[60] mt-2 w-full bg-white border border-[#0b1763] rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <ul className="py-2 max-h-48 overflow-y-auto">
+              {options.map((o: any) => (
+                <li
+                  key={o.value}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                  }}
+                  className={`px-5 py-3 cursor-pointer transition-colors text-sm font-bold ${
+                    value === o.value
+                      ? "bg-[#0b1763]/10 text-[#0b1763]"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {o.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     const isAnyModalOpen =
       showConfirm ||
@@ -1193,8 +1336,9 @@ export default function MembersPage() {
       deleteMember ||
       editMember ||
       showImagesConfirm ||
-      showImagesSuccess;
-
+      showImagesSuccess ||
+      showTransitionConfirm ||
+      showTransitionSuccess;
     if (isAnyModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -1218,6 +1362,8 @@ export default function MembersPage() {
     editMember,
     showImagesConfirm,
     showImagesSuccess,
+    showTransitionConfirm,
+    showTransitionSuccess,
   ]);
 
   type School = {
@@ -1443,6 +1589,14 @@ export default function MembersPage() {
                    text-white rounded-xl cursor-pointer hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638]"
                 >
                   Export Members
+                </button>
+
+                <button
+                  onClick={() => setShowTransitionConfirm(true)}
+                  className="w-full sm:w-auto px-4 py-2 text-xs sm:text-base bg-[#f0f4f8] border-1 border-[#011638]
+                   text-[#011638] rounded-xl cursor-pointer hover:bg-[#011638] transition whitespace-nowrap hover:text-[#f0f4f8]"
+                >
+                  Transition to New Academic Year
                 </button>
               </div>
             </div>
@@ -1745,7 +1899,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowImportError(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
             </button>
@@ -1780,7 +1934,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowSaveSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
             </button>
@@ -1815,7 +1969,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowDeleteSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
             </button>
@@ -1850,7 +2004,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowRenameSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
             </button>
@@ -1887,7 +2041,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowImportSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
             </button>
@@ -1917,14 +2071,14 @@ export default function MembersPage() {
                   setPendingImport([]);
                   setShowImportConfirm(false);
                 }}
-                className="px-4 py-2 rounded-xl border"
+                className="px-4 py-2 rounded-xl border cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleConfirmImport}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+                className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
               >
                 Confirm Import
               </button>
@@ -1949,7 +2103,7 @@ export default function MembersPage() {
                   handleExportCSV();
                   setShowExportOptions(false);
                 }}
-                className="px-4 py-2 rounded-xl border hover:bg-gray-100"
+                className="px-4 py-2 rounded-xl border hover:bg-gray-100 cursor-pointer"
               >
                 Export as CSV
               </button>
@@ -1960,7 +2114,7 @@ export default function MembersPage() {
                   handleExportPDF();
                   setShowExportOptions(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white hover:opacity-90"
+                className="px-4 py-2 rounded-xl bg-[#011638] text-white hover:opacity-90 cursor-pointer"
               >
                 Export as PDF
               </button>
@@ -1968,7 +2122,7 @@ export default function MembersPage() {
 
             <button
               onClick={() => setShowExportOptions(false)}
-              className="mt-5 text-sm text-gray-400 hover:underline"
+              className="mt-5 text-sm text-gray-400 hover:underline cursor-pointer"
             >
               Cancel
             </button>
@@ -1994,14 +2148,14 @@ export default function MembersPage() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setDeleteMember(null)}
-                className="px-4 py-2 rounded-xl border"
+                className="px-4 py-2 rounded-xl border cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 onClick={() => handleDeleteConfirm()}
-                className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
+                className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
               >
                 Delete
               </button>
@@ -2162,7 +2316,7 @@ export default function MembersPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setEditMember(null)}
-                className="px-4 py-2 border rounded-xl"
+                className="px-4 py-2 border rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
@@ -2170,7 +2324,7 @@ export default function MembersPage() {
               <button
                 onClick={handleEditSave}
                 disabled={!hasEditChanges}
-                className={`px-4 py-2 rounded-xl text-white transition ${
+                className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
                   hasEditChanges
                     ? "bg-[#011638] hover:opacity-90"
                     : "bg-gray-300 cursor-not-allowed"
@@ -2196,13 +2350,13 @@ export default function MembersPage() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-xl border"
+                className="px-4 py-2 rounded-xl border cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white"
+                className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
               >
                 Confirm
               </button>
@@ -2262,6 +2416,78 @@ export default function MembersPage() {
             </p>
             <button
               onClick={() => setShowImagesSuccess(false)}
+              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/*transition to*/}
+      {showTransitionConfirm && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[400px] text-center border border-[#0b1763]/20">
+            <h2 className="text-3xl font-oswald font-bold text-[#011638] mb-2">
+              Transition Academic Year and Archive Current Executives
+            </h2>
+
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Year to Archive:
+            </label>
+
+            <div className="mb-8 flex justify-center">
+              <YearTransitionDropdown
+                value={selectedTransitionYear}
+                options={academicYears.map((year) => ({
+                  label: year,
+                  value: year,
+                }))}
+                onChange={(val: string) => setSelectedTransitionYear(val)}
+              />
+            </div>
+
+            <p className="text-sm text-gray-500 mb-4">
+              By clicking confirm, the Executive Committee for
+              <br /> <b>{selectedTransitionYear}</b> will have their emails
+              archived and access disabled. They will NOT be able to access the
+              website until the <b>Organization Adviser</b> imports the new
+              batch of Executives.
+            </p>
+
+            <p className="text-xs text-red-500 font-semibold mb-6 uppercase">
+              This process cannot be reversed.
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowTransitionConfirm(false)}
+                className="px-6 py-2 rounded-xl border border-[#011638] text-[#011638] font-semibold cursor-pointer hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAYTransition}
+                className="px-6 py-2 rounded-xl bg-[#011638] text-white font-semibold cursor-pointer hover:bg-[#0b1763] shadow-lg transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTransitionSuccess && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[350px] text-center">
+            <h2 className="text-xl font-bold text-[#011638] mb-2">
+              Archive Error
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              There are currently no members to be archived
+            </p>
+            <button
+              onClick={() => setShowTransitionSuccess(false)}
               className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
             >
               OK
