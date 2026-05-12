@@ -22,8 +22,8 @@
 } */
 
 html {
-  overflow-y: scroll;
   overflow: visible;
+  overflow-y: scroll;
 }
 
 body {

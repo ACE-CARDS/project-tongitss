@@ -20,12 +20,10 @@ export default function EventsPage() {
 
       <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="mb-4">
-            <BackButton />
-          </div>
+          <BackButton />
 
           {/* INTRO PARAGRAPH SECTION */}
-          <section className="relative pt-6 pb-12 px-5 flex flex-col items-center justify-center text-center overflow-hidden">
+          <section className="relative pb-12 px-5 flex flex-col items-center justify-center text-center overflow-hidden">
             <div className="flex items-center justify-center gap-3 mb-4">
               <span className="text-3xl md:text-4xl text-[#eec643]">♠</span>
               <h1 className="text-4xl md:text-6xl font-black font-oswald bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">

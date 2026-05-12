@@ -91,11 +91,9 @@ function MembershipApplicationContent() {
     >
       <NavBar />
 
-      <main className="flex-grow px-6 sm:px-10 lg:px-20 py-8">
+      <main className="flex-col px-6 sm:px-10 lg:px-20 py-8">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="mb-6">
-            <BackButton />
-          </div>
+          <BackButton />
 
           <ApplicationHero 
             deadline={pageContent.deadline} 
