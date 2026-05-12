@@ -145,8 +145,8 @@ function ReviewContent() {
               <h1 className="text-3xl font-oswald font-bold text-[#011638]">
                 Review Thesis
               </h1>
-              <p className="text-[#475569] font-ubuntu-mono mt-2">
-                Review and manage thesis submissions before approval.
+              <p className="text-[#475569] font-ubuntu-mono mt-2 break-words">
+                Review "<span className="font-bold italic text-[#011638] break-words">{thesis.thesis_title}</span>" and decide whether to approve or reject it.
               </p>
             </div>
           </div>

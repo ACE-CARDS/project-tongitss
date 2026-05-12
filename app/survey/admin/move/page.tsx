@@ -243,7 +243,7 @@ function MoveSurveyContent() {
                 Move Survey
               </h1>
               <p className="text-[#475569] font-ubuntu-mono mt-2">
-                Move "<span className="font-bold italic text-[#011638]">{survey.survey_title}</span>" to a different status category.
+                Move "<span className="font-bold italic text-[#011638] break-words">{survey.survey_title}</span>" to a different status category.
               </p>
             </div>
           </div>

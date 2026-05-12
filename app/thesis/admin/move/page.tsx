@@ -159,7 +159,7 @@ function MoveThesisContent() {
                 Move Thesis
               </h1>
               <p className="text-[#475569] font-ubuntu-mono mt-2 break-words">
-                Move "<span className="font-bold italic text-[#011638]">{thesis.thesis_title}</span>" to a different status category.
+                Move "<span className="font-bold italic text-[#011638] break-words">{thesis.thesis_title}</span>" to a different status category.
               </p>
             </div>
           </div>
