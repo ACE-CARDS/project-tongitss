@@ -192,6 +192,8 @@ export default function MembersPage() {
     "Events and Logistics Committee Deputy",
   ].map(normalize);
 
+   const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc");
+
   const getPriorityIndex = (commName: string) =>
     priority.indexOf(normalize(commName));
 
@@ -216,12 +218,17 @@ export default function MembersPage() {
     if (aInList) return -1;
     if (bInList) return 1;
   
-    return `${a.mem_lname} ${a.mem_fname}`
-      .toLowerCase()
-      .localeCompare(
-        `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
-      );
-  });
+    const nameCompare = `${a.mem_lname} ${a.mem_fname}`
+    .toLowerCase()
+    .localeCompare(
+      `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
+    );
+  
+  return nameSortOrder === "asc"
+    ? nameCompare
+    : -nameCompare;
+    });
+  
 
   // pagination
   const totalPages = Math.ceil(sortedMembers.length / ITEMS_PER_PAGE);
@@ -1509,7 +1516,17 @@ export default function MembersPage() {
             <div className="overflow-y-visible"></div>
             {/* grid start */}
             <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
-              <span className="text-center">Name</span>
+            <button
+                onClick={() =>
+                  setNameSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+                }
+                className="flex items-center justify-center gap-1 text-center cursor-pointer select-none hover:opacity-70 transition"
+              >
+                Name
+                <span className="text-[10px] font-semibold bg-[#011638]/10 px-1.5 py-0.5 rounded">
+                  {nameSortOrder === "asc" ? "A-Z" : "Z-A"}
+                </span>
+              </button>
               <span className="text-center">Committee</span>
               <span className="text-center">Actions</span>
             </div>
@@ -1545,7 +1562,19 @@ export default function MembersPage() {
                       `}
                     >
                       <div className="my-auto">
-                        <span className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight">
+                      <span
+                          className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight"
+                          title={`${member.mem_lname}, ${member.mem_fname}${
+                            member.mem_minit?.trim()
+                              ? ` ${member.mem_minit
+                                  .replace(/\./g, "")
+                                  .toUpperCase()
+                                  .split("")
+                                  .map((c) => `${c}.`)
+                                  .join("")}`
+                              : ""
+                          }`}
+                        >
                           {member.mem_lname.toUpperCase()},{" "}
                           {member.mem_fname
                             .toLowerCase()
