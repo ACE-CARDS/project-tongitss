@@ -110,7 +110,7 @@ function ReviewContent() {
         .eq("id", thesisId);
 
       if (error) throw error;
-      router.push("/dashboard?tab=thesis&page=1");
+      router.push("/thesis/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to reject thesis.");
       setIsSubmitting(false);
