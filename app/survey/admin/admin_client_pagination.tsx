@@ -7,7 +7,6 @@ import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
 import EditSurveyModal from "./edit_survey_modal";
 import MoveSurveyModal from "./move_survey_modal";
-import ReviewSurveyModal from "./review/page";
 import { useRouter } from "next/navigation";
 
 interface ClientPaginationProps {

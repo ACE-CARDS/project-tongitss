@@ -54,55 +54,19 @@ function ReviewContent() {
 
   const isPastDate = survey ? new Date(survey.survey_end) < new Date() : false;
 
-  // validate rejection reason in real-time
-  const validateRejectionReasonInput = (value: string): string => {
-    if (!value.trim()) {
+  // validate rejection reason
+  const validateRejectionReason = (reason: string): string | null => {
+    if (!reason.trim()) {
       return "Rejection reason is required.";
     }
-    if (value.trim().length < 10) {
+    if (reason.trim().length < 10) {
       return "Rejection reason must be at least 10 characters.";
     }
-    if (value.trim().length > 500) {
+    if (reason.trim().length > 500) {
       return "Rejection reason must not exceed 500 characters.";
     }
-    return "";
+    return null;
   };
-
-  // handle rejection reason change
-  const handleRejectionReasonChange = (value: string) => {
-    setRejectionReason(value);
-    const error = validateRejectionReasonInput(value);
-    setRejectionError(error);
-  };
-
-  // validate rejection reason
-const validateRejectionReason = (): boolean => {
-    const rejectionReasonInput = document.querySelector('textarea') as HTMLTextAreaElement;
-    const errorSpan = document.getElementById('rejection-reason-error');
-    
-    if (!rejectionReasonInput?.value.trim()) {
-      if (errorSpan) {
-        errorSpan.textContent = 'Rejection reason is required.';
-        errorSpan.style.display = 'block';
-      }
-      return false;
-    }
-    if (rejectionReasonInput.value.trim().length < 10) {
-      if (errorSpan) {
-        errorSpan.textContent = 'Rejection reason must be at least 10 characters.';
-        errorSpan.style.display = 'block';
-      }
-      return false;
-    }
-    if (rejectionReasonInput.value.trim().length > 500) {
-      if (errorSpan) {
-        errorSpan.textContent = 'Rejection reason must not exceed 500 characters.';
-        errorSpan.style.display = 'block';
-      }
-      return false;
-    }
-  return true;
-};
 
   const handleApprove = async () => {
     if (isPastDate) {
@@ -117,7 +81,7 @@ const validateRejectionReason = (): boolean => {
       const { error } = await supabase
         .from("survey")
         .update({ 
-          survey_status: "accepted", // Matching the "accepted" label from your Modal
+          survey_status: "accepted", 
           rejection_reason: null 
         })
         .eq("id", surveyId);
@@ -130,8 +94,8 @@ const validateRejectionReason = (): boolean => {
     }
   };
 
-const handleReject = async () => {
-    const errorMsg = validateRejection(rejectionReason);
+  const handleReject = async () => {
+    const errorMsg = validateRejectionReason(rejectionReason);
     if (errorMsg) {
       setRejectionError(errorMsg);
       return;
@@ -157,7 +121,7 @@ const handleReject = async () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Loading...</div>;
+  if (loading) return null;
   if (!survey) return <div className="min-h-screen flex items-center justify-center bg-[#fbfaf8]">Survey not found.</div>;
 
   const keywords = survey.survey_keyword 
@@ -169,7 +133,17 @@ const handleReject = async () => {
       <NavBar />
       <div className="pt-5">
         <main className="container mx-auto py-8 px-4 max-w-3xl">
-          <BackButton href="/dashboard?tab=survey&page=1" />
+          <div>
+            <BackButton href="/dashboard?tab=survey&page=1" />
+            <div className="mt-5">
+              <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+                Review Survey
+              </h1>
+              <p className="text-[#475569] font-ubuntu-mono mt-2">
+                Review and manage survey submissions before approval.
+              </p>
+            </div>
+          </div>
 
           <div className="bg-[#fbfaf8] mt-4 rounded-lg shadow-xl border border-[#e0e7ff] p-6 space-y-6">
             {/* Basic Information */}
@@ -239,7 +213,7 @@ const handleReject = async () => {
                 </div>
                 <div>
                   <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Survey Link</label>
-                  <div className="text-[#1e4db7] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 truncate">
+                  <div className="text-[#1e4db7] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50 break-all">
                     <a href={survey.survey_link} target="_blank" rel="noopener noreferrer" className="hover:underline">{survey.survey_link}</a>
                   </div>
                 </div>
@@ -249,31 +223,27 @@ const handleReject = async () => {
             {/* Rejection Form */}
             {showRejectForm && (
               <>
-              <div className="pt-4">
-                <label className="block text-lg font-oswald font-medium text-[#011638] mb-1">Reason for Rejection <span className="text-red-500">*</span></label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  rows={4}
-                  maxLength={100}
-                  className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-white"
-                  placeholder="Indicate why this survey is being rejected..."
-                  onInput={(e) => {
-                    const input = e.target as HTMLTextAreaElement;
-                    const errorSpan = document.getElementById('rejection-reason-error');
-                    if (input.value.length === 0) {
-                      errorSpan!.textContent = 'Rejection reason is required.';
-                      errorSpan!.style.display = 'block';
-                    } else if (input.value.length < 10) {
-                      errorSpan!.textContent = 'Rejection reason must be at least 10 characters.';
-                      errorSpan!.style.display = 'block';
-                    } else {
-                      errorSpan!.style.display = 'none';
-                    }
-                  }}
-                />
-              </div>
-                <span id="rejection-reason-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                <div className="pt-4">
+                  <label className="block text-lg font-oswald font-medium text-[#011638] mb-1">Reason for Rejection <span className="text-red-500">*</span></label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setRejectionReason(value);
+                      const error = validateRejectionReason(value);
+                      setRejectionError(error || "");
+                    }}
+                    rows={4}
+                    maxLength={500}
+                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-white"
+                    placeholder="Indicate why this survey is being rejected..."
+                  />
+                  {rejectionError && (
+                    <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
+                      {rejectionError}
+                    </span>
+                  )}
+                </div>
               </>
             )}
 
@@ -282,12 +252,12 @@ const handleReject = async () => {
               {!showRejectForm ? (
                 <>
                   <button onClick={() => setShowRejectForm(true)} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Reject</button>
-                  <button onClick={handleApprove} disabled={isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-green-600 rounded-lg hover:bg-green-700 font-oswald disabled:opacity-50">Approve Survey</button>
+                  <button onClick={handleApprove} disabled={isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed">Approve Survey</button>
                 </>
               ) : (
                 <>
                   <button onClick={() => setShowRejectForm(false)} className="px-4 py-2 text-[#011638] font-ubuntu-mono">Cancel</button>
-                  <button onClick={handleReject} disabled={!rejectionReason.trim() || isSubmitting} className="px-6 py-2 text-[#fbfaf8] rounded bg-red-600 hover:bg-red-700 font-oswald font-bold disabled:opacity-50">CONFIRM REJECTION</button>
+                  <button onClick={handleReject} disabled={!rejectionReason.trim() || isSubmitting} className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald">Confirm Rejection</button>
                 </>
               )}
             </div>
