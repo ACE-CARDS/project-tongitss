@@ -18,13 +18,17 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
 
   useEffect(() => {
     async function getAnnouncements() {
-      const today = new Date().toISOString();
+      const now = new Date();
+
+      const todayStart = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+
+      const todayEnd = new Date(now.setHours(23, 59, 59, 999)).toISOString();
 
       const { data, error } = await supabase
         .from("announce_landing")
         .select()
-        .gte("announce_landing_end", today)
-        .lte("announce_landing_start", today)
+        .gte("announce_landing_end", todayStart)
+        .lte("announce_landing_start", todayEnd)
         .order("announce_landing_end", { ascending: true });
 
       if (data) {

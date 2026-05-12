@@ -5,6 +5,7 @@ import { getUserWithRole } from "@/utils/supabase/session";
 import { UserProvider } from "@/components/context/userContext";
 
 
+
 const siteName = "ACE CARDS";
 
 const oswald = Oswald({

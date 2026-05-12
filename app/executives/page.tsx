@@ -75,16 +75,14 @@ function ExecutivesContent() {
         const formatted = execData.map((person) => {
           const firstName = normalizeName(person.mem_fname);
           const lastName = normalizeName(person.mem_lname);
-          const fileName = `${firstName}_${lastName}`.replace(/\s+/g, "");
-          const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
 
           return {
-            name: `${firstName} ${lastName}`,
+            fname: person.mem_fname,
+            lname: person.mem_lname,
             email: person.mem_email,
             acadyear: person.acadyear,
             fblink: person.fblink,
             position: person.committee?.comm_name,
-            image: photoUrl,
           };
         });
 
@@ -177,8 +175,16 @@ function ExecutivesContent() {
             <div className="w-full flex justify-center">
               <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-7 max-w-7xl mx-auto">
                 {executives.map((exec, index) => {
-                  const fallbackUrl = `https://ui-avatars.com/api/?name=${exec.name}&background=f1f5f9&color=64748b&bold=true`;
-
+                  const firstName = exec.fname.toLowerCase().trim();
+                  const lastName = exec.lname.toLowerCase().trim();
+                  const baseFileName = `${firstName}_${lastName}`.replace(
+                    /\s+/g,
+                    "",
+                  );
+                  const timestamp = new Date().getTime();
+                  const photoUrlJpg = `${STORAGE_URL}/${baseFileName}.jpg?t=${timestamp}`;
+                  const photoUrlPng = `${STORAGE_URL}/${baseFileName}.png?t=${timestamp}`;
+                  const fallbackUrl = `https://ui-avatars.com/api/?name=${exec.fname}+${exec.lname}&background=f1f5f9&color=64748b&bold=true`;
                   return (
                     <div
                       key={index}
@@ -200,11 +206,18 @@ function ExecutivesContent() {
                         <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
                           {/* img */}
                           <img
-                            src={exec.image}
+                            src={photoUrlJpg}
                             className="w-full h-full object-cover"
-                            alt={exec.name}
+                            alt={`${exec.fname} ${exec.lname}`}
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = fallbackUrl;
+                              const img = e.target as HTMLImageElement;
+                              console.log("Image failed:", e.currentTarget.src);
+
+                              if (img.src === photoUrlJpg) {
+                                img.src = photoUrlPng;
+                              } else if (img.src === photoUrlPng) {
+                                img.src = fallbackUrl;
+                              }
                             }}
                           />
                         </div>
@@ -212,7 +225,8 @@ function ExecutivesContent() {
 
                       <div className="flex-grow flex flex-col items-center">
                         <h2 className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-lg text-[#011638] line-clamp-2 min-h-[2.5rem]">
-                          {exec.name}
+                          {normalizeName(exec.fname)}{" "}
+                          {normalizeName(exec.lname)}
                         </h2>
                         <span className="mt-1 text-[10px] sm:text-xs text-[#0d21a1] px-2 py-1 rounded-lg bg-[#0d21a1]/10 font-bold uppercase text-center line-clamp-2">
                           {exec.position}

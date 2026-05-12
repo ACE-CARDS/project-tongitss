@@ -73,13 +73,11 @@ export default function Home() {
 
   const currentYear = new Date().getFullYear();
   const academicYears = Array.from({ length: 4 }, (_, i) => {
-  const startYear =
-    new Date().getMonth() + 1 >= 10
-      ? currentYear - i
-      : currentYear - 1 - i;
+    const startYear =
+      new Date().getMonth() + 1 >= 10 ? currentYear - i : currentYear - 1 - i;
 
-  return `AY ${startYear}-${startYear + 1}`;
-});
+    return `AY ${startYear}-${startYear + 1}`;
+  });
 
   //Counts poexcz for events and members separate si province kasi wait lang iiyaq aq dyan
   const [eventCount, setEventCount] = useState(0);
@@ -415,19 +413,19 @@ export default function Home() {
 
   useEffect(() => {
     let start = 0;
-  
+
     setProvinceDisplayCount(0);
-  
+
     const end = provinceMembers;
     if (end === 0) return;
-  
+
     const duration = 1000;
     const incrementTime = 20;
     const step = Math.ceil(end / (duration / incrementTime));
-  
+
     const timer = setInterval(() => {
       start += step;
-  
+
       if (start >= end) {
         setProvinceDisplayCount(end);
         clearInterval(timer);
@@ -435,7 +433,7 @@ export default function Home() {
         setProvinceDisplayCount(start);
       }
     }, incrementTime);
-  
+
     return () => clearInterval(timer);
   }, [provinceMembers]);
 
@@ -462,7 +460,7 @@ export default function Home() {
     if (selectedProvince === name) {
       return provinceMembers > 0;
     }
-  
+
     const province = provinceSchools.find((s) => s.province === name);
     return province ? province.memberCount > 0 : true;
   };
@@ -634,17 +632,17 @@ export default function Home() {
                 <div className="absolute w-[clamp(250px,40vw,500px)] h-[clamp(250px,40vw,500px)] bg-[#eec643]/25 blur-[140px] rounded-full" />
 
                 <div className="relative z-10 group flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[#eec643]/20 blur-2xl rounded-3xl opacity-0 group-hover:opacity-100 transition" />
-
-                  <img
+                  <Image
                     src="/assets/logos/ACE CARDS logo.png"
+                    width={406}
+                    height={406}
                     alt="Ace Cards Logo"
                     className="
-                    w-[clamp(220px,30vw,420px)]
-                    rounded-3xl shadow-5xl
-                    transition-all duration-700 ease-out
-                    hover:scale-105 hover:-translate-y-1
-                  "
+                    bg-[#e0ae04]
+                      w-[clamp(220px,30vw,420px)]
+                      transition-all duration-700 ease-out
+                      hover:scale-105 hover:shadow-[0_0_100px_#d9b237] rounded-full
+                    "
                   />
                 </div>
               </div>
@@ -1005,14 +1003,14 @@ export default function Home() {
                         style={{ colorScheme: "dark" }}
                       >
                         {academicYears.map((year) => (
-                        <option
-                          key={year}
-                          value={year}
-                          className="text-[#011638]"
-                        >
-                          {year}
-                        </option>
-                      ))}
+                          <option
+                            key={year}
+                            value={year}
+                            className="text-[#011638]"
+                          >
+                            {year}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -1130,7 +1128,7 @@ export default function Home() {
                             class="size-6"
                           >
                             <path
-                              fill-rule="evenodd"
+                              fillRule="evenodd"
                               d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
                               clip-rule="evenodd"
                             />
@@ -1308,10 +1306,7 @@ export default function Home() {
                   {/* Stats Counter */}
                   <div className="w-full">
                     <div className=" mt-10 flex flex-wrap justify-center lg:justify-start gap-6 mb-1">
-                      <div
-                        ref={surveySectionRef}
-                        className="text-center group"
-                      >
+                      <div ref={surveySectionRef} className="text-center group">
                         <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                           {displaySurveyCount}
                         </div>
@@ -1320,10 +1315,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div
-                        ref={thesesSectionRef}
-                        className="text-center group"
-                      >
+                      <div ref={thesesSectionRef} className="text-center group">
                         <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                           {displayThesesCount}
                         </div>
