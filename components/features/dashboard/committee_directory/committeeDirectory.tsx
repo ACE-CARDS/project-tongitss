@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
-import Pagination from "./pagination";
 import { BsSuitSpadeFill } from "react-icons/bs";
 
 const supabase = createClient();
@@ -69,6 +68,27 @@ export default function CommitteeDirectory() {
   const headerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const getCurrentAcademicYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+
+    //around oct siya since mostly september ang membership drive
+    if (month >= 10) {
+      return `${year}-${year + 1}`;
+    } else {
+      return `${year - 1}-${year}`;
+    }
+  };
+
+  const currentYear = new Date().getFullYear();
+  const academicYears = Array.from({ length: 4 }, (_, i) => {
+    const startYear =
+      new Date().getMonth() + 1 >= 10 ? currentYear - i : currentYear - 1 - i;
+
+    return `AY ${startYear}-${startYear + 1}`;
+  });
+
   useEffect(() => {
     async function getMembers() {
       const now = new Date();
@@ -80,7 +100,7 @@ export default function CommitteeDirectory() {
           ? `${currentYear}-${currentYear + 1}`
           : `${currentYear - 1}-${currentYear}`;
 
-      const ACADYEAR = `AY ${currentAcadYear}`;
+      const ACADYEAR = `AY ${getCurrentAcademicYear()}`;
 
       try {
         const { data, error } = await supabase
@@ -173,7 +193,8 @@ export default function CommitteeDirectory() {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="w-full bg-white/70 backdrop-blur-xl px-6 py-3 border border-[#0b1763] rounded-xl text-[#0b1763] font-medium font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center"
+          className="w-full bg-white/70 backdrop-blur-xl px-6 py-3 border border-[#0b1763] 
+          rounded-xl text-[#0b1763] font-medium font-semibold shadow-sm hover:shadow-md transition flex justify-between items-center"
         >
           {selectedLabel}
           <svg
@@ -285,10 +306,12 @@ export default function CommitteeDirectory() {
           </p>
         ) : (
           paginatedMembers.map((person, index) => {
-            const firstName = normalizeName(person.mem_fname);
-            const lastName = normalizeName(person.mem_lname);
-            const fileName = `${firstName}_${lastName}`.replace(/\s+/g, "");
-            const photoUrl = `${STORAGE_URL}/${fileName}.jpg`;
+            const firstName = person.mem_fname.toLowerCase().trim();
+            const lastName = person.mem_lname.toLowerCase().trim();
+            const baseFileName = `${firstName}_${lastName}`.replace(/\s+/g, "");
+            const timestamp = new Date().getTime();
+            const photoUrlJpg = `${STORAGE_URL}/${baseFileName}.jpg?t=${timestamp}`;
+            const photoUrlPng = `${STORAGE_URL}/${baseFileName}.png?t=${timestamp}`;
             const fallbackUrl = `https://ui-avatars.com/api/?name=${person.mem_fname}+${person.mem_lname}&background=f1f5f9&color=64748b&bold=true`;
 
             return (
@@ -320,11 +343,17 @@ export default function CommitteeDirectory() {
                 <div className="relative flex justify-center mt-2">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden group-hover:scale-105 transition">
                     <img
-                      src={photoUrl}
-                      alt={person.mem_fname}
+                      src={photoUrlJpg}
+                      alt={`${person.mem_fname} ${person.mem_lname}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = fallbackUrl;
+                        const img = e.target as HTMLImageElement;
+
+                        if (img.src === photoUrlJpg) {
+                          img.src = photoUrlPng;
+                        } else if (img.src === photoUrlPng) {
+                          img.src = fallbackUrl;
+                        }
                       }}
                     />
                   </div>
@@ -387,7 +416,7 @@ export default function CommitteeDirectory() {
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className={`px-3 py-2 rounded-lg text-sm transition ${
+            className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
               currentPage === 1
                 ? "text-[#94a3b8] cursor-not-allowed"
                 : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
@@ -435,7 +464,7 @@ export default function CommitteeDirectory() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page as number)}
-                    className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
+                    className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
                       page === currentPage
                         ? "bg-[#011638] text-white font-bold"
                         : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
@@ -452,7 +481,7 @@ export default function CommitteeDirectory() {
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className={`px-3 py-2 rounded-lg text-sm transition ${
+            className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
               currentPage === totalPages
                 ? "text-[#94a3b8] cursor-not-allowed"
                 : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"

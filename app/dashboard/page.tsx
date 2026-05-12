@@ -322,7 +322,6 @@ function DashboardContent() {
   );
 }
 
-// Next.js requires Suspense when using useSearchParams in client components
 export default function Dashboard() {
   return (
     <Suspense fallback={<LoadingState />}>
