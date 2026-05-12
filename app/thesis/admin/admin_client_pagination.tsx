@@ -286,25 +286,27 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                               ? ` ${author.author_minit}.`
                               : "";
                             return (
-                              <div
+                              <a
                                 key={`${thesis.id}-${author.id || 'no-id'}-${index}`}
-                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono break-words max-w-full whitespace-normal"
+                                href={`mailto:${author.author_email}`}
+                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group break-words max-w-full whitespace-normal"
+                                title={`Email: ${author.author_email}`}
                               >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                  />
-                                </svg>
-                                {author.author_fname} {middleInitial} {author.author_lname}
-                              </div>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              {author.author_fname} {middleInitial} {author.author_lname}
+                              </a>
                             );
                           })
                         ) : (
