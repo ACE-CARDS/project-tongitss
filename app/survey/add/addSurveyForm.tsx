@@ -808,13 +808,20 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
           authorIds.push(existingAuthor.id);
         } else {
           // Create new author with mem_id if available
+          const rawMinit = (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || "";
+          
+          const cleanMinit = rawMinit
+            .replace(/[^a-zA-Z]/g, "") 
+            .substring(0, 2)
+            .toUpperCase() || null;
+
           const { data: newAuthor, error: authorError } = await supabase
             .from("author")
             .insert({
               author_fname: firstNameInputs[i].value,
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
-              author_minit: (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || null,
+              author_minit: cleanMinit,
               mem_id: memberIdFromState || null
             })
             .select("id")
