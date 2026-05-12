@@ -23,6 +23,7 @@
 
 html {
   overflow-y: scroll;
+  overflow: visible;
 }
 
 body {

@@ -285,7 +285,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                   </Link>
 
                   <Link href="/auth/login">
-                    <li className="px-[13px] py-[6px] mr-[4px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] hover:bg-[#d9b237] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs cursor-pointer items-center justify-center">
+                    <li className="px-[13px] py-[6px] xl:mr-[4px] hover:shadow-[0_0_25px_#d9b237] hover:scale-[1.04] hover:bg-[#d9b237] text-center ease-in-out duration-200 transition-all rounded-[50px] text-xl text-white bg-[#d9b237]/85 backdrop-blur-xs cursor-pointer items-center justify-center">
                       Login
                     </li>
                   </Link>
