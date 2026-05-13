@@ -80,7 +80,7 @@ export default function EventsTimeline() {
   const isPastYear = activeYear !== "ALL" && Number(activeYear) < currentYear;
 
   useEffect(() => {
-    if (isPastYear && activeFilter === "UPCOMING") {
+    if (isPastYear && (activeFilter === "UPCOMING" || activeFilter === "ONGOING")) {
       setActiveFilter("ALL");
     }
   }, [activeYear, isPastYear, activeFilter]);
@@ -105,9 +105,15 @@ export default function EventsTimeline() {
 
   const filteredEvents = events.filter((event) => {
     const completed = isEventCompleted(event);
+    const statusUpper = event.status?.toUpperCase() || "UPCOMING";
     const eventYear = event.year || new Date(event.start_date).getFullYear().toString();
     
-    const matchesStatus = activeFilter === "ALL" || (activeFilter === "COMPLETED" ? completed : !completed);
+    const matchesStatus = 
+      activeFilter === "ALL" || 
+      (activeFilter === "COMPLETED" && completed) || 
+      (activeFilter === "ONGOING" && !completed && statusUpper === "ONGOING") ||
+      (activeFilter === "UPCOMING" && !completed && statusUpper !== "ONGOING");
+
     const matchesYear = activeYear === "ALL" || eventYear === activeYear;
     const matchesSearch = searchQuery === "" || event.title.toLowerCase().includes(searchQuery.toLowerCase());
       
@@ -138,13 +144,13 @@ export default function EventsTimeline() {
 
   const statusOptions = [
     { label: "ALL EVENTS", value: "ALL" },
+    { label: "ONGOING", value: "ONGOING", disabled: isPastYear },
     { label: "UPCOMING", value: "UPCOMING", disabled: isPastYear },
     { label: "ACCOMPLISHED", value: "COMPLETED" },
   ];
 
   return (
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
-      {/* TOOLBAR FILTERS */}
       <ModalBlur isShowing={Boolean(selectedEvent)} onClose={() => setSelectedEvent(null)} />
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
         <div className="w-full flex-1 flex justify-center md:justify-start">
@@ -174,7 +180,6 @@ export default function EventsTimeline() {
         </div>
       </div>
 
-      {/* HORIZONTAL YEAR TIMELINE CAROUSEL */}
       {!isLoading && events.length > 0 && (
         <div className="relative w-full max-w-6xl mx-auto mb-14 px-4 sm:px-12 group">
           {canScrollLeft && (
@@ -311,7 +316,7 @@ export default function EventsTimeline() {
                             </span>
                           ) : (
                             <span className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase text-green-700 bg-green-100 border border-green-200 shadow-sm">
-                              COMING SOON
+                              UPCOMING
                             </span>
                           )}
                         </div>
@@ -325,10 +330,8 @@ export default function EventsTimeline() {
                 ))}
               </div>
 
-              {/* SPAMMABLE PAGINATION FROM MEMBERS DIRECTORY */}
               {totalPages > 1 && (
                 <nav className="flex justify-center items-center space-x-2 mt-12 mb-8 w-full">
-                  {/* Prev button */}
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
@@ -343,7 +346,6 @@ export default function EventsTimeline() {
                     </svg>
                   </button>
 
-                  {/* Page numbers with Ellipses logic */}
                   <div className="flex items-center space-x-1 font-ubuntu-mono">
                     {(() => {
                       const pages = [];
