@@ -23,11 +23,8 @@ export default function AboutLogo() {
             <span className="w-10 lg:w-16 h-[2px] bg-[#eec643]"></span>
           </div>
         </motion.div>
-
-        {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           
-          {/* Hoverable Text Card */}
           <motion.div 
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -66,25 +63,47 @@ export default function AboutLogo() {
             </motion.div>
           </motion.div>
 
-          {/* Logo Image */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
-            className="w-full lg:w-[45%] flex justify-center lg:justify-end"
+            className="w-full lg:w-[45%] flex justify-center lg:justify-end perspective-1000"
           >
-            <div className="relative p-2">
+            <div className="relative animate-bounce-slow rotate-y-12">
               <img 
                 src="/assets/logos/ACE CARDS logo.png" 
-                alt="ACE CARDS Official Logo" 
-                className="w-[280px] h-[280px] lg:w-[420px] lg:h-[420px] object-contain drop-shadow-2xl"
+                alt="Ace Cards Logo" 
+                width={406}
+                height={406}
+                className="bg-[#e0ae04] w-[clamp(220px,30vw,420px)] transition-all duration-700 ease-out hover:scale-105 hover:shadow-[0_0_100px_#d9b237] rounded-full"
               />
             </div>
           </motion.div>
 
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes bounce-slow {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .rotate-y-12 {
+          transform: rotateY(12deg);
+        }
+      `}</style>
     </section>
   );
 }
