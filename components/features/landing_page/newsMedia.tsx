@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link"; 
 import { createClient } from '@/utils/supabase/client';
 import { BsSuitSpadeFill } from "react-icons/bs";
+import GradientLine from "@/components/ui/gradientLine";
 
 // Types for news media posts
 interface NewsMedia {
@@ -460,14 +461,12 @@ export default function NewsMedia() {
       {/* Heading */}
       <div className="text-center mb-6 relative z-10">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-5xl text-[#eec643]">♠</span>
-          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight">
+          <span className="header withspade">
             NEWS & MEDIA
-          </h1>
-          <span className="text-5xl text-[#eec643]">♠</span>
+          </span>
         </div>
 
-        <div className="w-40 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mx-auto rounded-full mt-3" />
+        <GradientLine />
 
         <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
           Stay updated with the latest announcements and activities from ACE CARDS.
@@ -499,9 +498,9 @@ export default function NewsMedia() {
         <div ref={carouselSectionRef} className="relative z-10">
           {/* Sub heading */}
           <div className="flex items-center justify-center gap-3 mb-6 z-10">
-            <span className="text-4xl text-[#eec643]">♠</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#011638]">More Updates</h2>
-            <span className="text-4xl text-[#eec643]">♠</span>
+            <span className="headersub withminispade">
+              More Updates
+            </span>
           </div>
 
           {/* Carousel Container */}

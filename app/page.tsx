@@ -10,8 +10,9 @@ import KidlaDialogue from "@/components/ui/kidla/kidlaDialogue";
 import Footer from "@/components/layout/footer";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import GradualBlur from "@/components/ui/GradualBlur";
+import BottomBlur from "@/components/ui/bottomBlur";
 import NewsMedia from "@/components/features/landing_page/newsMedia";
+import GradientLine from "@/components/ui/gradientLine";
 
 const supabase = createClient();
 
@@ -143,6 +144,46 @@ export default function Home() {
 
     fetchProvinceMembers();
   }, [selectedProvince, selectedAY]);
+
+  const [provinceStatus, setProvinceStatus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const fetchAllActiveProvinces = async () => {
+      console.log("Fetching active provinces for AY: " + selectedAY);
+      const { data, error } = await supabase
+        .from("member")
+        .select("school(province (prov_name))")
+        .eq("acadyear", selectedAY)
+        .eq("is_active", true);
+
+      console.log("Fetched provinces data:", data);
+
+      if (!error && data) {
+        const statusMap = data.reduce((acc: Record<string, boolean>, curr: any) => {
+          const name = curr.school?.province?.prov_name;
+          if (name) {
+            acc[name] = true;
+          }
+          return acc;
+        }, {});
+      
+      console.log("Mapped Status Map:", statusMap);
+      setProvinceStatus(statusMap);
+      }
+    };
+
+    fetchAllActiveProvinces();
+  }, [selectedAY]);
+
+  
+  const provincesNames = [
+    { name: "Abra", left: "38%", top: "43%", translate: "-translate-x-1/2 -translate-y-1/2" },
+    { name: "Apayao", left: "52%", top: "27%", translate: "" },
+    { name: "Kalinga", left: "58%", top: "46%", translate: "" },
+    { name: "Benguet", left: "31%", top: "72%", translate: "" },
+    { name: "Ifugao", left: "50%", top: "63%", translate: "" },
+    { name: "Mountain Province", left: "53%", top: "56%", translate: "" },
+  ];
 
   //awa nalang cguro (province count)
   const [provinceSchools, setProvinceSchools] = useState([]);
@@ -499,6 +540,7 @@ export default function Home() {
         )}
 
         <NavBar isOverHero={isOverHero} />
+        
         <div className="relative z-[10003]">
           <Popup
             isShowing={isModalShowing}
@@ -525,22 +567,13 @@ export default function Home() {
           />
         </div>
 
-        <main className="relative">
-          <div className="pointer-events-none fixed bottom-0 left-0 w-full z-[9999] [transform:translateZ(0)]">
-            <GradualBlur //huhu eto lang b magiging succesful ko frm react
-              position="bottom"
-              height="3rem"
-              strength={2.5}
-              divCount={6}
-              target="page"
-              animated={true}
-              duration="0.4s"
-              opacity={0.85}
-              curve="ease-out"
-            />
-          </div>
-          <div
-            className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[10000] bounce text-white text-6xl pointer-events-none transition-opacity duration-500 ${isAtTop ? "opacity-100" : "opacity-0"} `}
+          <BottomBlur />
+          
+          <div className={`
+            fixed bottom-10 left-1/2 -translate-x-1/2 z-[10000] 
+            text-white text-6xl 
+            pointer-events-none 
+            bounce transition-opacity duration-500 ${isAtTop ? "opacity-100" : "opacity-0"} `}
           >
             ↓
           </div>
@@ -549,10 +582,10 @@ export default function Home() {
           <section
             id="hero"
             className="
-            relative min-h-[100dvh] flex items-center overflow-hidden
-            px-[clamp(1.25rem,4vw,5rem)]
-            py-[clamp(2rem,6vh,4rem)]
-          "
+              relative min-h-[100dvh] flex items-center overflow-hidden
+              px-[clamp(1.25rem,4vw,5rem)]
+              py-[clamp(2rem,6vh,4rem)]
+            "
           >
             {/* background */}
             <div
@@ -649,13 +682,14 @@ export default function Home() {
             </div>
           </section>
 
+        <main className="relative max-w-[1920px] w-full mx-auto flex-1">
           <NewsMedia />
 
           {/* EVENTS SECTION */}
           <section
             id="events-section"
             ref={sectionRef}
-            className="pt-8 pb-0 xl:py-8 px-6 xl:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] overflow-hidden"
+            className="pt-8 pb-0 xl:py-8 px-6 xl:px-24 relative w-full mx-auto bg-gradient-to-br from-[#0a1a3a] to-[#011638] overflow-hidden"
           >
             <div
               className="absolute inset-0 opacity-10"
@@ -668,17 +702,17 @@ export default function Home() {
             <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
-            <div className="w-full mx-auto mb-10 max-w-[1920px] relative z-10">
+            <div className="w-full mx-auto mb-10 relative z-10">
               <div className="text-center mb-20 flex flex-col items-center">
                 <h1 className="text-9xl sm:text-8xl xl:text-[200px] font-black text-white drop-shadow-2xl leading-none">
                   {displayCount}
                 </h1>
                 <h3 className="text-xl sm:text-6xl xl:text-7xl font-bold text-white/90 mt-4">
-                  Total
+                  TOTAL
                 </h3>
-                <h2 className="text-4xl sm:text-6xl xl:text-9xl font-bold text-white/90 mt-1">
-                  Events
-                </h2>
+                <span className="text-4xl sm:text-6xl xl:text-8xl font-oswald font-extrabold text-white/90 mt-1">
+                  EVENTS
+                </span>
                 <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-3">
                   since establishment
                 </p>
@@ -691,9 +725,9 @@ export default function Home() {
                       "events-section",
                     )
                   }
-                  className="group inline-block px-10 py-4 rounded-3xl border-2 border-[#eec643] hover:bg-[#eec643] text-[#011638] font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform mt-8 bg-[#eec643]/60"
+                  className="btn-yellow mt-8"
                 >
-                  View Events →
+                  View Events→
                 </Link>
               </div>
             </div>
@@ -863,17 +897,17 @@ export default function Home() {
           <section
             id="members-section"
             ref={memberSectionRef}
-            className="py-8 px-6 lg:px-24 relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
+            className="py-8 px-6 lg:px-24 relative w-full mx-auto bg-[#fbfaf8] justify-center items-center"
             style={{
               backgroundImage: `radial-gradient(#cbd5e1 1px, transparent 1px)`,
               backgroundSize: "20px 20px",
               backgroundAttachment: "fixed",
             }}
           >
-            <div className="w-full mx-auto mb-10 max-w-[1920px]">
-              <div className="flex flex-col lg:flex-row items-center gap-20">
+            <div className="w-full mx-auto mb-10">
+              <div className="flex flex-col lg:flex-row items-center justify-center gap-20">
                 {/* img */}
-                <div className="flex-1 flex justify-center lg:justify-end order-2 lg:order-1">
+                <div className="flex justify-center">
                   <div className="relative">
                     <img
                       src="/assets/logos/ga.jpg"
@@ -885,21 +919,23 @@ export default function Home() {
                 </div>
 
                 {/* txt */}
-                <div className="flex-1 text-center lg:text-left max-w-lg order-1 lg:order-2">
+                <div className="flex flex-col items-center lg:items-start text-center lg:text-left relative">
                   <h1 className="text-9xl lg:text-[180px] font-black text-[#011638] tracking-tight drop-shadow-2xl leading-none">
                     {memberDisplayCount}
                   </h1>
-                  <h2 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent mt-4 drop-shadow-lg">
+                  
+                  <span className="header">
                     Current Members
-                  </h2>
-                  <div className="w-20 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-8 mx-auto lg:mx-0 rounded-full shadow-lg"></div>
+                  </span>
+
+                  <GradientLine start />
 
                   <p className="mt-8 text-[#141414]/80 text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl">
-                    A growing network of DOST CAR scholars committed to academic
+                    A growing network of DOST CAR scholars committed to academic <br />
                     excellence and servant leadership.
                   </p>
 
-                  <div className="flex justify-center lg:justify-start gap-6 mt-12">
+                  <div className="flex lg:flex-row flex-col justify-center lg:justify-start gap-6 mt-12">
                     <Link
                       href="/committee"
                       onClick={() =>
@@ -908,9 +944,9 @@ export default function Home() {
                           "members-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="btn-blue"
                     >
-                      Committees →
+                      Committees→
                     </Link>
 
                     <Link
@@ -921,9 +957,9 @@ export default function Home() {
                           "members-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="btn-blue"
                     >
-                      Executives →
+                      Executives→
                     </Link>
                   </div>
                 </div>
@@ -935,7 +971,7 @@ export default function Home() {
           <section
             key={provinceAnimKey}
             ref={provinceSectionRef}
-            className="pt-8 pb-10 sm:pt-12 sm:pb-12 xl:pt-16 xl:pb-8 px-4 sm:px-6 xl:px-24 relative w-full mx-auto max-w-[1920px] bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
+            className="py-10 sm:py-12 xl:py-8 px-4 sm:px-6 xl:px-24 relative w-full mx-auto bg-gradient-to-br from-[#0a1a3a] to-[#011638] relative overflow-hidden"
           >
             {/* Background */}
             <div
@@ -950,10 +986,10 @@ export default function Home() {
             <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
-            <div className="w-full mx-auto max-w-[1920px] relative z-10">
+            <div className="w-full mx-auto relative z-10">
               <div className="flex flex-col xl:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
                 {/* LEFT COLUMN */}
-                <div className="flex-1 w-full text-center xl:text-left">
+                <div className="flex-1 w-full text-center my-auto xl:text-left">
                   {/* Province label */}
                   <div className="inline-block lg:inline-block">
                     <p className="text-sm sm:text-base tracking-[0.3em] uppercase text-[#eec643] font-semibold mb-2">
@@ -971,7 +1007,7 @@ export default function Home() {
                   {/* Total count and school list */}
                   <div className="flex flex-col xl:flex-row items-center xl:items-start gap-6 xl:gap-12">
                     {/* mobile dropdown */}
-                    <div className="xl:hidden w-full mb-4 flex gap-3">
+                    <div className="xl:hidden w-full mb-4 flex gap-3 flex-col sm:flex-row">
                       {/* Province Filter */}
                       <select
                         className="flex-1 px-3 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold shadow-lg focus:ring-2 focus:ring-[#eec643] focus:border-transparent transition-all duration-200 cursor-pointer"
@@ -1139,101 +1175,29 @@ export default function Home() {
                         </button>
                       )}
                       {/* Map Markers */}
-                      {/* Abra */}
-                      <button
-                        onClick={() => setSelectedProvince("Abra")}
-                        className={`absolute left-[38%] top-[43%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Abra" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Abra
-                        </span>
-                      </button>
-
-                      {/* Apayao */}
-                      <button
-                        onClick={() => setSelectedProvince("Apayao")}
-                        className={`absolute left-[52%] top-[27%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Apayao" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Apayao
-                        </span>
-                      </button>
-
-                      {/* Kalinga */}
-                      <button
-                        onClick={() => setSelectedProvince("Kalinga")}
-                        className={`absolute left-[58%] top-[46%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Kalinga" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Kalinga
-                        </span>
-                      </button>
-
-                      {/* Benguet */}
-                      <button
-                        onClick={() => setSelectedProvince("Benguet")}
-                        className={`absolute left-[31%] top-[72%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Benguet" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Benguet
-                        </span>
-                      </button>
-
-                      {/* Ifugao */}
-                      <button
-                        onClick={() => setSelectedProvince("Ifugao")}
-                        className={`absolute left-[50%] top-[63%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Ifugao" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Ifugao
-                        </span>
-                      </button>
-
-                      {/* Mountain Province */}
-                      <button
-                        onClick={() => setSelectedProvince("Mountain Province")}
-                        className={`absolute left-[53%] top-[56%] group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
-                      >
-                        <div className="relative">
-                          <div
-                            className={`w-5 h-5 bg-[#eec643] rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === "Mountain Province" ? "ring-[#eec643]/50" : ""}`}
-                          />
-                          <div className="absolute inset-0 w-5 h-5 bg-[#eec643] rounded-full animate-ping opacity-75" />
-                        </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
-                          Mountain Province
-                        </span>
-                      </button>
+                      {provincesNames.map((p) => (
+                        <button
+                          key={p.name}
+                          onClick={() => setSelectedProvince(p.name)}
+                          className={`absolute ${p.translate} group cursor-pointer transition-all duration-300 hover:scale-125 z-20`}
+                          style={{ 
+                            left: p.left, 
+                            top: p.top 
+                          }}
+                        >
+                          <div className="relative">
+                            <div
+                              className={`w-5 h-5 ${provinceStatus[p.name] ? "bg-[#eec643]" : "bg-[#eec643]/35"} rounded-full shadow-lg ring-4 ring-white/60 ${selectedProvince === p.name ? "ring-[#eec643]/50" : ""}`}
+                            />
+                            {provinceStatus[p.name] && (
+                              <div className="absolute inset-0 w-5 h-5 rounded-full bg-[#eec643] animate-ping opacity-75" />
+                            )}
+                          </div>
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[#011638] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50 pointer-events-none">
+                            {p.name}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1244,7 +1208,7 @@ export default function Home() {
           {/* ACADEMICS SECTION */}
           <section
             id="academics-section"
-            className="py-8 sm:py-12 lg:py-16 px-[clamp(1rem,4vw,6rem)] relative w-full mx-auto max-w-[1920px] bg-[#fbfaf8] overflow-hidden"
+            className="py-8 sm:py-12 lg:py-16 relative w-full mx-auto bg-[#fbfaf8] overflow-hidden justify-center items-center"
             style={{
               backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
               backgroundSize: "20px 20px",
@@ -1255,16 +1219,16 @@ export default function Home() {
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0d21a1]/10 rounded-full blur-3xl animate-pulse delay-1000" />
 
-            <div className="w-full mx-auto max-w-[1920px] relative z-10">
+            <div className="w-full mx-auto relative z-10">
               <div className="flex flex-col-reverse lg:flex-row items-center justify-center gap-12 lg:gap-20">
                 {/* Image */}
-                <div className="flex-1 flex justify-center lg:justify-end perspective-1000">
+                <div className="flex justify-center lg:justify-end perspective-1000">
                   <div className="relative group">
                     {/* Glow effect behind img */}
                     <div className="absolute -inset-4 bg-gradient-to-r from-[#eec643]/20 to-[#0d21a1]/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-700" />
 
                     {/* Image w/ 3D hover effect */}
-                    <div className="rounded-3xl relative transform transition-all duration-700 group-hover:rotate-y-6 group-hover:shadow-2xl">
+                    <div className="rounded-3xl relative transform transition-all duration-700 group-hover:shadow-2xl">
                       <img
                         src="/assets/logos/acad.jpg"
                         alt="Academics"
@@ -1294,17 +1258,17 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left relative">
+                <div className="flex flex-col items-center lg:items-start text-center lg:text-left relative justify-center">
                   {/* Text Content */}
-                  <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent leading-tight drop-shadow-2xl">
+                  <span className="header">
                     ACADEMICS
-                  </h2>
+                  </span>
 
                   {/* Decorative line */}
-                  <div className="w-32 h-1 bg-gradient-to-r from-[#eec643] to-[#0d21a1] mt-6 rounded-full shadow-lg" />
+                  <GradientLine start />
 
                   {/* Stats Counter */}
-                  <div className="w-full">
+                  <div className="w-full cursor-default">
                     <div className=" mt-10 flex flex-wrap justify-center lg:justify-start gap-6 mb-1">
                       <div ref={surveySectionRef} className="text-center group">
                         <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
@@ -1326,7 +1290,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <p className="mt-8 text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl border border-[#eec643]/20 hover:shadow-2xl transition-all duration-500 text-center lg:text-left">
+                  <p className="box mt-8">
                     Supporting research and thesis initiatives of members.
                     <span className="block mt-2 font-bold text-[#011638]">
                       Promoting academic growth and collaboration.
@@ -1334,7 +1298,7 @@ export default function Home() {
                   </p>
 
                   {/* Buttons */}
-                  <div className="grid grid-cols-2 gap-4 mt-12 w-full max-w-md">
+                  <div className="flex lg:flex-row flex-col justify-center lg:justify-start gap-6 mt-12">
                     <Link
                       href="/survey"
                       onClick={() =>
@@ -1343,9 +1307,9 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="btn-blue"
                     >
-                      Take Survey →
+                      Take Survey→
                     </Link>
 
                     <Link
@@ -1356,9 +1320,9 @@ export default function Home() {
                           "academics-section",
                         )
                       }
-                      className="group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform"
+                      className="btn-blue"
                     >
-                      View Thesis →
+                      View Thesis→
                     </Link>
                   </div>
                 </div>

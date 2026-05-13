@@ -50,23 +50,58 @@ p {
   font-family: var(--font-ubuntu-mono), ui-sans-serif, system-ui;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 1rem;
-}
+@layer components {
+  .header {
+    @apply 
+    flex items-center gap-4 mx-auto lg:mx-0 justify-center lg:justify-start
+    uppercase text-5xl md:text-6xl font-oswald font-extrabold 
+    bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
+    
+  };
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #eff0f2;
-  border-radius: 10px;
-}
+  .withspade {
+    &::before, &::after {
+      content: "♠";
+      @apply text-[#eec643] font-normal font-ubuntu-mono text-4xl md:text-5xl;
+    }
+  };
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #eff0f2;
-  cursor: pointer;
+  .headersub {
+    @apply text-3xl md:text-4xl font-oswald font-medium text-[#011638];
+  };
+
+  .withminispade {
+    &::before, &::after {
+      content: "♠";
+      @apply text-[#eec643] font-ubuntu-mono text-2xl md:text-3xl px-2;
+    }
+  };
+
+  .btn-yellow {
+    @apply 
+      px-10 py-4 rounded-3xl
+      bg-[#d9b237]/80 shadow-[0_0_0_#d9b237] border-2 border-[#d9b237]
+      text-white text-lg text-center
+      hover:bg-[#d9b237] hover:shadow-[0_0_25px_#d9b237] hover:text-white
+      hover:scale-105 
+      transition-all duration-300 transform;
+  }
+
+  .btn-blue {
+    @apply 
+      px-10 py-4 rounded-3xl
+      bg-[#011638]/80 shadow-[0_0_0_#011638] border-2 border-[#011638]
+      text-white text-lg text-center
+      hover:bg-[#011638] hover:shadow-[0_0_25px_#011638] hover:text-white
+      hover:scale-105 
+      transition-all duration-300 transform;
+  }
+
+  .box {
+    @apply text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-center lg:text-left;
+  }
 }
+/* group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform */
 
 .custom-scrollbar-blue::-webkit-scrollbar {
   width: 10px;
@@ -110,28 +145,6 @@ p {
 .custom-scrollbar-white-nobg::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #011638;
-  color: white;
-  border-radius: 8px;
-  transition: background-color;
-}
-
-.btn-primary:hover {
-  background-color: #022050;
-  color: white;
-}
-
-.btn-secondary {
-  background-color: #dbb32f;
-  border-radius: 8px;
-  transition: background-color;
-}
-
-.btn-secondary:hover {
-  background-color: #c49b16;
 }
 
 /* DONT MIND THIS*/

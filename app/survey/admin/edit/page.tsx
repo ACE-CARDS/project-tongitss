@@ -226,6 +226,7 @@ function EditSurveyContent() {
         author?.lastName?.trim() && 
         author?.email?.trim()) {
         hasValidAuthor = true;
+        console.log("Has valid author: " + hasValidAuthor);
         break;
     }
     }
