@@ -186,7 +186,6 @@ export default function MemberSurveyView() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-<<<<<<< Updated upstream
   if (loading) {
     return (
       <div className="space-y-6">
@@ -229,9 +228,6 @@ export default function MemberSurveyView() {
       </div>
     );
   }
-=======
-  if (loading) return <div className="min-h-[400px] w-full" />;
->>>>>>> Stashed changes
 
   return (
     <div className="space-y-6">
