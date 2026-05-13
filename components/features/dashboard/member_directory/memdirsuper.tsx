@@ -15,7 +15,7 @@ type Member = {
   school: number | string;
   role: string;
   comm: number | string;
-  course: number | string; 
+  course: number | string;
 };
 
 type Committee = {
@@ -112,26 +112,24 @@ export default function MembersPage() {
     };
 
     fetchSchools();
-    
   }, []);
 
   useEffect(() => {
     const fetchCourses = async () => {
       const { data, error } = await supabase
-      .from("course")
-      .select("id, course_name")
-      .order("course_name");
-    
+        .from("course")
+        .select("id, course_name")
+        .order("course_name");
+
       if (error) {
         console.error("Error fetching courses:", error);
         return;
       }
-    
+
       if (data) setCourses(data);
     };
 
     fetchCourses();
-    
   }, []);
 
   //keywords for committee tabs
@@ -223,14 +221,10 @@ export default function MembersPage() {
     if (bInList) return 1;
 
     const nameCompare = `${a.mem_lname} ${a.mem_fname}`
-  .toLowerCase()
-  .localeCompare(
-    `${b.mem_lname} ${b.mem_fname}`.toLowerCase(),
-  );
+      .toLowerCase()
+      .localeCompare(`${b.mem_lname} ${b.mem_fname}`.toLowerCase());
 
-return nameSortOrder === "asc"
-  ? nameCompare
-  : -nameCompare;
+    return nameSortOrder === "asc" ? nameCompare : -nameCompare;
   });
 
   // pagination
@@ -636,7 +630,7 @@ return nameSortOrder === "asc"
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const ref = useRef<HTMLDivElement>(null);
-  
+
     useEffect(() => {
       const handleClickOutside = (e: MouseEvent) => {
         if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -645,15 +639,18 @@ return nameSortOrder === "asc"
         }
       };
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-  
+
     const filteredOptions = options.filter((o) =>
-      o.label.toLowerCase().includes(search.toLowerCase())
+      o.label.toLowerCase().includes(search.toLowerCase()),
     );
-  
-    const selectedLabel = options.find((o) => String(o.value) === String(value))?.label || "Select course";
-  
+
+    const selectedLabel =
+      options.find((o) => String(o.value) === String(value))?.label ||
+      "Select course";
+
     return (
       <div ref={ref} className="relative w-full">
         <button
@@ -662,9 +659,11 @@ return nameSortOrder === "asc"
           className="w-full px-3 py-2 border rounded-xl text-left relative cursor-pointer"
         >
           {selectedLabel}
-          <span className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45 transition-transform ${open ? "rotate-225" : "rotate-45"}`} />
+          <span
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45 transition-transform ${open ? "rotate-225" : "rotate-45"}`}
+          />
         </button>
-  
+
         {open && (
           <div className="absolute bottom-full mb-1 z-[9999] bg-white border rounded-xl shadow-lg w-full max-h-60 overflow-hidden">
             <input
@@ -745,7 +744,7 @@ return nameSortOrder === "asc"
     mem_minit: "",
     mem_email: "",
     school: "",
-    course: ""
+    course: "",
   });
 
   const [editFieldErrors, setEditFieldErrors] = useState({
@@ -855,23 +854,23 @@ return nameSortOrder === "asc"
           .toLowerCase()
           .replace(/\s+/g, " ")
           .trim();
-      
+
         if (!normalizedCustomCourse) {
           setCustomCourseError(true);
           return;
         }
-      
+
         const existingCourse = courses.find(
           (c) =>
             c.course_name.toLowerCase().replace(/\s+/g, " ").trim() ===
             normalizedCustomCourse,
         );
-      
+
         if (existingCourse) {
           setCustomCourseError(true);
           return;
         }
-      
+
         const { data: newCourse, error: courseError } = await supabase
           .from("course")
           .insert({
@@ -879,17 +878,17 @@ return nameSortOrder === "asc"
           })
           .select()
           .single();
-      
+
         if (courseError || !newCourse) {
           console.error(courseError);
-      
+
           setEditErrorMessage("Failed to add course.");
           setShowEditError(true);
           return;
         }
-      
+
         finalCourseId = newCourse.id;
-      
+
         setCourses((prev) => [...prev, newCourse]);
       }
 
@@ -1255,14 +1254,13 @@ return nameSortOrder === "asc"
   const [showRenameSuccess, setShowRenameSuccess] = useState(false);
 
   const hasEditChanges =
-  editMember &&
-  (editForm.mem_fname !== editMember.mem_fname ||
-    editForm.mem_lname !== editMember.mem_lname ||
-    editForm.mem_minit !== (editMember.mem_minit || "") ||
-    editForm.mem_email !== (editMember.mem_email || "") ||
-    String(editForm.school) !== String(editMember.school || "") ||
-    String(editForm.course) !== String(editMember.course || ""));
-      
+    editMember &&
+    (editForm.mem_fname !== editMember.mem_fname ||
+      editForm.mem_lname !== editMember.mem_lname ||
+      editForm.mem_minit !== (editMember.mem_minit || "") ||
+      editForm.mem_email !== (editMember.mem_email || "") ||
+      String(editForm.school) !== String(editMember.school || "") ||
+      String(editForm.course) !== String(editMember.course || ""));
 
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
@@ -1408,8 +1406,6 @@ return nameSortOrder === "asc"
         .select("*")
         .eq("acadyear", currentAcademicYear);
       if (refreshed) setMembers(refreshed);
-
-      setShowTransitionSuccess(true);
     } catch (err: any) {
       console.error("Transition failed:", err);
       setShowImportError(true);
@@ -1541,8 +1537,8 @@ return nameSortOrder === "asc"
 
   const [courses, setCourses] = useState([]);
   const [isAddingCourse, setIsAddingCourse] = useState(false);
-const [customCourse, setCustomCourse] = useState("");
-const [customCourseError, setCustomCourseError] = useState(false);
+  const [customCourse, setCustomCourse] = useState("");
+  const [customCourseError, setCustomCourseError] = useState(false);
 
   //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
   return (
@@ -1771,17 +1767,19 @@ const [customCourseError, setCustomCourseError] = useState(false);
             <div className="overflow-y-visible">
               {/* grid start */}
               <div className="hidden sm:grid grid-cols-[minmax(140px,1.5fr)_minmax(140px,1.5fr)_minmax(110px,1fr)_minmax(70px,0.5fr)] font-semibold text-[#011638]/70 px-4 mb-2">
-              <button
-                onClick={() =>
-                  setNameSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-                }
-                className="flex items-center justify-center gap-1 text-center cursor-pointer select-none hover:opacity-70 transition"
-              >
-                Name
-                <span className="text-[10px] font-semibold bg-[#011638]/10 px-1.5 py-0.5 rounded">
-                  {nameSortOrder === "asc" ? "A-Z" : "Z-A"}
-                </span>
-              </button>
+                <button
+                  onClick={() =>
+                    setNameSortOrder((prev) =>
+                      prev === "asc" ? "desc" : "asc",
+                    )
+                  }
+                  className="flex items-center justify-center gap-1 text-center cursor-pointer select-none hover:opacity-70 transition"
+                >
+                  Name
+                  <span className="text-[10px] font-semibold bg-[#011638]/10 px-1.5 py-0.5 rounded">
+                    {nameSortOrder === "asc" ? "A-Z" : "Z-A"}
+                  </span>
+                </button>
                 <span className="text-center">Committee</span>
                 <span className="text-center">Role</span>
                 <span className="text-center">Actions</span>
@@ -1818,19 +1816,19 @@ const [customCourseError, setCustomCourseError] = useState(false);
                       `}
                       >
                         <div className="my-auto">
-                        <span
-                          className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight"
-                          title={`${member.mem_lname}, ${member.mem_fname}${
-                            member.mem_minit?.trim()
-                              ? ` ${member.mem_minit
-                                  .replace(/\./g, "")
-                                  .toUpperCase()
-                                  .split("")
-                                  .map((c) => `${c}.`)
-                                  .join("")}`
-                              : ""
-                          }`}
-                        >
+                          <span
+                            className="font-bold text-[#141414] break-words whitespace-normal block max-w-full leading-tight"
+                            title={`${member.mem_lname}, ${member.mem_fname}${
+                              member.mem_minit?.trim()
+                                ? ` ${member.mem_minit
+                                    .replace(/\./g, "")
+                                    .toUpperCase()
+                                    .split("")
+                                    .map((c) => `${c}.`)
+                                    .join("")}`
+                                : ""
+                            }`}
+                          >
                             {member.mem_lname.toUpperCase()},{" "}
                             {member.mem_fname
                               .toLowerCase()
@@ -1852,11 +1850,15 @@ const [customCourseError, setCustomCourseError] = useState(false);
                           <span
                             className="mt-1.5 text-xs text-gray-500 break-all block"
                             title={`${member.school_rel?.school_name || member.school}${
-                              member.course_rel?.course_name ? ` | ${member.course_rel.course_name}` : ""
+                              member.course_rel?.course_name
+                                ? ` | ${member.course_rel.course_name}`
+                                : ""
                             }`}
                           >
                             {member.school_rel?.school_name || member.school}
-                            {member.course_rel?.course_name ? ` | ${member.course_rel.course_name}` : ""}
+                            {member.course_rel?.course_name
+                              ? ` | ${member.course_rel.course_name}`
+                              : ""}
                           </span>
                         </div>
                         <div
@@ -1895,7 +1897,7 @@ const [customCourseError, setCustomCourseError] = useState(false);
                                 mem_minit: member.mem_minit || "",
                                 mem_email: member.mem_email || "",
                                 school: member.school,
-                                course: member.course
+                                course: member.course,
                               });
 
                               setEditFieldErrors({
@@ -2514,13 +2516,16 @@ const [customCourseError, setCustomCourseError] = useState(false);
 
               <CourseDropdown
                 value={editForm.course}
-                options={courses.map((c) => ({ label: c.course_name, value: c.id }))}
+                options={courses.map((c) => ({
+                  label: c.course_name,
+                  value: c.id,
+                }))}
                 onChange={(val) => {
                   setEditForm((prev) => ({
                     ...prev,
                     course: val,
                   }));
-                
+
                   if (val === "other") {
                     setIsAddingCourse(true);
                   } else {
@@ -2529,24 +2534,24 @@ const [customCourseError, setCustomCourseError] = useState(false);
                   }
                 }}
               />
-                
+
               {isAddingCourse && (
-                  <input
-                    type="text"
-                    placeholder="Enter new course"
-                    value={customCourse}
-                    onChange={(e) => {
-                      setCustomCourse(e.target.value);
-                      setCustomCourseError(false);
-                    }}
-                    className={`w-full px-3 py-2 rounded-lg mt-2 border transition
+                <input
+                  type="text"
+                  placeholder="Enter new course"
+                  value={customCourse}
+                  onChange={(e) => {
+                    setCustomCourse(e.target.value);
+                    setCustomCourseError(false);
+                  }}
+                  className={`w-full px-3 py-2 rounded-lg mt-2 border transition
                       ${
                         customCourseError
                           ? "border-red-500 ring-2 ring-red-200"
                           : "border-gray-300"
                       }`}
-                  />
-                )}
+                />
+              )}
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
