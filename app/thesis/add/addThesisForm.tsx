@@ -1019,7 +1019,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               {authors.map((author, index) => (
                 <div key={author.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-oswald text-[#011638]">Author {index + 1}</h3>
+                    <h3 className="font-oswald text-[#011638]">AUTHOR {index + 1}</h3>
                     {authors.length > 1 && (
                       <button
                         type="button"
