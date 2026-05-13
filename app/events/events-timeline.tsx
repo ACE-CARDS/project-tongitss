@@ -109,8 +109,8 @@ export default function EventsTimeline() {
 
   useEffect(() => {
     if (selectedEvent) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "auto";
-    return () => { document.body.style.overflow = "auto"; };
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
   }, [selectedEvent]);
 
   useEffect(() => {
