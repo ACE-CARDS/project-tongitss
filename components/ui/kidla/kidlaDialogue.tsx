@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { type FC, useRef, useState, useEffect } from "react";
 import { Transition } from "react-transition-group";
 import Link from "next/link";
+import ModalBlur from "../modalBlur";
 
 type Props = {
   isShowing: boolean;
@@ -83,13 +84,10 @@ const KidlaDialogue: FC<Props> = ({
           ref={container}
           className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end pt-20 lg:pt-28 lg:pr-24 px-4 overflow-y-auto"
         >
-          <div
-            className="backdrop absolute inset-0 cursor-pointer bg-black/20 opacity-0 backdrop-blur-[3px]"
-            onClick={onClose}
-          />
+          <ModalBlur isShowing={isShowing} onClose={onClose}/>
 
           <div
-            className="content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
+            className="z-40 content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
           border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center"
           >
             {showTriangle && (
