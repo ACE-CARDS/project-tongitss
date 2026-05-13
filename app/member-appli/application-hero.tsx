@@ -12,11 +12,9 @@ export default function ApplicationHero({ deadline, signupLink }: { deadline: st
     >
       <div className="flex flex-col items-center lg:items-start gap-4 text-center lg:text-left">
         <div className="flex items-center justify-center lg:justify-start gap-3 w-full">
-          <span className="text-3xl lg:text-4xl text-[#eec643]">♠</span>
-          <h1 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
+          <span className="header withspade">
             Application
-          </h1>
-          <span className="text-3xl lg:text-4xl text-[#eec643]">♠</span>
+          </span>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">

@@ -11,7 +11,7 @@ export default function MemberAppliLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full mx-auto max-w-[1920px]">
+    <div className="">
       {children}
     </div>
   );
