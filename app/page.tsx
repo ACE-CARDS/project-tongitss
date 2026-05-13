@@ -126,7 +126,7 @@ export default function Home() {
                 .getElementById("hero")
                 ?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="cursor-pointer border-2 border-yellow-500 fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl border border-white/40 px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            className="cursor-pointer border-2 border-yellow-500 fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
           >
             {/* //https://heroicons.com/outline */}
             <svg
