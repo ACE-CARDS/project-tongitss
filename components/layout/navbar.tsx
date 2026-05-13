@@ -18,6 +18,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   const [membersOpen, setMembersOpen] = useState(false);
   const academicsRef = useRef<HTMLLIElement>(null);
   const membersRef = useRef<HTMLLIElement>(null);
+  const navigationRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const isActive = (path: string) => {
@@ -44,12 +45,14 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   }
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (
         (academicsRef.current &&
         !academicsRef.current.contains(event.target as Node)) || 
         (membersRef.current &&
-        !membersRef.current.contains(event.target as Node)
+        !membersRef.current.contains(event.target as Node)) ||
+        (navigationRef.current &&
+        !navigationRef.current.contains(event.target as Node)
         )
       ) {
         setAcademicsOpen(false);
@@ -105,7 +108,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
 
           {/* Navigation */}
           <div
-            ref={academicsRef}
+            ref={navigationRef}
             className={`
               shadow-[0_0_15px_rgba(255,255,255,0.3)]
               fixed text-lg lg:right-[30px] right-[10px] top-[80px]
