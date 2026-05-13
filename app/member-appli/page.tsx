@@ -81,38 +81,40 @@ function MembershipApplicationContent() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-[#fbfaf8] flex flex-col"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <>
       <NavBar />
+      <div
+        className="min-h-screen bg-[#fbfaf8] flex flex-col max-w-[1920px] mx-auto w-full"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
 
-      <main className="flex-col px-6 sm:px-10 lg:px-20 py-8">
-        <div className="max-w-7xl mx-auto w-full">
-          <BackButton />
+        <main className="flex-col px-6 sm:px-10 lg:px-20 py-8">
+          <div className="max-w-7xl mx-auto w-full">
+            <BackButton />
 
-          <ApplicationHero 
-            deadline={pageContent.deadline} 
-            signupLink={pageContent.signupLink} 
-          />
-          
-          <ApplicationInfo 
-            reminders={pageContent.reminders} 
-            instructions={pageContent.instructions} 
-          />
-          
-          {pageContent.videoUrl && (
-            <ApplicationTestimony videoUrl={pageContent.videoUrl} />
-          )}
-        </div>
-      </main>
+            <ApplicationHero 
+              deadline={pageContent.deadline} 
+              signupLink={pageContent.signupLink} 
+            />
+            
+            <ApplicationInfo 
+              reminders={pageContent.reminders} 
+              instructions={pageContent.instructions} 
+            />
+            
+            {pageContent.videoUrl && (
+              <ApplicationTestimony videoUrl={pageContent.videoUrl} />
+            )}
+          </div>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }
 
