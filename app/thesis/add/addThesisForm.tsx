@@ -33,7 +33,7 @@ interface AddThesisFormProps {
 export default function AddThesisForm({ categories, schools, returnTo }: AddThesisFormProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
+  const [authors, setAuthors] = useState<Author[]>([{ id: Date.now() }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -491,34 +491,40 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   }, [returnTo]);
 
-  // Validate form when states change
-  useEffect(() => {
-    validateForm();
-  }, [categoryError, schoolError, digitalLinkError, authors]);
-
-   const addAuthor = () => {
-    const newId = authors.length + 1;
-    setAuthors([...authors, { 
-      id: newId, 
-      firstName: "",
-      middleInitial: "",
-      lastName: "",
-      email: "",
-      memberId: null
-    }]);
-  };
+// 1. Fix the scoping: Ensure there are no extra '}' before removeAuthor
+  const addAuthor = () => {
+    setAuthors([...authors, { id: Date.now() }]);
+  }; // Only one closing brace here
 
   const removeAuthor = (id: number) => {
-    if (authors.length > 1) {
-      const updatedAuthors = authors.filter(author => author.id !== id);
-      // Re-index
-      const reindexedAuthors = updatedAuthors.map((author, idx) => ({ 
-        ...author, 
-        id: idx + 1
-      }));
-      setAuthors(reindexedAuthors);
-    }
+    if (authors.length <= 1) return;
+
+    // 1. Remove the author from the list
+    setAuthors(prev => prev.filter(a => a.id !== id));
+
+    // 2. Clear their specific search results
+    setSearchResults(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(id);
+      return newMap;
+    });
   };
+
+  const updateAuthorState = (id: number, field: keyof Author, value: string) => {
+    setAuthors(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+  };
+
+  const updateAuthor = (id: number, field: keyof Author, value: string) => {
+  setAuthors(prev => prev.map(auth => 
+    auth.id === id ? { ...auth, [field]: value } : auth
+  ));
+};
+
+  // 2. Form Validation Effect
+  useEffect(() => {
+    validateForm();
+    // Dependency array is correct, but ensure validateForm is defined inside the component
+  }, [categoryError, schoolError, digitalLinkError, authors]);
 
   const handleAddNewCategory = async () => {
     setCategoryError("");
@@ -1017,13 +1023,13 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               {authors.map((author, index) => (
-                <div key={author.id} className="mb-6 last:mb-0">
+                <div key={index} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-oswald font-bold text-[#011638]">AUTHOR {index + 1}</h3>
-                    {authors.length > 1 && (
+                    {index > 0 && (
                       <button
                         type="button"
-                        onClick={() => removeAuthor(author.id)}
+                        onClick={() => removeAuthor(author.id!)}
                         className="text-red-600 hover:text-red-800 text-sm"
                       >
                         Remove
@@ -1042,7 +1048,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           required
                           maxLength={20}
                           placeholder="First Name"
-                          defaultValue={author.firstName || ""}
+                          value={author.firstName || ""}
                           disabled={index === 0}
                           className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           onBlur={() => {
@@ -1100,6 +1106,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             }
                             validateForm();
                           }}
+                          onChange={(e) => updateAuthor(author.id, 'firstName', e.target.value)}
                         />
                         <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       </div>
@@ -1113,7 +1120,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           name="middleInitial[]"
                           maxLength={4}
                           placeholder="M.I."
-                          defaultValue={author.middleInitial || ""}
+                          value={author.middleInitial || ""}
                           disabled={index === 0}
                           className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           onBlur={() => {
@@ -1134,6 +1141,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           }}
                           onChange={(e) => {
                             if (index === 0) return;
+
+
                             let value = e.target.value.toUpperCase();
                             value = value.replace(/[^A-Z.]/g, '');
                             
@@ -1156,13 +1165,15 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             
                             const event = new Event('input', { bubbles: true });
                             e.target.dispatchEvent(event);
+                            
+                            updateAuthor(author.id, 'middleInitial', e.target.value)
                           }}
                           onInput={(e) => {
                             if (index === 0) return;
                             const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                             const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
                             if (firstNameInput?.value && lastNameInput?.value) {
-                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, index);
+                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, author.id);
                             }
                           }}
                         />
@@ -1178,7 +1189,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         required
                         maxLength={20}
                         placeholder="Last Name"
-                        defaultValue={author.lastName || ""}
+                        value={author.lastName || ""}
                         disabled={index === 0}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         onBlur={() => {
@@ -1286,6 +1297,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           }
                           validateForm();
                         }}
+                        onChange={(e) => updateAuthor(author.id, 'lastName', e.target.value)}
                       />
                       <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
@@ -1300,7 +1312,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         required
                         maxLength={254}
                         placeholder="Email"
-                        defaultValue={author.email || ""}
+                        value={author.email || ""}
                         disabled={index === 0}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         // Key Limits
@@ -1475,6 +1487,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }, 200);
                         }}
+                        onChange={(e) => updateAuthor(author.id, 'email', e.target.value)}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       
@@ -1501,7 +1514,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               <button
                                 key={idx}
                                 type="button"
-                                onClick={() => selectEmailSuggestion(suggestion, index)}
+                                onClick={() => selectEmailSuggestion(suggestion, author.id)}
                                 className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
                               >
                                 <div className="flex flex-col">
@@ -1515,7 +1528,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       )}
                     </div>
                   </div>
-                  {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
+                  {author.id < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                 </div>
               ))}
               
@@ -1683,7 +1696,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        defaultValue=""
+                        value=""
                         // Error handling
                         onChange={(e) => {
                           setIsCategoryTouched(true);
@@ -1805,7 +1818,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        defaultValue=""
+                        value=""
                         // Error handling
                         onChange={(e) => {
                         setIsSchoolTouched(true);
