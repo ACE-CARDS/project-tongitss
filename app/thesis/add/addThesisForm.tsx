@@ -39,6 +39,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
+  const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/thesis");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
@@ -155,6 +156,43 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   };
 
+  const searchMembersByFullName = async (firstName: string, lastName: string, middleInitial: string, authorIndex: number) => {
+    if (!firstName || !lastName) {
+      setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+      return;
+    }
+
+    const normalizedMiddle = middleInitial ? middleInitial.charAt(0).toUpperCase() : '';
+    
+    const { data: members, error } = await supabase
+      .from("member")
+      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+      .ilike("mem_fname", firstName)
+      .ilike("mem_lname", lastName)
+      .limit(3);
+
+    if (!error && members) {
+      const matchingMembers = members.filter(m => {
+        const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+        return memberMiddle === normalizedMiddle;
+      });
+      
+      if (matchingMembers.length > 0) {
+        setEmailSuggestions(prev => new Map(prev).set(authorIndex, matchingMembers.map(m => ({
+          email: m.mem_email,
+          memberId: m.id,
+          fname: m.mem_fname,
+          lname: m.mem_lname,
+          minit: m.mem_minit
+        }))));
+      } else {
+        setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+      }
+    } else {
+      setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+    }
+  };
+
   // Select a member from search results
   const selectMember = (member: any, authorIndex: number) => {
     const updatedAuthors = [...authors];
@@ -168,6 +206,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     };
     setAuthors(updatedAuthors);
     setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
+    setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
     
     // Update input fields
     const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
@@ -180,6 +219,50 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     if (lastNameInput) lastNameInput.value = member.lname;
     if (emailInput) emailInput.value = member.email;
     
+    validateForm();
+  };
+
+  // Select email suggestion
+  const selectEmailSuggestion = (suggestion: {email: string, memberId: number, fname: string, lname: string, minit: string | null}, authorIndex: number) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex] = {
+      ...updatedAuthors[authorIndex],
+      email: suggestion.email,
+      memberId: suggestion.memberId,
+      firstName: suggestion.fname,
+      lastName: suggestion.lname,
+      middleInitial: suggestion.minit || ""
+    };
+    setAuthors(updatedAuthors);
+    setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+    
+    // Update email input field
+    const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
+    if (emailInput) {
+      emailInput.value = suggestion.email;
+      // Trigger validation and clear error
+      const errorSpan = document.getElementById(`email-error-${authorIndex}`);
+      if (errorSpan) {
+        errorSpan.style.display = 'none';
+      }
+    }
+    
+    // Update name fields if they're empty or mismatched
+    const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
+    const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
+    const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
+    
+    if (firstNameInput && (!firstNameInput.value || firstNameInput.value !== suggestion.fname)) {
+      firstNameInput.value = suggestion.fname;
+    }
+    if (lastNameInput && (!lastNameInput.value || lastNameInput.value !== suggestion.lname)) {
+      lastNameInput.value = suggestion.lname;
+    }
+    if (middleInitialInput && (!middleInitialInput.value || middleInitialInput.value !== (suggestion.minit || ""))) {
+      middleInitialInput.value = suggestion.minit || "";
+    }
+    
+    // Re-validate
     validateForm();
   };
 
@@ -994,6 +1077,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             if (index === 0) return;
                             const input = e.target as HTMLInputElement;
                             const errorSpan = document.getElementById(`firstname-error-${index}`);
+                            const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
 
                             if (input.value.length === 0) {
                               if (errorSpan) {
@@ -1008,6 +1093,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             } else {
                               if (errorSpan) {
                                 errorSpan.style.display = 'none';
+                              }
+                              if (lastNameInput?.value && lastNameInput.value.length >= 2) {
+                                searchMembersByFullName(input.value, lastNameInput.value, middleInitialInput?.value || '', index);
                               }
                             }
                             validateForm();
@@ -1069,6 +1157,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             const event = new Event('input', { bubbles: true });
                             e.target.dispatchEvent(event);
                           }}
+                          onInput={(e) => {
+                            if (index === 0) return;
+                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, index);
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -1120,6 +1216,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                           const lastNameInput = input;
                           const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
+                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
 
                           if (input.value.length === 0) {
                             if (errorSpan) {
@@ -1135,6 +1232,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             }
                             validateForm();
                             return;
+                          }
+
+                          if (firstNameInput?.value) {
+                            searchMembersByFullName(firstNameInput.value, input.value, middleInitialInput?.value || '', index);
                           }
 
                           // Check duplicate authors 
@@ -1189,7 +1290,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                     
-                    <div>
+                    <div className="relative">
                       <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Email <span className="text-[#eec643]">*</span>
                       </label>
@@ -1201,7 +1302,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         placeholder="Email"
                         defaultValue={author.email || ""}
                         disabled={index === 0}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         // Key Limits
                         onKeyUp={(e) => {
                           if (index === 0) return;
@@ -1229,12 +1330,47 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           const errorSpan = document.getElementById(`email-error-${index}`);
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                           const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
                           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                           if (input.value.length === 0) {
                             errorSpan!.textContent = 'Email is required.';
                             errorSpan!.style.display = 'block';
                             validateForm();
+                            
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
+                              
+                              const { data: matchingMembers } = await supabase
+                                .from("member")
+                                .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                                .ilike("mem_fname", firstNameInput.value)
+                                .ilike("mem_lname", lastNameInput.value)
+                                .limit(1);
+                              
+                              if (matchingMembers && matchingMembers.length > 0) {
+                                const exactMatch = matchingMembers.find(m => {
+                                  const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+                                  return memberMiddle === normalizedMiddle;
+                                });
+                                
+                                if (exactMatch) {
+                                  setEmailSuggestions(prev => new Map(prev).set(index, [{
+                                    email: exactMatch.mem_email,
+                                    memberId: exactMatch.id,
+                                    fname: exactMatch.mem_fname,
+                                    lname: exactMatch.mem_lname,
+                                    minit: exactMatch.mem_minit
+                                  }]));
+                                } else {
+                                  setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                }
+                              } else {
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              }
+                            } else {
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
+                            }
                             return;
                           }
                           
@@ -1242,6 +1378,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             errorSpan!.textContent = 'Please enter a valid email address.';
                             errorSpan!.style.display = 'block';
                             validateForm();
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                             return;
                           }
 
@@ -1254,18 +1391,68 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                                 errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
                                 errorSpan!.style.display = 'block';
                                 validateForm();
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
                                 return;
                               }
                             }
                           }
+
+                          // Check if full name matches a member and show suggestions
+                          if (firstNameInput?.value && lastNameInput?.value) {
+                            const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
+                            
+                            const { data: matchingMembers } = await supabase
+                              .from("member")
+                              .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                              .ilike("mem_fname", firstNameInput.value)
+                              .ilike("mem_lname", lastNameInput.value)
+                              .limit(3);
+                            
+                            if (matchingMembers && matchingMembers.length > 0) {
+                              const exactMatch = matchingMembers.find(m => {
+                                const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+                                return memberMiddle === normalizedMiddle;
+                              });
+                              
+                              // Check if email matches any member email
+                              const memberWithTypedEmail = matchingMembers.find(m => 
+                                m.mem_email.toLowerCase() === input.value.toLowerCase()
+                              );
+                              
+                              if (memberWithTypedEmail) {
+                                errorSpan!.style.display = 'none';
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                validateForm();
+                              } else if (exactMatch && input.value.length > 0 && 
+                                        exactMatch.mem_email.toLowerCase().includes(input.value.toLowerCase())) {
+                                setEmailSuggestions(prev => new Map(prev).set(index, [{
+                                  email: exactMatch.mem_email,
+                                  memberId: exactMatch.id,
+                                  fname: exactMatch.mem_fname,
+                                  lname: exactMatch.mem_lname,
+                                  minit: exactMatch.mem_minit
+                                }]));
+                                errorSpan!.style.display = 'none';
+                                validateForm();
+                              } else {
+                                errorSpan!.style.display = 'none';
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              }
+                            } else {
+                              errorSpan!.style.display = 'none';
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
+                            }
+                          } else {
+                            errorSpan!.style.display = 'none';
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }
                           
                           // Check existing author
-                          const supabase = createClient();
                           const { data: existing } = await supabase
-                            .from("author")
-                            .select("id, author_fname, author_lname")
-                            .eq("author_email", input.value)
-                            .maybeSingle();
+                          .from("author")
+                          .select("id, author_fname, author_lname")
+                          .eq("author_email", input.value)
+                          .maybeSingle();
                           
                           if (existing) {
                             const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
@@ -1276,32 +1463,50 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             } else {
                               errorSpan!.textContent = 'This email is already registered to a different author.';
                               errorSpan!.style.display = 'block';
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
                           } else {
                             errorSpan!.style.display = 'none';
                           }
                           validateForm();
                         }}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }, 200);
+                        }}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       
-                      {/* Search Results Dropdown */}
-                      {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && index !== 0 && (
-                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden" style={{ position: 'relative' }}>
-                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
-                            <span className="text-xs font-oswald font-semibold text-white">MATCHING MEMBER(S)</span>
+                      {/* Email Suggestions Dropdown */}
+                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && index !== 0 && 
+                      !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
+                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
+                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
+                            <span className="text-xs font-oswald font-semibold text-white">SUGGESTED EMAIL FOR THIS AUTHOR</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                setShowSearchDropdown(prev => new Map(prev).set(index, false));
+                              }}
+                              className="text-white hover:text-gray-200 text-lg leading-none"
+                              aria-label="Close"
+                            >
+                              ×
+                            </button>
                           </div>
-                          <div className="max-h-60 overflow-y-auto">
-                            {searchResults.get(index)!.map((member, idx) => (
+                          <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+                            {emailSuggestions.get(index)!.map((suggestion, idx) => (
                               <button
                                 key={idx}
                                 type="button"
-                                onClick={() => selectMember(member, index)}
+                                onClick={() => selectEmailSuggestion(suggestion, index)}
                                 className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
                               >
                                 <div className="flex flex-col">
-                                  <span className="font-medium">{member.fname} {member.minit ? member.minit + '. ' : ''}{member.lname}</span>
-                                  <span className="text-xs">{member.email}</span>
+                                  <span className="font-medium">{suggestion.email}</span>
+                                  <span className="text-xs">{suggestion.fname} {suggestion.minit ? suggestion.minit + '. ' : ''}{suggestion.lname}</span>
                                 </div>
                               </button>
                             ))}

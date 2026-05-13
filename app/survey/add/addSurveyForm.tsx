@@ -1468,30 +1468,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           </div>
                         </div>
                       )}
-                      
-                      {/* Search Results Dropdown */}
-                      {showSearchDropdown.get(index) && searchResults.get(index) && searchResults.get(index)!.length > 0 && index !== 0 && (
-                        <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden" style={{ position: 'relative' }}>
-                          <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
-                            <span className="text-xs font-oswald font-semibold text-white">MATCHING MEMBER(S)</span>
-                          </div>
-                          <div className="max-h-60 overflow-y-auto">
-                            {searchResults.get(index)!.map((member, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => selectMember(member, index)}
-                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
-                              >
-                                <div className="flex flex-col">
-                                  <span className="font-medium">{member.fname} {member.minit ? member.minit + '. ' : ''}{member.lname}</span>
-                                  <span className="text-xs">{member.email}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
