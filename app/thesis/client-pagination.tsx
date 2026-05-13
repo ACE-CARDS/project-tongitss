@@ -82,16 +82,6 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
 
   // Get author display name from member or author table
   const getAuthorDisplayName = (author: any) => {
-    if (author.mem_id && author.member) {
-      const member = author.member;
-      const middleInitial = member.mem_minit ? ` ${member.mem_minit}.` : "";
-      return {
-        name: `${member.mem_fname}${middleInitial} ${member.mem_lname}`,
-        email: member.mem_email
-      };
-    }
-    
-    // Fallback to author table data
     const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
     return {
       name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
@@ -108,23 +98,15 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
       const author = sa.author;
       if (!author) return null;
       
-      let memberData = null;
-      if (author.mem_id && thesis.members_data) {
-        memberData = thesis.members_data.find((m: any) => m.id === author.mem_id);
-      }
-      
       return {
         ...author,
-        member: memberData,
-        displayName: getAuthorDisplayName({ ...author, member: memberData })
+        displayName: getAuthorDisplayName(author)
       };
     }).filter((a: any) => a !== null);
 
-    // Sort alphabetically
+    // Sort alphabetically by last name
     authorsWithData.sort((a: any, b: any) => {
-      const lastNameA = a.member?.mem_lname || a.author_lname;
-      const lastNameB = b.member?.mem_lname || b.author_lname;
-      return lastNameA.localeCompare(lastNameB);
+      return a.author_lname.localeCompare(b.author_lname);
     });
 
     return authorsWithData;

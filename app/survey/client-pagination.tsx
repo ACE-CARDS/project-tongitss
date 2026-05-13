@@ -87,23 +87,15 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
       const author = sa.author;
       if (!author) return null;
       
-      let memberData = null;
-      if (author.mem_id && survey.members_data) {
-        memberData = survey.members_data.find((m: any) => m.id === author.mem_id);
-      }
-      
       return {
         ...author,
-        member: memberData,
-        displayName: getAuthorDisplayName({ ...author, member: memberData })
+        displayName: getAuthorDisplayName(author)
       };
     }).filter((a: any) => a !== null);
 
-    // Sort alphabetically
+    // Sort alphabetically by last name
     authorsWithData.sort((a: any, b: any) => {
-      const lastNameA = a.member?.mem_lname || a.author_lname;
-      const lastNameB = b.member?.mem_lname || b.author_lname;
-      return lastNameA.localeCompare(lastNameB);
+      return a.author_lname.localeCompare(b.author_lname);
     });
 
     return authorsWithData;
