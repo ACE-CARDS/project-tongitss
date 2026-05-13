@@ -371,8 +371,9 @@ export default function MemberThesisView() {
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search by title, description, or keywords..."
-              disabled
+              placeholder="Search by title, abstract, or keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-50"
             />
             <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
