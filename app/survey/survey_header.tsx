@@ -398,6 +398,13 @@ export default function SurveyHeader({
     updateUrl("", "", "", [], 1);
   };
 
+  const clearSearch = () => {
+    setQuery("");
+    setShowSuggestions(false);
+    updateUrl("", selectedCategory, selectedSchool, selectedYears, 1);
+    searchInputRef.current?.focus();
+  };
+
   return (
     <div className="mb-8">
       <h1 className="text-3xl font-oswald font-bold text-[#011638]">
@@ -456,11 +463,34 @@ export default function SurveyHeader({
                 onChange={handleChange}
                 onFocus={() => setShowSuggestions(true)}
                 value={query}
-                className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
               />
               <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              
+              {/* clear/X button */}
+              {query && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
+                  aria-label="Clear search"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
               
               <LiveSuggestions
                 query={query}
