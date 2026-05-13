@@ -196,6 +196,28 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
     }
   };
 
+  const getSortedAuthors = (survey: any) => {
+    if (!survey.survey_author || survey.survey_author.length === 0) {
+      return [];
+    }
+
+    const authorsWithData = survey.survey_author.map((sa: any) => {
+      const author = sa.author;
+      if (!author) return null;
+      
+      return {
+        ...author,
+      };
+    }).filter((a: any) => a !== null);
+
+    // Sort alphabetically by last name
+    authorsWithData.sort((a: any, b: any) => {
+      return a.author_lname.localeCompare(b.author_lname);
+    });
+
+    return authorsWithData;
+  };
+
   return (
     <>
       {isLoading ? (
@@ -285,43 +307,29 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         Author(s)
                       </h3>
                       <div className="flex flex-wrap gap-2">
-                        {survey.survey_author && survey.survey_author.length > 0 ? (
-                          survey.survey_author.map((sa: any, index: number) => {
-                            const author = sa.author;
-                            if (!author) return null;
-
-                            const middleInitial = author.author_minit
-                              ? ` ${author.author_minit}.`
-                              : "";
-                            return (
-                              <a
-                                key={`${survey.id}-${author.id || 'no-id'}-${index}`}
-                                href={`mailto:${author.author_email}`}
-                                className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group break-words max-w-full whitespace-normal"
-                                title={`Email: ${author.author_email}`}
-                              >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                              </svg>
-                              {author.author_fname} {middleInitial} {author.author_lname}
-                              </a>
-                            );
-                          })
-                        ) : (
-                          <span className="text-[#475569] opacity-50 text-sm">
-                            No authors listed
-                          </span>
-                        )}
+                        {(() => {
+                          const sortedAuthors = getSortedAuthors(survey);
+                          return sortedAuthors.length > 0 ? (
+                            sortedAuthors.map((author: any, index: number) => {
+                              const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
+                              return (
+                                <a
+                                  key={`${survey.id}-${author.id || 'no-id'}-${index}`}
+                                  href={`mailto:${author.author_email}`}
+                                  className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group break-words max-w-full whitespace-normal"
+                                  title={`Email: ${author.author_email}`}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                  {author.author_fname} {middleInitial} {author.author_lname}
+                                </a>
+                              );
+                            })
+                          ) : (
+                            <span className="text-[#475569] opacity-50 text-sm">No authors listed</span>
+                          );
+                        })()}
                       </div>
                     </div>
 
