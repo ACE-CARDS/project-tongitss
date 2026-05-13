@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import Pagination from "@/components/ui/pagination";
+import { SortField, SortOrder } from '../announcements/announcementsAdmin';
 
 interface Category {
   id: number;
@@ -10,7 +11,6 @@ interface Category {
   created_at: string;
 }
 
-// Format date as "Month Day, Year"
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -20,7 +20,8 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Delete confirmation popup
+// --- POPUP COMPONENTS ---
+
 function DeleteConfirmPopup({ isOpen, onClose, onConfirm, name, usageCount, isDeleting, deleteError }: { 
   isOpen: boolean; 
   onClose: () => void; 
@@ -46,7 +47,7 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, name, usageCount, isDe
 
   return (
     <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
+      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden text-center sm:text-left">
         <div className="bg-[#011638] px-6 py-4">
           <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Confirm Delete</h3>
         </div>
@@ -62,32 +63,32 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, name, usageCount, isDe
               <p className="text-sm text-[#475569] font-ubuntu-mono mb-4">
                 Cannot delete category because it is currently in use:
               </p>
-              <ul className="list-disc list-inside mb-4 text-sm text-[#475569] font-ubuntu-mono">
+              <ul className="list-disc list-inside mb-4 text-sm text-[#475569] font-ubuntu-mono inline-block text-left">
                 {usageCount.surveys > 0 && (
-                  <li>{usageCount.surveys} {usageCount.surveys === 1 ? 'survey' : 'surveys'} using this category</li>
+                  <li>{usageCount.surveys} {usageCount.surveys === 1 ? 'survey' : 'surveys'}</li>
                 )}
                 {usageCount.theses > 0 && (
-                  <li>{usageCount.theses} {usageCount.theses === 1 ? 'thesis' : 'theses'} using this category</li>
+                  <li>{usageCount.theses} {usageCount.theses === 1 ? 'thesis' : 'theses'}</li>
                 )}
               </ul>
-              <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-                Please reassign or delete these records before deleting this category.
+              <p className="text-sm text-[#475569] font-ubuntu-mono mb-6 italic">
+                Please reassign these records before deleting this category.
               </p>
               <div className="flex justify-end">
-                <button onClick={onClose} className="px-4 py-2 bg-[#011638] text-white rounded-lg hover:bg-[#012a5a] font-oswald">OK</button>
+                <button onClick={onClose} className="px-6 py-2 bg-[#011638] text-white rounded-lg hover:bg-[#012a5a] font-oswald">OK</button>
               </div>
             </>
           ) : (
             <>
               <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-                Are you sure you want to delete category "{name}"? This action cannot be undone.
+                Are you sure you want to delete <span className="font-bold text-[#011638]">"{name}"</span>? This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">
                 <button onClick={onClose} disabled={isDeleting} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] disabled:opacity-50">Cancel</button>
                 <button 
                   onClick={onConfirm} 
                   disabled={isDeleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </button>
@@ -100,28 +101,26 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, name, usageCount, isDe
   );
 }
 
-// Edit popup 
-function EditPopup({ isOpen, onClose, onSave, category, categories, isSaving, saveError }: { 
+function CategoryFormPopup({ isOpen, onClose, onAction, title, buttonLabel, initialValue = '', categories, isProcessing, apiError, isEdit = false, originalId }: { 
   isOpen: boolean; 
   onClose: () => void; 
-  onSave: (id: number, newName: string) => void; 
-  category: Category | null; 
+  onAction: (name: string) => void; 
+  title: string;
+  buttonLabel: string;
+  initialValue?: string;
   categories: Category[];
-  isSaving: boolean;
-  saveError: string | null;
+  isProcessing: boolean;
+  apiError: string | null;
+  isEdit?: boolean;
+  originalId?: number;
 }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialValue);
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const checkTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  useEffect(() => {
-    if (category) {
-      setName(category.r_category_name);
-      setError('');
-    }
-  }, [category]);
+  useEffect(() => { if (isOpen) setName(initialValue); setError(''); }, [isOpen, initialValue]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -131,207 +130,24 @@ function EditPopup({ isOpen, onClose, onSave, category, categories, isSaving, sa
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
-  // Real-time duplicate check
-  const checkDuplicate = async (value: string) => {
-    if (!value.trim() || value.trim() === category?.r_category_name) {
-      setError('');
-      return true;
-    }
+  const validateAndCheckDuplicate = (value: string) => {
+    if (!value.trim()) { setError(''); return; }
+    if (value.trim().length < 2) { setError('Name too short'); return; }
 
     setIsChecking(true);
-    
-    // Check for duplicates
     const exists = categories.some(cat => 
-      cat.r_category_name.toLowerCase() === value.trim().toLowerCase() && cat.id !== category?.id
+      cat.r_category_name.toLowerCase() === value.trim().toLowerCase() && (isEdit ? cat.id !== originalId : true)
     );
     
-    if (exists) {
-      setError('Category with this name already exists');
-      setIsChecking(false);
-      return false;
-    }
-    
-    setError('');
+    setError(exists ? 'This category name already exists' : '');
     setIsChecking(false);
-    return true;
   };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    
-    if (checkTimeoutRef.current) {
-      clearTimeout(checkTimeoutRef.current);
-    }
-    
-    checkTimeoutRef.current = setTimeout(() => {
-      checkDuplicate(value);
-    }, 300);
-  };
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      setError('Category name is required');
-      return;
-    }
-    if (name.trim().length < 2) {
-      setError('Category name must be at least 2 characters');
-      return;
-    }
-    
-    const isValid = await checkDuplicate(name);
-    if (!isValid) return;
-    
-    if (category) {
-      onSave(category.id, name.trim());
-    }
-  };
-
-  if (!isOpen || !category) return null;
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
-        <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Edit Category</h3>
-        </div>
-        <div className="px-6 py-6">
-          {saveError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 font-ubuntu-mono">{saveError}</p>
-            </div>
-          )}
-          
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
-            Category Name
-          </label>
-          <div className="relative">
-            <input
-            type="text"
-            value={name}
-            onChange={handleNameChange}
-            maxLength={50}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono ${
-              error ? 'border-red-500' : 'border-[#94a3b8]'
-            }`}
-            placeholder="Enter category name"
-          />
-            {isChecking && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <svg className="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-            )}
-          </div>
-          {error && <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{error}</p>}
-          <div className="flex justify-end gap-3 mt-6">
-            <button onClick={onClose} disabled={isSaving} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] disabled:opacity-50">Cancel</button>
-            <button 
-              onClick={handleSave} 
-              className={`px-4 py-2 rounded-lg font-oswald ${
-                isSaving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#1e4db7] text-white hover:bg-[#0d21a1]'
-              }`}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Add popup
-function AddPopup({ isOpen, onClose, onAdd, categories, isAdding, addError }: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onAdd: (name: string) => void; 
-  categories: Category[];
-  isAdding: boolean;
-  addError: string | null;
-}) {
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
-  const checkTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) onClose();
-    }
-    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, onClose]);
-
-  // Reset form 
-  useEffect(() => {
-    if (isOpen) {
-      setName('');
-      setError('');
-      setIsChecking(false);
-    }
-  }, [isOpen]);
-
-  // Duplicate check
-  const checkDuplicate = async (value: string) => {
-    if (!value.trim()) {
-      setError('');
-      return false;
-    }
-
-    if (value.trim().length < 2) {
-      setError('Category name must be at least 2 characters');
-      return false;
-    }
-
-    setIsChecking(true);
-    
-    const exists = categories.some(cat => 
-      cat.r_category_name.toLowerCase() === value.trim().toLowerCase()
-    );
-    
-    if (exists) {
-      setError('Category with this name already exists');
-      setIsChecking(false);
-      return false;
-    }
-    
-    setError('');
-    setIsChecking(false);
-    return true;
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    
-    if (checkTimeoutRef.current) {
-      clearTimeout(checkTimeoutRef.current);
-    }
-    
-    checkTimeoutRef.current = setTimeout(() => {
-      checkDuplicate(value);
-    }, 300);
-  };
-
-  const handleAdd = async () => {
-    if (!name.trim()) {
-      setError('Category name is required');
-      return;
-    }
-    if (name.trim().length < 2) {
-      setError('Category name must be at least 2 characters');
-      return;
-    }
-    
-    const isValid = await checkDuplicate(name);
-    if (!isValid) return;
-    
-    onAdd(name.trim());
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setName(val);
+    if (checkTimeoutRef.current) clearTimeout(checkTimeoutRef.current);
+    checkTimeoutRef.current = setTimeout(() => validateAndCheckDuplicate(val), 300);
   };
 
   if (!isOpen) return null;
@@ -340,52 +156,36 @@ function AddPopup({ isOpen, onClose, onAdd, categories, isAdding, addError }: {
     <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
         <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">Add New Category</h3>
+          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">{title}</h3>
         </div>
         <div className="px-6 py-6">
-          {addError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 font-ubuntu-mono">{addError}</p>
+          {apiError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 font-ubuntu-mono">
+              {apiError}
             </div>
           )}
-          
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
-            Category Name
-          </label>
+          <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">Category Name</label>
           <div className="relative">
             <input
               type="text"
               value={name}
-              onChange={handleNameChange}
+              onChange={handleChange}
               maxLength={50}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono ${
-                error ? 'border-red-500 pr-10' : 'border-[#94a3b8]'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-              placeholder="Enter category name"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !error && name.trim() && !isAdding) handleAdd();
-              }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono ${error ? 'border-red-500' : 'border-[#94a3b8]'}`}
+              placeholder="e.g. Artificial Intelligence"
             />
-            {isChecking && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <svg className="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-            )}
+            {isChecking && <div className="absolute right-3 top-2.5 animate-spin rounded-full h-4 w-4 border-2 border-[#011638] border-t-transparent"></div>}
           </div>
           {error && <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{error}</p>}
-          <div className="flex justify-end gap-3 mt-6">
-            <button onClick={onClose} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] disabled:opacity-50">Cancel</button>
+          
+          <div className="flex justify-end gap-3 mt-8">
+            <button onClick={onClose} disabled={isProcessing} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638]">Cancel</button>
             <button 
-              onClick={handleAdd} 
-              className={`px-4 py-2 rounded-lg font-oswald ${
-                isAdding ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#1e4db7] text-white hover:bg-[#0d21a1]'
-              }`}
-              disabled={isAdding}
+              onClick={() => !error && name.trim() && onAction(name.trim())} 
+              disabled={isProcessing || !!error || !name.trim()}
+              className={`px-6 py-2 rounded-lg font-oswald text-white transition-colors ${isProcessing || !!error || !name.trim() ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#1e4db7] hover:bg-[#0d21a1]'}`}
             >
-              {isAdding ? 'Adding...' : 'Add Category'}
+              {isProcessing ? 'Processing...' : buttonLabel}
             </button>
           </div>
         </div>
@@ -394,363 +194,263 @@ function AddPopup({ isOpen, onClose, onAdd, categories, isAdding, addError }: {
   );
 }
 
+// --- MAIN PAGE ---
+
 export default function CategoryAdmin() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deletePopupOpen, setDeletePopupOpen] = useState(false);
-  const [editPopupOpen, setEditPopupOpen] = useState(false);
-  const [addPopupOpen, setAddPopupOpen] = useState(false);
+  const [popups, setPopups] = useState({ add: false, edit: false, del: false });
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [usageCount, setUsageCount] = useState({ surveys: 0, theses: 0 });
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
+  const [status, setStatus] = useState({ processing: false, error: null as string | null });
   
   const supabase = createClient();
-  const itemsPerPage = 15;
+
+  useEffect(() => { fetchCategories(); }, []);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    let filtered = [...categories];
-    if (searchTerm.trim() !== '') {
-      filtered = filtered.filter(cat => 
-        cat.r_category_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    const filtered = categories.filter(cat => 
+      cat.r_category_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     setFilteredCategories(filtered);
     setCurrentPage(1);
   }, [searchTerm, categories]);
 
   const fetchCategories = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('r_category')
-      .select('*')
-      .order('r_category_name');
-    
-    if (error) {
-      console.error('Error fetching categories:', error);
-    } else {
-      setCategories(data || []);
-    }
+    const { data, error } = await supabase.from('r_category').select('*').order('r_category_name');
+    if (error) console.error(error);
+    else setCategories(data || []);
     setLoading(false);
   };
 
-  const checkCategoryUsage = async (categoryId: number) => {
-    // Check surveys table
-    const { count: surveyCount, error: surveyError } = await supabase
-      .from('survey')
-      .select('id', { count: 'exact', head: true })
-      .eq('r_category', categoryId);
+  // Override or define the local SortField to include 'name'
+  type CategorySortField = 'name' | 'created_at' | null;
 
-    if (surveyError) {
-      console.error('Error checking surveys:', surveyError);
+  const [sortField, setSortField] = useState<CategorySortField>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+
+  const handleSort = (field: 'name' | 'created_at') => { // Update the parameter type here
+    if (sortField !== field) {
+      setSortField(field);
+      setSortOrder('asc');
+    } else {
+      if (sortOrder === 'asc') setSortOrder('desc');
+      else { 
+        setSortField(null); 
+        setSortOrder(null); 
+      }
     }
-
-    // Check theses table
-    const { count: thesisCount, error: thesisError } = await supabase
-      .from('thesis')
-      .select('id', { count: 'exact', head: true })
-      .eq('r_category', categoryId);
-
-    if (thesisError) {
-      console.error('Error checking theses:', thesisError);
-    }
-
-    return {
-      surveys: surveyCount || 0,
-      theses: thesisCount || 0
-    };
   };
+
+  useEffect(() => {
+    // 1. Filter the items first
+    let result = categories.filter(cat => 
+      cat.r_category_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // 2. Apply Sorting logic
+    if (sortField && sortOrder) {
+      result = [...result].sort((a, b) => {
+        let comparison = 0;
+        
+        if (sortField === 'name') {
+          comparison = a.r_category_name.localeCompare(b.r_category_name);
+        } else if (sortField === 'created_at') {
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
+
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    setFilteredCategories(result);
+    setCurrentPage(1);
+  }, [searchTerm, categories, sortField, sortOrder]); // Added sort dependencies
 
   const handleAdd = async (name: string) => {
-    setIsAdding(true);
-    setAddError(null);
-    
-    const { data, error } = await supabase
-      .from('r_category')
-      .insert({ r_category_name: name })
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === '23505') {
-        setAddError('Category with this name already exists');
-      } else {
-        setAddError('Error adding category: ' + error.message);
-      }
-      setIsAdding(false);
-    } else {
-      setCategories([...categories, data].sort((a, b) => 
-        a.r_category_name.localeCompare(b.r_category_name)
-      ));
-      setIsAdding(false);
-      setAddPopupOpen(false);
+    setStatus({ processing: true, error: null });
+    const { data, error } = await supabase.from('r_category').insert({ r_category_name: name }).select().single();
+    if (error) setStatus({ processing: false, error: error.message });
+    else {
+      setCategories(prev => [...prev, data].sort((a, b) => a.r_category_name.localeCompare(b.r_category_name)));
+      setStatus({ processing: false, error: null });
+      setPopups(p => ({ ...p, add: false }));
     }
   };
 
-  const handleEdit = async (id: number, newName: string) => {
-    setIsSaving(true);
-    setSaveError(null);
-    
-    const { error } = await supabase
-      .from('r_category')
-      .update({ r_category_name: newName })
-      .eq('id', id);
-
-    if (error) {
-      if (error.code === '23505') {
-        setSaveError('Category with this name already exists');
-      } else {
-        setSaveError('Error updating category: ' + error.message);
-      }
-      setIsSaving(false);
-    } else {
-      const updatedCategories = categories.map(cat => 
-        cat.id === id ? { ...cat, r_category_name: newName } : cat
-      );
-      updatedCategories.sort((a, b) => a.r_category_name.localeCompare(b.r_category_name));
-      setCategories(updatedCategories);
-      setIsSaving(false);
-      setEditPopupOpen(false);
+  const handleEdit = async (newName: string) => {
+    if (!selectedCategory) return;
+    setStatus({ processing: true, error: null });
+    const { error } = await supabase.from('r_category').update({ r_category_name: newName }).eq('id', selectedCategory.id);
+    if (error) setStatus({ processing: false, error: error.message });
+    else {
+      setCategories(prev => prev.map(c => c.id === selectedCategory.id ? { ...c, r_category_name: newName } : c).sort((a, b) => a.r_category_name.localeCompare(b.r_category_name)));
+      setStatus({ processing: false, error: null });
+      setPopups(p => ({ ...p, edit: false }));
     }
   };
 
-  const handleDelete = async (id: number) => {
-    setIsDeleting(true);
-    setDeleteError(null);
-    
-    const { data: surveyData, error: surveyError } = await supabase
-      .from('survey')
-      .select('id')
-      .eq('r_category', id)
-      .limit(1);
-
-    if (surveyError) {
-      setDeleteError('Error checking category usage: ' + surveyError.message);
-      setIsDeleting(false);
-      return;
-    }
-
-    const { data: thesisData, error: thesisError } = await supabase
-      .from('thesis')
-      .select('id')
-      .eq('r_category', id)
-      .limit(1);
-
-    if (thesisError) {
-      setDeleteError('Error checking category usage: ' + thesisError.message);
-      setIsDeleting(false);
-      return;
-    }
-
-    if (surveyData && surveyData.length > 0) {
-      setDeleteError('Cannot delete this category because it is being used by one or more surveys. Please reassign or delete those surveys first.');
-      setIsDeleting(false);
-      return;
-    }
-
-    if (thesisData && thesisData.length > 0) {
-      setDeleteError('Cannot delete this category because it is being used by one or more theses. Please reassign or delete those theses first.');
-      setIsDeleting(false);
-      return;
-    }
-
-    // If not in use, delete
-    const { error } = await supabase
-      .from('r_category')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      setDeleteError('Error deleting category: ' + error.message);
-      setIsDeleting(false);
-    } else {
-      setCategories(categories.filter(cat => cat.id !== id));
-      setIsDeleting(false);
-      setDeletePopupOpen(false);
+  const handleDelete = async () => {
+    if (!selectedCategory) return;
+    setStatus({ processing: true, error: null });
+    const { error } = await supabase.from('r_category').delete().eq('id', selectedCategory.id);
+    if (error) setStatus({ processing: false, error: error.message });
+    else {
+      setCategories(prev => prev.filter(c => c.id !== selectedCategory.id));
+      setStatus({ processing: false, error: null });
+      setPopups(p => ({ ...p, del: false }));
     }
   };
 
-  const handleDeleteClick = async (category: Category) => {
-    const usage = await checkCategoryUsage(category.id);
-    setUsageCount(usage);
+  const openDelete = async (category: Category) => {
     setSelectedCategory(category);
-    setDeleteError(null);
-    setDeletePopupOpen(true);
+    const [s, t] = await Promise.all([
+      supabase.from('survey').select('id', { count: 'exact', head: true }).eq('r_category', category.id),
+      supabase.from('thesis').select('id', { count: 'exact', head: true }).eq('r_category', category.id)
+    ]);
+    setUsageCount({ surveys: s.count || 0, theses: t.count || 0 });
+    setPopups(p => ({ ...p, del: true }));
   };
 
-  // Pagination
+  const itemsPerPage = 5;
   const totalItems = filteredCategories.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentCategories = filteredCategories.slice(startIndex, startIndex + itemsPerPage);
-  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  const paginatedItems = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  if (loading) {
-    return <div className="text-center py-12"><p className="text-gray-500 font-ubuntu-mono">Loading categories...</p></div>;
-  }
+  if (loading) return <div className="text-center py-20 font-ubuntu-mono text-gray-400">Loading Categories...</div>;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-oswald font-bold text-[#011638]">Category Management</h1>
-        <p className="text-[#475569] font-ubuntu-mono mt-1">Manage research categories for surveys and theses</p>
+        <h1 className="text-3xl font-oswald font-bold text-[#011638]">Research Categories</h1>
+        <p className="text-[#475569] font-ubuntu-mono mt-1">Classify and organize research data</p>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
-        <div className="relative flex-1">
+      <div className="mb-6 flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
           <input
             type="text"
-            placeholder="Search categories..."
+            placeholder="Filter by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+            className="w-full px-4 py-2.5 pl-11 border border-[#011638] rounded-xl bg-[#fbfaf8] text-[#475569] font-ubuntu-mono focus:ring-2 ring-[#011638]/10 outline-none"
           />
-          <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <svg className="w-5 h-5 text-[#011638] absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
         <button
-          onClick={() => {
-            setAddError(null);
-            setAddPopupOpen(true);
-          }}
-          className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center justify-center gap-2 font-oswald"
+          onClick={() => { setStatus({ processing: false, error: null }); setPopups(p => ({ ...p, add: true })); }}
+          className="w-full md:w-auto bg-[#eec643] text-[#011638] px-8 py-2.5 rounded-xl hover:bg-[#d9b237] flex items-center justify-center gap-2 font-oswald shadow-md transition-all active:scale-95"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Category
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          New Category
         </button>
       </div>
 
-      {filteredCategories.length === 0 ? (
-        <div className="text-center py-12 bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">No Categories Found</h3>
-          <p className="text-gray-500 font-ubuntu-mono">Try searching for something else or add a new category.</p>
-        </div>
-      ) : (
-        <>
-          <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-[#011638]">
-                  <tr>
-                    <th className="px-6 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Category Name</th>
-                    <th className="px-6 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider">Created At</th>
-                    <th className="px-6 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {currentCategories.map((category, index) => (
-                    <tr key={category.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#fbfaf8]'}>
-                      <td className="px-6 py-4 text-center text-sm font-oswald font-medium text-[#011638]">{category.r_category_name}</td>
-                      <td className="px-6 py-4 text-center text-sm text-[#475569] font-ubuntu-mono">
-                        {formatDate(category.created_at)}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex justify-center gap-2">
-                          <button 
-                            onClick={() => {
-                              setSelectedCategory(category);
-                              setSaveError(null);
-                              setEditPopupOpen(true);
-                            }} 
-                            className="text-[#0d21a1] hover:scale-110 transition-transform"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                            </svg>
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteClick(category)} 
-                            className="text-red-600 hover:scale-110 transition-transform"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div className="bg-[#fbfaf8] rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-[#011638] text-[#eff0f2] font-oswald uppercase text-sm tracking-wider">
+              <th className="w-[30%] px-6 py-4 cursor-pointer hover:bg-[#012a5a] transition-colors"
+                onClick={() => handleSort('name')}>
+                <div className="flex items-center justify-center gap-2">
+                  Name
+                  <div className="flex flex-col gap-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" 
+                      className={`w-3.5 h-3.5 -mb-1 ${sortField === 'name' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" 
+                      className={`w-3.5 h-3.5 -mt-1 ${sortField === 'name' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
+              </th>
 
-          {totalPages > 1 && (
-            <>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-                <p className="text-[#475569] font-ubuntu-mono text-xs mb-2">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}
-                </p>
-                <p className="text-[#475569] font-ubuntu-mono text-sm">
-                  Page {validCurrentPage} of {totalPages || 1}
-                </p>
-              </div>
-              <Pagination 
-                currentPage={validCurrentPage} 
-                totalPages={totalPages || 1} 
-                onPageChange={setCurrentPage}
-              />
-            </>
-          )}
-        </>
+              <th className="w-[30%] px-6 py-4 hidden sm:table-cell cursor-pointer hover:bg-[#012a5a] transition-colors"
+                onClick={() => handleSort('created_at')}>
+                <div className="flex items-center justify-center gap-2">
+                  Added On
+                  <div className="flex flex-col gap-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" 
+                      className={`w-3.5 h-3.5 -mb-1 ${sortField === 'created_at' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" 
+                      className={`w-3.5 h-3.5 -mt-1 ${sortField === 'created_at' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
+              </th>
+              <th className="w-[20%] px-6 py-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 font-ubuntu-mono text-[#475569]">
+            {paginatedItems.map((cat) => (
+              <tr key={cat.id} className="hover:bg-blue-50/50 transition-colors">
+                <td className="px-6 py-4 font-oswald font-medium text-[#011638] text-lg">{cat.r_category_name}</td>
+                <td className="px-6 py-4 hidden sm:table-cell">{formatDate(cat.created_at)}</td>
+                <td className="px-6 py-4 gap-3 text-center">
+                  <div className="flex justify-center gap-3">
+                    <button onClick={() => { setSelectedCategory(cat); setStatus({ processing: false, error: null }); setPopups(p => ({ ...p, edit: true })); }} className="text-[#0d21a1] hover:scale-110 transition-transform cursor-pointer">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button onClick={() => openDelete(cat)} className="text-red-600 hover:scale-110 transition-transform cursor-pointer">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {paginatedItems.length === 0 && <div className="py-20 text-center text-gray-400">No matching categories found.</div>}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
+        </div>
       )}
 
-      <AddPopup
-        isOpen={addPopupOpen}
-        onClose={() => {
-          if (!isAdding) {
-            setAddPopupOpen(false);
-            setAddError(null);
-          }
-        }}
-        onAdd={handleAdd}
-        categories={categories}
-        isAdding={isAdding}
-        addError={addError}
+      <CategoryFormPopup 
+        isOpen={popups.add} 
+        onClose={() => setPopups(p => ({ ...p, add: false }))} 
+        onAction={handleAdd} 
+        title="Add New Category" 
+        buttonLabel="Add Category" 
+        categories={categories} 
+        isProcessing={status.processing} 
+        apiError={status.error} 
       />
 
-      <EditPopup
-        isOpen={editPopupOpen}
-        onClose={() => {
-          if (!isSaving) {
-            setEditPopupOpen(false);
-            setSaveError(null);
-          }
-        }}
-        onSave={handleEdit}
-        category={selectedCategory}
-        categories={categories}
-        isSaving={isSaving}
-        saveError={saveError}
+      <CategoryFormPopup 
+        isOpen={popups.edit} 
+        onClose={() => setPopups(p => ({ ...p, edit: false }))} 
+        onAction={handleEdit} 
+        title="Edit Category" 
+        buttonLabel="Save Changes" 
+        initialValue={selectedCategory?.r_category_name} 
+        categories={categories} 
+        isProcessing={status.processing} 
+        apiError={status.error} 
+        isEdit 
+        originalId={selectedCategory?.id} 
       />
 
-      <DeleteConfirmPopup
-        isOpen={deletePopupOpen}
-        onClose={() => {
-          if (!isDeleting) {
-            setDeletePopupOpen(false);
-            setDeleteError(null);
-          }
-        }}
-        onConfirm={() => selectedCategory && handleDelete(selectedCategory.id)}
-        name={selectedCategory?.r_category_name || ''}
-        usageCount={usageCount}
-        isDeleting={isDeleting}
-        deleteError={deleteError}
+      <DeleteConfirmPopup 
+        isOpen={popups.del} 
+        onClose={() => setPopups(p => ({ ...p, del: false }))} 
+        onConfirm={handleDelete} 
+        name={selectedCategory?.r_category_name || ''} 
+        usageCount={usageCount} 
+        isDeleting={status.processing} 
+        deleteError={status.error} 
       />
     </div>
   );

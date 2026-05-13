@@ -58,7 +58,7 @@ const FilterDropdown = ({
 
       {open && (
         <div className="absolute right-0 md:left-0 mt-2 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-          <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+          <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar-blue">
             {options.map((o) => (
               <li
                 key={o.value}

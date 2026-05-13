@@ -74,6 +74,7 @@ export default function AboutLogo() {
               <img 
                 src="/assets/logos/ACE CARDS logo.png" 
                 alt="Ace Cards Logo" 
+                loading="eager"
                 width={406}
                 height={406}
                 className="bg-[#e0ae04] w-[clamp(220px,30vw,420px)] transition-all duration-700 ease-out hover:scale-105 hover:shadow-[0_0_100px_#d9b237] rounded-full"

@@ -5,6 +5,7 @@ import ThesisAbstract from './thesis_abstract';
 import SpotlightCard from "@/components/ui/SpotlightCard"; 
 import Pagination from "@/components/ui/pagination"; 
 import { useRouter } from "next/navigation"; 
+import PaginationNav from "@/components/ui/pagination";
 
 // Define types for ClientPagination props
 interface ClientPaginationProps {
@@ -314,95 +315,13 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                   </div>
                 </div>
               </SpotlightCard>
-               );
-             })
+              );
+            })
           }
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
-              {/* Previous button */}
-              <button
-                onClick={() => handlePageChange(validCurrentPage - 1)}
-                disabled={validCurrentPage === 1}
-                className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-                  validCurrentPage === 1
-                    ? "text-[#94a3b8]"
-                    : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Page numbers */}
-              <div className="flex items-center space-x-1">
-                {(() => {
-                  const pages = [];
-
-                  if (totalPages <= 4) {
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i);
-                    }
-                  } else {
-                    const showLeft = validCurrentPage <= 2;
-                    const showRight = validCurrentPage >= totalPages - 1;
-
-                    if (showLeft) {
-                      pages.push(1, 2, "...", totalPages);
-                    } else if (showRight) {
-                      pages.push(1, "...", totalPages - 1, totalPages);
-                    } else {
-                      pages.push(
-                        1,
-                        "...",
-                        validCurrentPage,
-                        "...",
-                        totalPages
-                      );
-                    }
-                  }
-
-                  return pages.map((page, idx) =>
-                    page === "..." ? (
-                      <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-                          page === validCurrentPage
-                            ? "bg-[#011638] text-[#fbfaf8] font-bold cursor-pointer"
-                            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  );
-                })()}
-              </div>
-
-              {/* Next button */}
-              <button
-                onClick={() => handlePageChange(validCurrentPage + 1)}
-                disabled={validCurrentPage === totalPages}
-                className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-                  validCurrentPage === totalPages
-                    ? "text-[#94a3b8]"
-                    : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </nav>
-          )}
+            <PaginationNav currentPage={currentPageLocal} totalPages={totalPages} onPageChange={handlePageChange} />
         </>
       )}
     </>

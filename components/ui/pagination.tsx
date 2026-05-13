@@ -1,129 +1,98 @@
 "use client";
 
-import { useEffect } from "react"; // Added useEffect
-import { useRouter, useSearchParams } from "next/navigation";
-
-interface PaginationProps {
+interface PaginationNavProps {
   currentPage: number;
   totalPages: number;
-  onPageChange?: (page: number) => void;
+  totalItems: number; // New prop
+  itemsPerPage: number; // New prop
+  onPageChange: (page: number) => void;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function PaginationNav({ 
+  currentPage, 
+  totalPages, 
+  totalItems, 
+  itemsPerPage, 
+  onPageChange 
+}: PaginationNavProps) {
+  if (totalPages <= 1 && totalItems <= itemsPerPage) return null;
 
-  // --- ADDED: Auto-detect missing page tag ---
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    
-    // Check if we are currently in a "Back" flow from a success page
-    const isReturning = sessionStorage.getItem('successReturnPath');
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
-    // Only auto-add page=1 if it's missing AND we aren't currently returning from an action
-    if (!params.has("page") && !isReturning) {
-      params.set("page", "1");
-      window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
-    }
-  }, []);
-  // ------------------------------------------
-
-// Inside your Pagination component
-const handlePageChange = (page: number) => {
-  if (page < 1 || page > totalPages) return;
-
-  if (onPageChange) {
-    onPageChange(page);
-  } else {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", page.toString());
-    
-    // CHANGE router.push TO router.replace
-    router.replace(`${window.location.pathname}?${params.toString()}`);
-  }
-};
-
-  const getPageNumbers = (): (number | string)[] => {
-    const pages: (number | string)[] = [];
-    pages.push(1);
-    
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-    
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    
-    for (let i = start; i <= end; i++) {
-      if (i > 1 && i < totalPages) {
-        pages.push(i);
+  const renderPages = () => {
+    const pages = [];
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 2) {
+        pages.push(1, 2, "...", totalPages);
+      } else if (currentPage >= totalPages - 1) {
+        pages.push(1, "...", totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage, "...", totalPages);
       }
     }
-    
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-    
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-    
-    return pages;
+
+    return pages.map((page, idx) =>
+      page === "..." ? (
+        <span key={`ellipsis-${idx}`} className="px-2 text-gray-500 font-ubuntu-mono">...</span>
+      ) : (
+        <button
+          key={page}
+          onClick={() => onPageChange(page as number)}
+          className={`min-w-[40px] px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+            page === currentPage
+              ? "bg-[#011638] text-[#fbfaf8] font-bold cursor-pointer"
+              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
+          }`}
+        >
+          {page}
+        </button>
+      )
+    );
   };
 
-  if (totalPages <= 1) return null;
-
   return (
-    <nav className="flex justify-center items-center space-x-2 mt-8 mb-4" aria-label="Pagination">
-      {/* Previous button */}
-      <button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-          currentPage === 1
-            ? "text-[#94a3b8]"
-            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      {/* Page Numbers */}
-      <div className="flex items-center space-x-1">
-        {getPageNumbers().map((page, index) => (
-          <button
-            key={index}
-            onClick={() => typeof page === "number" && handlePageChange(page)}
-            disabled={page === "..."}
-            className={`min-w-[40px] px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-              page === currentPage
-                ? "bg-[#011638] text-[#fbfaf8] font-bold  cursor-pointer"
-                : page === "..."
-                ? "text-[#475569]"
-                : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]  cursor-pointer"
-            }`}
-          >
-            {page}
-          </button>
-        ))}
+    <div className="mt-8 mb-4 w-full">
+      {/* Results Info Block */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 pt-4">
+        <p className="text-[#475569] font-ubuntu-mono text-sm">
+          Showing {totalItems === 0 ? 0 : startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} items
+        </p>
+        <p className="text-[#475569] font-ubuntu-mono text-sm">
+          Page {currentPage} of {totalPages || 1}
+        </p>
       </div>
 
-      {/* Next button */}
-      <button
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
-          currentPage === totalPages
-            ? "text-[#94a3b8]"
-            : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </nav>
+      {/* Navigation Buttons */}
+      <nav className="flex justify-center items-center space-x-2">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+            currentPage === 1 ? "text-[#94a3b8] cursor-not-allowed" : "text-[#011638] hover:bg-[#eec643] cursor-pointer"
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <div className="flex items-center space-x-1">{renderPages()}</div>
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+            currentPage === totalPages ? "text-[#94a3b8] cursor-not-allowed" : "text-[#011638] hover:bg-[#eec643] cursor-pointer"
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </nav>
+    </div>
   );
 }

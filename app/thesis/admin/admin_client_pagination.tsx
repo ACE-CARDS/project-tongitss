@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import ThesisAbstract from "../thesis_abstract";
 import { useRouter } from "next/navigation";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
+import Pagination from "@/components/ui/pagination";
 
 interface ClientPaginationProps {
   allTheses: any[];
@@ -451,18 +451,11 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
             ))}
           </div>
           
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-            <p className="text-[#475569] font-ubuntu-mono text-sm">
-              Showing {startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} theses
-            </p>
-            <p className="text-[#475569] font-ubuntu-mono text-sm">
-              Page {validCurrentPage} of {totalPages || 1}
-            </p>
-          </div>
-
           <Pagination
             currentPage={validCurrentPage}
             totalPages={totalPages || 1}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
             onPageChange={handlePageChange}
           />
         </>

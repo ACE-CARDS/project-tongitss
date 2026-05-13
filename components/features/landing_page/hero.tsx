@@ -92,6 +92,7 @@ export default function Hero({id}: {id?: string}) {
               src="/assets/logos/ACE CARDS logo.png"
               width={406}
               height={406}
+              loading="eager"
               alt="Ace Cards Logo"
               className="
               bg-[#e0ae04]

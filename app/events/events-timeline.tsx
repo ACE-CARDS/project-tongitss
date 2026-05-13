@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import FilterDropdown from "@/components/ui/filterDropdown";
 import ModalBlur from "@/components/ui/modalBlur";
+import PaginationNav from "@/components/ui/pagination";
 
 export default function EventsTimeline() {
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -15,6 +16,7 @@ export default function EventsTimeline() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
+
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -120,6 +122,7 @@ export default function EventsTimeline() {
     return matchesStatus && matchesYear && matchesSearch;
   });
 
+  const totalItems = filteredEvents.length;
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const currentEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
@@ -148,6 +151,12 @@ export default function EventsTimeline() {
     { label: "UPCOMING", value: "UPCOMING", disabled: isPastYear },
     { label: "ACCOMPLISHED", value: "COMPLETED" },
   ];
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    
+    setCurrentPage(page);
+  };
 
   return (
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
@@ -330,81 +339,8 @@ export default function EventsTimeline() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <nav className="flex justify-center items-center space-x-2 mt-12 mb-8 w-full">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                      currentPage === 1
-                        ? "text-[#94a3b8] cursor-not-allowed"
-                        : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-
-                  <div className="flex items-center space-x-1 font-ubuntu-mono">
-                    {(() => {
-                      const pages = [];
-
-                      if (totalPages <= 4) {
-                        for (let i = 1; i <= totalPages; i++) {
-                          pages.push(i);
-                        }
-                      } else {
-                        const showLeft = currentPage <= 2;
-                        const showRight = currentPage >= totalPages - 1;
-
-                        if (showLeft) {
-                          pages.push(1, 2, "...", totalPages);
-                        } else if (showRight) {
-                          pages.push(1, "...", totalPages - 1, totalPages);
-                        } else {
-                          pages.push(1, "...", currentPage, "...", totalPages);
-                        }
-                      }
-
-                      return pages.map((page, idx) =>
-                        page === "..." ? (
-                          <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
-                            ...
-                          </span>
-                        ) : (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page as number)}
-                            className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                              page === currentPage
-                                ? "bg-[#011638] text-white font-bold"
-                                : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        ),
-                      );
-                    })()}
-                  </div>
-
-                  {/* Next button */}
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                      currentPage === totalPages
-                        ? "text-[#94a3b8] cursor-not-allowed"
-                        : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </nav>
-              )}
+              {/* SPAMMABLE PAGINATION FROM MEMBERS DIRECTORY */}
+              <PaginationNav currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={handlePageChange} />
             </div>
           )}
         </>

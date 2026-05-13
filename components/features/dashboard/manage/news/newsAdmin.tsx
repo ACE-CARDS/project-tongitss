@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Pagination from "@/components/ui/pagination"; // Ensure this path is correct
+import Pagination from "@/components/ui/pagination";
 
 interface NewsItem {
   id: number;
@@ -19,43 +19,32 @@ interface NewsItem {
 type SortField = 'title' | 'fb_post_date' | null;
 type SortOrder = 'asc' | 'desc' | null;
 
-// Read more component for news description
+// --- Sub-components (NewsDescription, DeleteConfirmPopup, SearchBar) remain the same ---
 function NewsDescription({ description }: { description: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
-
   if (!description) return null;
-
   if (description.length <= 100) {
     return <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">{description}</p>;
   }
-
   return (
     <div className='w-[100%]'>
       {!isOpen ? (
         <div>
           <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-2 break-words">{description}</p>
-          <button onClick={() => setIsOpen(true)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
-            Read more →
-          </button>
+          <button onClick={() => setIsOpen(true)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">Read more →</button>
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
-            {description}
-          </div>
-          <button onClick={() => setIsOpen(false)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">
-            Read less ↑
-          </button>
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">{description}</div>
+          <button onClick={() => setIsOpen(false)} className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors">Read less ↑</button>
         </div>
       )}
     </div>
   );
 }
 
-// Delete confirmation popup
-function DeleteConfirmPopup({ isOpen, onClose, onConfirm, title }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; }) {
+function DeleteConfirmPopup({ isOpen, onClose, onConfirm }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; }) {
   const popupRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) onClose();
@@ -63,9 +52,7 @@ function DeleteConfirmPopup({ isOpen, onClose, onConfirm, title }: { isOpen: boo
     if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
-
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
       <div ref={popupRef} className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
@@ -108,13 +95,13 @@ export default function NewsAdmin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  
+  // 1. Local State for Pagination (No more URL jumping)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const supabase = createClient();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const itemsPerPage = 5; 
-  const currentPage = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => { fetchNews(); }, []);
 
@@ -133,22 +120,15 @@ export default function NewsAdmin() {
       });
     }
     setFilteredNews(filtered);
+    setCurrentPage(1); // Reset to page 1 whenever filters/sorts change
   }, [searchTerm, news, sortField, sortOrder]);
 
-  // Reset to page 1 on search without polluting history stack
-  useEffect(() => {
-    if (searchTerm) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', '1');
-      router.replace(`${window.location.pathname}?${params.toString()}`);
-    }
-  }, [searchTerm]);
-
+  // 2. Pagination Calculations
   const totalItems = filteredNews.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentNewsItems = filteredNews.slice(startIndex, startIndex + itemsPerPage);
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  const startIndex = (validCurrentPage - 1) * itemsPerPage;
+  const currentNewsItems = filteredNews.slice(startIndex, startIndex + itemsPerPage);
 
   const fetchNews = async () => {
     setLoading(true);
@@ -170,6 +150,11 @@ export default function NewsAdmin() {
       if (sortOrder === 'asc') setSortOrder('desc');
       else { setSortField(null); setSortOrder(null); }
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Removed window.scrollTo so it doesn't jump to the top
   };
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -204,41 +189,24 @@ export default function NewsAdmin() {
                 <thead className="bg-[#011638]">
                   <tr>
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">Image</th>
-                    
-                    <th 
-                      className={`px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`} 
-                      onClick={() => handleSort('title')}
-                    >
+                    <th className={`px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === 'title' ? 'bg-[#0d21a1]' : ''}`} onClick={() => handleSort('title')}>
                       <div className="flex items-center justify-center gap-2">
                         Title & Description
                         <div className="flex flex-col gap-0.5">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                          </svg>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'title' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'title' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                         </div>
                       </div>
                     </th>
-
-                    <th 
-                      className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[180px] ${sortField === 'fb_post_date' ? 'bg-[#0d21a1]' : ''}`} 
-                      onClick={() => handleSort('fb_post_date')}
-                    >
+                    <th className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[180px] ${sortField === 'fb_post_date' ? 'bg-[#0d21a1]' : ''}`} onClick={() => handleSort('fb_post_date')}>
                       <div className="flex items-center justify-center gap-2">
                         Post Date
                         <div className="flex flex-col gap-0.5">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'fb_post_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                          </svg>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'fb_post_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mb-1 ${sortField === 'fb_post_date' && sortOrder === 'asc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`w-3.5 h-3.5 -mt-1 ${sortField === 'fb_post_date' && sortOrder === 'desc' ? 'text-[#eec643]' : 'text-[#eff0f2]/30'}`}><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                         </div>
                       </div>
                     </th>
-
                     <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">Actions</th>
                   </tr>
                 </thead>
@@ -270,25 +238,16 @@ export default function NewsAdmin() {
             </div>
           </div>
 
-
-          {/* Pagination Controls */}
-          {!loading && totalPages > 1 && (
-            <>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-2 gap-2">
-                <p className="text-[#475569] font-ubuntu-mono text-xs mb-2">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}
-                </p>
-                <p className="text-[#475569] font-ubuntu-mono text-sm">
-                  Page {validCurrentPage} of {totalPages || 1}
-                </p>
-              </div>
-              
-              <Pagination 
+          {/* 3. Clean Pagination Logic */}
+          <div className="mt-6">
+            <Pagination 
                 currentPage={validCurrentPage} 
-                totalPages={totalPages || 1} 
+                totalPages={totalPages} 
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
               />
-            </>
-          )}
+          </div>
         </>
       )}
 
