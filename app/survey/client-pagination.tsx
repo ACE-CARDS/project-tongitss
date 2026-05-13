@@ -112,7 +112,7 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
   return (
     <>
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
-        <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
+        <div className="w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
           No surveys found.
         </div>
       ) : (
