@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTitle from "@/components/ui/animatedTitle";
 import { motion } from "framer-motion";
 
 export default function AboutOrg() {
@@ -8,39 +9,7 @@ export default function AboutOrg() {
       <div className="max-w-6xl mx-auto w-full flex flex-col items-center">
         
         {/* TITLE ANIMATION */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mb-10"
-        >
-          <div className="flex items-center justify-center gap-3">
-            <motion.span 
-              initial={{ opacity: 0, rotate: -180, scale: 0 }}
-              whileInView={{ opacity: 1, rotate: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
-              className="text-4xl md:text-5xl text-[#eec643]"
-            >
-              ♠
-            </motion.span>
-            
-            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight">
-              The Org
-            </h1>
-            
-            <motion.span 
-              initial={{ opacity: 0, rotate: 180, scale: 0 }}
-              whileInView={{ opacity: 1, rotate: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
-              className="text-4xl md:text-5xl text-[#eec643]"
-            >
-              ♠
-            </motion.span>
-          </div>
-        </motion.div>
+        <AnimatedTitle title="About Us" />
 
         {/* IMAGE ENTRANCE */}
         <motion.div 

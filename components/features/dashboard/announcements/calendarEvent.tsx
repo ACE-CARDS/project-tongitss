@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { type FC, useRef, useEffect, useState } from "react";
 import { Transition } from "react-transition-group";
 import BackButton from "@/components/ui/backButton";
+import ModalBlur from "@/components/ui/modalBlur";
 
 type Props = {
   isShowing: boolean;
@@ -60,10 +61,7 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
           ref={container}
           className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
         >
-          <div
-            className="backdrop absolute inset-0 bg-black/40 backdrop-blur-[3px] opacity-0 "
-            onClick={onClose}
-          />
+          <ModalBlur isShowing={isShowing} onClose={onClose}/>
 
           <div
             className="content relative z-10 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl 
