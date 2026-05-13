@@ -4,8 +4,25 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import EventsTimeline from "./events-timeline";
 import BackButton from "@/components/ui/backButton";
+import AnimatedTitle from "@/components/ui/animatedTitle";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import { useState, useEffect } from "react";
 
 export default function EventsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   return (
     <>
       <NavBar />
@@ -24,13 +41,7 @@ export default function EventsPage() {
             {/* INTRO PARAGRAPH SECTION */}
             <section className="relative pb-12 px-2 sm:px-5 flex flex-col items-center justify-center text-center overflow-hidden">
               
-              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-4 w-full">
-                <span className="text-3xl md:text-5xl text-[#eec643] shrink-0">♠</span>
-                <h1 className="text-3xl sm:text-4xl md:text-6xl font-black font-oswald bg-gradient-to-r from-slate-900 via-black to-slate-800 bg-clip-text text-transparent uppercase tracking-tight text-center">
-                  Events & Activities
-                </h1>
-                <span className="text-3xl md:text-5xl text-[#eec643] shrink-0">♠</span>
-              </div>
+              <AnimatedTitle title="EVENTS" />
               
               <p className="max-w-3xl text-lg text-slate-600 font-ubuntu-mono leading-relaxed font-medium">
               </p>

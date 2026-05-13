@@ -2,67 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-
-const FilterDropdown = ({ value, options, onChange }: any) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectedLabel = options.find((o: any) => o.value === value)?.label || value;
-
-  return (
-    <div ref={ref} className="relative w-full md:w-auto z-[50] font-sans">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="w-full md:w-auto px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
-      >
-        <span className="truncate">{selectedLabel}</span>
-        <svg
-          className={`w-4 h-4 shrink-0 transition-transform ml-3 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute right-0 md:left-0 mt-2 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden">
-          <ul className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
-            {options.map((o: any) => (
-              <li
-                key={o.value}
-                onClick={() => {
-                  if (o.disabled) return;
-                  onChange(o.value);
-                  setOpen(false);
-                }}
-                className={`px-5 py-3 transition-colors text-sm font-bold font-ubuntu-mono uppercase tracking-widest ${
-                  o.disabled
-                    ? "opacity-40 bg-slate-50 text-slate-500 cursor-not-allowed"
-                    : o.value === value
-                    ? "bg-[#011638] text-white cursor-pointer"
-                    : "hover:bg-slate-100 text-[#011638] cursor-pointer"
-                }`}
-              >
-                {o.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-};
+import FilterDropdown from "@/components/ui/filterDropdown";
+import ModalBlur from "@/components/ui/modalBlur";
 
 export default function EventsTimeline() {
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -204,6 +145,7 @@ export default function EventsTimeline() {
   return (
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
       {/* TOOLBAR FILTERS */}
+      <ModalBlur isShowing={Boolean(selectedEvent)} onClose={() => setSelectedEvent(null)} />
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
         <div className="w-full flex-1 flex justify-center md:justify-start">
           <div className="relative w-full max-w-xl">
@@ -238,7 +180,7 @@ export default function EventsTimeline() {
           {canScrollLeft && (
             <button 
               onClick={() => scrollTimeline("left")} 
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow border border-slate-200 text-[#011638] hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-8 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow border border-slate-200 text-[#011638] hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
@@ -247,7 +189,7 @@ export default function EventsTimeline() {
           {canScrollRight && (
             <button 
               onClick={() => scrollTimeline("right")} 
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow border border-slate-200 text-[#011638] hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-8 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow border border-slate-200 text-[#011638] hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
             </button>
@@ -265,7 +207,7 @@ export default function EventsTimeline() {
                 <div
                   key={year}
                   onClick={() => setActiveYear(year)}
-                  className="relative z-10 flex flex-col items-center cursor-pointer group flex-1 min-w-[80px] md:min-w-[120px] shrink-0"
+                  className="relative z-8 flex flex-col items-center cursor-pointer group flex-1 min-w-[80px] md:min-w-[120px] shrink-0"
                 >
                   <span
                     className={`absolute -top-10 text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
@@ -470,11 +412,6 @@ export default function EventsTimeline() {
       {selectedEvent && (
         <div
           className="fixed inset-[-10px] z-[99999] flex items-center justify-center p-4 sm:p-6"
-          style={{
-            backgroundColor: "rgba(1, 22, 56, 0.85)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-          }}
           onClick={() => setSelectedEvent(null)}
         >
           <div
@@ -547,6 +484,7 @@ export default function EventsTimeline() {
               </div>
             </div>
           </div>
+          
         </div>
       )}
     </div>
