@@ -104,7 +104,7 @@ export default function ClientPagination({ allSurveys, currentPage }: ClientPagi
   return (
     <>
       {(!paginatedSurveys || paginatedSurveys.length === 0) ? (
-        <div className="w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
+        <div className="text-center w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
           No surveys found.
         </div>
       ) : (

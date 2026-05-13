@@ -114,9 +114,8 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
 
   return (
     <>
-      {/* If no theses, message : otherwise, show grid */}
       {(!paginatedTheses || paginatedTheses.length === 0) ? (
-        <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
+        <div className="text-center w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
           No theses found.
         </div>
       ) : (
