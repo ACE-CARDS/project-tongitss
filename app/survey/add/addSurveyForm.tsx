@@ -1048,12 +1048,18 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           required
                           maxLength={20}
                           placeholder="First Name"
-                          defaultValue={author.firstName || ""}
-                          disabled={index === 0}
-                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          value={author.firstName || ""}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                          onChange={(e) => {
+                            const updatedAuthors = [...authors];
+                            updatedAuthors[index] = {
+                              ...updatedAuthors[index],
+                              firstName: e.target.value
+                            };
+                            setAuthors(updatedAuthors);
+                          }}
                           // Key Limits
                           onKeyDown={(e) => {
-                            if (index === 0) return;
                             if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                               return;
                             }
@@ -1064,7 +1070,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           }}
                           // Error handling
                           onInput={(e) => {
-                            if (index === 0) return;
                             const input = e.target as HTMLInputElement;
                             const errorSpan = document.getElementById(`firstname-error-${index}`);
                             const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
@@ -1103,11 +1108,16 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           name="middleInitial[]"
                           maxLength={4}
                           placeholder="M.I."
-                          defaultValue={author.middleInitial || ""}
-                          disabled={index === 0}
-                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          value={author.middleInitial || ""}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                           onChange={(e) => {
-                            if (index === 0) return;
+                            const updatedAuthors = [...authors];
+                            updatedAuthors[index] = {
+                              ...updatedAuthors[index],
+                              middleInitial: e.target.value
+                            };
+                            setAuthors(updatedAuthors);
+                            
                             let value = e.target.value.toUpperCase();
                             value = value.replace(/[^A-Z.]/g, '');
                             
@@ -1115,24 +1125,28 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             if (value.length === 1 && /[A-Z]/.test(value)) {
                               value = value + '.';
                             } else if (value.length === 2 && value[1] === '.') {
-
+                              // Do nothing
                             } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
                               value = value[0] + '.' + value[1];
                             } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
                               value = value + '.';
                             } else if (value.length >= 4) {
-
                               value = value.slice(0, 2) + value.slice(2, 3) + '.';
                               if (value.length > 4) value = value.slice(0, 4);
                             }
                             
                             e.target.value = value;
                             
+                            updatedAuthors[index] = {
+                              ...updatedAuthors[index],
+                              middleInitial: value
+                            };
+                            setAuthors(updatedAuthors);
+                            
                             const event = new Event('input', { bubbles: true });
                             e.target.dispatchEvent(event);
                           }}
                           onInput={(e) => {
-                            if (index === 0) return;
                             const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                             const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
                             if (firstNameInput?.value && lastNameInput?.value) {
@@ -1152,12 +1166,18 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         required
                         maxLength={20}
                         placeholder="Last Name"
-                        defaultValue={author.lastName || ""}
-                        disabled={index === 0}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        value={author.lastName || ""}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                        onChange={(e) => {
+                          const updatedAuthors = [...authors];
+                          updatedAuthors[index] = {
+                            ...updatedAuthors[index],
+                            lastName: e.target.value
+                          };
+                          setAuthors(updatedAuthors);
+                        }}
                         // Key Limits
                         onKeyDown={(e) => {
-                          if (index === 0) return;
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
                           }
@@ -1168,7 +1188,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         }}
                         // Error handling
                         onInput={(e) => {
-                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const errorSpan = document.getElementById(`lastname-error-${index}`);
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
@@ -1258,12 +1277,18 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         required
                         maxLength={254}
                         placeholder="Email"
-                        defaultValue={author.email || ""}
-                        disabled={index === 0}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        value={author.email || ""}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                        onChange={(e) => {
+                          const updatedAuthors = [...authors];
+                          updatedAuthors[index] = {
+                            ...updatedAuthors[index],
+                            email: e.target.value
+                          };
+                          setAuthors(updatedAuthors);
+                        }}
                         // Key Limits
                         onKeyUp={(e) => {
-                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const char = e.key;
                           const value = input.value;
@@ -1283,7 +1308,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         }}
                         // Search trigger
                         onInput={async (e) => {
-                        if (index === 0) return;
                         const input = e.target as HTMLInputElement;
                         const errorSpan = document.getElementById(`email-error-${index}`);
                         const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
@@ -1815,7 +1839,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                         categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                       }`}
-                      defaultValue=""
+                      value=""
                       onChange={(e) => {
                         setIsCategoryTouched(true);
                         if (!e.target.value) {
@@ -1920,7 +1944,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        defaultValue=""
+                        value=""
                         onChange={(e) => {
                           setIsSchoolTouched(true);
                           if (!e.target.value) {

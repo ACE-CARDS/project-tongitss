@@ -909,7 +909,7 @@ function EditSurveyContent() {
                         type="text"
                         id="title"
                         name="title"
-                        defaultValue={formData.survey_title}
+                        value={formData.survey_title}
                         required
                         maxLength={300}
                         placeholder="Enter survey title"
@@ -939,7 +939,7 @@ function EditSurveyContent() {
                       <textarea
                         id="description"
                         name="description"
-                        defaultValue={formData.survey_desc}
+                        value={formData.survey_desc}
                         required
                         rows={4}
                         maxLength={1500}
@@ -971,7 +971,7 @@ function EditSurveyContent() {
                         type="text"
                         id="keywords"
                         name="keywords"
-                        defaultValue={formData.survey_keyword}
+                        value={formData.survey_keyword}
                         required
                         maxLength={300}
                         placeholder="Enter keywords separated by commas"
@@ -1552,7 +1552,7 @@ function EditSurveyContent() {
                         type="url"
                         id="survey_link"
                         name="survey_link"
-                        defaultValue={formData.survey_link}
+                        value={formData.survey_link}
                         required
                         maxLength={300}
                         placeholder="Enter survey URL"
@@ -1631,7 +1631,7 @@ function EditSurveyContent() {
                         type="text"
                         id="respondents"
                         name="respondents"
-                        defaultValue={formData.survey_respondents}
+                        value={formData.survey_respondents}
                         required
                         maxLength={200}
                         placeholder="Enter respondent criteria separated by commas"
@@ -1682,7 +1682,7 @@ function EditSurveyContent() {
                         type="number"
                         id="max_respondents"
                         name="max_respondents"
-                        defaultValue={formData.max_respondents}
+                        value={formData.max_respondents}
                         min="1"
                         max="10000"
                         maxLength={6}

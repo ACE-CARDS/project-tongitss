@@ -853,7 +853,7 @@ function EditThesisContent() {
                         type="text"
                         id="title"
                         name="title"
-                        defaultValue={formData.thesis_title}
+                        value={formData.thesis_title}
                         required
                         maxLength={300}
                         placeholder="Enter thesis title"
@@ -883,7 +883,7 @@ function EditThesisContent() {
                       <textarea
                         id="abstract"
                         name="abstract"
-                        defaultValue={formData.thesis_abstract}
+                        value={formData.thesis_abstract}
                         required
                         rows={4}
                         maxLength={1500}
@@ -915,7 +915,7 @@ function EditThesisContent() {
                         type="text"
                         id="keywords"
                         name="keywords"
-                        defaultValue={formData.thesis_keyword}
+                        value={formData.thesis_keyword}
                         required
                         maxLength={300}
                         placeholder="Enter keywords separated by commas"
@@ -1398,7 +1398,7 @@ function EditThesisContent() {
                         type="text"
                         id="phys_link"
                         name="phys_link"
-                        defaultValue={formData.thesis_phys}
+                        value={formData.thesis_phys}
                         maxLength={200}
                         placeholder="Enter physical copy location"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
@@ -1417,7 +1417,7 @@ function EditThesisContent() {
                         type="url"
                         id="digi_link"
                         name="digi_link"
-                        defaultValue={formData.thesis_digi}
+                        value={formData.thesis_digi}
                         maxLength={200}
                         placeholder="Enter digital copy URL"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
