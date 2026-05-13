@@ -5,6 +5,7 @@ import { Transition } from "react-transition-group";
 import { createClient } from "@/utils/supabase/client";
 import AnnounceCard from "@/components/features/landing_page/announcements/announceCard";
 import { BsSuitSpadeFill } from "react-icons/bs";
+import ModalBlur from "@/components/ui/modalBlur";
 
 type Props = {
   isShowing: boolean;
@@ -97,10 +98,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
           id="popUpAnnouncement"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div
-            className="backdrop absolute inset-0 cursor-pointer bg-black/40 opacity-0 backdrop-blur-[3px]"
-            onClick={onClose}
-          />
+          <ModalBlur isShowing={isShowing} onClose={onClose}/>
 
           <div className="content relative z-10 flex flex-col w-full max-w-6xl h-[85vh] bg-[#011638] rounded-2xl shadow-3xl overflow-hidden">
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
@@ -142,7 +140,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
               </h2>
             </div>
 
-            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar px-6 lg:px-12 pb-10">
+            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar-white px-6 lg:px-12 pb-10">
               {announcements.length === 0 ? (
                 <div className="flex h-64 w-full items-center justify-center">
                   <p className="text-white/50 animate-pulse">Loading...</p>

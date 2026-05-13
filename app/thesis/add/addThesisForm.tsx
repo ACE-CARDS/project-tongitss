@@ -54,6 +54,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [isCategoryTouched, setIsCategoryTouched] = useState(false);
   const [isSchoolTouched, setIsSchoolTouched] = useState(false);
   const [digitalLinkError, setDigitalLinkError] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -178,6 +179,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     if (middleInitialInput) middleInitialInput.value = member.minit || "";
     if (lastNameInput) lastNameInput.value = member.lname;
     if (emailInput) emailInput.value = member.email;
+    
+    validateForm();
   };
 
   // Check duplicate authors on each field
@@ -229,7 +232,73 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   } else {
     setDigitalLinkError("");
   }
+  validateForm();
 };
+
+  // Validate entire form
+  const validateForm = () => {
+    const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
+    const titleValid = titleInput?.value && titleInput.value.length >= 5;
+    const abstractInput = document.querySelector('textarea[name="abstract"]') as HTMLTextAreaElement;
+    const abstractValid = abstractInput?.value && abstractInput.value.length >= 10;
+    const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
+    const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
+    const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
+    const dateValid = !!dateInput?.value;
+    const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+    const categoryValid = !!categorySelect?.value && !categoryError;
+    const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+    const schoolValid = !!schoolSelect?.value && !schoolError;
+    const digitalLinkValid = !digitalLinkError;
+    
+    const firstNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="firstName[]"]');
+    const lastNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="lastName[]"]');
+    const emailInputs = document.querySelectorAll<HTMLInputElement>('input[name="email[]"]');
+  
+    let hasValidAuthor = false;
+    for (let i = 0; i < firstNameInputs.length; i++) {
+      if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && emailInputs[i]?.value) {
+        hasValidAuthor = true;
+        break;
+      }
+    }
+    
+    let hasDuplicateAuthor = false;
+    for (let i = 0; i < emailInputs.length; i++) {
+      for (let j = i + 1; j < emailInputs.length; j++) {
+        if (emailInputs[i]?.value && emailInputs[j]?.value && 
+            emailInputs[i].value.toLowerCase() === emailInputs[j].value.toLowerCase()) {
+          hasDuplicateAuthor = true;
+          break;
+        }
+        
+        if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && 
+            firstNameInputs[j]?.value && lastNameInputs[j]?.value &&
+            firstNameInputs[i].value.toLowerCase() === firstNameInputs[j].value.toLowerCase() &&
+            lastNameInputs[i].value.toLowerCase() === lastNameInputs[j].value.toLowerCase()) {
+          
+          const middleInitialsInputs = document.querySelectorAll<HTMLInputElement>('input[name="middleInitial[]"]');
+          const middleI = (middleInitialsInputs[i]?.value || '').trim().charAt(0).toUpperCase();
+          const middleJ = (middleInitialsInputs[j]?.value || '').trim().charAt(0).toUpperCase();
+          
+          if (middleI === middleJ) {
+            hasDuplicateAuthor = true;
+            break;
+          }
+        }
+      }
+      if (hasDuplicateAuthor) break;
+    }
+    
+    const privacyCheckbox = document.querySelector('input[name="privacy"]') as HTMLInputElement;
+    const privacyValid = privacyCheckbox?.checked;
+    
+    const hasErrors = !titleValid || !abstractValid || !keywordsValid || !dateValid || !categoryValid || 
+                      !schoolValid || !digitalLinkValid || !hasValidAuthor || !!categoryError || 
+                      !!schoolError || hasDuplicateAuthor || !privacyValid;
+    
+    setIsFormValid(!hasErrors);
+  };
 
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("thesisDraft");
@@ -266,6 +335,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             if (categorySelect) categorySelect.value = draft.category;
             setIsCategoryTouched(true);
             setCategoryError("");
+            validateForm();
           }, 100);
         }
 
@@ -284,6 +354,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             if (schoolSelect) schoolSelect.value = draft.school;
             setIsSchoolTouched(true);
             setSchoolError("");
+            validateForm();
           }, 100);
         }
 
@@ -309,8 +380,13 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               if (lastNameInputs[index]) lastNameInputs[index].value = author.lastName || "";
               if (emailInputs[index]) emailInputs[index].value = author.email || "";
             });
+            validateForm();
           }, 100);
         }
+        
+        setTimeout(() => {
+          validateForm();
+        }, 200);
       } catch (err) {
         console.error("Error loading draft:", err);
       }
@@ -331,6 +407,11 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       }
     }
   }, [returnTo]);
+
+  // Validate form when states change
+  useEffect(() => {
+    validateForm();
+  }, [categoryError, schoolError, digitalLinkError, authors]);
 
    const addAuthor = () => {
     const newId = authors.length + 1;
@@ -383,6 +464,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         setNewCategoryName("");
         setCategoryError("");
         setIsCategoryTouched(true);
+        validateForm();
         return;
       }
 
@@ -406,6 +488,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         setNewCategoryName("");
         setCategoryError("");
         setIsCategoryTouched(true);
+        validateForm();
         return;
       }
 
@@ -441,6 +524,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       setNewCategoryName("");
       setCategoryError("");
       setIsCategoryTouched(true);
+      validateForm();
     } catch (error) {
       console.error("Error adding category:", error);
       setCategoryError("An unexpected error occurred. Please try again.");
@@ -474,6 +558,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         setNewSchoolName("");
         setSchoolError("");
         setIsSchoolTouched(true);
+        validateForm();
         return;
       }
 
@@ -497,6 +582,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         setNewSchoolName("");
         setSchoolError("");
         setIsSchoolTouched(true);
+        validateForm();
         return;
       }
 
@@ -541,6 +627,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       setNewSchoolName("");
       setSchoolError("");
       setIsSchoolTouched(true);
+      validateForm();
     } catch (error) {
       console.error("Error adding school:", error);
       setSchoolError("An unexpected error occurred. Please try again.");
@@ -760,6 +847,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       } else {
                         errorSpan!.style.display = 'none';
                       }
+                      validateForm();
                     }}
                 />
                 <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -790,6 +878,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       } else {
                         errorSpan!.style.display = 'none';
                       }
+                      validateForm();
                     }}
                 />
                 <span id="abstract-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -830,6 +919,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         } else {
                           errorSpan!.style.display = 'none';
                         }
+                        validateForm();
                       }}
                 />
                 <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -920,6 +1010,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                                 errorSpan.style.display = 'none';
                               }
                             }
+                            validateForm();
                           }}
                         />
                         <span id={`firstname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1035,12 +1126,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               errorSpan.textContent = 'Last Name is required.';
                               errorSpan.style.display = 'block';
                             }
+                            validateForm();
                             return;
                           } else if (input.value.length < 2) {
                             if (errorSpan) {
                               errorSpan.textContent = 'Last Name must be at least 2 characters.';
                               errorSpan.style.display = 'block';
                             }
+                            validateForm();
                             return;
                           }
 
@@ -1078,6 +1171,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                                       errorSpan.textContent = `Author with the same name "${authorName}" already exists (Author ${i + 1}).`;
                                       errorSpan.style.display = 'block';
                                     }
+                                    validateForm();
                                     return;
                                   }
                                 }
@@ -1089,6 +1183,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           if (errorSpan) {
                             errorSpan.style.display = 'none';
                           }
+                          validateForm();
                         }}
                       />
                       <span id={`lastname-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1139,12 +1234,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           if (input.value.length === 0) {
                             errorSpan!.textContent = 'Email is required.';
                             errorSpan!.style.display = 'block';
+                            validateForm();
                             return;
                           }
                           
                           if (!emailRegex.test(input.value)) {
                             errorSpan!.textContent = 'Please enter a valid email address.';
                             errorSpan!.style.display = 'block';
+                            validateForm();
                             return;
                           }
 
@@ -1156,6 +1253,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
                                 errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
                                 errorSpan!.style.display = 'block';
+                                validateForm();
                                 return;
                               }
                             }
@@ -1182,6 +1280,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           } else {
                             errorSpan!.style.display = 'none';
                           }
+                          validateForm();
                         }}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1259,6 +1358,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       } else {
                         errorSpan!.style.display = 'none';
                       }
+                      validateForm();
                     }}
                   />
                   <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1303,6 +1403,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         if (errorSpan) {
                           errorSpan.style.display = 'none';
                         }
+                        validateForm();
                         return;
                       }
                       
@@ -1320,6 +1421,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           errorSpan.textContent = 'Please enter a valid URL.';
                           errorSpan.style.display = 'block';
                         }
+                        validateForm();
                         return;
                       }
                       
@@ -1348,6 +1450,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           errorSpan.style.display = 'none';
                         }
                       }
+                      validateForm();
                     }}
                   />
                   <span id="digital-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
@@ -1384,6 +1487,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           } else {
                             setCategoryError("");
                           }
+                          validateForm();
                         }}
                         onBlur={() => {
                           const select = document.getElementById('category') as HTMLSelectElement;
@@ -1391,6 +1495,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             setCategoryError("Please select a category");
                             setIsCategoryTouched(true);
                           }
+                          validateForm();
                       }}
                       >
                         <option value="" disabled>Select a category</option>
@@ -1453,6 +1558,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             errorSpan.style.display = 'none';
                           }
                         }
+                        validateForm();
                       }}
                       />
                       <button
@@ -1468,6 +1574,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           setShowNewCategory(false);
                           setNewCategoryName("");
                           setCategoryError("");
+                          validateForm();
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1502,6 +1609,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           } else {
                             setSchoolError("");
                           }
+                          validateForm();
                         }}
                         onBlur={() => {
                           const select = document.getElementById('school') as HTMLSelectElement;
@@ -1509,6 +1617,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             setSchoolError("Please select a school");
                             setIsSchoolTouched(true);
                           }
+                          validateForm();
                         }}
                       >
                         <option value="" disabled>Select a school</option>
@@ -1571,6 +1680,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             errorSpan.style.display = 'none';
                           }
                         }
+                        validateForm();
                       }}
                       />
                       <button
@@ -1588,6 +1698,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           setSchoolError("");
                           const errorSpan = document.getElementById('school-error');
                           if (errorSpan) errorSpan.style.display = 'none';
+                          validateForm();
                         }}
                         className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
                       >
@@ -1611,6 +1722,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                 name="privacy"
                 required
                 className="peer appearance-none w-4 h-4 border border-gray-400 rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none"
+                onChange={() => validateForm()}
               />
               <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
                 ♠
@@ -1638,8 +1750,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !isFormValid}
+              className={`px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg transition-colors font-oswald ${
+                (isSubmitting || !isFormValid) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a2a4f]'
+              }`}
             >
               {isSubmitting ? "Submitting..." : "Submit Thesis"}
             </button>
