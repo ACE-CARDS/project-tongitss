@@ -1696,7 +1696,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        value=""
                         // Error handling
                         onChange={(e) => {
                           setIsCategoryTouched(true);
@@ -1818,7 +1817,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        value=""
                         // Error handling
                         onChange={(e) => {
                         setIsSchoolTouched(true);

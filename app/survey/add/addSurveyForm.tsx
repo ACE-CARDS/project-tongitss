@@ -1839,7 +1839,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                         categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                       }`}
-                      value=""
                       onChange={(e) => {
                         setIsCategoryTouched(true);
                         if (!e.target.value) {
@@ -1944,7 +1943,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        value=""
                         onChange={(e) => {
                           setIsSchoolTouched(true);
                           if (!e.target.value) {
