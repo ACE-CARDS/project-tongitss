@@ -24,18 +24,20 @@ function AddAnnouncementContent() {
   }
 
   return (
-    <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <>
       <NavBar />
-      <AddAnnouncementForm />
+      <div
+        className="w-full mx-auto max-w-[1920px] min-h-screen bg-[#fbfaf8]"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <AddAnnouncementForm />
+      </div>
       <Footer />
-    </div>
+    </>
   );
 }
 

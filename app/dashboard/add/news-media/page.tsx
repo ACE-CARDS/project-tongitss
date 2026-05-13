@@ -33,18 +33,20 @@ function AddNewsMediaContent() {
   }
 
   return (
+    <>
+      <NavBar />
     <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8]"
+      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
       style={{
         backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
         backgroundSize: "20px 20px",
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       <AddNewsMediaForm />
-      <Footer />
     </div>
+      <Footer />
+    </>
   );
 }
 

@@ -131,6 +131,8 @@ export default function AddMemApp() {
   const embedUrl = formData.type === 'video' ? getEmbedUrl(formData.description) : null;
 
   return (
+    <>
+      <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -139,7 +141,6 @@ export default function AddMemApp() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       
       <main className="flex-1 container mx-auto py-10 px-4 sm:px-6 max-w-3xl flex flex-col">
         {isSuccess ? (
@@ -259,7 +260,8 @@ export default function AddMemApp() {
         )}
       </main>
 
-      <Footer />
     </div>
+      <Footer />
+    </>
   );
 }

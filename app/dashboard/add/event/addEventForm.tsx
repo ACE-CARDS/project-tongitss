@@ -10,94 +10,114 @@ export default function AddEventForm() {
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [invalidFields, setInvalidFields] = useState<string[]>([]); 
   const formTopRef = useRef<HTMLDivElement>(null);
   
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const getFieldClass = (fieldName: string) => {
-    const baseClass = "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none bg-[#fbfaf8]";
-    const borderClass = invalidFields.includes(fieldName) 
-      ? "border-red-500 ring-1 ring-red-500" 
-      : "border-[#94a3b8] focus:border-[#011638]";
-    return `${baseClass} ${borderClass}`;
+  // Standard class without dynamic border colors
+  const inputClass = "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]";
+
+  const clearInlineErrors = () => {
+    const errorIds = ['title-error', 'short-title-error', 'date-error', 'location-error', 'status-error', 'description-error'];
+    errorIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = "";
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setErrorMsg(null);
-    setInvalidFields([]); 
+    clearInlineErrors();
+
+    const formData = new FormData(e.currentTarget);
+    const title = (formData.get("title") as string).trim();
+    const shortTitle = (formData.get("short_title") as string).trim();
+    const start = formData.get("start_date") as string;
+    const end = formData.get("end_date") as string;
+    const location = (formData.get("location") as string).trim();
+    const status = formData.get("status") as string;
+    const description = (formData.get("description") as string).trim();
+    const imageFile = formData.get("image") as File | null;
+
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+    const today = new Date();
+    startDateObj.setHours(0, 0, 0, 0);
+    endDateObj.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    let hasError = false;
+
+    // Validation Logic using the requested spans
+    if (!title) {
+      document.getElementById('title-error')!.textContent = "Full title is required.";
+      hasError = true;
+    }
+    if (!shortTitle) {
+      document.getElementById('short-title-error')!.textContent = "Short title is required.";
+      hasError = true;
+    }
+    if (!location) {
+      document.getElementById('location-error')!.textContent = "Location is required.";
+      hasError = true;
+    }
+    if (!description) {
+      document.getElementById('description-error')!.textContent = "Description is required.";
+      hasError = true;
+    }
+    if (endDateObj < startDateObj) {
+      document.getElementById('date-error')!.textContent = "End date cannot be earlier than start date.";
+      hasError = true;
+    }
+    if (status === "Completed" && endDateObj >= today) {
+      document.getElementById('status-error')!.textContent = "End date must be in the past for 'Completed'.";
+      hasError = true;
+    }
+    if (status === "Upcoming" && startDateObj <= today) {
+      document.getElementById('status-error')!.textContent = "Start date must be in the future for 'Upcoming'.";
+      hasError = true;
+    }
+    if (status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
+      document.getElementById('status-error')!.textContent = "Today must be within the event range for 'Ongoing'.";
+      hasError = true;
+    }
+
+    if (hasError) {
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const start = formData.get("start_date") as string;
-      const end = formData.get("end_date") as string;
-      const status = formData.get("status") as string;
-      const imageFile = formData.get("image") as File | null;
-
-      const startDateObj = new Date(start);
-      const endDateObj = new Date(end);
-      const today = new Date();
-      
-      startDateObj.setHours(0, 0, 0, 0);
-      endDateObj.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-
-
-      if (endDateObj < startDateObj) {
-        setInvalidFields(["end_date", "start_date"]);
-        throw new Error("End date cannot be earlier than the start date.");
-      }
-
-      if (status === "Completed" && endDateObj >= today) {
-        setInvalidFields(["status", "end_date"]);
-        throw new Error("Cannot mark as 'Completed'. The end date must be strictly in the past.");
-      }
-
-      if (status === "Upcoming" && startDateObj <= today) {
-        setInvalidFields(["status", "start_date"]);
-        throw new Error("Cannot mark as 'Upcoming'. The start date must be strictly in the future.");
-      }
-
-      if (status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
-        setInvalidFields(["status", "start_date", "end_date"]);
-        throw new Error("Cannot mark as 'Ongoing'. Today's date must fall between the start and end dates.");
-      }
-
       let imageUrl = null;
       if (imageFile && imageFile.size > 0) {
         const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
-        const { error: uploadError } = await supabase.storage.from('events').upload(filePath, imageFile);
-        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-        const { data: { publicUrl } } = supabase.storage.from('events').getPublicUrl(filePath);
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('events').upload(fileName, imageFile);
+        if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+        const { data: { publicUrl } } = supabase.storage.from('events').getPublicUrl(fileName);
         imageUrl = publicUrl;
       }
 
-      const payload = {
-        title: formData.get("title") as string,
-        short_title: formData.get("short_title") as string,
-        year: startDateObj.getFullYear().toString(), 
-        start_date: start, 
+      const { error } = await supabase.from("events").insert({
+        title,
+        short_title: shortTitle,
+        year: startDateObj.getFullYear().toString(),
+        start_date: start,
         end_date: end,
-        location: formData.get("location") as string,
-        status: status,
-        description: formData.get("description") as string,
+        location,
+        status,
+        description,
         image_url: imageUrl,
-      };
+      });
 
-      const { error } = await supabase.from("events").insert(payload);
       if (error) throw new Error(error.message);
-
-      sessionStorage.removeItem("eventDraft");
-      router.refresh();
       setIsSuccess(true);
-      
+      router.refresh();
     } catch (error: any) {
       setErrorMsg(error.message);
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } finally {
       setIsSubmitting(false);
     }
@@ -105,21 +125,17 @@ export default function AddEventForm() {
 
   if (isSuccess) {
     return (
-      <main className="flex-1 container mx-auto py-16 px-4 max-w-2xl text-center flex flex-col justify-center">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] overflow-hidden">
-          <div className="h-2 bg-[#011638]" />
-          <div className="p-10">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
-              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-oswald font-bold text-[#011638] mb-2">Event Posted!</h1>
-            <p className="text-[#475569] font-ubuntu-mono mb-6">Your event has been successfully saved to the database and is now live.</p>
-            <div className="flex gap-4 justify-center">
-              <button onClick={() => router.push("/dashboard?tab=manage")} className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald">Go back to Dashboard</button>
-              <button onClick={() => { setIsSuccess(false); setInvalidFields([]); }} className="px-6 py-2 text-[#011638] bg-white border border-[#011638] rounded-lg hover:bg-slate-50 transition-colors font-oswald">Create Another Event</button>
-            </div>
+      <main className="flex-1 container mx-auto py-16 px-4 max-w-2xl text-center">
+        <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-10">
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-oswald font-bold text-[#011638] mb-2">Event Posted!</h1>
+          <div className="flex gap-4 justify-center mt-6">
+            <button onClick={() => router.push("/dashboard?tab=manage")} className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg font-oswald">Dashboard</button>
+            <button onClick={() => setIsSuccess(false)} className="px-6 py-2 text-[#011638] bg-white border border-[#011638] rounded-lg font-oswald">Add Another</button>
           </div>
         </div>
       </main>
@@ -135,64 +151,70 @@ export default function AddEventForm() {
 
       <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 mb-8">
         {errorMsg && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center">
-              <svg className="h-5 w-5 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm text-red-700 font-ubuntu-mono font-bold">{errorMsg}</p>
-            </div>
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <p className="font-ubuntu-mono text-sm font-bold">{errorMsg}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md"><h2 className="text-lg font-oswald font-semibold">Event Details</h2></div>
+        <form onSubmit={handleSubmit} className="">
+          <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+            <h2 className="text-lg font-oswald font-semibold">Event Details</h2>
+          </div>
+          
           <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Full Title <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="title" required className={getFieldClass("title")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'title'))} />
+                <input type="text" name="title" className={inputClass} />
+                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Short Title <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="short_title" required className={getFieldClass("short_title")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'short_title'))} />
+                <input type="text" name="short_title" className={inputClass} />
+                <span id="short-title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Start Date <span className="text-[#eec643]">*</span></label>
-                <input type="date" name="start_date" required className={getFieldClass("start_date")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'start_date'))} />
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Start Date <span className="text-[#eec643]">*</span></label>
+                  <input type="date" name="start_date" className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">End Date <span className="text-[#eec643]">*</span></label>
+                  <input type="date" name="end_date" className={inputClass} />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">End Date <span className="text-[#eec643]">*</span></label>
-                <input type="date" name="end_date" required className={getFieldClass("end_date")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'end_date'))} />
-              </div>
+              <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Location <span className="text-[#eec643]">*</span></label>
-                <input type="text" name="location" required className={getFieldClass("location")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'location'))} />
+                <input type="text" name="location" className={inputClass} />
+                <span id="location-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
               <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Event Status <span className="text-[#eec643]">*</span></label>
-                <select name="status" required className={getFieldClass("status")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'status'))}>
+                <select name="status" className={inputClass}>
                   <option value="Upcoming">Upcoming</option>
                   <option value="Ongoing">Ongoing</option>
                   <option value="Completed">Completed</option>
                 </select>
+                <span id="status-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Description <span className="text-[#eec643]">*</span></label>
-              <textarea name="description" required rows={4} className={getFieldClass("description")} onChange={() => setInvalidFields(prev => prev.filter(f => f !== 'description'))} />
+              <textarea name="description" rows={4} className={inputClass} />
+              <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
             </div>
             
             <div>
-               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Cover Image (Optional)</label>
-               <input type="file" name="image" accept="image/*" className={getFieldClass("image")} />
+              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Cover Image (Optional)</label>
+              <input type="file" name="image" accept="image/*" className={inputClass} />
             </div>
           </div>
 

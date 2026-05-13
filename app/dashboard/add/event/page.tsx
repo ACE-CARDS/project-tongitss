@@ -49,6 +49,8 @@ function AddEventContent() {
   }
 
   return (
+    <>
+      <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -57,14 +59,14 @@ function AddEventContent() {
         backgroundAttachment: "fixed",
       }}
     >
-      <NavBar />
       
       <div className="flex-1 flex flex-col">
         <AddEventForm />
       </div>
 
-      <Footer />
     </div>
+      <Footer />
+    </>
   );
 }
 

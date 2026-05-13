@@ -10,9 +10,8 @@ export default function AddAnnouncementForm() {
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
+  
   const errorRef = useRef<HTMLDivElement>(null);
-
-  // State to toggle between 'landing' and 'dashboard'
   const [announcementType, setAnnouncementType] = useState<"landing" | "dashboard">("landing");
 
   // Load draft from session storage
@@ -49,29 +48,59 @@ export default function AddAnnouncementForm() {
     sessionStorage.setItem("announcementDraft", JSON.stringify(draft));
   };
 
+  // Helper to clear inline errors
+  const clearInlineErrors = () => {
+    ['title-error', 'desc-error', 'date-error'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = "";
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError("");
+    clearInlineErrors();
+    
+    const formData = new FormData(e.currentTarget);
+    const title = (formData.get("title") as string).trim();
+    const desc = (formData.get("description") as string).trim();
+    const start = formData.get("start_date") as string;
+    const end = formData.get("end_date") as string;
+
+    // Inline Validation matching the requested UI
+    let hasError = false;
+
+    if (!title) {
+      const el = document.getElementById('title-error');
+      if (el) el.textContent = "Title is required.";
+      hasError = true;
+    }
+
+    if (!desc) {
+      const el = document.getElementById('desc-error');
+      if (el) el.textContent = "Description is required.";
+      hasError = true;
+    }
+
+    if (!start || !end) {
+      const el = document.getElementById('date-error');
+      if (el) el.textContent = "Both start and end dates are required.";
+      hasError = true;
+    } else if (new Date(end) < new Date(start)) {
+      const el = document.getElementById('date-error');
+      if (el) el.textContent = "End date cannot be earlier than start date.";
+      hasError = true;
+    }
+
+    if (hasError) {
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const title = formData.get("title") as string;
-      const desc = formData.get("description") as string;
-      const start = formData.get("start_date") as string;
-      const end = formData.get("end_date") as string;
-
-      // Validation logic
-      if (!title.trim() || !desc.trim()) {
-        throw new Error("Title and Description are required.");
-      }
-
-      if (new Date(end) < new Date(start)) {
-        throw new Error("End date cannot be earlier than the start date.");
-      }
-
       const tableName = announcementType === "landing" ? "announce_landing" : "announce_dash";
-
       const payload = announcementType === "landing"
           ? {
               announce_landing_title: title,
@@ -87,24 +116,14 @@ export default function AddAnnouncementForm() {
             };
 
       const { error } = await supabase.from(tableName).insert(payload);
-
-      if (error) {
-        console.error("Supabase Error Details:", error);
-        throw new Error(error.message);
-      }
+      if (error) throw new Error(error.message);
 
       sessionStorage.removeItem("announcementDraft");
       router.push("/dashboard/add/success?type=announcement");
       router.refresh();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
-      setSubmitError(errorMessage);
-      console.error("Submission error:", err);
-      
-      // Scroll to error message
-      setTimeout(() => {
-        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      setSubmitError(err instanceof Error ? err.message : "An unexpected error occurred");
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } finally {
       setIsSubmitting(false);
     }
@@ -128,14 +147,14 @@ export default function AddAnnouncementForm() {
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
         <form onSubmit={handleSubmit} onChange={saveDraft} className="space-y-6">
           
-          {/* Submit error display */}
-          {submitError && (
-            <div ref={errorRef} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-              <p className="font-ubuntu-mono text-sm">{submitError}</p>
-            </div>
-          )}
+          <div ref={errorRef}>
+            {submitError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <p className="font-ubuntu-mono text-sm">{submitError}</p>
+              </div>
+            )}
+          </div>
 
-          {/* Type Selector */}
           <div>
             <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
               Display Location <span className="text-[#eec643]">*</span>
@@ -143,7 +162,7 @@ export default function AddAnnouncementForm() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => { setAnnouncementType("landing"); setSubmitError(""); }}
+                onClick={() => setAnnouncementType("landing")}
                 className={`py-3 px-4 rounded border-2 font-ubuntu-mono transition-all ${
                   announcementType === "landing"
                     ? "border-[#011638] bg-[#011638] text-white"
@@ -154,7 +173,7 @@ export default function AddAnnouncementForm() {
               </button>
               <button
                 type="button"
-                onClick={() => { setAnnouncementType("dashboard"); setSubmitError(""); }}
+                onClick={() => setAnnouncementType("dashboard")}
                 className={`py-3 px-4 rounded border-2 font-ubuntu-mono transition-all ${
                   announcementType === "dashboard"
                     ? "border-[#011638] bg-[#011638] text-white"
@@ -182,10 +201,10 @@ export default function AddAnnouncementForm() {
                   type="text"
                   name="title"
                   maxLength={100}
-                  required
                   placeholder={announcementType === "landing" ? "Public heading..." : "Internal notice..."}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                 />
+                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
 
               {/* Description */}
@@ -195,37 +214,38 @@ export default function AddAnnouncementForm() {
                 </label>
                 <textarea
                   name="description"
-                  required
                   maxLength={500}
                   rows={4}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                 />
+                <span id="desc-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
 
               {/* Dates */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Start Date <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="start_date"
-                    required
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      Start Date <span className="text-[#eec643]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="start_date"
+                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      End Date <span className="text-[#eec643]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="end_date"
+                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    End Date <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="end_date"
-                    required
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
-                </div>
+                <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
               </div>
             </div>
           </div>
