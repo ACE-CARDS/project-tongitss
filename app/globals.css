@@ -52,34 +52,33 @@ p {
 
 @layer components {
   .header {
-    @apply 
-    flex items-center gap-4 mx-auto lg:mx-0 justify-center lg:justify-start
+    @apply flex items-center gap-4 mx-auto lg:mx-0 justify-center lg:justify-start
     uppercase text-5xl md:text-6xl font-oswald font-extrabold 
     bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
-    
-  };
+  }
 
   .withspade {
-    &::before, &::after {
+    &::before,
+    &::after {
       content: "♠";
       @apply text-[#eec643] font-normal font-ubuntu-mono text-4xl md:text-5xl;
     }
-  };
+  }
 
   .headersub {
     @apply text-3xl md:text-4xl font-oswald font-medium text-[#011638];
-  };
+  }
 
   .withminispade {
-    &::before, &::after {
+    &::before,
+    &::after {
       content: "♠";
       @apply text-[#eec643] font-ubuntu-mono text-2xl md:text-3xl px-2;
     }
-  };
+  }
 
   .btn-yellow {
-    @apply 
-      px-10 py-4 rounded-3xl
+    @apply px-10 py-4 rounded-3xl
       bg-[#d9b237]/80 shadow-[0_0_0_#d9b237] border-2 border-[#d9b237]
       text-white text-lg text-center
       hover:bg-[#d9b237] hover:shadow-[0_0_25px_#d9b237] hover:text-white
@@ -88,8 +87,7 @@ p {
   }
 
   .btn-blue {
-    @apply 
-      px-10 py-4 rounded-3xl
+    @apply px-10 py-4 rounded-3xl
       bg-[#011638]/80 shadow-[0_0_0_#011638] border-2 border-[#011638]
       text-white text-lg text-center
       hover:bg-[#011638] hover:shadow-[0_0_25px_#011638] hover:text-white
@@ -299,4 +297,26 @@ p {
 
 .bounce {
   animation: bounce 1s infinite;
+}
+
+.btn-primary {
+  background-color: #011638;
+  color: white;
+  border-radius: 8px;
+  transition: background-color;
+}
+
+.btn-primary:hover {
+  background-color: #022050;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #dbb32f;
+  border-radius: 8px;
+  transition: background-color;
+}
+
+.btn-secondary:hover {
+  background-color: #c49b16;
 }
