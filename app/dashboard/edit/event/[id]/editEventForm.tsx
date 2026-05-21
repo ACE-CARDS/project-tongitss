@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import Footer from "@/components/layout/footer";
+import { useUser } from "@/components/context/userContext";
 
 function EditEventContent({ eventId }: { eventId: string }) {
   const router = useRouter();
@@ -14,9 +15,9 @@ function EditEventContent({ eventId }: { eventId: string }) {
 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [invalidFields, setInvalidFields] = useState<string[]>([]); 
+  const [invalidFields, setInvalidFields] = useState<string[]>([]);
 
   const [initialData, setInitialData] = useState({
     title: "",
@@ -84,21 +85,24 @@ function EditEventContent({ eventId }: { eventId: string }) {
   };
 
   const getFieldClass = (fieldName: string) => {
-    const baseClass = "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none bg-[#fbfaf8]";
-    const borderClass = invalidFields.includes(fieldName) 
-      ? "border-red-500 ring-1 ring-red-500" 
+    const baseClass =
+      "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none bg-[#fbfaf8]";
+    const borderClass = invalidFields.includes(fieldName)
+      ? "border-red-500 ring-1 ring-red-500"
       : "border-[#94a3b8] focus:border-[#011638]";
     return `${baseClass} ${borderClass}`;
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errorMsg) setErrorMsg(null);
     if (invalidFields.includes(name)) {
-      setInvalidFields(prev => prev.filter(f => f !== name));
+      setInvalidFields((prev) => prev.filter((f) => f !== name));
     }
   };
 
@@ -110,37 +114,57 @@ function EditEventContent({ eventId }: { eventId: string }) {
     const startDateObj = new Date(formData.start_date);
     const endDateObj = new Date(formData.end_date);
     const today = new Date();
-    
+
     startDateObj.setHours(0, 0, 0, 0);
     endDateObj.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
 
-
     if (endDateObj < startDateObj) {
       setInvalidFields(["end_date", "start_date"]);
       setErrorMsg("End date cannot be earlier than the start date.");
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       return;
     }
 
     if (formData.status === "Completed" && endDateObj >= today) {
       setInvalidFields(["status", "end_date"]);
-      setErrorMsg("Cannot mark as 'Completed'. The end date must be strictly in the past.");
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setErrorMsg(
+        "Cannot mark as 'Completed'. The end date must be strictly in the past.",
+      );
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       return;
     }
 
     if (formData.status === "Upcoming" && startDateObj <= today) {
       setInvalidFields(["status", "start_date"]);
-      setErrorMsg("Cannot mark as 'Upcoming'. The start date must be strictly in the future.");
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setErrorMsg(
+        "Cannot mark as 'Upcoming'. The start date must be strictly in the future.",
+      );
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       return;
     }
 
-    if (formData.status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
+    if (
+      formData.status === "Ongoing" &&
+      (startDateObj > today || endDateObj < today)
+    ) {
       setInvalidFields(["status", "start_date", "end_date"]);
-      setErrorMsg("Cannot mark as 'Ongoing'. Today's date must fall between the start and end dates.");
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setErrorMsg(
+        "Cannot mark as 'Ongoing'. Today's date must fall between the start and end dates.",
+      );
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       return;
     }
 
@@ -158,15 +182,100 @@ function EditEventContent({ eventId }: { eventId: string }) {
         .eq("id", eventId);
 
       if (error) throw error;
+      if (eventId) {
+        await logEditAudit(eventId);
+      }
 
       router.push("/dashboard/edit/success?type=event");
       router.refresh();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
       setErrorMsg(errorMessage);
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  //track what changed
+  const getChangesString = () => {
+    const changes: string[] = [];
+
+    if (initialData.title !== formData.title) {
+      changes.push(`title changed to "${formData.title}"`);
+    }
+    if (initialData.short_title !== formData.short_title) {
+      changes.push(`short title changed to "${formData.short_title}"`);
+    }
+    if (initialData.description !== formData.description) {
+      changes.push(`description changed to "${formData.description}"`);
+    }
+    if (initialData.start_date !== formData.start_date) {
+      changes.push(`start date changed to ${formData.start_date}`);
+    }
+    if (initialData.end_date !== formData.end_date) {
+      changes.push(`end date changed to ${formData.end_date}`);
+    }
+    if (initialData.location !== formData.location) {
+      changes.push(`location changed to ${formData.location}`);
+    }
+    if (initialData.status !== formData.status) {
+      changes.push(`status changed to ${formData.status}`);
+    }
+
+    return changes.length > 0
+      ? `Changes: [${changes.join(", ")}]`
+      : "No changes detected";
+  };
+
+  const logEditAudit = async (recordId: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+    const changes = getChangesString();
+
+    const detailedMessage = `Updated event "${formData.title}" (ID: ${recordId}). ${changes}`;
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "events",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
     }
   };
 
@@ -197,10 +306,20 @@ function EditEventContent({ eventId }: { eventId: string }) {
           {errorMsg && (
             <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center">
-                <svg className="h-5 w-5 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 text-red-500 mr-3"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
-                <p className="text-sm text-red-700 font-ubuntu-mono font-bold">{errorMsg}</p>
+                <p className="text-sm text-red-700 font-ubuntu-mono font-bold">
+                  {errorMsg}
+                </p>
               </div>
             </div>
           )}
@@ -208,7 +327,9 @@ function EditEventContent({ eventId }: { eventId: string }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-                <h2 className="text-lg font-oswald font-semibold">Event Details</h2>
+                <h2 className="text-lg font-oswald font-semibold">
+                  Event Details
+                </h2>
               </div>
 
               <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
