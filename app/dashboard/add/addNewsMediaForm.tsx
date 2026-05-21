@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { useUser } from "@/components/context/userContext";
 
 export default function AddNewsMediaForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get('from');
+  const from = searchParams.get("from");
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
@@ -32,12 +33,13 @@ export default function AddNewsMediaForm() {
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
-        
+
         if (titleRef.current) titleRef.current.value = draft.title || "";
         if (contentRef.current) contentRef.current.value = draft.content || "";
         if (postUrlRef.current) postUrlRef.current.value = draft.post_url || "";
-        if (fbPostDateRef.current) fbPostDateRef.current.value = draft.fb_post_date || "";
-        
+        if (fbPostDateRef.current)
+          fbPostDateRef.current.value = draft.fb_post_date || "";
+
         // Trigger validation
         if (titleRef.current || contentRef.current) {
           validateTitleContent();
@@ -70,15 +72,17 @@ export default function AddNewsMediaForm() {
   // Check if link is duplicated
   const checkDuplicatePostUrl = async (url: string): Promise<boolean> => {
     if (!url) return false;
-    
+
     const { data, error } = await supabase
       .from("news_media")
       .select("id")
       .eq("post_url", url)
       .maybeSingle();
-    
+
     if (data) {
-      setPostUrlError("This post URL is already in use. Please provide a unique URL.");
+      setPostUrlError(
+        "This post URL is already in use. Please provide a unique URL.",
+      );
       return true;
     } else {
       setPostUrlError("");
@@ -90,15 +94,15 @@ export default function AddNewsMediaForm() {
   const validateTitleContent = (): boolean => {
     const title = titleRef.current?.value?.trim() || "";
     const content = contentRef.current?.value?.trim() || "";
-    
+
     if (!title && !content) {
       setTitleContentError("Either Title or Content must be provided.");
       setTimeout(() => {
-      titleContentErrorRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      });
-    }, 100);
+        titleContentErrorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
       return false;
     } else {
       setTitleContentError("");
@@ -117,22 +121,22 @@ export default function AddNewsMediaForm() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('news-image')
+      .from("news-image")
       .upload(filePath, file);
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error("Upload error:", uploadError);
       return null;
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('news-image')
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("news-image").getPublicUrl(filePath);
 
     return publicUrl;
   };
@@ -145,37 +149,37 @@ export default function AddNewsMediaForm() {
         alert("File size must be less than 10MB");
         return;
       }
-      
+
       // File types
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
         alert("Only JPEG, PNG, and GIF images are allowed");
         return;
       }
-      
+
       // Clean old preview
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
-      
+
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      
-      const errorSpan = document.getElementById('image-error');
-      if (errorSpan) errorSpan.style.display = 'none';
+
+      const errorSpan = document.getElementById("image-error");
+      if (errorSpan) errorSpan.style.display = "none";
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitError(""); 
-    
+    setSubmitError("");
+
     // Validate title/content
     if (!validateTitleContent()) {
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
@@ -191,13 +195,17 @@ export default function AddNewsMediaForm() {
 
       // Validate URL format
       if (!validateUrl(postUrl)) {
-        throw new Error("Please enter a valid URL (e.g., https://example.com).");
+        throw new Error(
+          "Please enter a valid URL (e.g., https://example.com).",
+        );
       }
 
       // Check duplicate post URL
       const isDuplicate = await checkDuplicatePostUrl(postUrl);
       if (isDuplicate) {
-        throw new Error("This post URL is already in use. Please provide a unique URL.");
+        throw new Error(
+          "This post URL is already in use. Please provide a unique URL.",
+        );
       }
 
       // Validate date
@@ -222,12 +230,16 @@ export default function AddNewsMediaForm() {
         created_at: new Date().toISOString(),
       };
 
-      const { error: insertError } = await supabase.from("news_media").insert(payload);
+      const { error: insertError } = await supabase
+        .from("news_media")
+        .insert(payload);
 
       if (insertError) {
         console.error("Supabase Error Details:", insertError);
         throw new Error(insertError.message);
       }
+
+      await logCreateAudit(title);
 
       // Clear draft on success
       sessionStorage.removeItem("newsMediaDraft");
@@ -235,10 +247,10 @@ export default function AddNewsMediaForm() {
       // Redirect
       router.push("/dashboard/add/success?type=news-media");
       router.refresh();
-      
     } catch (err) {
       // Handle error
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
       setSubmitError(errorMessage);
       console.error("Submission error:", err);
     } finally {
@@ -246,22 +258,77 @@ export default function AddNewsMediaForm() {
     }
   };
 
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logCreateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Created a new media titled "${itemTitle}"`;
+
+    const logEntry = {
+      action: "Create",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "news_media",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
+
   return (
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-6">
         <Link
-          href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
+          href={
+            from === "admin"
+              ? "/dashboard?tab=manage&section=news"
+              : "/dashboard"
+          }
           className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
           onClick={() => sessionStorage.removeItem("newsMediaDraft")}
         >
           ← Back
         </Link>
-        <h1 className="text-2xl font-oswald font-bold text-[#011638]">Add News & Media</h1>
+        <h1 className="text-2xl font-oswald font-bold text-[#011638]">
+          Add News & Media
+        </h1>
       </div>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
-        <form onSubmit={handleSubmit} onChange={saveDraft} className="space-y-6">
-
+        <form
+          onSubmit={handleSubmit}
+          onChange={saveDraft}
+          className="space-y-6"
+        >
           {/* Submit error display */}
           {submitError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -271,14 +338,20 @@ export default function AddNewsMediaForm() {
 
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-              <h2 className="text-lg font-oswald font-semibold">Basic Information</h2>
+              <h2 className="text-lg font-oswald font-semibold">
+                Basic Information
+              </h2>
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
-              
               <div className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label htmlFor="title" className="block text-sm font-oswald font-medium text-[#011638] mb-1">Title</label>
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                  >
+                    Title
+                  </label>
                   <input
                     type="text"
                     id="title"
@@ -292,7 +365,12 @@ export default function AddNewsMediaForm() {
 
                 {/* Content */}
                 <div>
-                  <label htmlFor="content" className="block text-sm font-oswald font-medium text-[#011638] mb-1">Description</label>
+                  <label
+                    htmlFor="content"
+                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                  >
+                    Description
+                  </label>
                   <textarea
                     id="content"
                     ref={contentRef}
@@ -303,21 +381,25 @@ export default function AddNewsMediaForm() {
                     onInput={() => validateTitleContent()}
                   />
                   <div ref={titleContentErrorRef}>
-                  {titleContentError && (
-                    <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                      {titleContentError}
-                    </span>
-                  )}
-                </div>
+                    {titleContentError && (
+                      <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
+                        {titleContentError}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Image</label>
-                  <div 
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Image
+                  </label>
+                  <div
                     className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
                     onClick={() => {
-                      const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+                      const fileInput = document.getElementById(
+                        "image-upload",
+                      ) as HTMLInputElement;
                       if (fileInput) fileInput.click();
                     }}
                   >
@@ -333,16 +415,28 @@ export default function AddNewsMediaForm() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (imagePreview) URL.revokeObjectURL(imagePreview);
+                              if (imagePreview)
+                                URL.revokeObjectURL(imagePreview);
                               setImageFile(null);
                               setImagePreview("");
-                              const errorSpan = document.getElementById('image-error');
-                              if (errorSpan) errorSpan.style.display = 'none';
+                              const errorSpan =
+                                document.getElementById("image-error");
+                              if (errorSpan) errorSpan.style.display = "none";
                             }}
                             className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -382,7 +476,10 @@ export default function AddNewsMediaForm() {
                     accept="image/jpeg,image/png,image/gif"
                     onChange={handleImageChange}
                   />
-                  <span id="image-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  <span
+                    id="image-error"
+                    className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                  ></span>
                 </div>
               </div>
             </div>
@@ -390,14 +487,18 @@ export default function AddNewsMediaForm() {
 
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-              <h2 className="text-lg font-oswald font-semibold">Source Details</h2>
+              <h2 className="text-lg font-oswald font-semibold">
+                Source Details
+              </h2>
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">
-
                 {/* Post URL */}
                 <div>
-                  <label htmlFor="post_url" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  <label
+                    htmlFor="post_url"
+                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                  >
                     Post URL <span className="text-[#eec643]">*</span>
                   </label>
                   <input
@@ -410,29 +511,33 @@ export default function AddNewsMediaForm() {
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     onInput={async (e) => {
                       const input = e.target as HTMLInputElement;
-                      const errorSpan = document.getElementById('post-url-error');
-                      
+                      const errorSpan =
+                        document.getElementById("post-url-error");
+
                       if (input.value.length === 0) {
                         if (errorSpan) {
-                          errorSpan.textContent = 'Post URL is required.';
-                          errorSpan.style.display = 'block';
+                          errorSpan.textContent = "Post URL is required.";
+                          errorSpan.style.display = "block";
                         }
                         setPostUrlError("");
                       } else if (!validateUrl(input.value)) {
                         if (errorSpan) {
-                          errorSpan.textContent = 'Please enter a valid URL.';
-                          errorSpan.style.display = 'block';
+                          errorSpan.textContent = "Please enter a valid URL.";
+                          errorSpan.style.display = "block";
                         }
                         setPostUrlError("");
                       } else {
                         if (errorSpan) {
-                          errorSpan.style.display = 'none';
+                          errorSpan.style.display = "none";
                         }
                         await checkDuplicatePostUrl(input.value);
                       }
                     }}
                   />
-                  <span id="post-url-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  <span
+                    id="post-url-error"
+                    className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                  ></span>
                   {postUrlError && (
                     <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
                       {postUrlError}
@@ -442,7 +547,10 @@ export default function AddNewsMediaForm() {
 
                 {/* Post Date */}
                 <div>
-                  <label htmlFor="fb_post_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  <label
+                    htmlFor="fb_post_date"
+                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                  >
                     Post Date <span className="text-[#eec643]">*</span>
                   </label>
                   <input
@@ -450,25 +558,29 @@ export default function AddNewsMediaForm() {
                     id="fb_post_date"
                     ref={fbPostDateRef}
                     required
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date().toISOString().split("T")[0]}
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
-                      const errorSpan = document.getElementById('post-date-error');
-                      
+                      const errorSpan =
+                        document.getElementById("post-date-error");
+
                       if (!input.value) {
                         if (errorSpan) {
-                          errorSpan.textContent = 'Post date is required.';
-                          errorSpan.style.display = 'block';
+                          errorSpan.textContent = "Post date is required.";
+                          errorSpan.style.display = "block";
                         }
                       } else {
                         if (errorSpan) {
-                          errorSpan.style.display = 'none';
+                          errorSpan.style.display = "none";
                         }
                       }
                     }}
                   />
-                  <span id="post-date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  <span
+                    id="post-date-error"
+                    className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                  ></span>
                 </div>
               </div>
             </div>
@@ -477,7 +589,11 @@ export default function AddNewsMediaForm() {
           {/* Submit Button */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
             <Link
-              href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
+              href={
+                from === "admin"
+                  ? "/dashboard?tab=manage&section=news"
+                  : "/dashboard"
+              }
               className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
               onClick={() => sessionStorage.removeItem("newsMediaDraft")}
             >
