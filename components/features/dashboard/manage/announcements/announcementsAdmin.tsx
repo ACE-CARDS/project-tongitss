@@ -178,8 +178,6 @@ export default function AnnouncementsAdmin() {
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoadingRole, setIsLoadingRole] = useState(true);
   const loadCurrentUser = async (email: string) => {
     const { data, error } = await supabase
       .from("member")
@@ -222,7 +220,7 @@ export default function AnnouncementsAdmin() {
     const { error } = await supabase.from("audit_log").insert([logEntry]);
 
     if (error) {
-      console.error("Failed to log.");
+      console.error("Failed to write audit log", error);
     }
   };
 

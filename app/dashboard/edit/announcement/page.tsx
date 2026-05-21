@@ -7,6 +7,7 @@ import Link from "next/link";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import Footer from "@/components/layout/footer";
 import NavBar from "@/components/layout/navbar";
+import { useUser } from "@/components/context/userContext";
 
 function EditAnnouncementContent() {
   const router = useRouter();
@@ -20,7 +21,7 @@ function EditAnnouncementContent() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
-  
+
   // Track the initial state to compare against current state
   const [initialData, setInitialData] = useState({
     title: "",
@@ -53,8 +54,9 @@ function EditAnnouncementContent() {
     setLoading(true);
     setSubmitError("");
     try {
-      const tableName = type === "landing" ? "announce_landing" : "announce_dash";
-      
+      const tableName =
+        type === "landing" ? "announce_landing" : "announce_dash";
+
       const { data, error } = await supabase
         .from(tableName)
         .select("*")
@@ -65,10 +67,22 @@ function EditAnnouncementContent() {
 
       if (data) {
         const fetchedData = {
-          title: type === "landing" ? data.announce_landing_title : data.announce_dash_title,
-          description: type === "landing" ? data.announce_landing_desc : data.announce_dash_desc,
-          start_date: type === "landing" ? data.announce_landing_start : data.announce_dash_start,
-          end_date: type === "landing" ? data.announce_landing_end : data.announce_dash_end,
+          title:
+            type === "landing"
+              ? data.announce_landing_title
+              : data.announce_dash_title,
+          description:
+            type === "landing"
+              ? data.announce_landing_desc
+              : data.announce_dash_desc,
+          start_date:
+            type === "landing"
+              ? data.announce_landing_start
+              : data.announce_dash_start,
+          end_date:
+            type === "landing"
+              ? data.announce_landing_end
+              : data.announce_dash_end,
         };
         setFormData(fetchedData);
         setInitialData(fetchedData); // Set initial baseline
@@ -81,9 +95,11 @@ function EditAnnouncementContent() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (submitError) setSubmitError("");
   };
 
@@ -104,21 +120,23 @@ function EditAnnouncementContent() {
     setIsSubmitting(true);
 
     try {
-      const tableName = type === "landing" ? "announce_landing" : "announce_dash";
-      
-      const payload = type === "landing" 
-        ? {
-            announce_landing_title: formData.title,
-            announce_landing_desc: formData.description,
-            announce_landing_start: formData.start_date,
-            announce_landing_end: formData.end_date,
-          }
-        : {
-            announce_dash_title: formData.title,
-            announce_dash_desc: formData.description,
-            announce_dash_start: formData.start_date,
-            announce_dash_end: formData.end_date,
-          };
+      const tableName =
+        type === "landing" ? "announce_landing" : "announce_dash";
+
+      const payload =
+        type === "landing"
+          ? {
+              announce_landing_title: formData.title,
+              announce_landing_desc: formData.description,
+              announce_landing_start: formData.start_date,
+              announce_landing_end: formData.end_date,
+            }
+          : {
+              announce_dash_title: formData.title,
+              announce_dash_desc: formData.description,
+              announce_dash_start: formData.start_date,
+              announce_dash_end: formData.end_date,
+            };
 
       const { error } = await supabase
         .from(tableName)
@@ -127,32 +145,109 @@ function EditAnnouncementContent() {
 
       if (error) throw error;
 
+      if (announcementId) {
+        await logEditAudit(tableName, announcementId);
+      }
+
       router.push("/dashboard/edit/success?type=announcement");
       router.refresh();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
       setSubmitError(errorMessage);
       console.error("Update error:", err);
-      
+
       setTimeout(() => {
-        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 100);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  //track what changed
+  const getChangesString = () => {
+    const changes: string[] = [];
+
+    if (initialData.title !== formData.title) {
+      changes.push(`title changed to "${formData.title}"`);
+    }
+    if (initialData.description !== formData.description) {
+      changes.push(`description changed to "${formData.description}"`);
+    }
+    if (initialData.start_date !== formData.start_date) {
+      changes.push(`start date changed to ${formData.start_date}`);
+    }
+    if (initialData.end_date !== formData.end_date) {
+      changes.push(`end date changed to ${formData.end_date}`);
+    }
+
+    return changes.length > 0
+      ? `Changes: [${changes.join(", ")}]`
+      : "No changes detected";
+  };
+
+  const logEditAudit = async (tableName: string, recordId: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+    const changes = getChangesString();
+
+    const detailedMessage = `Updated announcement "${formData.title}" (ID: ${recordId}) in ${tableName}. ${changes}`;
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: tableName,
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
+
   if (loading) return <LoadingState />;
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-[#fbfaf8]"
       style={{
-        backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-        backgroundSize: "20px 20px"
+        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
       }}
     >
-      <NavBar/>
+      <NavBar />
       <main className="container mx-auto py-8 px-4 max-w-3xl">
         <div className="mb-6">
           <Link
@@ -168,9 +263,11 @@ function EditAnnouncementContent() {
 
         <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             {submitError && (
-              <div ref={errorRef} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <div
+                ref={errorRef}
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"
+              >
                 <p className="font-ubuntu-mono text-sm">{submitError}</p>
               </div>
             )}
@@ -178,10 +275,11 @@ function EditAnnouncementContent() {
             <div>
               <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
                 <h2 className="text-lg font-oswald font-semibold">
-                  {type === "landing" ? "Public Landing" : "Internal Dashboard"} Details
+                  {type === "landing" ? "Public Landing" : "Internal Dashboard"}{" "}
+                  Details
                 </h2>
               </div>
-              
+
               <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
                 {/* Title */}
                 <div>

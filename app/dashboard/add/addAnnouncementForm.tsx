@@ -4,15 +4,18 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { useUser } from "@/components/context/userContext";
 
 export default function AddAnnouncementForm() {
   const router = useRouter();
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
-  
+
   const errorRef = useRef<HTMLDivElement>(null);
-  const [announcementType, setAnnouncementType] = useState<"landing" | "dashboard">("landing");
+  const [announcementType, setAnnouncementType] = useState<
+    "landing" | "dashboard"
+  >("landing");
 
   // Load draft from session storage
   useEffect(() => {
@@ -22,10 +25,18 @@ export default function AddAnnouncementForm() {
         const draft = JSON.parse(savedDraft);
         setAnnouncementType(draft.type || "landing");
 
-        const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement | null;
-        const descInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement | null;
-        const startInput = document.querySelector('input[name="start_date"]') as HTMLInputElement | null;
-        const endInput = document.querySelector('input[name="end_date"]') as HTMLInputElement | null;
+        const titleInput = document.querySelector(
+          'input[name="title"]',
+        ) as HTMLInputElement | null;
+        const descInput = document.querySelector(
+          'textarea[name="description"]',
+        ) as HTMLTextAreaElement | null;
+        const startInput = document.querySelector(
+          'input[name="start_date"]',
+        ) as HTMLInputElement | null;
+        const endInput = document.querySelector(
+          'input[name="end_date"]',
+        ) as HTMLInputElement | null;
 
         if (titleInput) titleInput.value = draft.title || "";
         if (descInput) descInput.value = draft.description || "";
@@ -40,17 +51,26 @@ export default function AddAnnouncementForm() {
   const saveDraft = () => {
     const draft = {
       type: announcementType,
-      title: (document.querySelector('input[name="title"]') as HTMLInputElement)?.value,
-      description: (document.querySelector('textarea[name="description"]') as HTMLTextAreaElement)?.value,
-      start_date: (document.querySelector('input[name="start_date"]') as HTMLInputElement)?.value,
-      end_date: (document.querySelector('input[name="end_date"]') as HTMLInputElement)?.value,
+      title: (document.querySelector('input[name="title"]') as HTMLInputElement)
+        ?.value,
+      description: (
+        document.querySelector(
+          'textarea[name="description"]',
+        ) as HTMLTextAreaElement
+      )?.value,
+      start_date: (
+        document.querySelector('input[name="start_date"]') as HTMLInputElement
+      )?.value,
+      end_date: (
+        document.querySelector('input[name="end_date"]') as HTMLInputElement
+      )?.value,
     };
     sessionStorage.setItem("announcementDraft", JSON.stringify(draft));
   };
 
   // Helper to clear inline errors
   const clearInlineErrors = () => {
-    ['title-error', 'desc-error', 'date-error'].forEach(id => {
+    ["title-error", "desc-error", "date-error"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.textContent = "";
     });
@@ -60,7 +80,7 @@ export default function AddAnnouncementForm() {
     e.preventDefault();
     setSubmitError("");
     clearInlineErrors();
-    
+
     const formData = new FormData(e.currentTarget);
     const title = (formData.get("title") as string).trim();
     const desc = (formData.get("description") as string).trim();
@@ -71,37 +91,39 @@ export default function AddAnnouncementForm() {
     let hasError = false;
 
     if (!title) {
-      const el = document.getElementById('title-error');
+      const el = document.getElementById("title-error");
       if (el) el.textContent = "Title is required.";
       hasError = true;
     }
 
     if (!desc) {
-      const el = document.getElementById('desc-error');
+      const el = document.getElementById("desc-error");
       if (el) el.textContent = "Description is required.";
       hasError = true;
     }
 
     if (!start || !end) {
-      const el = document.getElementById('date-error');
+      const el = document.getElementById("date-error");
       if (el) el.textContent = "Both start and end dates are required.";
       hasError = true;
     } else if (new Date(end) < new Date(start)) {
-      const el = document.getElementById('date-error');
+      const el = document.getElementById("date-error");
       if (el) el.textContent = "End date cannot be earlier than start date.";
       hasError = true;
     }
 
     if (hasError) {
-      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const tableName = announcementType === "landing" ? "announce_landing" : "announce_dash";
-      const payload = announcementType === "landing"
+      const tableName =
+        announcementType === "landing" ? "announce_landing" : "announce_dash";
+      const payload =
+        announcementType === "landing"
           ? {
               announce_landing_title: title,
               announce_landing_desc: desc,
@@ -118,14 +140,64 @@ export default function AddAnnouncementForm() {
       const { error } = await supabase.from(tableName).insert(payload);
       if (error) throw new Error(error.message);
 
+      await logCreateAudit(tableName, title);
+
       sessionStorage.removeItem("announcementDraft");
       router.push("/dashboard/add/success?type=announcement");
       router.refresh();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "An unexpected error occurred");
-      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setSubmitError(
+        err instanceof Error ? err.message : "An unexpected error occurred",
+      );
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logCreateAudit = async (tableName: string, itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Created a new announcement titled "${itemTitle}" in ${tableName}`;
+
+    const logEntry = {
+      action: "Create",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: tableName,
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log", error);
     }
   };
 
@@ -145,8 +217,11 @@ export default function AddAnnouncementForm() {
       </div>
 
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
-        <form onSubmit={handleSubmit} onChange={saveDraft} className="space-y-6">
-          
+        <form
+          onSubmit={handleSubmit}
+          onChange={saveDraft}
+          className="space-y-6"
+        >
           <div ref={errorRef}>
             {submitError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -188,7 +263,10 @@ export default function AddAnnouncementForm() {
           <div>
             <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
               <h2 className="text-lg font-oswald font-semibold">
-                {announcementType === "landing" ? "Public Landing" : "Internal Dashboard"} Details
+                {announcementType === "landing"
+                  ? "Public Landing"
+                  : "Internal Dashboard"}{" "}
+                Details
               </h2>
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
@@ -201,10 +279,17 @@ export default function AddAnnouncementForm() {
                   type="text"
                   name="title"
                   maxLength={100}
-                  placeholder={announcementType === "landing" ? "Public heading..." : "Internal notice..."}
+                  placeholder={
+                    announcementType === "landing"
+                      ? "Public heading..."
+                      : "Internal notice..."
+                  }
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                 />
-                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                <span
+                  id="title-error"
+                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                ></span>
               </div>
 
               {/* Description */}
@@ -218,7 +303,10 @@ export default function AddAnnouncementForm() {
                   rows={4}
                   className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                 />
-                <span id="desc-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                <span
+                  id="desc-error"
+                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                ></span>
               </div>
 
               {/* Dates */}
@@ -245,7 +333,10 @@ export default function AddAnnouncementForm() {
                     />
                   </div>
                 </div>
-                <span id="date-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                <span
+                  id="date-error"
+                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+                ></span>
               </div>
             </div>
           </div>
@@ -263,7 +354,9 @@ export default function AddAnnouncementForm() {
               disabled={isSubmitting}
               className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Posting..." : `Post to ${announcementType === "landing" ? "Landing" : "Dashboard"}`}
+              {isSubmitting
+                ? "Posting..."
+                : `Post to ${announcementType === "landing" ? "Landing" : "Dashboard"}`}
             </button>
           </div>
         </form>
