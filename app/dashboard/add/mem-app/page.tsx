@@ -5,46 +5,54 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import { useUser } from "@/components/context/userContext";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
   try {
-    if (url.includes("watch?v=")) return `https://www.youtube.com/embed/${url.split("watch?v=")[1].split("&")[0]}`;
-    if (url.includes("youtu.be/")) return `https://www.youtube.com/embed/${url.split("youtu.be/")[1].split("?")[0]}`;
+    if (url.includes("watch?v="))
+      return `https://www.youtube.com/embed/${url.split("watch?v=")[1].split("&")[0]}`;
+    if (url.includes("youtu.be/"))
+      return `https://www.youtube.com/embed/${url.split("youtu.be/")[1].split("?")[0]}`;
     return url;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 };
 
 export default function AddMemApp() {
   const router = useRouter();
   const supabase = createClient();
-  
+
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [instructionCount, setInstructionCount] = useState(0); 
+  const [instructionCount, setInstructionCount] = useState(0);
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const formTopRef = useRef<HTMLDivElement>(null);
-  
+
   const [formData, setFormData] = useState({
     type: "instruction",
     description: "",
-    order_index: "" as string | number, 
+    order_index: "" as string | number,
   });
 
   useEffect(() => {
     const fetchMax = async () => {
-        const { data } = await supabase.from('announce_memapp').select('id').eq('type', 'instruction');
-        if (data) setInstructionCount(data.length);
+      const { data } = await supabase
+        .from("announce_memapp")
+        .select("id")
+        .eq("type", "instruction");
+      if (data) setInstructionCount(data.length);
     };
     fetchMax();
   }, [supabase]);
 
   const getFieldClass = (fieldName: string, extraClasses: string = "") => {
     const baseClass = `w-full px-4 py-2 border rounded-lg focus:outline-none bg-[#fbfaf8] text-[#475569] font-ubuntu-mono ${extraClasses}`;
-    const borderClass = invalidFields.includes(fieldName) 
-      ? "border-red-500 ring-1 ring-red-500" 
+    const borderClass = invalidFields.includes(fieldName)
+      ? "border-red-500 ring-1 ring-red-500"
       : "border-[#011638] focus:ring-[#011638]";
     return `${baseClass} ${borderClass}`;
   };
@@ -53,31 +61,44 @@ export default function AddMemApp() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
-    setInvalidFields([]); 
+    setInvalidFields([]);
 
     let finalSequence = 0;
-    if (formData.type === 'video') finalSequence = 1;
-    else if (formData.type === 'instruction') {
-        finalSequence = parseInt(String(formData.order_index), 10);
-        if (isNaN(finalSequence) || finalSequence < 1 || finalSequence > instructionCount + 1) {
-          setErrorMsg(`Please enter a valid sequence number (1 to ${instructionCount + 1}).`);
-          setInvalidFields(["order_index"]);
-          formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setLoading(false);
-          return;
-        }
+    if (formData.type === "video") finalSequence = 1;
+    else if (formData.type === "instruction") {
+      finalSequence = parseInt(String(formData.order_index), 10);
+
+      if (
+        isNaN(finalSequence) ||
+        finalSequence < 1 ||
+        finalSequence > instructionCount + 1
+      ) {
+        setErrorMsg(
+          `Please enter a valid sequence number (1 to ${instructionCount + 1}).`,
+        );
+        setInvalidFields(["order_index"]);
+        formTopRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        setLoading(false);
+        return;
+      }
     }
 
-    if (formData.type === 'video' && !getEmbedUrl(formData.description)) {
+    if (formData.type === "video" && !getEmbedUrl(formData.description)) {
       setErrorMsg("Please enter a valid YouTube URL.");
       setInvalidFields(["description"]);
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       setLoading(false);
       return;
     }
 
     try {
-      if (formData.type === 'instruction') {
+      if (formData.type === "instruction") {
         const { data: otherItems } = await supabase
           .from("announce_memapp")
           .select("*")
@@ -85,37 +106,63 @@ export default function AddMemApp() {
           .order("order_index", { ascending: true });
 
         let itemsList = otherItems || [];
-        if (finalSequence > itemsList.length + 1) finalSequence = itemsList.length + 1;
+        if (finalSequence > itemsList.length + 1)
+          finalSequence = itemsList.length + 1;
 
-        itemsList.splice(finalSequence - 1, 0, { id: 'current', type: formData.type, description: '', order_index: 0, created_at: '' });
+        itemsList.splice(finalSequence - 1, 0, {
+          id: "current",
+          type: formData.type,
+          description: "",
+          order_index: 0,
+          created_at: "",
+        });
 
         for (let i = 0; i < itemsList.length; i++) {
           const expectedIndex = i + 1;
-          if (itemsList[i].id !== 'current' && itemsList[i].order_index !== expectedIndex) {
-            await supabase.from("announce_memapp").update({ order_index: expectedIndex }).eq("id", itemsList[i].id);
+          if (
+            itemsList[i].id !== "current" &&
+            itemsList[i].order_index !== expectedIndex
+          ) {
+            await supabase
+              .from("announce_memapp")
+              .update({ order_index: expectedIndex })
+              .eq("id", itemsList[i].id);
           }
         }
       }
 
-      if (formData.type === 'video') {
-        await supabase.from("announce_memapp").update({ order_index: 0 }).eq("type", "video");
+      if (formData.type === "video") {
+        await supabase
+          .from("announce_memapp")
+          .update({ order_index: 0 })
+          .eq("type", "video");
       }
 
       const submitData = {
         type: formData.type,
         description: formData.description.trim(),
-        order_index: finalSequence
+        order_index: finalSequence,
       };
 
-      const { error } = await supabase.from("announce_memapp").insert([submitData]);
+      const { error } = await supabase
+        .from("announce_memapp")
+        .insert([submitData]);
 
       if (error) throw error;
+      await logCreateAudit(
+        formData.type,
+        formData.description.trim(),
+        finalSequence,
+      );
 
-      router.refresh(); 
-      setIsSuccess(true); 
+      router.refresh();
+      setIsSuccess(true);
     } catch (err: any) {
       setErrorMsg("Error saving item: " + err.message);
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     } finally {
       setLoading(false);
     }
@@ -128,139 +175,316 @@ export default function AddMemApp() {
     setInvalidFields([]);
   };
 
-  const embedUrl = formData.type === 'video' ? getEmbedUrl(formData.description) : null;
+  const embedUrl =
+    formData.type === "video" ? getEmbedUrl(formData.description) : null;
+
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logCreateAudit = async (
+    contentType: string,
+    text: string,
+    orderIndex: number,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    let detailedMessage = "";
+    if (contentType === "instruction") {
+      detailedMessage = `Created new instruction step at sequence #${orderIndex}: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
+    } else if (contentType === "video") {
+      detailedMessage = `Added new video link: "${text}"`;
+    } else {
+      detailedMessage = `Created new reminder item: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
+    }
+
+    const logEntry = {
+      action: "Create",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "announce_memapp",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
 
   return (
     <>
       <NavBar />
-    <div
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      
-      <main className="flex-1 container mx-auto py-10 px-4 sm:px-6 max-w-3xl flex flex-col">
-        {isSuccess ? (
-          <div className="flex-1 flex justify-center items-center py-12">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border-t-[8px] border-[#011638] p-10 sm:p-14 flex flex-col items-center text-center w-full">
-              <div className="w-[72px] h-[72px] rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center mb-6 p-1.5">
-                <div className="w-full h-full rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                </div>
-              </div>
-              <h2 className="text-2xl sm:text-[28px] font-oswald font-bold text-[#011638] mb-3">Content Posted!</h2>
-              <p className="text-[#475569] font-ubuntu-mono mb-10 text-[15px]">Your content has been successfully saved to the database and is now live.</p>
-              <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-                <button onClick={() => router.push("/dashboard?tab=manage&section=memapp")} className="px-6 py-2.5 bg-[#20409a] text-white rounded-md hover:bg-[#1e3a8a] transition-colors text-[15px] font-oswald uppercase tracking-widest font-bold">Go back to Dashboard</button>
-                <button onClick={resetForm} className="px-6 py-2.5 bg-white text-[#011638] border border-[#011638] rounded-md hover:bg-slate-50 transition-colors text-[15px] font-oswald uppercase tracking-widest font-bold">Create Another Content</button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex-1">
-            <div ref={formTopRef} className="mb-6 flex items-center justify-between">
-              <button onClick={() => router.back()} className="flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors">
-                <svg className="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg> Back
-              </button>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-              <div className="bg-[#011638] px-6 py-4">
-                <h1 className="text-xl font-oswald font-bold text-[#fbfaf8] uppercase tracking-wide">Add Content</h1>
-              </div>
-
-              <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-6">
-                {errorMsg && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      <p className="text-sm text-red-700 font-ubuntu-mono font-bold">{errorMsg}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
-                  <div className={(formData.type === 'video' || formData.type === 'reminder') ? "sm:col-span-2 min-w-0" : "min-w-0"}>
-                    <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Content Type</label>
-                    <select 
-                      value={formData.type} 
-                      onChange={(e) => {
-                        setFormData({ ...formData, type: e.target.value });
-                        setInvalidFields(prev => prev.filter(f => f !== 'type'));
-                      }} 
-                      className={getFieldClass('type')}
+      <div
+        className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <main className="flex-1 container mx-auto py-10 px-4 sm:px-6 max-w-3xl flex flex-col">
+          {isSuccess ? (
+            <div className="flex-1 flex justify-center items-center py-12">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden border-t-[8px] border-[#011638] p-10 sm:p-14 flex flex-col items-center text-center w-full">
+                <div className="w-[72px] h-[72px] rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center mb-6 p-1.5">
+                  <div className="w-full h-full rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-[#22c55e]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <option value="instruction">Instruction</option>
-                      <option value="reminder">Reminder</option>
-                      <option value="video">Video URL</option>
-                    </select>
-                  </div>
-
-                  {formData.type === 'instruction' && (
-                    <div className="min-w-0">
-                      <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">Sequence Order (1 to {instructionCount + 1})</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        max={instructionCount + 1}
-                        value={formData.order_index} 
-                        onChange={(e) => {
-                          setFormData({ ...formData, order_index: e.target.value });
-                          setInvalidFields(prev => prev.filter(f => f !== 'order_index'));
-                        }} 
-                        className={getFieldClass('order_index')} 
-                        required 
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2.5"
+                        d="M5 13l4 4L19 7"
                       />
-                    </div>
-                  )}
-                </div>
-
-                <div className="min-w-0 relative">
-                  <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">{formData.type === 'video' ? 'YouTube URL' : 'Description'}</label>
-                  <textarea 
-                    value={formData.description} 
-                    onChange={(e) => {
-                      setFormData({ ...formData, description: e.target.value });
-                      setInvalidFields(prev => prev.filter(f => f !== 'description'));
-                    }} 
-                    rows={formData.type === 'video' ? 2 : 5} 
-                    maxLength={formData.type !== 'video' ? 500 : undefined}
-                    placeholder={formData.type === 'video' ? "https://youtube.com/..." : "Enter text here..."} 
-                    className={getFieldClass('description', 'resize-y break-all whitespace-pre-wrap pb-8')} 
-                    required 
-                  />
-                  {formData.type !== 'video' && (
-                    <span className={`absolute bottom-3 right-4 text-xs font-ubuntu-mono font-bold ${formData.description.length >= 500 ? 'text-red-500' : 'text-slate-400'}`}>
-                      {formData.description.length}/500
-                    </span>
-                  )}
-                </div>
-
-                {formData.type === 'video' && formData.description && (
-                  <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">Preview</h3>
-                    {embedUrl ? <iframe src={embedUrl} className="w-full aspect-video rounded-lg shadow-sm border-0" allowFullScreen></iframe> : <p className="text-sm text-red-500 font-ubuntu-mono font-bold">Invalid YouTube URL</p>}
+                    </svg>
                   </div>
-                )}
-
-                <div className="mt-4 flex justify-end gap-3">
-                  <button type="button" onClick={() => router.back()} className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors">Cancel</button>
-                  <button type="submit" disabled={loading} className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50">
-                    {loading ? "Saving..." : "Save Content"}
+                </div>
+                <h2 className="text-2xl sm:text-[28px] font-oswald font-bold text-[#011638] mb-3">
+                  Content Posted!
+                </h2>
+                <p className="text-[#475569] font-ubuntu-mono mb-10 text-[15px]">
+                  Your content has been successfully saved to the database and
+                  is now live.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                  <button
+                    onClick={() =>
+                      router.push("/dashboard?tab=manage&section=memapp")
+                    }
+                    className="px-6 py-2.5 bg-[#20409a] text-white rounded-md hover:bg-[#1e3a8a] transition-colors text-[15px] font-oswald uppercase tracking-widest font-bold"
+                  >
+                    Go back to Dashboard
+                  </button>
+                  <button
+                    onClick={resetForm}
+                    className="px-6 py-2.5 bg-white text-[#011638] border border-[#011638] rounded-md hover:bg-slate-50 transition-colors text-[15px] font-oswald uppercase tracking-widest font-bold"
+                  >
+                    Create Another Content
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          ) : (
+            <div className="w-full flex-1">
+              <div
+                ref={formTopRef}
+                className="mb-6 flex items-center justify-between"
+              >
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>{" "}
+                  Back
+                </button>
+              </div>
 
-    </div>
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <div className="bg-[#011638] px-6 py-4">
+                  <h1 className="text-xl font-oswald font-bold text-[#fbfaf8] uppercase tracking-wide">
+                    Add Content
+                  </h1>
+                </div>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="px-6 py-6 flex flex-col gap-6"
+                >
+                  {errorMsg && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
+                      <div className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-red-500 mr-3"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <p className="text-sm text-red-700 font-ubuntu-mono font-bold">
+                          {errorMsg}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
+                    <div
+                      className={
+                        formData.type === "video" ||
+                        formData.type === "reminder"
+                          ? "sm:col-span-2 min-w-0"
+                          : "min-w-0"
+                      }
+                    >
+                      <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                        Content Type
+                      </label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => {
+                          setFormData({ ...formData, type: e.target.value });
+                          setInvalidFields((prev) =>
+                            prev.filter((f) => f !== "type"),
+                          );
+                        }}
+                        className={getFieldClass("type")}
+                      >
+                        <option value="instruction">Instruction</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="video">Video URL</option>
+                      </select>
+                    </div>
+
+                    {formData.type === "instruction" && (
+                      <div className="min-w-0">
+                        <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                          Sequence Order (1 to {instructionCount + 1})
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max={instructionCount + 1}
+                          value={formData.order_index}
+                          onChange={(e) => {
+                            setFormData({
+                              ...formData,
+                              order_index: e.target.value,
+                            });
+                            setInvalidFields((prev) =>
+                              prev.filter((f) => f !== "order_index"),
+                            );
+                          }}
+                          className={getFieldClass("order_index")}
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 relative">
+                    <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                      {formData.type === "video"
+                        ? "YouTube URL"
+                        : "Description"}
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        });
+                        setInvalidFields((prev) =>
+                          prev.filter((f) => f !== "description"),
+                        );
+                      }}
+                      rows={formData.type === "video" ? 2 : 5}
+                      maxLength={formData.type !== "video" ? 500 : undefined}
+                      placeholder={
+                        formData.type === "video"
+                          ? "https://youtube.com/..."
+                          : "Enter text here..."
+                      }
+                      className={getFieldClass(
+                        "description",
+                        "resize-y break-all whitespace-pre-wrap pb-8",
+                      )}
+                      required
+                    />
+                    {formData.type !== "video" && (
+                      <span
+                        className={`absolute bottom-3 right-4 text-xs font-ubuntu-mono font-bold ${formData.description.length >= 500 ? "text-red-500" : "text-slate-400"}`}
+                      >
+                        {formData.description.length}/500
+                      </span>
+                    )}
+                  </div>
+
+                  {formData.type === "video" && formData.description && (
+                    <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">
+                        Preview
+                      </h3>
+                      {embedUrl ? (
+                        <iframe
+                          src={embedUrl}
+                          className="w-full aspect-video rounded-lg shadow-sm border-0"
+                          allowFullScreen
+                        ></iframe>
+                      ) : (
+                        <p className="text-sm text-red-500 font-ubuntu-mono font-bold">
+                          Invalid YouTube URL
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => router.back()}
+                      className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50"
+                    >
+                      {loading ? "Saving..." : "Save Content"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
       <Footer />
     </>
   );
