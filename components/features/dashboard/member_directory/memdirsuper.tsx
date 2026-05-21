@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useUser } from "@/components/context/userContext";
 
 type Member = {
   id: number;
@@ -1149,6 +1150,7 @@ export default function MembersPage() {
           }
 
           doc.save(`Membership Directory (${currentAcademicYear}).pdf`);
+          logExportPDFAudit();
         });
     };
   };
@@ -1196,6 +1198,7 @@ export default function MembersPage() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `Membership Directory (${currentAcademicYear}).csv`;
+    logExportCSVAudit();
     a.click();
 
     URL.revokeObjectURL(url);
@@ -1241,12 +1244,101 @@ export default function MembersPage() {
       setPendingImport([]);
       setShowImportConfirm(false);
       setShowImportSuccess(true);
+      logImportAudit();
 
       setTimeout(() => setShowImportSuccess(false), 2500);
     } catch (err: any) {
       console.error(err);
       setImportErrorMessage(err?.message || "Unexpected error during import.");
       setShowImportError(true);
+    }
+  };
+
+  //audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logImportAudit = async () => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Imported ${pendingImport.length} members`;
+
+    const logEntry = {
+      action: "Import",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
+
+  const logExportCSVAudit = async () => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Exported .csv member list`;
+
+    const logEntry = {
+      action: "Export",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
+
+  const logExportPDFAudit = async () => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Exported .pdf member list`;
+
+    const logEntry = {
+      action: "Export",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
     }
   };
 
