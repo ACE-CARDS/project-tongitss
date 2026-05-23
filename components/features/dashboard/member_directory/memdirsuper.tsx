@@ -13,12 +13,14 @@ type Member = {
   mem_lname: string;
   mem_minit: string;
   mem_email: string;
+  mem_schol_type: string;
+  mem_schol_year: number;
   school: number | string;
-  role: string;
   comm: number | string;
   course: number | string;
+  role: string;
+  is_active: boolean;
 };
-
 type Committee = {
   id: number;
   comm_name: string;
@@ -284,18 +286,13 @@ export default function MembersPage() {
           mem_lname: m.mem_lname,
           mem_minit: m.mem_minit,
           role: m.role,
-
           comm: m.comm ?? DEFAULT_COMM,
-
           mem_schol_type: m.mem_schol_type?.trim() || DEFAULT_SCHOL_TYPE,
           mem_schol_year: m.mem_schol_year ?? DEFAULT_SCHOL_YEAR,
           school: m.school ?? DEFAULT_SCHOOL,
-
           is_active: m.is_active ?? true,
-
           mem_email:
             m.mem_email?.trim() || `temp_${Date.now()}_${index}@example.com`,
-
           acadyear: m.acadyear?.trim() || DEFAULT_ACADYEAR,
         }));
 
@@ -304,9 +301,6 @@ export default function MembersPage() {
           .insert(insertPayload)
           .select();
 
-        console.log("INSERT DATA:", data);
-        console.log("INSERT ERROR:", error);
-
         if (error) {
           console.error("Insert error:", error);
           return;
@@ -314,17 +308,45 @@ export default function MembersPage() {
       }
 
       if (existing.length > 0) {
-        const updates = existing.map((m) =>
-          supabase
-            .from("member")
-            .update({
-              role: m.role,
-              comm: m.comm,
-            })
-            .eq("id", m.id),
-        );
+        const updates = [];
+        const auditPromises = [];
 
-        await Promise.all(updates);
+        for (const m of existing) {
+          const original = originalMembers.find((o: any) => o.id === m.id);
+
+          if (!original) continue;
+
+          const commChanged = original.comm !== m.comm;
+          const roleChanged = original.role !== m.role;
+
+          if (commChanged || roleChanged) {
+            const updatePayload: any = {};
+            if (commChanged) updatePayload.comm = m.comm;
+            if (roleChanged) updatePayload.role = m.role;
+
+            updates.push(
+              supabase.from("member").update(updatePayload).eq("id", m.id),
+            );
+
+            const memberName =
+              `${original.mem_fname || ""} ${original.mem_lname || ""}`.trim() ||
+              `ID: ${m.id}`;
+
+            auditPromises.push(
+              logEditAudit(
+                memberName,
+                original.comm,
+                m.comm,
+                original.role,
+                m.role,
+              ),
+            );
+          }
+        }
+
+        if (updates.length > 0) {
+          await Promise.all([...updates, ...auditPromises]);
+        }
       }
 
       const { data } = await supabase
@@ -343,14 +365,67 @@ export default function MembersPage() {
       setTimeout(() => setShowToast(false), 2500);
 
       setShowSaveSuccess(true);
-
-      setTimeout(async () => {
-        setShowSaveSuccess(false);
-
-        await refreshMembers();
-      }, 2000);
+      setTimeout(() => setShowSaveSuccess(false), 2500);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const logEditAudit = async (
+    memberName: string,
+    oldCommId: any,
+    newCommId: any,
+    oldRole?: string,
+    newRole?: string,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const getCommitteeName = async (id: any) => {
+      if (!id) return "None";
+      const { data } = await supabase
+        .from("committee")
+        .select("comm_name")
+        .eq("id", id)
+        .maybeSingle();
+
+      return data?.comm_name || `ID: ${id}`;
+    };
+
+    const details: string[] = [];
+
+    if (oldCommId !== newCommId) {
+      const oldCommName = await getCommitteeName(oldCommId);
+      const newCommName = await getCommitteeName(newCommId);
+      details.push(
+        `Updated committee for member "${memberName}" from "${oldCommName}" to "${newCommName}"`,
+      );
+    }
+
+    if (oldRole !== newRole) {
+      details.push(
+        `Updated role for member "${memberName}" from "${oldRole || "None"}" to "${newRole || "None"}"`,
+      );
+    }
+
+    if (details.length === 0) {
+      details.push(`No changes detected for member "${memberName}".`);
+    }
+
+    const detailedMessage = details.join("; ");
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write edit audit log:", error);
     }
   };
 
@@ -912,6 +987,25 @@ export default function MembersPage() {
         return;
       }
 
+      // audit log: track changes
+      try {
+        const oldData = editMember;
+        const newData = {
+          ...editForm,
+          school: finalSchoolId,
+          course: finalCourseId,
+        };
+
+        await logEditDetailAudit(
+          "member",
+          String(editMember.id),
+          oldData,
+          newData,
+        );
+      } catch (err) {
+        console.error("Audit log failed:", err);
+      }
+
       setMembers((prev) =>
         prev.map((m) =>
           m.id === editMember.id
@@ -1339,6 +1433,120 @@ export default function MembersPage() {
     const { error } = await supabase.from("audit_log").insert([logEntry]);
     if (error) {
       console.error("Failed to write audit log:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logEditDetailAudit = async (
+    tableName: string,
+    recordId: string,
+    oldData?: any,
+    newData?: any,
+  ) => {
+    try {
+      const whoDidItName = currentUserName || user?.email || "Unknown User";
+      const whoDidItEmail =
+        currentUserEmail || user?.email || "unknown@email.com";
+
+      const oldObj =
+        oldData ||
+        editMember ||
+        originalMembers.find((o) => String(o.id) === String(recordId));
+      const newObj =
+        newData ||
+        editForm ||
+        members.find((m) => String(m.id) === String(recordId));
+
+      const diffs: string[] = [];
+
+      const pushField = (label: string, oldVal: any, newVal: any) => {
+        const o = oldVal === null || oldVal === undefined ? "" : String(oldVal);
+        const n = newVal === null || newVal === undefined ? "" : String(newVal);
+        if (o !== n) diffs.push(`${label} changed to "${n}"`);
+      };
+
+      if (oldObj || newObj) {
+        pushField("First Name", oldObj?.mem_fname, newObj?.mem_fname);
+        pushField("Last Name", oldObj?.mem_lname, newObj?.mem_lname);
+        pushField(
+          "Middle Initial",
+          oldObj?.mem_minit || "",
+          newObj?.mem_minit || "",
+        );
+        pushField("Email", oldObj?.mem_email || "", newObj?.mem_email || "");
+
+        const oldSchoolName = (() => {
+          if (!oldObj) return "";
+          if (typeof oldObj.school === "number")
+            return (
+              schools.find((s) => s.id === oldObj.school)?.school_name ||
+              String(oldObj.school)
+            );
+          return oldObj.school || "";
+        })();
+        const newSchoolName = (() => {
+          if (!newObj) return "";
+          if (typeof newObj.school === "number")
+            return (
+              schools.find((s) => s.id === newObj.school)?.school_name ||
+              String(newObj.school)
+            );
+          return newObj.school || "";
+        })();
+        pushField("School", oldSchoolName, newSchoolName);
+
+        const oldCourseName = (() => {
+          if (!oldObj) return "";
+          if (typeof oldObj.course === "number")
+            return (
+              courses.find((c: any) => c.id === oldObj.course)?.course_name ||
+              String(oldObj.course)
+            );
+          return oldObj.course || "";
+        })();
+        const newCourseName = (() => {
+          if (!newObj) return "";
+          if (typeof newObj.course === "number")
+            return (
+              courses.find((c: any) => String(c.id) === String(newObj.course))
+                ?.course_name || String(newObj.course)
+            );
+          return newObj.course || "";
+        })();
+        pushField("Course", oldCourseName, newCourseName);
+      }
+
+      const changes =
+        diffs.length > 0
+          ? `Changes: [${diffs.join(", ")}]`
+          : "No changes detected.";
+
+      const memberName =
+        (oldObj &&
+          `${oldObj.mem_fname || ""} ${oldObj.mem_lname || ""}`.trim()) ||
+        (newObj &&
+          `${newObj.mem_fname || ""} ${newObj.mem_lname || ""}`.trim()) ||
+        `ID: ${recordId}`;
+
+      const detailedMessage = `Updated member "${memberName}" (ID: ${recordId}). ${changes}`;
+
+      const logEntry = {
+        action: "Update",
+        details: detailedMessage,
+        user: whoDidItName,
+        user_email: whoDidItEmail,
+        table_name: tableName,
+      };
+
+      const { error } = await supabase.from("audit_log").insert([logEntry]);
+      if (error) console.error("Failed to write audit log:", error);
+    } catch (err) {
+      console.error("logEditDetailAudit error:", err);
     }
   };
 
