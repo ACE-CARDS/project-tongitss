@@ -68,17 +68,7 @@ export default function MembersPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: memberData } = await supabase
-        .from("member")
-        .select(
-          `
-          *,
-          school_rel:school (school_name),
-          course_rel:course (course_name)
-        `,
-        )
-        .eq("acadyear", currentAcademicYear) //CHANGE AY here yung thnx
-        .eq("is_active", true);
+      const memberData = await fetchActiveMembers();
 
       const { data: committeeData } = await supabase
         .from("committee")
@@ -98,6 +88,27 @@ export default function MembersPage() {
     };
     fetchData();
   }, []);
+
+  const fetchActiveMembers = async () => {
+    const { data, error } = await supabase
+      .from("member")
+      .select(
+        `
+          *,
+          school_rel:school (school_name),
+          course_rel:course (course_name)
+        `,
+      )
+      .eq("acadyear", currentAcademicYear)
+      .eq("is_active", true);
+
+    if (error) {
+      console.error("Error fetching active members:", error);
+      return null;
+    }
+
+    return data;
+  };
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -1373,6 +1384,27 @@ export default function MembersPage() {
     }
   }, [user?.email]);
 
+  const logArchiveAudit = async (ay: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Archived executives for ${ay}`;
+
+    const logEntry = {
+      action: "Archive",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
+
   const logImportAudit = async () => {
     const whoDidItName = currentUserName || user?.email || "Unknown User";
     const whoDidItEmail =
@@ -1637,6 +1669,8 @@ export default function MembersPage() {
 
   const [showTransitionConfirm, setShowTransitionConfirm] = useState(false);
   const [showTransitionSuccess, setShowTransitionSuccess] = useState(false);
+
+  const [showTransitionError, setShowTransitionError] = useState(false);
   const [selectedTransitionYear, setSelectedTransitionYear] =
     useState(currentAcademicYear);
 
@@ -1695,17 +1729,19 @@ export default function MembersPage() {
 
       await Promise.all(updates);
 
+      logArchiveAudit(selectedTransitionYear);
+
       if (isCurrentUserExec) {
         await supabase.auth.signOut();
         window.location.href = "/";
         return;
       }
 
-      const { data: refreshed } = await supabase
-        .from("member")
-        .select("*")
-        .eq("acadyear", currentAcademicYear);
-      if (refreshed) setMembers(refreshed);
+      const refreshed = await fetchActiveMembers();
+      if (refreshed) {
+        setMembers(structuredClone(refreshed));
+        setOriginalMembers(structuredClone(refreshed));
+      }
     } catch (err: any) {
       console.error("Transition failed:", err);
       setShowImportError(true);
@@ -1794,7 +1830,8 @@ export default function MembersPage() {
       showImagesConfirm ||
       showImagesSuccess ||
       showTransitionConfirm ||
-      showTransitionSuccess;
+      showTransitionSuccess ||
+      showTransitionError;
     if (isAnyModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -1820,6 +1857,7 @@ export default function MembersPage() {
     showImagesSuccess,
     showTransitionConfirm,
     showTransitionSuccess,
+    showTransitionError,
   ]);
 
   type School = {
