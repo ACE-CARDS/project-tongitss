@@ -6,6 +6,14 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import Pagination from "@/components/ui/pagination";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import GradientLine from "@/components/ui/gradientLine";
+import Link from "next/link";
+
+import { LuCircleArrowRight } from "react-icons/lu";
+import { FaRegCalendar } from "react-icons/fa6";
+import { FaRegAddressBook } from "react-icons/fa6";
+import { FaRegFolderClosed } from "react-icons/fa6";
+import { FaSchool } from "react-icons/fa6";
 
 interface ClientPaginationProps {
   allSurveys: any[];
@@ -196,6 +204,15 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
     }
   };
 
+  // Get author display name from member or author table
+  const getAuthorDisplayName = (author: any) => {
+    const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
+    return {
+      name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
+      email: author.author_email
+    };
+  };
+
   const getSortedAuthors = (survey: any) => {
     if (!survey.survey_author || survey.survey_author.length === 0) {
       return [];
@@ -207,6 +224,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
       
       return {
         ...author,
+        displayName: getAuthorDisplayName(author)
       };
     }).filter((a: any) => a !== null);
 
@@ -230,15 +248,17 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {paginatedSurveys.map((survey: any) => (
+            {paginatedSurveys.map((survey: any) => {
+              const processedAuthors = getSortedAuthors(survey);
+              
+              return (
               <SpotlightCard
                 key={survey.id}
-                className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
+                className="border border-[#011638] rounded-4xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
                 spotlightColor="rgba(239, 240, 242, 0.16)"
               >
-                <div className="flex flex-col h-full">
                   {/* Status and Action Buttons */}
-                  <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
+                  <div className="pt-4 flex justify-between items-center z-10 px-6">
 
                     {/* Status */}
                     <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(survey.survey_status)} flex items-center gap-2 shadow-sm`}>
@@ -257,7 +277,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                             e.stopPropagation();
                             router.push(`/survey/admin/review?id=${survey.id}`); 
                           }}
-                          className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
+                          className="text-[#011638] hover:text-[#eec643] transition-all duration-200 hover:scale-110 cursor-pointer"
                           title="Review"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -271,7 +291,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                               e.stopPropagation();
                               router.push(`/survey/admin/edit?id=${survey.id}`); 
                             }}
-                            className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
+                            className="text-[#011638] hover:text-[#eec643] transition-all duration-200 hover:scale-110 cursor-pointer"
                             title="Edit"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -283,7 +303,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                               e.stopPropagation();
                               router.push(`/survey/admin/move?id=${survey.id}`); 
                             }}
-                            className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
+                            className="text-[#011638] hover:text-[#eec643] transition-all duration-200 hover:scale-110 cursor-pointer"
                             title="Move"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -294,142 +314,76 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                       )}
                     </div>
                   </div>
-                  
-                  {/* title */}
-                  <div className="bg-[#011638] pt-12 pb-4 px-6 flex items-center h-[150px]">
-                    <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden pr-12">
-                      {survey.survey_title}
-                    </h2>
+                <div className="px-6 pb-4 pt-2 min-h-[110px] flex flex-col">
+                  <h2 className="text-3xl font-oswald font-bold text-[#011638] line-clamp-3 break-words overflow-hidden">
+                    {survey.survey_title}
+                  </h2>
+                  <GradientLine start/>
+                </div>
+
+
+                <div className="px-6 pb-4 flex-col flex">
+                  <div className="">
+                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                      Description
+                    </h3>
+                    <div>
+                      <SurveyDescription description={survey.survey_desc} />
+                    </div>
                   </div>
 
-                  <div className="px-6 py-4 flex flex-col flex-1">
-                    <div className="mb-4 min-h-[60px]">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Author(s)
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const sortedAuthors = getSortedAuthors(survey);
-                          return sortedAuthors.length > 0 ? (
-                            sortedAuthors.map((author: any, index: number) => {
-                              const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
-                              return (
-                                <a
-                                  key={`${survey.id}-${author.id || 'no-id'}-${index}`}
-                                  href={`mailto:${author.author_email}`}
-                                  className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group break-words max-w-full whitespace-normal"
-                                  title={`Email: ${author.author_email}`}
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                  </svg>
-                                  {author.author_fname} {middleInitial} {author.author_lname}
-                                </a>
-                              );
-                            })
-                          ) : (
-                            <span className="text-[#475569] opacity-50 text-sm">No authors listed</span>
-                          );
-                        })()}
-                      </div>
-                    </div>
+                  <div className="flex flex-col border-y-2 border-[#a6a6a6]">
+                    <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
+                      <FaRegCalendar className="text-[#011638]" />
 
-                    {/* description */}
-                    <div className="mb-4 flex-1">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Description
-                      </h3>
-                      <div>
-                        <SurveyDescription description={survey.survey_desc} />
-                      </div>
-                    </div>
+                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-sm leading-none"> 
+                        Deadline 
+                      </span>
 
-                    {/* keywords */}
-                    <div className="mb-4 min-h-[70px]">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Keywords
-                      </h3>
-                      <div className="flex flex-wrap gap-1">
-                        {survey.survey_keyword
-                          ?.split(",")
-                          .map((keyword: string, index: number) => (
-                            <span
-                              key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
-                            >
-                              {keyword.trim()}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Details
-                      </h3>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          {/* dates */}
-                          <span className="text-[#475569] block font-ubuntu-mono">Start Date:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
-                            {new Date(survey.survey_start).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">End Date:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
-                            {new Date(survey.survey_end).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )}
-                          </span>
-                        </div>
-
-                        {/* category n school */}
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                            {survey.r_category?.r_category_name || "Uncategorized"}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                            {survey.school?.school_name || "No School"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* respondent criteria */}
-                    <div className="mb-4">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Target Respondents
-                        {survey.max_respondents && (
-                          <span className="ml-2 text-[#1e4db7] font-normal">
-                            (Max: {survey.max_respondents})
-                          </span>
+                      <span className="font-ubuntu-mono text-sm xl:text-[16px] text-[#011638] flex flex-wrap items-center gap-1">
+                        {new Date(survey.survey_start).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
                         )}
-                      </h3>
-                      <div className="flex flex-wrap gap-1">
+                      </span>
+                      -
+                      <span className="font-ubuntu-mono text-sm xl:text-[16px] text-[#011638] flex flex-wrap items-center gap-1">
+                        {new Date(survey.survey_end).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </span>
+                    </div>
+
+                    
+                    <div className="flex flex-col gap-1 border-b-2 border-[#a6a6a6] py-2">
+                      <div className="flex items-center gap-1">
+                        <FaRegAddressBook className="text-[#011638]" />
+
+                        <span className="font-oswald uppercase text-sm leading-none">
+                          Target Respondents 
+                          {survey.max_respondents && (
+                            <span className="ml-2 text-[#1e4db7] font-normal">
+                              (Max: {survey.max_respondents})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 ml-5">
                         {survey.survey_respondents ? (
-                          survey.survey_respondents.split(",").map((criteria: string, index: number) => (
-                            <span
-                              key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
+                          survey.survey_respondents.split(',').map((criteria: string, index: number) => (
+                            <span 
+                              key={index} 
+                              className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words overflow-hidden"
                             >
                               {criteria.trim()}
                             </span>
@@ -439,46 +393,109 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         )}
                       </div>
                     </div>
+                    
+                    <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
+                      <FaRegFolderClosed className="text-[#011638]" />
+                      
+                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-sm leading-none"> 
+                        Category 
+                      </span>
 
-                    {/* survey link */}
-                    <div className="mt-auto">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Survey Link
-                      </h3>
-                      <div>
-                        {survey.survey_link ? (
-                          <a
-                            href={survey.survey_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
-                          >
-                            Take Survey
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                              />
-                            </svg>
-                          </a>
-                        ) : (
-                          <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                            No link available
-                          </span>
-                        )}
-                      </div>
+                      <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-sm xl:text-[16px]">
+                        {survey.r_category?.r_category_name || "Uncategorized"}
+                      </span>
+                    </div>
+
+                    
+                    <div className="flex items-baseline gap-1 py-1">
+                      <span className="items-center flex gap-1">
+                        <FaSchool className="text-[#011638] shrink-0" />
+                        
+                        <span className="font-oswald uppercase text-sm leading-none pr-2"> 
+                          School 
+                        </span>
+                      </span>
+
+                      <span className="border-l-2 border-[#a6a6a6] pl-1 font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-sm xl:text-[16px]">
+                        {survey.school?.school_name || "No School"}
+                      </span>
                     </div>
                   </div>
+
+                  <div className="mt-4 min-h-[60px]">
+                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                      Author(s)
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {processedAuthors.length > 0 ? (
+                        processedAuthors.map((author: any, index: number) => {
+                          const displayInfo = author.displayName;
+                          
+                          return (
+                            <a
+                              key={`${survey.id}-${author.id || 'no-id'}-${index}`}
+                              href={`mailto:${displayInfo.email}`}
+                              className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group"
+                              title={`Email: ${displayInfo.email}`}
+                            >
+                              <svg
+                                className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              {displayInfo.name}
+                            </a>
+                          );
+                        })
+                      ) : (
+                        <span className="text-[#475569] opacity-50 text-sm">
+                          No authors listed
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-10 min-h-[70px]">
+                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                      Keywords
+                    </h3>
+                    <div className="flex flex-wrap gap-1">
+                      {survey.survey_keyword
+                        ?.split(",")
+                        .map((keyword: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
+                          >
+                            {keyword.trim()}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+
+                  <Link href={survey.survey_link || "#"} target="_blank" className="mt-4">
+                    <div className="group font-bold cursor-pointer absolute rounded-t-4xl bottom-0 left-0 w-full bg-[#011638] text-[#fbfaf8] py-3 items-center justify-between flex gap-2 px-3 pl-6">
+                      {survey.survey_link ? (
+                        <>
+                          <span>Take the Survey</span>
+                          <LuCircleArrowRight className="size-10 group-hover:translate-x-1 transition transform duration-200"/>
+                        </>
+                        ) : (<span>No link available</span>)}
+
+                    </div>
+                  </Link>
                 </div>
-              </SpotlightCard> // end of card
-            ))}
+              </SpotlightCard>
+            );
+            })}
           </div>
           
           {/* pagination info at the END as suggested by Ma'am */}
