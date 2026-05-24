@@ -240,7 +240,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                       {/* Category */}
                       <div>
                         <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                         <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
+                        <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                           {thesis.r_category?.r_category_name || "Uncategorized"} 
                         </span>
                       </div>
@@ -321,7 +321,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
           </div>
 
           {/* Pagination */}
-            <PaginationNav currentPage={currentPageLocal} totalPages={totalPages} onPageChange={handlePageChange} />
+            <PaginationNav currentPage={currentPageLocal} totalPages={totalPages} itemsPerPage={itemsPerPage} totalItems={totalItems} onPageChange={handlePageChange} />
         </>
       )}
     </>
