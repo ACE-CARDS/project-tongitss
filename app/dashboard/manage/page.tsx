@@ -12,12 +12,13 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import BackButton from "@/components/ui/backButton";
 import ResearchDataAdmin from "@/components/features/dashboard/manage/category/researchDataAdmin";
+import AuditLogAdmin from "@/components/features/dashboard/manage/auditLog/auditLogAdmin";
 
 export default function ManagePage() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // State is derived from URL
   const activeSection = searchParams.get("section");
 
@@ -33,8 +34,18 @@ export default function ManagePage() {
       key: "announcements",
       description: "Create and manage announcements for members",
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+          />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -44,8 +55,18 @@ export default function ManagePage() {
       key: "news",
       description: "Post and edit news articles for the community",
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+          />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -55,8 +76,18 @@ export default function ManagePage() {
       key: "events",
       description: "Schedule and manage upcoming events",
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -66,8 +97,18 @@ export default function ManagePage() {
       key: "memapp",
       description: "Manage instructions, deadlines, and videos for applicants",
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -81,8 +122,39 @@ export default function ManagePage() {
       key: "researchData",
       description: "Manage categories and schools for surveys and theses",
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+          />
+        </svg>
+      ),
+      color: "from-[#011638] to-[#011638]",
+    },
+    {
+      label: "Activity Log",
+      key: "audit",
+      description: "View recent activity. TEMPORARY",
+      icon: (
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+          />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -91,37 +163,51 @@ export default function ManagePage() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case "announcements": return <AnnouncementsAdmin />;
-      case "news": return <NewsAdmin />;
-      case "events": return <EventsAdmin />;
-      case "memapp": return <MemAppAdmin />;
-      case "researchData": return <ResearchDataAdmin />;
-      default: return null;
+      case "announcements":
+        return <AnnouncementsAdmin />;
+      case "news":
+        return <NewsAdmin />;
+      case "events":
+        return <EventsAdmin />;
+      case "memapp":
+        return <MemAppAdmin />;
+      case "researchData":
+        return <ResearchDataAdmin />;
+      case "audit":
+        return <AuditLogAdmin />;
+      default:
+        return null;
     }
   };
 
   const allOptions = [...manageOptions, ...othersOptions];
-  
-  if (activeSection && allOptions.some(opt => opt.key === activeSection)) {
+
+  if (activeSection && allOptions.some((opt) => opt.key === activeSection)) {
     const currentOption = allOptions.find((opt) => opt.key === activeSection);
     return (
       <div className="w-full">
         <div className="pt-8 pb-12 px-4 md:px-8">
           <main className="w-full max-w-[1400px] mx-auto">
             <BackButton href="/dashboard?tab=manage" />
-            <div className="mt-6"> 
-            <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-              <div className="bg-gradient-to-r from-[#011638] to-[#012a5a] text-white p-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-10 h-10">{currentOption?.icon}</span>
-                  <div>
-                    <h3 className="text-2xl font-bold">{currentOption?.label}</h3>
-                    <p className="text-sm opacity-90 mt-1">{currentOption?.description}</p>
+            <div className="mt-6">
+              <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-[#011638] to-[#012a5a] text-white p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-10 h-10">
+                      {currentOption?.icon}
+                    </span>
+                    <div>
+                      <h3 className="text-2xl font-bold">
+                        {currentOption?.label}
+                      </h3>
+                      <p className="text-sm opacity-90 mt-1">
+                        {currentOption?.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
+                <div className="p-6">{renderContent()}</div>
               </div>
-              <div className="p-6">{renderContent()}</div>
-            </div>
             </div>
           </main>
         </div>
@@ -132,9 +218,12 @@ export default function ManagePage() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-oswald font-bold text-[#011638]">Edit Management</h1>
+        <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+          Edit Management
+        </h1>
         <p className="text-[#475569] font-ubuntu-mono mt-2">
-          Manage your content and keep your community updated with the latest announcements, news, events, and membership application details.
+          Manage your content and keep your community updated with the latest
+          announcements, news, events, and membership application details.
         </p>
       </div>
 
@@ -181,9 +270,13 @@ export default function ManagePage() {
                   spotlightColor="rgba(239, 240, 242, 0.16)"
                 >
                   <div className="flex flex-col h-full text-left">
-                    <div className={`bg-gradient-to-r ${option.color} p-6 text-white`}>
+                    <div
+                      className={`bg-gradient-to-r ${option.color} p-6 text-white`}
+                    >
                       <div className="flex items-center justify-start gap-4">
-                        <span className="text-white shrink-0">{option.icon}</span>
+                        <span className="text-white shrink-0">
+                          {option.icon}
+                        </span>
                         <h3 className="text-xl font-bold text-white my-auto leading-tight">
                           {option.label}
                         </h3>
@@ -203,7 +296,12 @@ export default function ManagePage() {
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -224,8 +322,10 @@ export default function ManagePage() {
 
       {/* Others Section */}
       <div className="mb-8 mt-15">
-        <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-6">Others</h2>
-        
+        <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-6">
+          Others
+        </h2>
+
         <div className="flex justify-center">
           <motion.div
             initial="hidden"
@@ -269,9 +369,13 @@ export default function ManagePage() {
                     spotlightColor="rgba(239, 240, 242, 0.16)"
                   >
                     <div className="flex flex-col h-full text-left">
-                      <div className={`bg-gradient-to-r ${option.color} p-6 text-white`}>
+                      <div
+                        className={`bg-gradient-to-r ${option.color} p-6 text-white`}
+                      >
                         <div className="flex items-center justify-start gap-4">
-                          <span className="text-white shrink-0">{option.icon}</span>
+                          <span className="text-white shrink-0">
+                            {option.icon}
+                          </span>
                           <h3 className="text-xl font-bold text-white my-auto leading-tight">
                             {option.label}
                           </h3>
@@ -291,7 +395,12 @@ export default function ManagePage() {
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M9 5l7 7-7 7"
+                            />
                           </svg>
                         </div>
                       </div>
