@@ -15,7 +15,6 @@ export default function AddEventForm() {
 
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Standard class without dynamic border colors
   const inputClass =
     "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]";
 
@@ -58,7 +57,6 @@ export default function AddEventForm() {
 
     let hasError = false;
 
-    // Validation Logic using the requested spans
     if (!title) {
       document.getElementById("title-error")!.textContent =
         "Full title is required.";
@@ -150,7 +148,6 @@ export default function AddEventForm() {
     }
   };
 
-  //audit log
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -350,20 +347,53 @@ export default function AddEventForm() {
               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                 Cover Image (Optional)
               </label>
+
               <input
                 type="file"
                 name="image"
                 accept="image/*"
-                className={inputClass}
+                className={`
+                  ${inputClass}
+
+                  file:mr-4
+                  file:px-6
+                  file:py-2
+                  file:rounded-md
+                  file:border-0
+
+                  file:bg-[#011638]
+                  file:text-[#fbfaf8]
+
+                  file:font-oswald
+                  file:text-sm
+                  file:font-medium
+
+                  file:cursor-pointer
+                  file:transition-colors
+                  hover:file:bg-[#1a2a4f]
+
+                  cursor-pointer
+                `}
               />
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end mt-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#011638] text-[#fbfaf8] font-oswald px-8 py-2 rounded-md hover:bg-[#1a2a4f] transition-colors disabled:opacity-50"
+              className="
+                bg-[#011638]
+                text-[#fbfaf8]
+                font-oswald
+                font-medium 
+                px-8
+                py-2
+                rounded-md
+                hover:bg-[#1a2a4f]
+                transition-colors
+                disabled:opacity-50
+              "
             >
               {isSubmitting ? "Posting..." : "Post Event"}
             </button>
