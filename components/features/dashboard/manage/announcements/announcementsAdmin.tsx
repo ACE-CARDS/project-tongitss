@@ -92,7 +92,7 @@ function DeleteConfirmPopup({
       <span className="form_error">{"\u200b"}</span>
       <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
         Are you sure you want to delete the announcement
-        <span className="font-bold text-[#011638] block py-2">"{title}"?</span>
+        <span className="font-bold text-[#011638] block py-2 break-words">"{title}"?</span>
         This action cannot be undone.
       </p>
       <div className="flex justify-end gap-3">

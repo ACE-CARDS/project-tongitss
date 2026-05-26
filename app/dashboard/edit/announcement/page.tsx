@@ -330,7 +330,6 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     >
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Form Fields Card Container */}
         <SectionCard
           title={type === "landing" ? "Public Landing Details" : "Internal Dashboard Details"}
         >
@@ -350,7 +349,7 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
             <span className="form_error">{titleError || "\u200b"}</span>
           </div>
 
-          {/* Description Field & Dynamic Remaining String Counters */}
+          {/* Description Field  */}
           <div>
             <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
               <label className="form_label">Description</label>
@@ -403,7 +402,6 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
           </div>
         </SectionCard>
 
-        {/* Core Controls Actions Interfacer */}
         <FormActions
           cancelHref="/dashboard?tab=manage&section=announcements"
           isStatus={isSubmitting}
