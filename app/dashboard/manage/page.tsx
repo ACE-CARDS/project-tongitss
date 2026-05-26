@@ -141,7 +141,7 @@ export default function ManagePage() {
     {
       label: "Activity Log",
       key: "audit",
-      description: "View recent activity. TEMPORARY",
+      description: "View system activity",
       icon: (
         <svg
           className="w-8 h-8"
