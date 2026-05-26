@@ -180,12 +180,17 @@ Popup .form_error:first-child {
   }
 
 @utility form_input {
-    @apply placeholder:text-slate-400 w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-2 bg-[#fbfaf8] font-ubuntu-mono focus:ring-[#011638] focus:ring-1 outline-none transition;
+    @apply placeholder:text-slate-400 w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-2 bg-[#fbfaf8] font-ubuntu-mono focus:ring-[#011638] focus:ring-1 active:ring-[#011638] active:ring-1 outline-none transition custom-scrollbar-blue;
 
     &[data-error="true"] {
       @apply border-red-600 focus:border-red-600 focus:ring-red-600;
     }
   }
+
+@utility form_input_area {
+  @apply form_input;
+  @apply min-h-[140px] max-h-[480px];
+}
 
 @utility form_dropdown_container {
     &[data-error="true"] button {
@@ -206,48 +211,61 @@ Popup .form_error:first-child {
   }
 /* group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform */
 
-.custom-scrollbar-blue::-webkit-scrollbar {
-  width: 10px;
-}
-.custom-scrollbar-blue::-webkit-scrollbar-track {
-  background: #d6d7d8;
-  border-radius: 1rem;
-}
-
-.custom-scrollbar-blue::-webkit-scrollbar-thumb {
-  background: #011638;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background-clip: padding-box;
-}
-
-.custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
-  background: #011638;
-  cursor: pointer;
-}
-
-.custom-scrollbar-white::-webkit-scrollbar,
-.custom-scrollbar-white-nobg::-webkit-scrollbar {
-  width: 10px;
+@utility custom-scrollbar-blue {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #d6d7d8;
+    border-radius: 1rem;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #011638;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    &:hover {
+      background: #011638;
+      cursor: pointer;
+    }
+  }
 }
 
-.custom-scrollbar-white::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 1rem;
+@utility custom-scrollbar-white {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1rem;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    &:hover {
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+    }
+  }
 }
 
-.custom-scrollbar-white::-webkit-scrollbar-thumb,
-.custom-scrollbar-white-nobg::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-.custom-scrollbar-white::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar-white-nobg::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
+@utility custom-scrollbar-white-nobg {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  /* Tracks have no background here */
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    &:hover {
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+    }
+  }
 }
 
 /* DONT MIND THIS*/

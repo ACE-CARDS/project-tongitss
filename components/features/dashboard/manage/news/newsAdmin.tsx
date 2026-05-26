@@ -10,6 +10,7 @@ import TableActions from "@/components/ui/tableActions";
 import SearchBar from "@/components/ui/searchBar";
 import AddButton from "@/components/ui/addButton";
 import Popup from "@/components/ui/popup";
+import FormActions from "@/components/ui/FormActions";
 
 interface NewsItem {
   id: number;
@@ -95,22 +96,15 @@ function DeleteConfirmPopup({
         <span className="font-bold text-[#011638] block py-2 break-words">"{title}"?</span>
         This action cannot be undone.
       </p>
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={onClose}
-          disabled={isDeleting}
-          className="form_btn-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isDeleting}
-          className="form_btn-red"
-        >
-          {isDeleting ? "Deleting..." : "Delete"}
-        </button>
-      </div>
+      <FormActions
+        onCancelClick={onClose}
+        onSubmitClick={onConfirm}
+        isStatus={isDeleting}
+        variant="red"
+        showBorder={false}
+        submitLabel="Delete"
+        submittingLabel="Deleting..."
+      />
     </Popup>
   );
 }

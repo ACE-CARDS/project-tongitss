@@ -10,6 +10,7 @@ import TableActions from "@/components/ui/tableActions";
 import Popup from "@/components/ui/popup";
 import FormDropdown from "@/components/ui/formDropdown";
 import SortIcon from "@/components/ui/sortIcon";
+import FormActions from "@/components/ui/FormActions";
 
 // Types
 interface School {
@@ -118,25 +119,19 @@ function DeleteConfirmPopup({
       ) : (
         <>
           <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-            Are you sure you want to delete "{name}"? This action cannot be
-            undone.
+            Are you sure you want to delete the school
+            <span className="font-bold text-[#011638] block py-2 break-words">"{name}"?</span>
+            This action cannot be undone.
           </p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              disabled={isDeleting}
-              className="form_btn-cancel"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={isDeleting}
-              className="form_btn-red"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-          </div>
+          <FormActions
+            onCancelClick={onClose}
+            onSubmitClick={onConfirm}
+            isStatus={isDeleting}
+            variant="red"
+            showBorder={false}
+            submitLabel="Delete"
+            submittingLabel="Deleting..."
+          />
         </>
       )}
     </Popup>
@@ -288,18 +283,16 @@ function EditPopup({
       />
       <span className="form_error">{provinceError || "\u200b"}</span>
 
-      <div className="flex justify-end gap-3">
-        <button onClick={onClose} className="form_btn-cancel" disabled={isSaving}>
-          Cancel
-        </button>
-        <button
-          onClick={handleEdit}
-          disabled={isSaving || noChange}
-          className="form_btn-blue"
-        >
-          {isSaving ? "Saving..." : "Save Changes"}
-        </button>
-      </div>
+      <FormActions
+        onCancelClick={onClose}
+        onSubmitClick={handleEdit}
+        isStatus={isSaving}
+        noChange={noChange}
+        variant="blue"
+        showBorder={false}
+        submitLabel="Save Changes"
+        submittingLabel="Saving..."
+      />
     </Popup>
   );
 }
@@ -445,18 +438,16 @@ function AddPopup({
       />
       <span className="text-xs text-red-600 mb-2 flex">{provinceError || "\u200b"}</span>
 
-      <div className="flex justify-end gap-3">
-        <button onClick={onClose} className="form_btn-cancel">
-          Cancel
-        </button>
-        <button
-          onClick={handleAdd}
-          disabled={isAdding || noChange}
-          className="form_btn-blue"
-        >
-          {isAdding ? "Adding..." : "Add School"}
-        </button>
-      </div>
+      <FormActions
+        onCancelClick={onClose}
+        onSubmitClick={handleAdd}
+        isStatus={isAdding}
+        noChange={noChange}
+        variant="blue"
+        showBorder={false}
+        submitLabel="Add School"
+        submittingLabel="Adding..."
+      />
     </Popup>
   );
 }
