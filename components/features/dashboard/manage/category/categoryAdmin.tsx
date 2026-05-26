@@ -137,16 +137,31 @@ function EditPopup({
 
   const noChange = name.trim() === category.r_category_name;
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+
+    const trimmedValue = value.trim();
+
+    if (value === "") {
+      setNameError("");
+      return;
+    }
+
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+    } else {
+      setNameError("");
+    }
+  };
+
+
   const handleEdit = async () => {
     setNameError("");
     setError("");
 
     if (!name.trim()) {
       setNameError("Category name is required");
-      return;
-    }
-    if (name.trim().length < 2) {
-      setNameError("Name too short");
       return;
     }
     if (
@@ -176,7 +191,7 @@ function EditPopup({
       <input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={handleInputChange}
         placeholder="e.g. Artificial Intelligence"
         maxLength={50}
         data-error={!!nameError}
@@ -234,29 +249,46 @@ function AddPopup({
     }
   }, [isOpen]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+
+    const trimmedValue = value.trim();
+
+    if (value === "") {
+      setNameError("");
+      return;
+    }
+
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+    } else {
+      setNameError("");
+    }
+  };
+
   const handleAdd = async () => {
     setNameError("");
     setError("");
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+
+    // Final sweep validation on Submit
+    if (!trimmedName) {
       setNameError("Category name is required");
       return;
     }
-    if (name.trim().length < 2) {
-      setNameError("Name too short");
-      return;
-    }
-    if (categories.some((c) => c.r_category_name.toLowerCase() === name.trim().toLowerCase())) {
+
+    if (categories.some((c) => c.r_category_name.toLowerCase() === trimmedName.toLowerCase())) {
       setNameError("This category name already exists");
       return;
     }
 
-    const dbError = await onAdd(name.trim());
+    const dbError = await onAdd(trimmedName);
     if (dbError) {
       setError(dbError);
     }
   };
-
   if (!isOpen) return null;
 
   return (
@@ -267,7 +299,7 @@ function AddPopup({
       <input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={handleInputChange}
         placeholder="e.g. Data Structures"
         maxLength={50}
         data-error={!!nameError}

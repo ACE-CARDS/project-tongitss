@@ -175,14 +175,56 @@ function EditPopup({
     name.trim() === school.school_name &&
     provinceId === school.province;
 
+  useEffect(() => {
+    if (isOpen && school) {
+      setName(school.school_name);
+      setProvinceId(school.province);
+      setNameError("");
+      setProvinceError("");
+      setError("");
+    }
+  }, [isOpen, school]);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+
+    const trimmedValue = value.trim();
+
+    if (value === "") {
+      setNameError("");
+      return;
+    }
+
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+    } else {
+      setNameError("");
+    }
+  };
+
+  const handleProvinceChange = (val: string | null) => {
+    const selectedId = Number(val);
+    setProvinceId(selectedId);
+    
+    if (selectedId !== 0) {
+      setProvinceError("");
+    }
+  };
+
   const handleEdit = async () => {
     setNameError("");
     setProvinceError("");
+    setError("");
 
     let hasError = false;
+    const trimmedName = name.trim();
 
-    if (!name.trim()) {
+    if (!trimmedName) {
       setNameError("Name is required");
+      hasError = true;
+    } else if (trimmedName.length < 2) {
+      setNameError("Name too short");
       hasError = true;
     }
 
@@ -194,7 +236,7 @@ function EditPopup({
     if (
       schools.some(
         (s) =>
-          s.school_name.toLowerCase() === name.trim().toLowerCase() &&
+          s.school_name.toLowerCase() === trimmedName.toLowerCase() &&
           s.id !== school?.id
       )
     ) {
@@ -202,13 +244,12 @@ function EditPopup({
       hasError = true;
     }
 
-    const dbError: any = await onSave(school.id, name.trim(), provinceId);
+    if (hasError || !school) return;
+
+    const dbError: any = await onSave(school.id, trimmedName, provinceId);
     if (dbError) {
       setError(dbError);
     }
-
-    if (hasError || !school) return;
-
   };
 
   const dropdownOptions = useMemo(() => {
@@ -230,7 +271,7 @@ function EditPopup({
       <input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={handleNameChange}
         placeholder="School Name..."
         data-error={!!nameError}
         className="form_input"
@@ -240,7 +281,7 @@ function EditPopup({
       <label className="form_label">Province</label>
       <FormDropdown
         value={provinceId.toString()}
-        onChange={(val) => setProvinceId(Number(val))}
+        onChange={handleProvinceChange}
         options={dropdownOptions}
         className="mb-2"
         data-error={!!provinceError}
@@ -249,7 +290,7 @@ function EditPopup({
       <span className="form_error">{provinceError || "\u200b"}</span>
 
       <div className="flex justify-end gap-3">
-        <button onClick={onClose} className="form_btn-cancel">
+        <button onClick={onClose} className="form_btn-cancel" disabled={isSaving}>
           Cancel
         </button>
         <button
@@ -298,30 +339,67 @@ function AddPopup({
     }
   }, [isOpen]);
 
+const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+  setName(value);
+
+  const trimmedValue = value.trim();
+
+  if (value === "") {
+    setNameError("");
+    return;
+  }
+
+  if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+    setNameError("Name too short");
+  } else {
+    setNameError("");
+  }
+};
+
+const handleProvinceChange = (val: string | null) => {
+  const selectedId = Number(val);
+  setProvinceId(selectedId);
+  
+  if (selectedId !== 0) {
+    setProvinceError("");
+  }
+};
+
   const handleAdd = async () => {
     setNameError("");
     setProvinceError("");
+    setError("");
 
     let hasError = false;
+    const trimmedName = name.trim();
 
-    if (!name.trim()) {
+    if (!trimmedName) {
       setNameError("Name is required");
       hasError = true;
+    } else if (trimmedName.length < 2) {
+      setNameError("Name too short");
+      hasError = true;
     }
-    
+
     if (provinceId === 0) {
       setProvinceError("Please select a province");
       hasError = true;
     }
 
-    if (schools.some((s) => s.school_name.toLowerCase() === name.trim().toLowerCase())) {
+    if (
+      schools.some(
+        (s) =>
+          s.school_name.toLowerCase() === trimmedName.toLowerCase()
+      )
+    ) {
       setNameError("School name already exists");
       hasError = true;
     }
 
     if (hasError) return;
 
-    const dbError: any = await onAdd(name.trim(), provinceId);
+    const dbError: any = await onAdd(trimmedName, provinceId);
     if (dbError) {
       setError(dbError);
     }
@@ -350,7 +428,7 @@ function AddPopup({
       <input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={handleNameChange}
         placeholder="School Name..."
         data-error={!!nameError}
         className="form_input"
@@ -362,7 +440,7 @@ function AddPopup({
       </label>
       <FormDropdown
         value={provinceId === 0 ? "" : provinceId.toString()}
-        onChange={(val) => setProvinceId(Number(val))}
+        onChange={handleProvinceChange}
         options={dropdownOptions}
         className="mb-2"
         data-error={!!provinceError}
@@ -377,7 +455,7 @@ function AddPopup({
         <button
           onClick={handleAdd}
           disabled={isAdding || noChange}
-          className="form-btn_blue"
+          className="form_btn-blue"
         >
           {isAdding ? "Adding..." : "Add School"}
         </button>

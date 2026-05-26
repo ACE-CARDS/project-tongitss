@@ -181,11 +181,11 @@ Popup .form_error:first-child {
   }
 
 @utility form_btn-red {
-    @apply px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-red-600/50 disabled:text-white/50 transition-colors;
+    @apply px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-red-600/50 disabled:text-white/50 transition-colors;
   }
 
 @utility form_btn-blue {
-    @apply px-6 py-2 bg-[#1e4db7] text-white rounded-lg hover:bg-[#1e4db7] font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-[#1e4db7]/50 disabled:text-white/50 transition-colors;
+    @apply px-6 py-2 bg-[#1e4db7] text-white rounded-lg hover:bg-[#1e4db7]/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-[#1e4db7]/50 disabled:text-white/50 transition-colors;
   }
 /* group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform */
 
