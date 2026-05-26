@@ -422,7 +422,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                     </div>
                   </div>
 
-                  <div className="mt-4 min-h-[60px]">
+                  <div className="mt-4 mb-16 min-h-[60px]">
                     <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
                       Author(s)
                     </h3>
@@ -460,24 +460,6 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                           No authors listed
                         </span>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="mb-10 min-h-[70px]">
-                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                      Keywords
-                    </h3>
-                    <div className="flex flex-wrap gap-1">
-                      {survey.survey_keyword
-                        ?.split(",")
-                        .map((keyword: string, index: number) => (
-                          <span
-                            key={index}
-                            className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
-                          >
-                            {keyword.trim()}
-                          </span>
-                        ))}
                     </div>
                   </div>
 
