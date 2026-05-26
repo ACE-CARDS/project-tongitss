@@ -289,7 +289,7 @@ function ReviewContent() {
                     disabled={isSubmitting} 
                     className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? "Approving..." : "Approve Survey"}
+                    {isSubmitting ? "Approving..." : "Approve Thesis"}
                   </button>
                 </>
               ) : (
@@ -310,7 +310,7 @@ function ReviewContent() {
                     disabled={!!rejectionError || !rejectionReason.trim() || isSubmitting} 
                     className="px-4 py-2 text-[#fbfaf8] bg-red-600 rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? "Rejecting..." : "Reject Survey"}
+                    {isSubmitting ? "Rejecting..." : "Reject Thesis"}
                   </button>
                 </>
               )}
