@@ -8,20 +8,23 @@ interface DropdownOption {
   disabled?: boolean;
 }
 
-interface FilterDropdownProps {
+interface FormDropdownProps {
   value: string;
   options: DropdownOption[];
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  "data-error"?: boolean;
 }
 
-const FilterDropdown = ({ 
+const FormDropdown = ({ 
   value, 
   options, 
   onChange, 
-  className = "" 
-}: FilterDropdownProps) => {
+  placeholder,
+  className = "" ,
+  "data-error": dataError = false,
+}: FormDropdownProps) => {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -56,26 +59,31 @@ const FilterDropdown = ({
 
   // Handle click outside to close menu frame
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (!open) {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
 
   const selectedOption = options.find((o) => o.value === value);
-  const selectedLabel = selectedOption ? selectedOption.label : value;
+
+  const selectedLabel = selectedOption ? selectedOption.label : (placeholder);
 
   return (
-    <div ref={ref} className={`relative w-full md:w-auto z-[20] font-sans ${className}`}>
+    <div ref={ref} className={`relative w-full font-sans ${className} form_dropdown_container`} data-error={dataError}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="cursor-pointer w-full md:w-auto px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
+        className="form_input flex items-center justify-between"
       >
-        <span className="truncate">{selectedLabel}</span>
+        <span className={`truncate ${!selectedOption ? "text-slate-400 normal-case font-medium" : ""}`}>
+          {selectedLabel}
+        </span>
         <svg
           className={`w-4 h-4 shrink-0 transition-transform ml-3 ${open ? "rotate-180" : ""}`}
           fill="none"
@@ -88,14 +96,16 @@ const FilterDropdown = ({
 
       {open && (
         <div
-          className={`absolute right-0 md:left-0 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
+          className={`absolute right-0 md:left-0 w-full min-w-[160px] bg-white border border-[#011638] rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
             openUpward 
-              ? "bottom-full mb-2 origin-bottom" 
+              ? "bottom-full mb-2 origin-bottom"
               : "top-full mt-2 origin-top"
           }`}
         >
-          {/* Using fluid max-h-[35vh] mixed with desktop sm:max-h-60 keeps height robust on massive zoom settings */}
           <ul className="py-1 max-h-[40vh] h-60 overflow-y-auto custom-scrollbar-blue">
+            <li className="px-5 py-2.5 text-sm text-slate-400 border-b border-slate-100 font-ubuntu-mono tracking-widest bg-slate-50/50 select-none cursor-not-allowed border-b-slate-300 border-b-1">
+              {placeholder || "Select an option..."}
+            </li>
             {options.map((o) => (
               <li
                 key={o.value}
@@ -104,7 +114,7 @@ const FilterDropdown = ({
                   onChange(o.value);
                   setOpen(false);
                 }}
-                className={`px-5 py-3 transition-colors text-sm font-bold font-ubuntu-mono uppercase tracking-widest ${
+                className={`px-5 py-3 transition-colors font-semibold text-sm font-ubuntu-mono tracking-widest ${
                   o.disabled
                     ? "opacity-40 bg-slate-50 text-slate-500 cursor-not-allowed"
                     : o.value === value
@@ -122,4 +132,4 @@ const FilterDropdown = ({
   );
 };
 
-export default FilterDropdown;
+export default FormDropdown;

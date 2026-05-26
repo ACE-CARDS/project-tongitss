@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
+import SortIcon from "@/components/ui/sortIcon";
+import TableActions from "@/components/ui/tableActions";
+import SearchBar from "@/components/ui/searchBar";
+import AddButton from "@/components/ui/addButton";
+import Popup from "@/components/ui/popup";
 
 interface NewsItem {
   id: number;
@@ -17,10 +21,10 @@ interface NewsItem {
   created_at: string;
 }
 
-type SortField = "title" | "fb_post_date" | null;
-type SortOrder = "asc" | "desc" | null;
+export type SortField = "title" | "fb_post_date" | null;
+export type SortOrder = "asc" | "desc" | null;
 
-// --- Sub-components (NewsDescription, DeleteConfirmPopup, SearchBar) remain the same ---
+// --- Sub-Component: Expandable Description ---
 function NewsDescription({ description }: { description: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
   if (!description) return null;
@@ -32,7 +36,7 @@ function NewsDescription({ description }: { description: string | null }) {
     );
   }
   return (
-    <div className="w-[100%]">
+    <div className="w-full">
       {!isOpen ? (
         <div>
           <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-2 break-words">
@@ -40,19 +44,19 @@ function NewsDescription({ description }: { description: string | null }) {
           </p>
           <button
             onClick={() => setIsOpen(true)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
+            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
           >
             Read more →
           </button>
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-32 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
             {description}
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors"
+            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
           >
             Read less ↑
           </button>
@@ -62,154 +66,135 @@ function NewsDescription({ description }: { description: string | null }) {
   );
 }
 
+// --- Sub-Component: Standardized Delete Portal ---
 function DeleteConfirmPopup({
   isOpen,
   onClose,
   onConfirm,
+  title,
+  isDeleting,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
+  isDeleting: boolean;
 }) {
-  const popupRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node))
-        onClose();
-    }
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
   if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div
-        ref={popupRef}
-        className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden"
-      >
-        <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">
-            Confirm Delete
-          </h3>
-        </div>
-        <div className="px-6 py-6">
-          <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-            Are you sure you want to delete this news article? This action
-            cannot be undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638]"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                onConfirm();
-                onClose();
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-oswald"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
+    <Popup 
+      isOpen={isOpen} 
+      title="Confirm Delete" 
+      onClose={isDeleting ? () => {} : onClose} // Prevent closing overlay while mutating database
+      maxWidth="md"
+    >
+      <span className="form_error">{"\u200b"}</span>
+      <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
+        Are you sure you want to delete the news article
+        <span className="font-bold text-[#011638] block py-2">"{title}"?</span>
+        This action cannot be undone.
+      </p>
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={onClose}
+          disabled={isDeleting}
+          className="form_btn-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isDeleting}
+          className="form_btn-red"
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </button>
       </div>
-    </div>
+    </Popup>
   );
 }
 
-function SearchBar({
-  searchTerm,
-  onSearchChange,
-}: {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-}) {
-  return (
-    <div className="relative flex-1">
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
-      />
-      <svg
-        className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-    </div>
-  );
-}
-
+// --- MAIN COMPONENT ---
 export default function NewsAdmin() {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [news, setNews] = useState<NewsItem[]>([]);
   const [filteredNews, setFilteredNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-  // 1. Local State for Pagination (No more URL jumping)
+  // Pagination Local State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const supabase = createClient();
-  const router = useRouter();
+  // User Audit State Integration
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim() : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logDeleteAudit = async (recordId?: number, itemTitle?: string | null) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
+
+    const logEntry = {
+      action: "Delete",
+      details: `Deleted media "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "news_media",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) console.error("Failed to write audit log", error);
+  };
 
   useEffect(() => {
     fetchNews();
   }, []);
 
   useEffect(() => {
-    let filtered = [...news];
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((item) =>
-        item.title?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
+    let filtered = news.filter((item) =>
+      (item.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.content || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (sortField && sortOrder) {
       filtered.sort((a, b) => {
-        let aValue =
-          sortField === "title"
-            ? (a.title || "").toLowerCase()
-            : new Date(a.fb_post_date).getTime();
-        let bValue =
-          sortField === "title"
-            ? (b.title || "").toLowerCase()
-            : new Date(b.fb_post_date).getTime();
+        let aValue = sortField === "title" ? (a.title || "").toLowerCase() : new Date(a.fb_post_date).getTime();
+        let bValue = sortField === "title" ? (b.title || "").toLowerCase() : new Date(b.fb_post_date).getTime();
         if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
         if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
         return 0;
       });
     }
     setFilteredNews(filtered);
-    setCurrentPage(1); // Reset to page 1 whenever filters/sorts change
+    setCurrentPage(1);
   }, [searchTerm, news, sortField, sortOrder]);
-
-  // 2. Pagination Calculations
-  const totalItems = filteredNews.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
-  const startIndex = (validCurrentPage - 1) * itemsPerPage;
-  const currentNewsItems = filteredNews.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
 
   const fetchNews = async () => {
     setLoading(true);
@@ -221,11 +206,27 @@ export default function NewsAdmin() {
     setLoading(false);
   };
 
-  const handleDelete = async (id: number) => {
-    const deletedItem = news.find((item) => item.id === id);
-    if (deletedItem) await logDeleteAudit(id, deletedItem?.title);
-    await supabase.from("news_media").delete().eq("id", id);
-    setNews(news.filter((item) => item.id !== id));
+  const handleDelete = async () => {
+    if (!selectedNews) return;
+    setIsDeleting(true);
+
+    try {
+      await logDeleteAudit(selectedNews.id, selectedNews.title);
+      const { error } = await supabase.from("news_media").delete().eq("id", selectedNews.id);
+
+      if (error) {
+        console.error("Delete failed:", error);
+        return;
+      }
+
+      setNews((prev) => prev.filter((item) => item.id !== selectedNews.id));
+      setDeletePopupOpen(false);
+      setSelectedNews(null);
+    } catch (err) {
+      console.error("Unexpected removal error:", err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleSort = (field: SortField) => {
@@ -241,10 +242,14 @@ export default function NewsAdmin() {
     }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Removed window.scrollTo so it doesn't jump to the top
-  };
+  const totalItems = filteredNews.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  
+  const paginatedItems = useMemo(() => {
+    const startIndex = (validCurrentPage - 1) * itemsPerPage;
+    return filteredNews.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredNews, validCurrentPage, itemsPerPage]);
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
@@ -253,64 +258,9 @@ export default function NewsAdmin() {
       day: "numeric",
     });
 
-  //audit log
-  const { user } = useUser();
-  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  const loadCurrentUser = async (email: string) => {
-    const { data, error } = await supabase
-      .from("member")
-      .select("mem_fname, mem_lname, mem_email")
-      .eq("mem_email", email)
-      .single();
-
-    const fullName = data
-      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
-      : email;
-    setCurrentUserName(fullName || email);
-    setCurrentUserEmail(data?.mem_email || email);
-  };
-
-  useEffect(() => {
-    if (user?.email) {
-      loadCurrentUser(user.email);
-    }
-  }, [user?.email]);
-
-  const logDeleteAudit = async (
-    recordId?: number,
-    itemTitle?: string | null,
-  ) => {
-    const whoDidItName = currentUserName || user?.email || "Unknown User";
-    const whoDidItEmail =
-      currentUserEmail || user?.email || "unknown@email.com";
-
-    const detailedMessage = `Deleted media "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`;
-
-    const logEntry = {
-      action: "Delete",
-      details: detailedMessage,
-      user: whoDidItName,
-      user_email: whoDidItEmail,
-      table_name: "news_media",
-    };
-
-    const { error } = await supabase.from("audit_log").insert([logEntry]);
-
-    if (error) {
-      console.error("Failed to log.");
-    }
-  };
-
-  if (loading)
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 font-ubuntu-mono">Loading news...</p>
-      </div>
-    );
-
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-2xl font-oswald font-bold text-[#011638]">
           News Management
@@ -320,237 +270,127 @@ export default function NewsAdmin() {
         </p>
       </div>
 
+      {/* Control Bar Actions */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-        <Link
+        <AddButton
           href="/dashboard/add/news-media?from=admin"
-          className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] flex items-center justify-center gap-2 font-oswald"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Add News
-        </Link>
+          label="Add News"
+        />
       </div>
 
-      {filteredNews.length === 0 ? (
-        <div className="text-center py-12 bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            No News Articles
-          </h3>
-          <p className="text-gray-500 font-ubuntu-mono">
-            Try searching for something else or create a new article.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200">
-            <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
-                <thead className="bg-[#011638]">
-                  <tr>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[120px]">
-                      Image
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors ${sortField === "title" ? "bg-[#0d21a1]" : ""}`}
-                      onClick={() => handleSort("title")}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        Title & Description
-                        <div className="flex flex-col gap-0.5">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className={`w-3.5 h-3.5 -mb-1 ${sortField === "title" && sortOrder === "asc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                            />
-                          </svg>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className={`w-3.5 h-3.5 -mt-1 ${sortField === "title" && sortOrder === "desc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider cursor-pointer hover:bg-[#0d21a1] transition-colors w-[180px] ${sortField === "fb_post_date" ? "bg-[#0d21a1]" : ""}`}
-                      onClick={() => handleSort("fb_post_date")}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        Post Date
-                        <div className="flex flex-col gap-0.5">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className={`w-3.5 h-3.5 -mb-1 ${sortField === "fb_post_date" && sortOrder === "asc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                            />
-                          </svg>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className={`w-3.5 h-3.5 -mt-1 ${sortField === "fb_post_date" && sortOrder === "desc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[100px]">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {currentNewsItems.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      className={index % 2 === 0 ? "bg-white" : "bg-[#fbfaf8]"}
-                    >
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex justify-center">
-                          <a
-                            href={item.post_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <img
-                              src={
-                                item.image_url ||
-                                "/assets/logos/ACE CARDS logo.png"
-                              }
-                              alt="News"
-                              className="w-20 h-20 object-cover rounded-md border border-gray-100"
-                            />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 align-top break-words max-w-full whitespace-normal">
-                        <a
-                          href={item.post_url}
-                          target="_blank"
-                          className="text-sm font-oswald font-semibold text-[#011638] hover:underline block mb-1 break-words"
-                        >
-                          {item.title || "Untitled Post"}
-                        </a>
-                        <NewsDescription description={item.content} />
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm text-[#475569] font-ubuntu-mono">
-                        {formatDate(item.fb_post_date)}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() =>
-                              router.push(
-                                `/dashboard/edit/news-media?id=${item.id}&from=admin`,
-                              )
-                            }
-                            className="text-[#0d21a1] hover:scale-110 transition-transform"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.5"
-                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedNews(item);
-                              setDeletePopupOpen(true);
-                            }}
-                            className="text-red-600 hover:scale-110 transition-transform"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.5"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {/* Table / Content Section */}
+      <div className="manage_table_div">
+        <table className="manage_table">
+          <thead className="manage_thead">
+            <tr>
+              <th className="w-[15%]">Image</th>
+              
+              <th
+                className={`w-[55%] th-sortable ${sortField === "title" ? "is-active" : ""}`}
+                onClick={() => handleSort("title")}
+              >
+                <div>
+                  Title & Description
+                  <SortIcon field="title" sortField={sortField} sortOrder={sortOrder} />
+                </div>
+              </th>
 
-          {/* 3. Clean Pagination Logic */}
-          <div className="mt-6">
-            <Pagination
-              currentPage={validCurrentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        </>
+              <th
+                className={`w-[18%] th-sortable ${sortField === "fb_post_date" ? "is-active" : ""}`}
+                onClick={() => handleSort("fb_post_date")}
+              >
+                <div>
+                  Post Date
+                  <SortIcon field="fb_post_date" sortField={sortField} sortOrder={sortOrder} />
+                </div>
+              </th>
+
+              <th className="w-[12%]">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="status">Loading news...</td>
+              </tr>
+            ) : filteredNews.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="status">No news found.</td>
+              </tr>
+            ) : (
+              paginatedItems.map((item) => (
+                <tr key={item.id} className="hover:bg-blue-50/50 transition-colors">
+                  {/* Thumbnail Cover */}
+                  <td className="">
+                    <div className="flex justify-center">
+                      <a href={item.post_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={item.image_url || "/assets/logos/ACE CARDS logo.png"}
+                          alt="News Media Thumbnail"
+                          className="w-16 h-16 object-cover rounded-md border border-gray-100 shadow-sm hover:opacity-80 transition-opacity"
+                        />
+                      </a>
+                    </div>
+                  </td>
+
+                  {/* Title and Contents info */}
+                  <td className="align-top break-words max-w-full whitespace-normal">
+                    <a
+                      href={item.post_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-oswald font-semibold text-[#011638] hover:underline block mb-1 break-words"
+                    >
+                      {item.title || "Untitled Post"}
+                    </a>
+                    <NewsDescription description={item.content} />
+                  </td>
+
+                  {/* Date Metadata */}
+                  <td className="date_col">
+                    {formatDate(item.fb_post_date)}
+                  </td>
+
+                  {/* Table Context Controls */}
+                  <td className="text-center">
+                    <TableActions
+                      item={item}
+                      editHref={`/dashboard/edit/news-media?id=${item.id}&from=admin`}
+                      onDeleteClick={(targetItem) => {
+                        setSelectedNews(targetItem);
+                        setDeletePopupOpen(true);
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={validCurrentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       )}
 
       <DeleteConfirmPopup
         isOpen={deletePopupOpen}
-        onClose={() => setDeletePopupOpen(false)}
-        onConfirm={() => selectedNews && handleDelete(selectedNews.id)}
+        isDeleting={isDeleting}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeletePopupOpen(false);
+            setSelectedNews(null);
+          }
+        }}
+        onConfirm={handleDelete}
         title={selectedNews?.title || "this news article"}
       />
     </div>

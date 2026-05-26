@@ -1,82 +1,54 @@
-// Same logic as main loading state
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 export default function TabLoadingState() {
-  const [scale, setScale] = useState(1);
-  const [opacity, setOpacity] = useState(1);
-  const [shadowIntensity, setShadowIntensity] = useState(0);
-  const [shineIntensity, setShineIntensity] = useState(0);
-
-  // Pulses
-  useEffect(() => {
-    let animationFrameId: number;
-    const startTime = performance.now();
-    const duration = 8000; // 8 seconds
-    const pulseCount = 4; // 4 pulses
-    
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = (elapsed % duration) / duration;
-      
-      // Sinusoidal Wave
-      const angle = progress * Math.PI * 2 * pulseCount;
-      const sinValue = (Math.sin(angle) + 1) / 2; // Math.sin() create waves (0 → 1 → 0 → -1 → 0 and again)
-      // Adding 1 and dividing by 2 turns it to: 0.5 → 1 → 0.5 → 0 → 0.5 (between 0 and 1)
-
-      const newScale = 1 - (sinValue * 0.08); // Scale: 1 (peak) to 0.92 (valley) to 1 (next peak)
-      const newOpacity = 1 - (sinValue * 0.3); // Opacity: 1 (peak) to 0.7 (valley) to 1 (next peak)
-      const newShadowIntensity = sinValue * 15; // Shadow pulsing from 0 to 15px
-      const newShineIntensity = sinValue; // Shine strongest at peak 
-      
-      setScale(newScale);
-      setOpacity(newOpacity);
-      setShadowIntensity(newShadowIntensity);
-      setShineIntensity(newShineIntensity);
-      
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    
-    animationFrameId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, []);
-
   return (
-    <div className="min-h-[500px] flex items-center justify-center">
+    <div className="min-h-[500px] flex items-center justify-center select-none">
       <div className="flex-1 flex items-center justify-center">
-        <div className="relative flex flex-col items-center justify-center gap-1">
+        <div className="relative flex flex-col items-center justify-center gap-1 w-full">
+          <style jsx global>{`
+            @keyframes tabLogoPulse {
+              0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: drop-shadow(0px 4px 0px rgba(0, 0, 0, 0.1));
+                --tab-shine-op: 0;
+              }
+              50% {
+                transform: scale(0.92);
+                opacity: 0.7;
+                filter: drop-shadow(0px 4px 15px rgba(0, 0, 0, 0.1));
+                --tab-shine-op: 1;
+              }
+            }
+            .animate-tab-pulse {
+              animation: tabLogoPulse 2s ease-in-out infinite;
+            }
+          `}</style>
+
           <div 
-            className="relative w-[40vw] h-[40vw] max-w-[250px] max-h-[250px] min-w-[180px] min-h-[180px] transition-all duration-75 ease-linear"
+            className="relative w-[40vw] h-[40vw] max-w-[250px] max-h-[250px] min-w-[180px] min-h-[180px] animate-tab-pulse"
             style={{
-              transform: `scale(${scale})`,
-              opacity: opacity,
-              filter: `drop-shadow(0px 4px ${shadowIntensity}px rgba(0, 0, 0, 0.1))`,
+              willChange: "transform, opacity, filter"
             }}
           >
-            {/* Shine */}
             <div 
-              className="absolute inset-0 pointer-events-none z-10 rounded-full"
+              className="absolute inset-0 pointer-events-none z-10 rounded-full transition-opacity duration-500"
               style={{
                 background: `linear-gradient(135deg, 
-                  rgba(255, 255, 255, ${0.6 * shineIntensity}) 0%, 
-                  rgba(255, 255, 255, ${0.2 * shineIntensity}) 30%,
+                  rgba(255, 255, 255, 0.6) 0%, 
+                  rgba(255, 255, 255, 0.2) 30%,
                   transparent 60%
                 )`,
-                opacity: shineIntensity > 0.1 ? shineIntensity : 0,
+                opacity: "var(--tab-shine-op, 0)",
               }}
             />
             <Image
               src="/images/Busy.png"
               alt="Loading"
               fill
-              sizes="(max-width: 768px) 40vw, 320px"
+              sizes="(max-width: 768px) 40vw, 250px"
               className="object-contain"
               priority
             />

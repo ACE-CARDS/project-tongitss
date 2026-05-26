@@ -35,6 +35,7 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${oswald.variable}  ${ubuntu_mono.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
         <UserProvider user={user}>  
           {children}

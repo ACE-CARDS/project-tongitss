@@ -1,100 +1,75 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import NavBar from "@/components/layout/navbar";
 
 export default function LoadingState() {
-  const [scale, setScale] = useState(1);
-  const [opacity, setOpacity] = useState(1);
-  const [shadowIntensity, setShadowIntensity] = useState(0);
-  const [shineIntensity, setShineIntensity] = useState(0);
-
-  // Pulses
-  useEffect(() => {
-    let animationFrameId: number;
-    const startTime = performance.now();
-    const duration = 8000; // 8 seconds
-    const pulseCount = 4; // 4 pulses
-    
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = (elapsed % duration) / duration;
-      
-      // Sinusoidal Wave
-      const angle = progress * Math.PI * 2 * pulseCount;
-      const sinValue = (Math.sin(angle) + 1) / 2; // Math.sin() create waves (0 → 1 → 0 → -1 → 0 and again)
-      // Adding 1 and dividing by 2 turns it to: 0.5 → 1 → 0.5 → 0 → 0.5 (between 0 and 1)
-      
-      const newScale = 1 - (sinValue * 0.08); // Scale: 1 (peak) to 0.92 (valley) to 1 (next peak)
-      const newOpacity = 1 - (sinValue * 0.3); // Opacity: 1 (peak) to 0.7 (valley) to 1 (next peak)
-      const newShadowIntensity = sinValue * 15; // Shadow pulsing from 0 to 15px
-      const newShineIntensity = sinValue;  // Shine strongest at peak 
-
-      setScale(newScale);
-      setOpacity(newOpacity);
-      setShadowIntensity(newShadowIntensity);
-      setShineIntensity(newShineIntensity);
-      
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    
-    animationFrameId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, []);
-
   return (
     <>
-    <NavBar isLoading={true} />
-    <div 
-      className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] h-screen flex flex-col"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <div className="flex-1 flex items-center justify-center">
-        <div className="relative flex flex-col items-center justify-center w-full">
-          <div 
-            className="relative transition-all duration-75 ease-linear mx-auto"
-            style={{
-              width: 'clamp(160px, 35vw, 260px)',
-              height: 'clamp(160px, 35vw, 260px)',
-              transform: `scale(${scale})`,
-              opacity: opacity,
-              filter: `drop-shadow(0px 4px ${shadowIntensity}px rgba(0, 0, 0, 0.25))`,
-            }}
-          >
-            {/* Shine */}
+      <NavBar isLoading={true} />
+      <div 
+        className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] h-screen flex flex-col select-none"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <div className="flex-1 flex items-center justify-center">
+          <div className="relative flex flex-col items-center justify-center w-full">
+            {/* Injecting hardware-accelerated keyframe animation natively */}
+            <style jsx global>{`
+              @keyframes aceCardsPulse {
+                0%, 100% {
+                  transform: scale(1);
+                  opacity: 1;
+                  filter: drop-shadow(0px 4px 0px rgba(0, 0, 0, 0.25));
+                  --shine-op: 0;
+                }
+                50% {
+                  transform: scale(0.92);
+                  opacity: 0.7;
+                  filter: drop-shadow(0px 4px 15px rgba(0, 0, 0, 0.25));
+                  --shine-op: 1;
+                }
+              }
+              .animate-logo-pulse {
+                animation: aceCardsPulse 2s ease-in-out infinite;
+              }
+            `}</style>
+
             <div 
-              className="absolute inset-0 pointer-events-none z-10 rounded-full"
+              className="relative mx-auto animate-logo-pulse"
               style={{
-                background: `linear-gradient(135deg, 
-                  rgba(255, 255, 255, ${0.6 * shineIntensity}) 0%, 
-                  rgba(255, 255, 255, ${0.2 * shineIntensity}) 30%,
-                  transparent 60%
-                )`,
-                opacity: shineIntensity > 0.1 ? shineIntensity : 0,
+                width: 'clamp(160px, 35vw, 260px)',
+                height: 'clamp(160px, 35vw, 260px)',
+                willChange: 'transform, opacity, filter' // 💡 Direct hint telling GPU to separate this layer
               }}
-            />
-            <Image
-              src="/assets/logos/ACE CARDS logo.png"
-              alt="Loading"
-              fill
-              sizes="(max-width: 768px) 40vw, 320px"
-              className="object-contain"
-              priority
-            />
+            >
+              {/* Shine Overlay using pure CSS transition math handles */}
+              <div 
+                className="absolute inset-0 pointer-events-none z-10 rounded-full transition-opacity duration-500"
+                style={{
+                  background: `linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.6) 0%, 
+                    rgba(255, 255, 255, 0.2) 30%,
+                    transparent 60%
+                  )`,
+                  opacity: 'var(--shine-op, 0)'
+                }}
+              />
+              <Image
+                src="/assets/logos/ACE CARDS logo.png"
+                alt="Loading"
+                fill
+                sizes="(max-width: 768px) 40vw, 320px"
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

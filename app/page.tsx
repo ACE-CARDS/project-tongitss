@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/layout/navbar";
-import Popup from "@/components/features/landing_page/announcements/pop-up";
+import Popup from "@/components/features/landing_page/announcements/announcementPopup";
 import Kidla from "@/components/ui/kidla/kidlaButton";
 import KidlaDialogue from "@/components/ui/kidla/kidlaDialogue";
 import Footer from "@/components/layout/footer";

@@ -84,7 +84,7 @@ const KidlaDialogue: FC<Props> = ({
           ref={container}
           className="fixed inset-0 z-40 flex items-center justify-center lg:justify-end pt-20 lg:pt-28 lg:pr-24 px-4 overflow-y-auto"
         >
-          <ModalBlur isShowing={isShowing} onClose={onClose}/>
+          <ModalBlur onClose={onClose}/>
 
           <div
             className="z-40 content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 

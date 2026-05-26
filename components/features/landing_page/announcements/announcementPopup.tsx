@@ -14,7 +14,7 @@ type Props = {
 
 gsap.registerPlugin(useGSAP);
 const supabase = createClient();
-const Popup: FC<Props> = ({ isShowing, onClose }) => {
+const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
   useEffect(() => {
@@ -98,7 +98,7 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
           id="popUpAnnouncement"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <ModalBlur isShowing={isShowing} onClose={onClose}/>
+          <ModalBlur onClose={onClose}/>
 
           <div className="content relative z-10 flex flex-col w-full max-w-6xl h-[85vh] bg-[#011638] rounded-2xl shadow-3xl overflow-hidden">
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
@@ -163,4 +163,4 @@ const Popup: FC<Props> = ({ isShowing, onClose }) => {
   );
 };
 
-export default Popup;
+export default AnnouncementPopup;

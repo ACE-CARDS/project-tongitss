@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
+import SearchBar from "@/components/ui/searchBar";
+import AddButton from "@/components/ui/addButton";
+import TableActions from "@/components/ui/tableActions";
+import Popup from "@/components/ui/popup";
+import FormDropdown from "@/components/ui/formDropdown";
+import SortIcon from "@/components/ui/sortIcon";
 
 // Types
 interface School {
@@ -32,42 +38,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// --- Sub-Component: Sort Icons ---
-function SortIcons({ active, order }: { active: boolean; order: SortOrder }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        stroke="currentColor"
-        className={`w-3 h-3 -mb-1 ${active && order === "asc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="m4.5 15.75 7.5-7.5 7.5 7.5"
-        />
-      </svg>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        stroke="currentColor"
-        className={`w-3 h-3 -mt-1 ${active && order === "desc" ? "text-[#eec643]" : "text-[#eff0f2]/30"}`}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="m19.5 8.25-7.5 7.5-7.5-7.5"
-        />
-      </svg>
-    </div>
-  );
-}
-
 // --- Sub-Component: Delete Confirmation ---
 function DeleteConfirmPopup({
   isOpen,
@@ -76,7 +46,7 @@ function DeleteConfirmPopup({
   name,
   usageCount,
   isDeleting,
-  deleteError,
+  isCheckingUsage,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -90,92 +60,87 @@ function DeleteConfirmPopup({
     executives: number;
   };
   isDeleting: boolean;
-  deleteError: string | null;
+  isCheckingUsage: boolean;
 }) {
-  const popupRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node))
-        onClose();
-    }
-    if (isOpen) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
   const hasUsage = Object.values(usageCount).some((count) => count > 0);
 
+  if (isCheckingUsage) {
+    return (
+      <Popup isOpen={isOpen} title="Confirm Delete" onClose={onClose} maxWidth="md">
+        <span className="form_error">
+          {"\u200b"}
+        </span>
+        <div className="form_label text-center">
+          Loading...
+        </div>
+      </Popup>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div
-        ref={popupRef}
-        className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden"
-      >
-        <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">
-            Confirm Delete
-          </h3>
-        </div>
-        <div className="px-6 py-6">
-          {deleteError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-ubuntu-mono">
-              {deleteError}
-            </div>
-          )}
-          {hasUsage ? (
-            <>
-              <p className="text-sm text-[#475569] font-ubuntu-mono mb-4">
-                Cannot delete school because it is currently in use:
-              </p>
-              <ul className="list-disc list-inside mb-6 text-sm text-[#475569] font-ubuntu-mono">
-                {usageCount.members > 0 && (
-                  <li>{usageCount.members} members</li>
-                )}
-                {usageCount.surveys > 0 && (
-                  <li>{usageCount.surveys} surveys</li>
-                )}
-                {usageCount.theses > 0 && <li>{usageCount.theses} theses</li>}
-                {usageCount.organizations > 0 && (
-                  <li>{usageCount.organizations} organizations</li>
-                )}
-                {usageCount.executives > 0 && (
-                  <li>{usageCount.executives} executives</li>
-                )}
-              </ul>
-              <button
-                onClick={onClose}
-                className="w-full py-2 bg-[#011638] text-white rounded-lg font-oswald"
-              >
-                OK
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-                Are you sure you want to delete "{name}"? This action cannot be
-                undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={onClose}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={onConfirm}
-                  disabled={isDeleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-oswald disabled:opacity-50"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+    <Popup isOpen={isOpen} title="Confirm Delete" onClose={onClose} maxWidth="md">
+      <span className="form_error">
+        {"\u200b"}
+      </span>
+
+      {hasUsage ? (
+        <>
+          <p className="text-sm text-[#475569] font-ubuntu-mono mb-4">
+            Cannot delete school because it is currently in use:
+          </p>
+          <ul className="list-disc list-inside mb-6 text-sm text-[#475569] font-ubuntu-mono space-y-1 pl-2">
+            {usageCount.members > 0 && (
+              <li>{usageCount.members} members</li>
+            )}
+            {usageCount.surveys > 0 && (
+              <li>{usageCount.surveys} surveys</li>
+            )}
+            {usageCount.theses > 0 && (
+              <li>{usageCount.theses} theses</li>
+            )}
+            {usageCount.organizations > 0 && (
+              <li>{usageCount.organizations} organizations</li>
+            )}
+            {usageCount.executives > 0 && (
+              <li>{usageCount.executives} executives</li>
+            )}
+          </ul>
+          <div className="flex justify-end">
+            <button
+              onClick={onClose}
+              className="form_btn-blue"
+            >
+              OK
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
+            Are you sure you want to delete "{name}"? This action cannot be
+            undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="form_btn-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="form_btn-red"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </>
+      )}
+    </Popup>
   );
 }
 
@@ -188,98 +153,114 @@ function EditPopup({
   schools,
   provinces,
   isSaving,
-  saveError,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: number, name: string, provinceId: number) => void;
-  school: School | null;
+  school: School;
   schools: School[];
   provinces: Province[];
   isSaving: boolean;
-  saveError: string | null;
 }) {
-  const [name, setName] = useState("");
-  const [provinceId, setProvinceId] = useState<number>(1);
+  console.count("Popup Render Cycle Ticker");
+  const [name, setName] = useState(school.school_name);
+  const [provinceId, setProvinceId] = useState<number>(school.province);
+
+  const [nameError, setNameError] = useState("");
+  const [provinceError, setProvinceError] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (isOpen && school) {
-      setName(school.school_name);
-      setProvinceId(school.province);
-      setError("");
-    }
-  }, [isOpen, school]);
+  const noChange =
+    school !== null &&
+    name.trim() === school.school_name &&
+    provinceId === school.province;
 
-  const handleSave = () => {
-    if (!name.trim()) return setError("Name is required");
+  const handleEdit = async () => {
+    setNameError("");
+    setProvinceError("");
+
+    let hasError = false;
+
+    if (!name.trim()) {
+      setNameError("Name is required");
+      hasError = true;
+    }
+
+    if (provinceId === 0) {
+      setProvinceError("Please select a province");
+      hasError = true;
+    }
+
     if (
       schools.some(
         (s) =>
           s.school_name.toLowerCase() === name.trim().toLowerCase() &&
-          s.id !== school?.id,
+          s.id !== school?.id
       )
     ) {
-      return setError("School name already exists");
+      setNameError("School name already exists");
+      hasError = true;
     }
-    if (school) onSave(school.id, name.trim(), provinceId);
+
+    const dbError: any = await onSave(school.id, name.trim(), provinceId);
+    if (dbError) {
+      setError(dbError);
+    }
+
+    if (hasError || !school) return;
+
   };
+
+  const dropdownOptions = useMemo(() => {
+    return provinces.map((p) => ({
+      label: p.prov_name,
+      value: p.id.toString(),
+    }));
+  }, [provinces]);
 
   if (!isOpen || !school) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
-        <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">
-            Edit School
-          </h3>
-        </div>
-        <div className="px-6 py-6">
-          {saveError && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm font-ubuntu-mono rounded-lg">
-              {saveError}
-            </div>
-          )}
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-            School Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-4 bg-[#fbfaf8] font-ubuntu-mono"
-          />
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-            Province
-          </label>
-          <select
-            value={provinceId}
-            onChange={(e) => setProvinceId(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-6 bg-[#fbfaf8] font-ubuntu-mono"
-          >
-            {provinces.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.prov_name}
-              </option>
-            ))}
-          </select>
-          {error && <p className="text-xs text-red-600 mb-4">{error}</p>}
-          <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-4 py-2 font-ubuntu-mono">
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-6 py-2 bg-[#1e4db7] text-white rounded-lg font-oswald disabled:opacity-50"
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </div>
+    <Popup isOpen={isOpen} title="Edit School" onClose={onClose} maxWidth="md">
+      <span className="form_error">
+        {error || "\u200b"}
+      </span>
+
+      <label className="form_label">School Name</label>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="School Name..."
+        data-error={!!nameError}
+        className="form_input"
+      />
+      <span className="form_error">{nameError || "\u200b"}</span>
+
+      <label className="form_label">Province</label>
+      <FormDropdown
+        value={provinceId.toString()}
+        onChange={(val) => setProvinceId(Number(val))}
+        options={dropdownOptions}
+        className="mb-2"
+        data-error={!!provinceError}
+        placeholder="Select a Province..."
+      />
+      <span className="form_error">{provinceError || "\u200b"}</span>
+
+      <div className="flex justify-end gap-3">
+        <button onClick={onClose} className="form_btn-cancel">
+          Cancel
+        </button>
+        <button
+          onClick={handleEdit}
+          disabled={isSaving || noChange}
+          className="form_btn-blue"
+        >
+          {isSaving ? "Saving..." : "Save Changes"}
+        </button>
       </div>
-    </div>
+    </Popup>
   );
 }
 
@@ -291,7 +272,6 @@ function AddPopup({
   schools,
   provinces,
   isAdding,
-  addError,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -299,86 +279,111 @@ function AddPopup({
   schools: School[];
   provinces: Province[];
   isAdding: boolean;
-  addError: string | null;
 }) {
   const [name, setName] = useState("");
-  const [provinceId, setProvinceId] = useState<number>(1);
+  const [provinceId, setProvinceId] = useState<number>(0);
+  const [nameError, setNameError] = useState("");
+  const [provinceError, setProvinceError] = useState("");
   const [error, setError] = useState("");
+
+  const noChange = name.trim() === "" && provinceId === 0;
 
   useEffect(() => {
     if (isOpen) {
       setName("");
-      setProvinceId(1);
+      setProvinceId(0);
+      setNameError("");
+      setProvinceError("");
       setError("");
     }
   }, [isOpen]);
 
-  const handleAdd = () => {
-    if (!name.trim()) return setError("Name is required");
-    if (
-      schools.some(
-        (s) => s.school_name.toLowerCase() === name.trim().toLowerCase(),
-      )
-    )
-      return setError("Already exists");
-    onAdd(name.trim(), provinceId);
+  const handleAdd = async () => {
+    setNameError("");
+    setProvinceError("");
+
+    let hasError = false;
+
+    if (!name.trim()) {
+      setNameError("Name is required");
+      hasError = true;
+    }
+    
+    if (provinceId === 0) {
+      setProvinceError("Please select a province");
+      hasError = true;
+    }
+
+    if (schools.some((s) => s.school_name.toLowerCase() === name.trim().toLowerCase())) {
+      setNameError("School name already exists");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const dbError: any = await onAdd(name.trim(), provinceId);
+    if (dbError) {
+      setError(dbError);
+    }
   };
+
+  
+  const dropdownOptions = useMemo(() => {
+    return provinces.map((p) => ({
+      label: p.prov_name,
+      value: p.id.toString(),
+    }));
+  }, [provinces]);
+
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-[3px] bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-[#fbfaf8] rounded-xl max-w-md w-full mx-4 shadow-2xl overflow-hidden">
-        <div className="bg-[#011638] px-6 py-4">
-          <h3 className="text-xl font-oswald font-bold text-[#fbfaf8]">
-            Add School
-          </h3>
-        </div>
-        <div className="px-6 py-6">
-          {addError && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm font-ubuntu-mono rounded-lg">
-              {addError}
-            </div>
-          )}
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-            School Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-4 bg-[#fbfaf8] font-ubuntu-mono"
-          />
-          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-            Province
-          </label>
-          <select
-            value={provinceId}
-            onChange={(e) => setProvinceId(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-6 bg-[#fbfaf8] font-ubuntu-mono"
-          >
-            {provinces.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.prov_name}
-              </option>
-            ))}
-          </select>
-          {error && <p className="text-xs text-red-600 mb-4">{error}</p>}
-          <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-4 py-2 font-ubuntu-mono">
-              Cancel
-            </button>
-            <button
-              onClick={handleAdd}
-              disabled={isAdding}
-              className="px-6 py-2 bg-[#1e4db7] text-white rounded-lg font-oswald disabled:opacity-50"
-            >
-              {isAdding ? "Adding..." : "Add School"}
-            </button>
-          </div>
-        </div>
+    <Popup isOpen={isOpen} title="Add School" onClose={onClose} maxWidth="md">
+      <span className="form_error">
+        {error || "\u200b"}
+      </span>
+
+      <label className="form_label">
+        School Name
+      </label>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="School Name..."
+        data-error={!!nameError}
+        className="form_input"
+      />
+      <span className="text-xs text-red-600 mb-2 flex">{nameError || "\u200b"}</span>
+
+      <label className="form_label">
+        Province
+      </label>
+      <FormDropdown
+        value={provinceId === 0 ? "" : provinceId.toString()}
+        onChange={(val) => setProvinceId(Number(val))}
+        options={dropdownOptions}
+        className="mb-2"
+        data-error={!!provinceError}
+        placeholder="Select a Province..."
+      />
+      <span className="text-xs text-red-600 mb-2 flex">{provinceError || "\u200b"}</span>
+
+      <div className="flex justify-end gap-3">
+        <button onClick={onClose} className="form_btn-cancel">
+          Cancel
+        </button>
+        <button
+          onClick={handleAdd}
+          disabled={isAdding || noChange}
+          className="form-btn_blue"
+        >
+          {isAdding ? "Adding..." : "Add School"}
+        </button>
       </div>
-    </div>
+
+    </Popup>
   );
 }
 
@@ -405,10 +410,8 @@ export default function SchoolAdmin() {
     organizations: 0,
     executives: 0,
   });
-  const [status, setStatus] = useState({
-    processing: false,
-    error: null as string | null,
-  });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCheckingUsage, setIsCheckingUsage] = useState(false);
 
   const supabase = createClient();
 
@@ -417,10 +420,7 @@ export default function SchoolAdmin() {
       setLoading(true);
       const [provRes, schoolRes] = await Promise.all([
         supabase.from("province").select("*").order("prov_name"),
-        supabase
-          .from("school")
-          .select(`*, province:province(prov_name)`)
-          .order("school_name"),
+        supabase.from("school").select("*").order("school_name"),
       ]);
       if (!provRes.error) setProvinces(provRes.data || []);
       if (!schoolRes.error) {
@@ -494,13 +494,18 @@ export default function SchoolAdmin() {
   };
 
   const handleAdd = async (name: string, provinceId: number) => {
-    setStatus({ processing: true, error: null });
+    setIsProcessing(true);
     const { data, error } = await supabase
       .from("school")
       .insert({ school_name: name, province: provinceId })
       .select()
       .single();
-    if (error) setStatus({ processing: false, error: error.message });
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    }
+
     else {
       const provName = provinces.find((p) => p.id === provinceId)?.prov_name;
       await logCreateAudit(name);
@@ -510,7 +515,8 @@ export default function SchoolAdmin() {
         ),
       );
       setPopups((p) => ({ ...p, add: false }));
-      setStatus({ processing: false, error: null });
+      setIsProcessing(false);
+      return null;
     }
   };
 
@@ -518,12 +524,17 @@ export default function SchoolAdmin() {
     const originalSchool = schools.find((s) => s.id === id);
     if (!originalSchool) return;
 
-    setStatus({ processing: true, error: null });
+    setIsProcessing(true);
     const { error } = await supabase
       .from("school")
       .update({ school_name: name, province: provinceId })
       .eq("id", id);
-    if (error) setStatus({ processing: false, error: error.message });
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    }
+
     else {
       const provName = provinces.find((p) => p.id === provinceId)?.prov_name;
       await logEditAudit(originalSchool, name, provinceId, provName || "N/A");
@@ -540,23 +551,30 @@ export default function SchoolAdmin() {
         ),
       );
       setPopups((p) => ({ ...p, edit: false }));
-      setStatus({ processing: false, error: null });
+      setIsProcessing(false);
+      return null;
     }
   };
 
   const handleDelete = async () => {
     if (!selectedSchool) return;
-    setStatus({ processing: true, error: null });
+    setIsProcessing(true);
     const { error } = await supabase
       .from("school")
       .delete()
       .eq("id", selectedSchool.id);
-    if (error) setStatus({ processing: false, error: error.message });
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    }
+
     else {
       await logDeleteAudit(selectedSchool.id, selectedSchool.school_name);
       setSchools((prev) => prev.filter((s) => s.id !== selectedSchool.id));
       setPopups((p) => ({ ...p, del: false }));
-      setStatus({ processing: false, error: null });
+      setIsProcessing(false);
+      return null;
     }
   };
 
@@ -614,6 +632,10 @@ export default function SchoolAdmin() {
     }
   };
 
+  const provinceLookup = useMemo(() => {
+    return Object.fromEntries(provinces.map((p) => [p.id, p.prov_name]));
+  }, [provinces]);
+
   const logEditAudit = async (
     old: School,
     newName: string,
@@ -633,7 +655,7 @@ export default function SchoolAdmin() {
     }
     if (old.province !== newProvinceId) {
       changes.push(
-        `province changed from "${old.province_name || "N/A"}" to "${newProvinceName}"`,
+        `province changed from "${provinceLookup[old.province] || "N/A"}" to "${newProvinceName}"`,
       );
     }
 
@@ -675,165 +697,136 @@ export default function SchoolAdmin() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="text-center py-20 font-ubuntu-mono text-gray-400">
-        Loading Schools...
-      </div>
-    );
 
   return (
     <div className="py-4">
       <div className="mb-6 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <input
-            type="text"
-            placeholder="Search schools..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2.5 pl-11 border border-[#011638] rounded-xl bg-[#fbfaf8] text-[#475569] font-ubuntu-mono outline-none"
-          />
-          <svg
-            className="w-5 h-5 text-[#011638] absolute left-4 top-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-        <button
-          onClick={() => setPopups((p) => ({ ...p, add: true }))}
-          className="w-full md:w-auto bg-[#eec643] text-[#011638] px-8 py-2.5 rounded-xl hover:bg-[#d9b237] font-oswald shadow-md"
-        >
-          Add School
-        </button>
+        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <AddButton 
+          onClick={() => {
+            setSelectedSchool(null);
+            setIsProcessing(false);
+            setPopups((p) => ({ ...p, add: true }));
+          }} 
+          label="New School" 
+        />
       </div>
 
-      <div className="bg-[#fbfaf8] rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-[#011638] text-[#eff0f2] font-oswald uppercase text-xs tracking-wider">
+      <div className="manage_table_div">
+        <table className="manage_table">
+          <thead className="manage_thead">
+            <tr>
               <th
-                className="w-[40%] px-6 py-4 cursor-pointer hover:bg-[#012a5a]"
+                className={`w-[40%] th-sortable ${sortField === "name" ? "is-active" : ""}`}
                 onClick={() => handleSort("name")}
               >
-                <div className="flex items-center justify-center gap-2">
-                  School Name{" "}
-                  <SortIcons active={sortField === "name"} order={sortOrder} />
+                <div>
+                  School Name
+                  <SortIcon field="name" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th
-                className="w-[30%] px-6 py-4 cursor-pointer hover:bg-[#012a5a]"
+                className={`w-[20%] th-sortable ${sortField === "province" ? "is-active" : ""}`}
                 onClick={() => handleSort("province")}
               >
-                <div className="flex items-center justify-center gap-2">
-                  Province{" "}
-                  <SortIcons
-                    active={sortField === "province"}
-                    order={sortOrder}
-                  />
+                <div>
+                  Province
+                  <SortIcon field="province" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th
-                className="w-[20%] px-6 py-4 cursor-pointer hover:bg-[#012a5a] hidden sm:table-cell"
+                className={`w-[20%] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
                 onClick={() => handleSort("created_at")}
               >
-                <div className="flex items-center justify-center gap-2">
-                  Date Added{" "}
-                  <SortIcons
-                    active={sortField === "created_at"}
-                    order={sortOrder}
-                  />
+                <div>
+                  Date Added
+                  <SortIcon field="created_at" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
-              <th className="w-fit px-6 py-4 text-center">Actions</th>
+
+              <th className="w-[20%]">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 font-ubuntu-mono text-[#475569]">
-            {paginatedItems.map((school) => (
+
+          <tbody>
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="status"
+                >
+                  Loading records...
+                </td>
+              </tr>
+            ) : paginatedItems.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="status"
+                >
+                  No schools found.
+                </td>
+              </tr>
+            ) : (
+            paginatedItems.map((school) => (
               <tr
                 key={school.id}
                 className="hover:bg-blue-50/50 transition-colors"
               >
-                <td className="px-6 py-4 font-oswald font-medium text-[#011638] text-lg text-center">
+                <td className="title">
                   {school.school_name}
                 </td>
-                <td className="px-6 py-4 text-center">
-                  {school.province_name || "N/A"}
+
+                <td >
+                  {provinceLookup[school.province] || "N/A"}
                 </td>
-                <td className="px-6 py-4 text-center hidden sm:table-cell">
+
+                <td className="date_col">
                   {formatDate(school.created_at)}
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <div className="flex justify-center gap-3">
-                    <button
-                      onClick={() => {
-                        setSelectedSchool(school);
-                        setPopups((p) => ({ ...p, edit: true }));
-                      }}
-                      className="text-[#0d21a1] hover:scale-110 transition-transform"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={async () => {
+
+                <td className="text-center">
+                  <TableActions 
+                    item={school}
+                    onEditClick={() =>{
+                      setSelectedSchool(school);
+                      setPopups((p) => ({ ...p, edit: true }));
+                    }}
+                    onDeleteClick={async (school) => {
+                      setSelectedSchool(school);
+                      setPopups((p) => ({ ...p, del: true }));
+                      setIsCheckingUsage(true);
+                      
+                      try {
                         const usage = await checkUsage(school.id);
                         setUsageCount(usage);
-                        setSelectedSchool(school);
-                        setPopups((p) => ({ ...p, del: true }));
-                      }}
-                      className="text-red-600 hover:scale-110 transition-transform"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setIsCheckingUsage(false);
+                      }
+                    }}
+                  />
                 </td>
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {filteredSchools.length > itemsPerPage && (
-        <div className="mt-8">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
-        </div>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       )}
 
       <AddPopup
@@ -842,28 +835,33 @@ export default function SchoolAdmin() {
         onAdd={handleAdd}
         schools={schools}
         provinces={provinces}
-        isAdding={status.processing}
-        addError={status.error}
+        isAdding={isProcessing}
       />
-      <EditPopup
-        isOpen={popups.edit}
-        onClose={() => setPopups((p) => ({ ...p, edit: false }))}
-        onSave={handleEdit}
-        school={selectedSchool}
-        schools={schools}
-        provinces={provinces}
-        isSaving={status.processing}
-        saveError={status.error}
-      />
-      <DeleteConfirmPopup
-        isOpen={popups.del}
-        onClose={() => setPopups((p) => ({ ...p, del: false }))}
-        onConfirm={handleDelete}
-        name={selectedSchool?.school_name || ""}
-        usageCount={usageCount}
-        isDeleting={status.processing}
-        deleteError={status.error}
-      />
+
+      {selectedSchool && (
+        <>
+          <EditPopup
+            key={`edit-${selectedSchool.id}`}
+            isOpen={popups.edit}
+            onClose={() => setPopups((p) => ({ ...p, edit: false }))}
+            onSave={handleEdit}
+            school={selectedSchool}
+            schools={schools}
+            provinces={provinces}
+            isSaving={isProcessing}
+          />
+          <DeleteConfirmPopup
+            key={`del-${selectedSchool.id}`}
+            isOpen={popups.del}
+            onClose={() => setPopups((p) => ({ ...p, del: false }))}
+            onConfirm={handleDelete}
+            name={selectedSchool?.school_name || ""}
+            usageCount={usageCount}
+            isDeleting={isProcessing}
+            isCheckingUsage={isCheckingUsage}
+          />
+        </>
+      )}
     </div>
   );
 }
