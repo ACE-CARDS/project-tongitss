@@ -26,15 +26,13 @@ const FilterDropdown = ({
   const [openUpward, setOpenUpward] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // 1. Packaged layout math inside a useCallback to safely reference across effects
   const updateDirection = useCallback(() => {
     if (!ref.current) return;
 
     const rect = ref.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    const menuExpectedHeight = 260; // max-h-60 (240px) + gap/margins (20px)
+    const menuExpectedHeight = 260;
 
-    // If space below is too tight, flip it up. Otherwise, default down.
     if (spaceBelow < menuExpectedHeight) {
       setOpenUpward(true);
     } else {
@@ -42,19 +40,14 @@ const FilterDropdown = ({
     }
   }, []);
 
-  // 2. Handle active window resizing / zooming behaviors while open
   useEffect(() => {
     if (!open) return;
 
-    // Run the check instantly upon open flag toggling
     updateDirection();
-
-    // Set up window layout change listener (fires continuously during user zoom actions)
     window.addEventListener("resize", updateDirection);
     return () => window.removeEventListener("resize", updateDirection);
   }, [open, updateDirection]);
 
-  // Handle click outside to close menu frame
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -69,15 +62,28 @@ const FilterDropdown = ({
   const selectedLabel = selectedOption ? selectedOption.label : value;
 
   return (
-    <div ref={ref} className={`relative w-full md:w-auto z-[20] font-sans ${className}`}>
+    <div ref={ref} className={`relative inline-block text-left z-[8] font-sans ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="cursor-pointer w-full px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
+        className="cursor-pointer w-full px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between gap-3"
       >
-        <span className="truncate">{selectedLabel}</span>
+        <div className="grid grid-cols-1 grid-rows-1 text-left flex-1">
+          <span className="col-start-1 row-start-1 truncate pr-1">
+            {selectedLabel}
+          </span>
+          
+          <div className="col-start-1 row-start-1 invisible h-0 overflow-hidden select-none pointer-events-none" aria-hidden="true">
+            {options.map((o) => (
+              <div key={`spacer-${o.value}`} className="pr-1 font-bold tracking-widest text-sm font-ubuntu-mono uppercase">
+                {o.label}
+              </div>
+            ))}
+          </div>
+        </div>
+
         <svg
-          className={`w-4 h-4 shrink-0 transition-transform ml-3 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -88,14 +94,13 @@ const FilterDropdown = ({
 
       {open && (
         <div
-          className={`absolute right-0 md:left-0 w-full min-w-[160px] bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
+          className={`absolute left-0 w-full bg-white border border-[#011638] rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
             openUpward 
               ? "bottom-full mb-2 origin-bottom" 
               : "top-full mt-2 origin-top"
           }`}
         >
-          {/* Using fluid max-h-[35vh] mixed with desktop sm:max-h-60 keeps height robust on massive zoom settings */}
-          <ul className="py-1 max-h-[40vh] overflow-y-auto custom-scrollbar-blue">
+          <ul className="py-1 max-h-[41vh] overflow-y-auto custom-scrollbar-blue">
             {options.map((o) => (
               <li
                 key={o.value}
@@ -104,7 +109,7 @@ const FilterDropdown = ({
                   onChange(o.value);
                   setOpen(false);
                 }}
-                className={`px-5 py-3 transition-colors text-sm font-bold font-ubuntu-mono uppercase tracking-widest ${
+                className={`px-5 py-3 transition-colors text-sm font-bold font-ubuntu-mono uppercase tracking-widest whitespace-nowrap ${
                   o.disabled
                     ? "opacity-40 bg-slate-50 text-slate-500 cursor-not-allowed"
                     : o.value === value

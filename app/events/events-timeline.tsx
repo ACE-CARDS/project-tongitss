@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import FilterDropdown from "@/components/ui/filterDropdown";
 import ModalBlur from "@/components/ui/modalBlur";
 import PaginationNav from "@/components/ui/pagination";
+import SearchBar from "@/components/ui/searchBar";
 
 export default function EventsTimeline() {
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -16,7 +17,6 @@ export default function EventsTimeline() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
-
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -148,31 +148,18 @@ export default function EventsTimeline() {
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
-    
     setCurrentPage(page);
   };
 
   return (
     <div className="w-full flex flex-col -mt-6 md:-mt-8">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-7xl mx-auto mb-10 px-4">
-        <div className="w-full flex-1 flex justify-center md:justify-start">
-          <div className="relative w-full max-w-xl">
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-5 py-2.5 pl-11 border border-[#011638] rounded-xl text-[#011638] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#011638] bg-white shadow-sm transition-all font-ubuntu-mono font-bold"
+        <div className="w-full flex justify-center md:justify-start">
+            <SearchBar 
+              searchTerm={searchQuery} 
+              onSearchChange={setSearchQuery} 
+              placeholder="Search events..." 
             />
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto shrink-0">
@@ -214,7 +201,7 @@ export default function EventsTimeline() {
                 <div
                   key={year}
                   onClick={() => setActiveYear(year)}
-                  className="relative z-8 flex flex-col items-center cursor-pointer group flex-1 min-w-[80px] md:min-w-[120px] shrink-0"
+                  className="relative z-6 flex flex-col items-center cursor-pointer group flex-1 min-w-[80px] md:min-w-[120px] shrink-0"
                 >
                   <span
                     className={`absolute -top-10 text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
@@ -332,7 +319,6 @@ export default function EventsTimeline() {
                 ))}
               </div>
 
-              {/* SPAMMABLE PAGINATION FROM MEMBERS DIRECTORY */}
               <PaginationNav currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={handlePageChange} />
             </div>
           )}
@@ -417,7 +403,6 @@ export default function EventsTimeline() {
                 </div>
               </div>
             </div>
-            
           </div>
         </>
       )}
