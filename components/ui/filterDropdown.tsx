@@ -73,7 +73,7 @@ const FilterDropdown = ({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="cursor-pointer w-full md:w-auto px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
+        className="cursor-pointer w-full px-5 py-2.5 bg-white border border-[#011638] rounded-xl text-[#011638] font-bold font-ubuntu-mono uppercase tracking-widest text-sm shadow-sm hover:shadow-md transition flex items-center justify-between min-w-[160px]"
       >
         <span className="truncate">{selectedLabel}</span>
         <svg
@@ -95,7 +95,7 @@ const FilterDropdown = ({
           }`}
         >
           {/* Using fluid max-h-[35vh] mixed with desktop sm:max-h-60 keeps height robust on massive zoom settings */}
-          <ul className="py-1 max-h-[40vh] h-60 overflow-y-auto custom-scrollbar-blue">
+          <ul className="py-1 max-h-[40vh] overflow-y-auto custom-scrollbar-blue">
             {options.map((o) => (
               <li
                 key={o.value}
