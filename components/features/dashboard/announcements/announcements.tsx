@@ -49,7 +49,7 @@ export default function Dashboard() {
           {/* Announcements */}
           <div className="w-full flex flex-col md:h-[750px] mx-auto">
             <div className="h-full flex flex-col overflow-hidden">
-              <h2 className="text-2xl md:text-4xl font-bold text-black text-center mb-6 mt-6">
+              <h2 className="text-2xl md:text-4xl font-bold gradient text-center mb-6 mt-6">
                 ANNOUNCEMENTS
               </h2>
               <div className="flex-1 overflow-y-auto custom-scrollbar-blue pr-4 pb-6">

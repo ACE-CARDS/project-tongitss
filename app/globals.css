@@ -65,8 +65,13 @@ p {
   }
 
 @utility headersub {
-    @apply text-3xl md:text-4xl font-oswald font-medium text-[#011638];
+    @apply text-3xl md:text-4xl font-oswald font-medium
+    bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
   }
+
+@utility gradient {
+  @apply bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
+}
 
 @utility withminispade {
     &::before,
@@ -151,7 +156,19 @@ p {
   }
 
 @utility form_label {
-    @apply block text-sm font-medium text-[#011638] mb-1;
+    @apply block text-sm font-medium font-oswald text-[#011638] mb-1;
+    
+    &.not_required {
+      &::after {
+        content: " ";
+      }
+    }
+
+    &::after {
+      content: " *";
+      @apply text-[#eec643];
+    }
+
   }
 
 Popup .form_error:first-child {
