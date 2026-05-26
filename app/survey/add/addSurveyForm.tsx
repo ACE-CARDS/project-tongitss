@@ -316,8 +316,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     const titleValid = titleInput?.value && titleInput.value.length >= 5;
     const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
     const descriptionValid = descriptionInput?.value && descriptionInput.value.length >= 10;
-    const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
-    const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
     const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
     const categoryValid = !!categorySelect?.value;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
@@ -365,7 +363,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       if (hasDuplicateAuthor) break;
     }
     
-    const hasErrors = !titleValid || !descriptionValid || !keywordsValid || !categoryValid || 
+    const hasErrors = !titleValid || !descriptionValid || !categoryValid || 
                       !schoolValid || !surveyLinkValid || !respondentsValid || !datesValid || 
                       !hasValidAuthor || !!categoryError || !!schoolError || hasDuplicateAuthor;
     
@@ -380,7 +378,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         
         const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement | null;
         const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement | null;
-        const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement | null;
         const startDateInput = document.querySelector('input[name="start_date"]') as HTMLInputElement | null;
         const endDateInput = document.querySelector('input[name="end_date"]') as HTMLInputElement | null;
         const surveyLinkInput = document.querySelector('input[name="survey_link"]') as HTMLInputElement | null;
@@ -389,7 +386,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
         if (titleInput) titleInput.value = draft.title || "";
         if (descriptionInput) descriptionInput.value = draft.description || "";
-        if (keywordsInput) keywordsInput.value = draft.keywords || "";
         if (startDateInput) startDateInput.value = draft.start_date || "";
         if (endDateInput) endDateInput.value = draft.end_date || "";
         if (surveyLinkInput) surveyLinkInput.value = draft.survey_link || "";
@@ -744,7 +740,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       
       const titleInput = form.elements.namedItem("title") as HTMLInputElement | null;
       const descriptionInput = form.elements.namedItem("description") as HTMLTextAreaElement | null;
-      const keywordsInput = form.elements.namedItem("keywords") as HTMLInputElement | null;
       const startDateInput = form.elements.namedItem("start_date") as HTMLInputElement | null;
       const endDateInput = form.elements.namedItem("end_date") as HTMLInputElement | null;
       const surveyLinkInput = form.elements.namedItem("survey_link") as HTMLInputElement | null;
@@ -753,7 +748,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       const categorySelect = form.elements.namedItem("category") as HTMLSelectElement | null;
       const schoolSelect = form.elements.namedItem("school") as HTMLSelectElement | null;
 
-      if (!titleInput?.value || !descriptionInput?.value || !keywordsInput?.value || 
+      if (!titleInput?.value || !descriptionInput?.value ||
           !startDateInput?.value || !endDateInput?.value || !surveyLinkInput?.value || !respondentsInput?.value) {
         throw new Error("Please fill in all required fields");
       }
@@ -850,7 +845,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         .insert({
           survey_title: titleInput.value,
           survey_desc: descriptionInput.value,
-          survey_keyword: keywordsInput.value,
           survey_start: startDateInput.value,
           survey_end: endDateInput.value,
           survey_link: surveyLinkInput.value,
@@ -971,47 +965,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     }}
                 />
                 <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                </div>
-
-                <div>
-                  <label htmlFor="keywords" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Keywords <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="keywords"
-                    name="keywords"
-                    required
-                    maxLength={300}
-                    placeholder="Enter keywords separated by commas"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    // Key Limits
-                    onKeyDown={(e) => {
-                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                        return;
-                      }
-
-                      if (!/[A-Za-z\s\-'.,]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    // Error handling
-                    onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById('keywords-error');
-                        if (input.value.length === 0) {
-                          errorSpan!.textContent = 'Atleast 1 keyword is required.';
-                          errorSpan!.style.display = 'block';
-                        } else if (input.value.length < 2) {
-                          errorSpan!.textContent = 'Keywords must be at least 2 characters.';
-                          errorSpan!.style.display = 'block';
-                        } else {
-                          errorSpan!.style.display = 'none';
-                        }
-                        validateForm();
-                      }}
-                />
-                <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
@@ -1836,12 +1789,20 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       id="category"
                       name="category"
                       required
+                      value={(() => {
+                        const selectElement = document.getElementById('category') as HTMLSelectElement;
+                        if (selectElement && selectElement.value) {
+                          return selectElement.value;
+                        }
+                        return "";
+                      })()}
                       className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                         categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                       }`}
                       onChange={(e) => {
                         setIsCategoryTouched(true);
-                        if (!e.target.value) {
+                        const value = e.target.value;
+                        if (!value || value === "") {
                           setCategoryError("Please select a category");
                         } else {
                           setCategoryError("");
@@ -1850,14 +1811,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       }}
                       onBlur={() => {
                         const select = document.getElementById('category') as HTMLSelectElement;
-                        if (!select?.value) {
+                        if (!select?.value || select?.value === "") {
                           setCategoryError("Please select a category");
                           setIsCategoryTouched(true);
                         }
                         validateForm();
                       }}
                     >
-                      <option value="" disabled>Select a category</option>
+                      <option value="">Select a category</option>
                       {availableCategories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.r_category_name}
@@ -1873,65 +1834,82 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newCategoryName}
-                      onChange={(e) => {
-                        setNewCategoryName(e.target.value);
-                        if (!e.target.value.trim()) {
-                          setCategoryError("Category name is required");
-                        } else if (e.target.value.length < 2) {
-                          setCategoryError("Category name must be at least 2 characters");
-                        } else {
-                          setCategoryError("");
-                        }
-                        validateForm();
-                      }}
-                      placeholder="Enter new category name"
-                      maxLength={50}
-                      className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                        categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                      }`}
-                      required
-                      onKeyDown={(e) => {
-                        if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                          return;
-                        }
-                        
-                        if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddNewCategory}
-                      className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNewCategory(false);
-                        setNewCategoryName("");
+                 <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => {
+                      setNewCategoryName(e.target.value);
+                      setCategoryError("");
+                      // Real-time validation while typing
+                      const value = e.target.value;
+                      if (!value.trim()) {
+                        setCategoryError("Category name is required.");
+                      } else if (value.trim().length < 2) {
+                        setCategoryError("Category name must be at least 2 characters.");
+                      } else {
                         setCategoryError("");
-                        validateForm();
-                      }}
-                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-                {categoryError && (
-                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
-                )}
+                      }
+                    }}
+                    onBlur={() => {
+                      if (!newCategoryName.trim()) {
+                        setCategoryError("Category name is required.");
+                      } else if (newCategoryName.trim().length < 2) {
+                        setCategoryError("Category name must be at least 2 characters.");
+                      }
+                    }}
+                    placeholder="Enter new category name"
+                    maxLength={50}
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                    required
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        return;
+                      }
+                      
+                      if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {categoryError && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                      {categoryError}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddNewCategory}
+                  disabled={!newCategoryName.trim() || newCategoryName.trim().length < 2}
+                  className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                    (!newCategoryName.trim() || newCategoryName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewCategory(false);
+                    setNewCategoryName("");
+                    setCategoryError("");
+                    validateForm();
+                  }}
+                  className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                >
+                  Cancel
+                </button>
               </div>
+                  )}
+                    {isCategoryTouched && categoryError && !showNewCategory && (
+                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                    )}
+                  </div>
 
-                <div>
-                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                <div className="mb-4">
+                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1 pt-4">
                     School <span className="text-[#eec643]">*</span>
                   </label>
                   {!showNewSchool ? (
@@ -1940,12 +1918,20 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         id="school"
                         name="school"
                         required
+                        value={(() => {
+                          const selectElement = document.getElementById('school') as HTMLSelectElement;
+                          if (selectElement && selectElement.value) {
+                            return selectElement.value;
+                          }
+                          return "";
+                        })()}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         onChange={(e) => {
                           setIsSchoolTouched(true);
-                          if (!e.target.value) {
+                          const value = e.target.value;
+                          if (!value || value === "") {
                             setSchoolError("Please select a school");
                           } else {
                             setSchoolError("");
@@ -1954,14 +1940,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         }}
                         onBlur={() => {
                           const select = document.getElementById('school') as HTMLSelectElement;
-                          if (!select?.value) {
+                          if (!select?.value || select?.value === "") {
                             setSchoolError("Please select a school");
                             setIsSchoolTouched(true);
                           }
                           validateForm();
                         }}
                       >
-                        <option value="" disabled>Select a school</option>
+                        <option value="">Select a school</option>
                         {availableSchools.map((school) => (
                           <option key={school.id} value={school.id}>
                             {school.school_name}
@@ -1978,26 +1964,33 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     </div>
                   ) : (
                     <div className="flex gap-2">
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         value={newSchoolName}
                         onChange={(e) => {
                           setNewSchoolName(e.target.value);
-                          // Validate while typing
-                          if (!e.target.value.trim()) {
-                            setSchoolError("School name is required");
-                          } else if (e.target.value.length < 2) {
-                            setSchoolError("School name must be at least 2 characters");
+                          setSchoolError("");
+                          // Real-time validation while typing
+                          const value = e.target.value;
+                          if (!value.trim()) {
+                            setSchoolError("School name is required.");
+                          } else if (value.trim().length < 2) {
+                            setSchoolError("School name must be at least 2 characters.");
                           } else {
                             setSchoolError("");
                           }
-                          validateForm();
+                        }}
+                        onBlur={() => {
+                          if (!newSchoolName.trim()) {
+                            setSchoolError("School name is required.");
+                          } else if (newSchoolName.trim().length < 2) {
+                            setSchoolError("School name must be at least 2 characters.");
+                          }
                         }}
                         placeholder="Enter new school name"
                         maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          schoolError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         required
                         onKeyDown={(e) => {
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -2009,30 +2002,39 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           }
                         }}
                       />
-                      <button
-                        type="button"
-                        onClick={handleAddNewSchool}
-                        className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                      >
-                        Add
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowNewSchool(false);
-                          setNewSchoolName("");
-                          setSchoolError("");
-                          validateForm();
-                        }}
-                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                      >
-                        Cancel
-                      </button>
+                      {schoolError && (
+                        <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                          {schoolError}
+                        </p>
+                      )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleAddNewSchool}
+                      disabled={!newSchoolName.trim() || newSchoolName.trim().length < 2}
+                      className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                        (!newSchoolName.trim() || newSchoolName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewSchool(false);
+                        setNewSchoolName("");
+                        setSchoolError("");
+                        validateForm();
+                      }}
+                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                   )}
-                  {schoolError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
-                  )}
+                {isSchoolTouched && schoolError && !showNewSchool && (
+                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
+                )}
                 </div>
               </div>
             </div>

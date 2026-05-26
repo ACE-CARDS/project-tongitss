@@ -54,6 +54,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [schoolError, setSchoolError] = useState("");
   const [isCategoryTouched, setIsCategoryTouched] = useState(false);
   const [isSchoolTouched, setIsSchoolTouched] = useState(false);
+  const [physicalError, setPhysicalError] = useState("");
   const [digitalLinkError, setDigitalLinkError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -332,6 +333,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const categoryValid = !!categorySelect?.value && !categoryError;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
     const schoolValid = !!schoolSelect?.value && !schoolError;
+    const physicalValid = !physicalError;
     const digitalLinkValid = !digitalLinkError;
     
     const firstNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="firstName[]"]');
@@ -377,7 +379,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const privacyValid = privacyCheckbox?.checked;
     
     const hasErrors = !titleValid || !abstractValid || !keywordsValid || !dateValid || !categoryValid || 
-                      !schoolValid || !digitalLinkValid || !hasValidAuthor || !!categoryError || 
+                      !schoolValid || !physicalValid || !digitalLinkValid || !hasValidAuthor || !!categoryError || 
                       !!schoolError || hasDuplicateAuthor || !privacyValid;
     
     setIsFormValid(!hasErrors);
@@ -491,27 +493,21 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   }, [returnTo]);
 
-// 1. Fix the scoping: Ensure there are no extra '}' before removeAuthor
+
   const addAuthor = () => {
     setAuthors([...authors, { id: Date.now() }]);
-  }; // Only one closing brace here
+  }; 
 
   const removeAuthor = (id: number) => {
     if (authors.length <= 1) return;
 
-    // 1. Remove the author from the list
     setAuthors(prev => prev.filter(a => a.id !== id));
 
-    // 2. Clear their specific search results
     setSearchResults(prev => {
       const newMap = new Map(prev);
       newMap.delete(id);
       return newMap;
     });
-  };
-
-  const updateAuthorState = (id: number, field: keyof Author, value: string) => {
-    setAuthors(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
   const updateAuthor = (id: number, field: keyof Author, value: string) => {
@@ -1583,18 +1579,52 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                 </div>
 
                 <div>
-                  <label htmlFor="physical" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Physical Copy Location
-                  </label>
-                  <input
-                    type="text"
-                    id="physical"
-                    name="physical"
-                    maxLength={200}
-                    placeholder="Enter physical copy location"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                  />
-                </div>
+                <label htmlFor="physical" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  Physical Copy Location
+                </label>
+                <input
+                  type="text"
+                  id="physical"
+                  name="physical"
+                  maxLength={200}
+                  placeholder="Enter physical copy location"
+                  className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                  onInput={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    const value = input.value;
+                    
+                    // Clear error if empty
+                    if (!value.trim()) {
+                      setPhysicalError("");
+                      validateForm();
+                      return;
+                    }
+                    
+                    // Validate
+                    if (value.trim().length < 2) {
+                      setPhysicalError("Physical copy location must be at least 2 characters.");
+                    } else {
+                      setPhysicalError("");
+                    }
+                    validateForm();
+                  }}
+                  onBlur={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    const value = input.value;
+                    
+                    // Only validate there's content
+                    if (value.trim() && value.trim().length < 2) {
+                      setPhysicalError("Physical copy location must be at least 2 characters.");
+                    } else {
+                      setPhysicalError("");
+                    }
+                    validateForm();
+                  }}
+                />
+                {physicalError && (
+                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{physicalError}</p>
+                )}
+              </div>
 
                 <div>
                   <label htmlFor="digital" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -1693,13 +1723,20 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         id="category"
                         name="category"
                         required
+                        value={(() => {
+                          const selectElement = document.getElementById('category') as HTMLSelectElement;
+                          if (selectElement && selectElement.value) {
+                            return selectElement.value;
+                          }
+                          return "";
+                        })()}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        // Error handling
                         onChange={(e) => {
                           setIsCategoryTouched(true);
-                          if (!e.target.value) {
+                          const value = e.target.value;
+                          if (!value || value === "") {
                             setCategoryError("Please select a category");
                           } else {
                             setCategoryError("");
@@ -1708,14 +1745,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         }}
                         onBlur={() => {
                           const select = document.getElementById('category') as HTMLSelectElement;
-                          if (!select?.value) {
+                          if (!select?.value || select?.value === "") {
                             setCategoryError("Please select a category");
                             setIsCategoryTouched(true);
                           }
                           validateForm();
-                      }}
+                        }}
                       >
-                        <option value="" disabled>Select a category</option>
+                        <option value="">Select a category</option>
                         {availableCategories.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.r_category_name}
@@ -1732,20 +1769,34 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     </div>
                   ) : (
                     <div className="flex gap-2">
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         value={newCategoryName}
                         onChange={(e) => {
                           setNewCategoryName(e.target.value);
                           setCategoryError("");
+                          // Real-time validation while typing
+                          const value = e.target.value;
+                          if (!value.trim()) {
+                            setCategoryError("Category name is required.");
+                          } else if (value.trim().length < 2) {
+                            setCategoryError("Category name must be at least 2 characters.");
+                          } else {
+                            setCategoryError("");
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!newCategoryName.trim()) {
+                            setCategoryError("Category name is required.");
+                          } else if (newCategoryName.trim().length < 2) {
+                            setCategoryError("Category name must be at least 2 characters.");
+                          }
                         }}
                         placeholder="Enter new category name"
                         maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         required
-                        // Key Limits
                         onKeyDown={(e) => {
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
@@ -1755,57 +1806,44 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             e.preventDefault();
                           }
                         }}
-                        // Error Handling
-                        onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById('category-error');
-                        
-                        if (!input.value.trim()) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Category name is required.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else if (input.value.length < 2) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'Category name must be at least 2 characters.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
-                        }
+                      />
+                      {categoryError && (
+                        <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                          {categoryError}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddNewCategory}
+                      disabled={!newCategoryName.trim() || newCategoryName.trim().length < 2}
+                      className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                        (!newCategoryName.trim() || newCategoryName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewCategory(false);
+                        setNewCategoryName("");
+                        setCategoryError("");
                         validateForm();
                       }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddNewCategory}
-                        className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                      >
-                        Add
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowNewCategory(false);
-                          setNewCategoryName("");
-                          setCategoryError("");
-                          validateForm();
-                        }}
-                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                   )}
-                  {isCategoryTouched && categoryError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
-                  )}
-                </div>
+                    {isCategoryTouched && categoryError && !showNewCategory && (
+                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                    )}
+                  </div>
 
-                <div>
-                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                <div className="mb-4">
+                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1 pt-4">
                     School <span className="text-[#eec643]">*</span>
                   </label>
                   {!showNewSchool ? (
@@ -1814,13 +1852,20 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         id="school"
                         name="school"
                         required
+                        value={(() => {
+                          const selectElement = document.getElementById('school') as HTMLSelectElement;
+                          if (selectElement && selectElement.value) {
+                            return selectElement.value;
+                          }
+                          return "";
+                        })()}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
-                        // Error handling
                         onChange={(e) => {
-                        setIsSchoolTouched(true);
-                        if (!e.target.value) {
+                          setIsSchoolTouched(true);
+                          const value = e.target.value;
+                          if (!value || value === "") {
                             setSchoolError("Please select a school");
                           } else {
                             setSchoolError("");
@@ -1829,14 +1874,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         }}
                         onBlur={() => {
                           const select = document.getElementById('school') as HTMLSelectElement;
-                          if (!select?.value) {
+                          if (!select?.value || select?.value === "") {
                             setSchoolError("Please select a school");
                             setIsSchoolTouched(true);
                           }
                           validateForm();
                         }}
                       >
-                        <option value="" disabled>Select a school</option>
+                        <option value="">Select a school</option>
                         {availableSchools.map((school) => (
                           <option key={school.id} value={school.id}>
                             {school.school_name}
@@ -1853,20 +1898,34 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     </div>
                   ) : (
                     <div className="flex gap-2">
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         value={newSchoolName}
                         onChange={(e) => {
                           setNewSchoolName(e.target.value);
                           setSchoolError("");
+                          // Real-time validation
+                          const value = e.target.value;
+                          if (!value.trim()) {
+                            setSchoolError("School name is required.");
+                          } else if (value.trim().length < 2) {
+                            setSchoolError("School name must be at least 2 characters.");
+                          } else {
+                            setSchoolError("");
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!newSchoolName.trim()) {
+                            setSchoolError("School name is required.");
+                          } else if (newSchoolName.trim().length < 2) {
+                            setSchoolError("School name must be at least 2 characters.");
+                          }
                         }}
                         placeholder="Enter new school name"
                         maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          schoolError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         required
-                        // Key Limits
                         onKeyDown={(e) => {
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
@@ -1876,55 +1935,40 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             e.preventDefault();
                           }
                         }}
-                        // Error Handling
-                        onInput={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById('school-error');
-                        
-                        if (!input.value.trim()) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'School name is required.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else if (input.value.length < 2) {
-                          if (errorSpan) {
-                            errorSpan.textContent = 'School name must be at least 2 characters.';
-                            errorSpan.style.display = 'block';
-                          }
-                        } else {
-                          if (errorSpan) {
-                            errorSpan.style.display = 'none';
-                          }
-                        }
+                      />
+                      {schoolError && (
+                        <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                          {schoolError}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddNewSchool}
+                      disabled={!newSchoolName.trim() || newSchoolName.trim().length < 2}
+                      className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                        (!newSchoolName.trim() || newSchoolName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewSchool(false);
+                        setNewSchoolName("");
+                        setSchoolError("");
                         validateForm();
                       }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddNewSchool}
-                        className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                      >
-                        Add
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowNewSchool(false);
-                          setNewSchoolName("");
-                          setSchoolError("");
-                          const errorSpan = document.getElementById('school-error');
-                          if (errorSpan) errorSpan.style.display = 'none';
-                          validateForm();
-                        }}
-                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                   )}
-                  {isSchoolTouched && schoolError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
-                  )}
+                {isSchoolTouched && schoolError && !showNewSchool && (
+                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
+                )}
                 </div>
               </div>
             </div>
