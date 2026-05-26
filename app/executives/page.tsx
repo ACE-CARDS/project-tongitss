@@ -79,7 +79,6 @@ function ExecutivesContent() {
           committee!inner (comm_name)
         `)
         .eq("acadyear", selectedAY)
-        .eq("is_active", true)
         .in("committee.comm_name", roleOrder);
 
       if (execError) {
