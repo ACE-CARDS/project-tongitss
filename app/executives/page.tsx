@@ -207,16 +207,6 @@ function ExecutivesContent() {
                       </div>
 
                       <div className="flex justify-center gap-3 mt-4 pb-2">
-                        <a
-                          href={`mailto:${exec.email}`}
-                          className="hover:scale-110 transition shadow-sm hover:shadow-lg shadow-black/20 rounded-full"
-                        >
-                          <img
-                            src="/assets/logos/gmail.jpg"
-                            alt="Email"
-                            className="w-8 h-8 rounded-full"
-                          />
-                        </a>
                         {exec.fblink && (
                           <a
                             href={exec.fblink}
