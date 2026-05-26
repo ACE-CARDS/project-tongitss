@@ -564,7 +564,7 @@ export default function CategoryAdmin() {
           <thead className="manage_thead">
             <tr>
               <th
-                className={`w-[40%] th-sortable ${sortField === "name" ? "is-active" : ""}`}
+                className={`w-[400px] th-sortable ${sortField === "name" ? "is-active" : ""}`}
                 onClick={() => handleSort("name")}
               >
                 <div>
@@ -574,7 +574,7 @@ export default function CategoryAdmin() {
               </th>
 
               <th
-                className={`w-[40%] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
+                className={`w-[200px] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
                 onClick={() => handleSort("created_at")}
               >
                 <div>
@@ -583,7 +583,7 @@ export default function CategoryAdmin() {
                 </div>
               </th>
 
-              <th className="w-[20%]">Actions</th>
+              <th className="w-[200px]">Actions</th>
             </tr>
           </thead>
 
