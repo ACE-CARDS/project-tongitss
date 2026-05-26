@@ -15,6 +15,7 @@ interface FormDropdownProps {
   placeholder?: string;
   className?: string;
   "data-error"?: boolean;
+  selectablePlaceholder?: boolean;
 }
 
 const FormDropdown = ({ 
@@ -24,6 +25,7 @@ const FormDropdown = ({
   placeholder,
   className = "" ,
   "data-error": dataError = false,
+  selectablePlaceholder = false,
 }: FormDropdownProps) => {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
@@ -81,7 +83,7 @@ const FormDropdown = ({
         onClick={() => setOpen((prev) => !prev)}
         className="form_input flex items-center justify-between"
       >
-        <span className={`truncate ${!selectedOption ? "text-slate-400 normal-case font-medium" : ""}`}>
+        <span className={`truncate ${!selectedOption && selectablePlaceholder == false ? "text-slate-400 normal-case font-medium" : ""}`}>
           {selectedLabel}
         </span>
         <svg
@@ -103,7 +105,19 @@ const FormDropdown = ({
           }`}
         >
           <ul className="py-1 max-h-[40vh] h-60 overflow-y-auto custom-scrollbar-blue">
-            <li className="px-5 py-2.5 text-sm text-slate-400 border-b border-slate-100 font-ubuntu-mono tracking-widest bg-slate-50/50 select-none cursor-not-allowed border-b-slate-300 border-b-1">
+            <li 
+              onClick={() => {
+                if (selectablePlaceholder) {
+                  onChange(""); // Sends empty string to reset the filter/value
+                  setIsOpen(false); // Closes the dropdown menu
+                }
+              }}
+              className={`px-5 py-2.5 text-sm border-b border-slate-100 font-ubuntu-mono tracking-widest border-b-slate-300 border-b-1 transition-colors
+                ${selectablePlaceholder 
+                  ? "text-[#011638] font-medium bg-white hover:bg-slate-100 cursor-pointer" 
+                  : "text-slate-400 bg-slate-50/50 select-none cursor-not-allowed"
+                }`}
+            >
               {placeholder || "Select an option..."}
             </li>
             {options.map((o) => (

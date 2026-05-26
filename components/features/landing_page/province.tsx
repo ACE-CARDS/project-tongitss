@@ -255,6 +255,7 @@ export default function Province({ id }: { id?: string }) {
                     value={selectedProvince || ""}
                     onChange={(val) => setSelectedProvince(val || null)}
                     className="w-full"
+                    selectablePlaceholder={true}
                   />
                 </div>
 
