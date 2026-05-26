@@ -201,8 +201,13 @@ export default function MemAppAdmin() {
         if (dl) {
           setDeadlineItem(dl);
           const parsed = new Date(dl.description);
-          if (!isNaN(parsed.getTime()))
-            setDeadlineDate(parsed.toISOString().split("T")[0]);
+          if (!isNaN(parsed.getTime())) {
+            // FIXED: Using local date extraction to avoid timezone shifts pushing the date backward
+            const year = parsed.getFullYear();
+            const month = String(parsed.getMonth() + 1).padStart(2, "0");
+            const day = String(parsed.getDate()).padStart(2, "0");
+            setDeadlineDate(`${year}-${month}-${day}`);
+          }
         }
         const sl = data.find((d) => d.type === "signup_link");
         if (sl) {
