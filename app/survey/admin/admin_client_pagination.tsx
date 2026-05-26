@@ -336,11 +336,11 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                     <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
                       <FaRegCalendar className="text-[#011638]" />
 
-                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-sm leading-none"> 
+                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
                         Deadline 
                       </span>
 
-                      <span className="font-ubuntu-mono text-sm xl:text-[16px] text-[#011638] flex flex-wrap items-center gap-1">
+                      <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
                         {new Date(survey.survey_start).toLocaleDateString(
                           "en-US",
                           {
@@ -351,7 +351,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                         )}
                       </span>
                       -
-                      <span className="font-ubuntu-mono text-sm xl:text-[16px] text-[#011638] flex flex-wrap items-center gap-1">
+                      <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
                         {new Date(survey.survey_end).toLocaleDateString(
                           "en-US",
                           {
@@ -368,7 +368,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                       <div className="flex items-center gap-1">
                         <FaRegAddressBook className="text-[#011638]" />
 
-                        <span className="font-oswald uppercase text-sm leading-none">
+                        <span className="font-oswald uppercase text-[12px] leading-none">
                           Target Respondents 
                           {survey.max_respondents && (
                             <span className="ml-2 text-[#1e4db7] font-normal">
@@ -397,11 +397,11 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                     <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
                       <FaRegFolderClosed className="text-[#011638]" />
                       
-                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-sm leading-none"> 
+                      <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
                         Category 
                       </span>
 
-                      <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-sm xl:text-[16px]">
+                      <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-[14px] pl-1">
                         {survey.r_category?.r_category_name || "Uncategorized"}
                       </span>
                     </div>
@@ -411,12 +411,12 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                       <span className="items-center flex gap-1">
                         <FaSchool className="text-[#011638] shrink-0" />
                         
-                        <span className="font-oswald uppercase text-sm leading-none pr-2"> 
+                        <span className="font-oswald uppercase text-[12px] leading-none pr-2"> 
                           School 
                         </span>
                       </span>
 
-                      <span className="border-l-2 border-[#a6a6a6] pl-1 font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-sm xl:text-[16px]">
+                      <span className="border-l-2 border-[#a6a6a6] pl-1 font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-[14px]">
                         {survey.school?.school_name || "No School"}
                       </span>
                     </div>
@@ -464,7 +464,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
                   </div>
 
                   <Link href={survey.survey_link || "#"} target="_blank" className="mt-4">
-                    <div className="group font-bold cursor-pointer absolute rounded-t-4xl bottom-0 left-0 w-full bg-[#011638] text-[#fbfaf8] py-3 items-center justify-between flex gap-2 px-3 pl-6">
+                    <div className="group font-bold cursor-pointer absolute rounded-t-4xl text-[15px] bottom-0 left-0 w-full bg-[#011638] text-[#fbfaf8] py-3 items-center justify-between flex gap-2 px-3 pl-6">
                       {survey.survey_link ? (
                         <>
                           <span>Take the Survey</span>
