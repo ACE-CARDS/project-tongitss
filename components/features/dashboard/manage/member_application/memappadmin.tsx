@@ -1,10 +1,9 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Pagination from "@/components/ui/pagination";
+import PaginationNav from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
 
 // --- DnD Kit Imports ---
@@ -150,6 +149,7 @@ function SortableRow({
   onActivate,
   onDelete,
   onEdit,
+  onMove,
 }: {
   item: MemAppItem;
   index: number;
@@ -157,6 +157,7 @@ function SortableRow({
   onActivate: (id: number) => void;
   onDelete: (id: number) => void;
   onEdit: (id: number) => void;
+  onMove: (id: number, dir: 'up' | 'down') => void;
 }) {
   const {
     attributes,
@@ -169,8 +170,10 @@ function SortableRow({
     id: item.id.toString(),
   });
 
+  // FIX 1: Lock the drag transform to the Y-axis only. 
+  // This physically prevents horizontal dragging, stopping the scrollbar from appearing.
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? `translate3d(0px, ${transform.y}px, 0)` : undefined,
     transition,
     zIndex: isDragging ? 100 : "auto",
     position: "relative" as const,
@@ -194,102 +197,83 @@ function SortableRow({
             className="text-slate-400 hover:text-[#011638] cursor-grab active:cursor-grabbing p-1"
             title="Drag to reorder"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 9h8M8 15h8"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8" />
             </svg>
           </button>
         ) : (
-          <span
-            className="text-slate-200"
-            title="Reordering disabled in this tab"
-          >
-            —
-          </span>
+          <span className="text-slate-200" title="Reordering disabled in this tab">—</span>
         )}
       </td>
 
       <td className="px-4 py-2 w-[20%]">
         <span
           className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-            item.type === "video"
-              ? "bg-purple-100 text-purple-700"
-              : item.type === "reminder"
-              ? "bg-orange-100 text-orange-700"
-              : "bg-blue-100 text-blue-700"
+            item.type === "video" ? "bg-purple-100 text-purple-700" :
+            item.type === "reminder" ? "bg-orange-100 text-orange-700" :
+            "bg-blue-100 text-blue-700"
           }`}
         >
           {item.type === "instruction" ? "Announcement" : item.type}
         </span>
       </td>
 
-      <td className="px-4 py-2 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[50%]">
+      <td className="px-4 py-2 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[45%]">
         {item.description}
       </td>
 
-      <td className="px-4 py-2 text-center w-[25%]">
-        <div className="flex justify-center items-center gap-4">
-          {item.type === "video" && item.order_index !== 1 && (
+      {/* FIX 2: Split the actions into 3 fixed-width zones to lock alignment */}
+      <td className="px-4 py-2 text-center w-[30%]">
+        <div className="flex justify-center items-center w-full">
+          
+          {/* ZONE 1: Arrow Buttons (Fixed Width) */}
+          <div className="w-[30px] flex justify-center">
+            {isDragEnabled && (
+              <div className="flex flex-col gap-0.5">
+                <button onClick={() => onMove(item.id, 'up')} className="text-slate-400 hover:text-[#011638] transition-colors" title="Move Up">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" /></svg>
+                </button>
+                <button onClick={() => onMove(item.id, 'down')} className="text-slate-400 hover:text-[#011638] transition-colors" title="Move Down">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ZONE 2: Active Video Badge (Fixed Width) */}
+          <div className="w-[100px] flex justify-center mx-2">
+            {item.type === "video" && item.order_index !== 1 && (
+              <button
+                onClick={() => onActivate(item.id)}
+                className="text-[10px] bg-[#011638] text-white px-2 py-1 rounded uppercase font-bold hover:bg-[#eec643] hover:text-[#011638] transition-colors whitespace-nowrap"
+              >
+                Set Active
+              </button>
+            )}
+            {item.type === "video" && item.order_index === 1 && (
+              <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded uppercase font-bold whitespace-nowrap">
+                Active Video
+              </span>
+            )}
+          </div>
+
+          {/* ZONE 3: Edit & Delete Icons (Fixed Width) */}
+          <div className="w-[60px] flex justify-center items-center gap-4">
             <button
-              onClick={() => onActivate(item.id)}
-              className="text-[10px] bg-[#011638] text-white px-2 py-1 rounded uppercase font-bold hover:bg-[#eec643] hover:text-[#011638] transition-colors"
+              onClick={() => onEdit(item.id)}
+              className="text-[#0d21a1] hover:scale-110 transition-transform"
             >
-              Set Active
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
             </button>
-          )}
 
-          {item.type === "video" && item.order_index === 1 && (
-            <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded uppercase font-bold">
-              Active Video
-            </span>
-          )}
-
-          <button
-            onClick={() => onEdit(item.id)}
-            className="text-[#0d21a1] hover:scale-110 transition-transform"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <button
+              onClick={() => onDelete(item.id)}
+              className="text-red-600 hover:scale-110 transition-transform"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-              />
-            </svg>
-          </button>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+            </button>
+          </div>
 
-          <button
-            onClick={() => onDelete(item.id)}
-            className="text-red-600 hover:scale-110 transition-transform"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-              />
-            </svg>
-          </button>
         </div>
       </td>
     </tr>
@@ -332,7 +316,7 @@ export default function MemAppAdmin() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 8;
+  const ITEMS_PER_PAGE = 5;
 
   const TABS = [
     { id: "ALL", label: "All Content" },
@@ -473,6 +457,33 @@ export default function MemAppAdmin() {
       });
 
       fetchItems();
+    }
+  };
+
+  // NEW: handleMove logic for Arrows
+  const handleMove = async (id: number, dir: 'up' | 'down') => {
+    const currentIndex = filteredItems.findIndex(i => i.id === id);
+    const targetIndex = dir === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    // Boundary check
+    if (targetIndex < 0 || targetIndex >= filteredItems.length) return;
+
+    const item = filteredItems[currentIndex];
+    const target = filteredItems[targetIndex];
+
+    // Optimistically update the UI instantly
+    const newOrder = arrayMove(filteredItems, currentIndex, targetIndex);
+    setFilteredItems(newOrder);
+
+    try {
+      // Swap order_index values in DB
+      await supabase.from("announce_memapp").update({ order_index: target.order_index }).eq("id", item.id);
+      await supabase.from("announce_memapp").update({ order_index: item.order_index }).eq("id", target.id);
+      
+      fetchItems();
+    } catch (err: any) {
+      setToast({ message: "Failed to move item", type: "error" });
+      fetchItems(); // revert on fail
     }
   };
 
@@ -631,9 +642,7 @@ export default function MemAppAdmin() {
     }
   };
 
-  const isDragEnabled =
-    activeTab === "instruction" ||
-    activeTab === "reminder";
+  const isDragEnabled = activeTab !== "ALL";
 
   const totalItems = filteredItems.length;
 
@@ -814,76 +823,73 @@ export default function MemAppAdmin() {
             />
           </svg>
 
-          Reorder Mode Active: Drag the handles on the left
-          to reorder{" "}
-          {activeTab === "instruction"
-            ? "announcements"
-            : "reminders"}
-          .
+          Reorder Mode Active: Drag the handles or use the arrows on the right
+          to reorder items.
         </div>
       )}
 
-      {/* TABLE */}
+      {/* TABLE - Fixed DndContext structure to prevent Hydration errors */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-x-auto border border-gray-200 flex flex-col">
         <div className="min-w-[700px]">
-          <table className="min-w-full table-fixed">
-            <thead className="bg-[#011638]">
-              <tr>
-                <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[5%]"></th>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className="min-w-full table-fixed">
+              <thead className="bg-[#011638]">
+                <tr>
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[5%]"></th>
 
-                <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[20%]">
-                  Type
-                </th>
+                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[20%]">
+                    Type
+                  </th>
 
-                <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[50%]">
-                  Content Details
-                </th>
+                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[50%]">
+                    Content Details
+                  </th>
 
-                <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[25%]">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[25%]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <tbody className="divide-y divide-gray-200">
-                {loading ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="py-10 text-center font-ubuntu-mono text-[#475569] animate-pulse"
-                    >
-                      Fetching records...
-                    </td>
-                  </tr>
-                ) : paginatedItems.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="py-10 text-center font-ubuntu-mono text-[#475569]"
-                    >
-                      No content found in this category.
-                    </td>
-                  </tr>
-                ) : (
-                  <SortableContext
-                    items={paginatedItems.map((i) =>
-                      i.id.toString()
-                    )}
-                    strategy={
-                      verticalListSortingStrategy
-                    }
-                  >
-                    {paginatedItems.map((item, idx) => (
+              <SortableContext
+                items={paginatedItems.map((i) =>
+                  i.id.toString()
+                )}
+                strategy={
+                  verticalListSortingStrategy
+                }
+              >
+                <tbody className="divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="py-10 text-center font-ubuntu-mono text-[#475569] animate-pulse"
+                      >
+                        Fetching records...
+                      </td>
+                    </tr>
+                  ) : paginatedItems.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="py-10 text-center font-ubuntu-mono text-[#475569]"
+                      >
+                        No content found in this category.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedItems.map((item, idx) => (
                       <SortableRow
                         key={item.id}
                         item={item}
                         index={idx}
                         isDragEnabled={isDragEnabled}
+                        onMove={handleMove}
                         onActivate={handleSetActiveVideo}
                         onDelete={(id) => {
                           setSelectedId(id);
@@ -895,18 +901,18 @@ export default function MemAppAdmin() {
                           )
                         }
                       />
-                    ))}
-                  </SortableContext>
-                )}
-              </tbody>
-            </DndContext>
-          </table>
+                    ))
+                  )}
+                </tbody>
+              </SortableContext>
+            </table>
+          </DndContext>
         </div>
       </div>
 
       {!isDragEnabled && totalPages > 1 && (
         <div className="mt-6">
-          <Pagination
+          <PaginationNav
             currentPage={validCurrentPage}
             totalPages={totalPages || 1}
             totalItems={totalItems}
