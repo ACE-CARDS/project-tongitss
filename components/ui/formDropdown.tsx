@@ -109,7 +109,7 @@ const FormDropdown = ({
               onClick={() => {
                 if (selectablePlaceholder) {
                   onChange(""); // Sends empty string to reset the filter/value
-                  setIsOpen(false); // Closes the dropdown menu
+                  setOpen(false); // Closes the dropdown menu
                 }
               }}
               className={`px-5 py-2.5 text-sm border-b border-slate-100 font-ubuntu-mono tracking-widest border-b-slate-300 border-b-1 transition-colors
