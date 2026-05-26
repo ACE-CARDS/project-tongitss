@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useUser } from "@/components/context/userContext";
+import Popup from "@/components/ui/popup";
 
 type Member = {
   id: number;
@@ -445,7 +446,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="w-full px-3 py-2 border rounded-xl text-left shadow-sm font-normal relative cursor-pointer"
+          className="w-full px-3 py-2 border rounded-xl text-center shadow-sm font-normal relative cursor-pointer"
         >
           {selectedLabel}
           <span
@@ -525,7 +526,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((p) => !p)}
-          className="w-full px-3 py-2 border rounded-xl text-left relative cursor-pointer"
+          className="w-full px-3 py-2 border rounded-xl text-center relative cursor-pointer"
         >
           {selectedLabel}
           <span className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-r-2 border-b-2 border-gray-700 rotate-45" />
@@ -611,7 +612,7 @@ export default function MembersPage() {
         <button
           type="button"
           onClick={() => setOpen((p) => !p)}
-          className="w-full px-3 py-2 border rounded-xl text-left relative cursor-pointer"
+          className="w-full px-3 py-2 border rounded-xl text-center relative cursor-pointer"
         >
           {selectedLabel}
           <span
@@ -2079,635 +2080,495 @@ export default function MembersPage() {
       </main>
 
       {/* mowdals */}
-      {showImportError && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
+            <Popup isOpen={showImportError} title="Import Failed" onClose={() => setShowImportError(false)} maxWidth="sm">
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 text-center mb-6">
+                {importErrorMessage || "Something went wrong while importing members."}
+              </p>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowImportError(false)}
+                  className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer"
                 >
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                  OK
+                </button>
+              </div>
+            </Popup>
+      
+            {showSaveSuccess && (
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="h-2 bg-[#011638]" />
+                
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                    <svg
+                      className="w-10 h-10 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+      
+                  <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                    Changes Saved
+                  </h2>
+      
+                  <p className="text-[#475569] font-ubuntu-mono mb-6">
+                    All updates have been successfully saved.
+                  </p>
+      
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setShowSaveSuccess(false)}
+                      className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Import Failed
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Something went wrong while importing members.
-            </p>
-
-            <button
-              onClick={() => setShowImportError(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showImportError && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
+          )}
+      
+            {showDeleteSuccess && (
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="h-2 bg-[#011638]" />
+                
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-200">
+                    <svg
+                      className="w-10 h-10 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 12H4"
+                      />
+                    </svg>
+                  </div>
+      
+                  <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                    Delete Successful
+                  </h2>
+      
+                  <p className="text-[#475569] font-ubuntu-mono mb-6">
+                    Member has been successfully removed.
+                  </p>
+      
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setShowDeleteSuccess(false)}
+                      className="px-6 py-2 text-[#fbfaf8] bg-red-500 rounded-lg hover:bg-red-600 transition-colors font-oswald cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Import Failed
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Something went wrong while importing members.
-            </p>
-
-            <button
-              onClick={() => setShowImportError(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showSaveSuccess && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
+          )}
+      
+            {showRenameSuccess && (
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="h-2 bg-[#011638]" />
+                
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                    <svg
+                      className="w-10 h-10 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+      
+                  <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                    Edit Successful
+                  </h2>
+      
+                  <p className="text-[#475569] font-ubuntu-mono mb-6">
+                    Member details have been successfully updated.
+                  </p>
+      
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setShowRenameSuccess(false)}
+                      className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Changes Saved
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              All updates have been successfully saved.
-            </p>
-
-            <button
-              onClick={() => setShowSaveSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showDeleteSuccess && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
+          )}
+      
+            {showImportSuccess && (
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="h-2 bg-[#011638]" />
+                
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                    <svg
+                      className="w-10 h-10 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+      
+                  <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                    Import Successful
+                  </h2>
+      
+                  <p className="text-[#475569] font-ubuntu-mono mb-6">
+                    {pendingImport.length === 0
+                      ? "Members have been successfully imported and updated."
+                      : "Members have been successfully imported."}
+                  </p>
+      
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setShowImportSuccess(false)}
+                      className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Delete Successful
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Member has been successfully removed.
-            </p>
-
-            <button
-              onClick={() => setShowDeleteSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showRenameSuccess && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Edit Successful
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Member details have been successfully updated.
-            </p>
-
-            <button
-              onClick={() => setShowRenameSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showImportSuccess && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Import Successful
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              {pendingImport.length === 0
-                ? "Members have been successfully imported and updated."
-                : "Members have been successfully imported."}
-            </p>
-
-            <button
-              onClick={() => setShowImportSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showImportConfirm && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[380px] text-center">
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Confirm Import
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              You are about to import{" "}
-              <span className="font-semibold text-[#011638]">
-                {pendingImport.length}
-              </span>{" "}
-              members into the database.
-              <br />
-            </p>
-
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => {
-                  setPendingImport([]);
-                  setShowImportConfirm(false);
-                }}
-                className="px-4 py-2 rounded-xl border cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleConfirmImport}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-              >
-                Confirm Import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showExportOptions && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-[320px] text-center">
-            <h2 className="text-lg font-bold text-[#011638] mb-4">
-              Export Members
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">Choose file format</p>
-
-            <div className="flex flex-col gap-3">
-              {/* CSV */}
-              <button
-                onClick={() => {
-                  handleExportCSV();
-                  setShowExportOptions(false);
-                }}
-                className="px-4 py-2 rounded-xl border hover:bg-gray-100 cursor-pointer"
-              >
-                Export as CSV
-              </button>
-
-              {/* PDF */}
-              <button
-                onClick={() => {
-                  handleExportPDF();
-                  setShowExportOptions(false);
-                }}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white hover:opacity-90 cursor-pointer"
-              >
-                Export as PDF
-              </button>
-            </div>
-
-            <button
-              onClick={() => setShowExportOptions(false)}
-              className="mt-5 text-sm text-gray-400 hover:underline cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {deleteMember && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[350px] text-center">
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Delete Member?
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-[#011638]">
-                {deleteMember.mem_fname} {deleteMember.mem_lname}
-              </span>
-              ?
-            </p>
-
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setDeleteMember(null)}
-                className="px-4 py-2 rounded-xl border cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => handleDeleteConfirm()}
-                className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {editMember && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 w-[400px]">
-            <h2 className="text-xl font-bold text-[#011638] mb-4">
-              Edit Member
-            </h2>
-
-            <div className="space-y-3">
-              <input
-                maxLength={30}
-                type="text"
-                placeholder="First Name"
-                value={editForm.mem_fname}
-                onChange={(e) => {
-                  setEditForm((prev) => ({
-                    ...prev,
-                    mem_fname: e.target.value,
-                  }));
-                  setEditFieldErrors((prev) => ({ ...prev, mem_fname: false }));
-                }}
-                className={`w-full px-3 py-2 border rounded-lg transition
-              ${editFieldErrors.mem_fname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}
-            `}
-              />
-
-              <input
-                maxLength={20}
-                type="text"
-                placeholder="Last Name"
-                value={editForm.mem_lname}
-                onChange={(e) => {
-                  setEditForm((prev) => ({
-                    ...prev,
-                    mem_lname: e.target.value,
-                  }));
-                  setEditFieldErrors((prev) => ({ ...prev, mem_lname: false }));
-                }}
-                className={`w-full px-3 py-2 border rounded-lg transition
-                ${editFieldErrors.mem_lname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}
-              `}
-              />
-
-              <input
-                maxLength={2}
-                type="text"
-                placeholder="Middle Initial"
-                value={editForm.mem_minit}
-                onChange={(e) => {
-                  let value = e.target.value.toUpperCase();
-                  value = value.replace(/[^A-Z]/g, "");
-                  value = value.slice(0, 2);
-
-                  let formatted = "";
-
-                  setEditForm((prev) => ({
-                    ...prev,
-                    mem_minit: value,
-                  }));
-
-                  setEditFieldErrors((prev) => ({
-                    ...prev,
-                    mem_minit: value.trim() !== "" && value.length > 3,
-                  }));
-                }}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Backspace" ||
-                    e.key === "Delete" ||
-                    e.key === "ArrowLeft" ||
-                    e.key === "ArrowRight" ||
-                    e.key === "Tab"
-                  ) {
-                    return;
-                  }
-
-                  if (!/^[A-Za-z]$/.test(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <div className="mt-5 space-y-1">
-              <label className="text-sm text-gray-600">Email</label>
-              <input
-                type="email"
-                placeholder="Email"
-                value={editForm.mem_email}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    mem_email: e.target.value,
-                  }))
-                }
-                className={`w-full px-3 py-2 border rounded-lg transition
-              ${
-                editFieldErrors.mem_email
-                  ? "border-red-500 ring-2 ring-red-200"
-                  : "border-gray-300"
-              }
-            `}
-              />
-            </div>
-
-            <div className="mt-5 space-y-1">
-              <label className="text-sm text-gray-600">School</label>
-
-              <SchoolDropdown
-                value={editForm.school}
-                options={schools.map((s) => ({
-                  label: s.school_name,
-                  value: s.id,
-                }))}
-                onChange={(val) => {
-                  setEditForm((prev) => ({
-                    ...prev,
-                    school: val,
-                  }));
-
-                  if (val === "other") {
-                    setIsAddingSchool(true);
-                  } else {
-                    setIsAddingSchool(false);
-                    setCustomSchool("");
-                  }
-                }}
-              />
-
-              {isAddingSchool && (
-                <input
-                  type="text"
-                  placeholder="Enter new school"
-                  value={customSchool}
-                  onChange={(e) => {
-                    setCustomSchool(e.target.value);
-                    setCustomSchoolError(false);
+          )}
+      
+            <Popup isOpen={showImportConfirm} title="Confirm Import" onClose={() => {
+              setPendingImport([]);
+              setShowImportConfirm(false);
+            }} maxWidth="sm">
+              <p className="text-sm text-gray-500 text-center mb-6">
+                You are about to import{" "}
+                <span className="font-semibold text-[#011638]">{pendingImport.length}</span>{" "}
+                members into the database.
+              </p>
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  onClick={() => {
+                    setPendingImport([]);
+                    setShowImportConfirm(false);
                   }}
-                  className={`w-full px-3 py-2 rounded-lg mt-2 border transition
-                ${
-                  customSchoolError
-                    ? "border-red-500 ring-2 ring-red-200"
-                    : "border-gray-300"
-                }
-              `}
-                />
-              )}
-            </div>
-
-            <div className="mt-5 space-y-1">
-              <label className="text-sm text-gray-600">Course</label>
-
-              <CourseDropdown
-                value={editForm.course}
-                options={courses.map((c) => ({
-                  label: c.course_name,
-                  value: c.id,
-                }))}
-                onChange={(val) => {
-                  setEditForm((prev) => ({
-                    ...prev,
-                    course: val,
-                  }));
-
-                  if (val === "other") {
-                    setIsAddingCourse(true);
-                  } else {
-                    setIsAddingCourse(false);
-                    setCustomCourse("");
-                  }
-                }}
-              />
-
-              {isAddingCourse && (
-                <input
-                  type="text"
-                  placeholder="Enter new course"
-                  value={customCourse}
-                  onChange={(e) => {
-                    setCustomCourse(e.target.value);
-                    setCustomCourseError(false);
+                  className="px-4 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmImport}
+                  className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer"
+                >
+                  Confirm Import
+                </button>
+              </div>
+            </Popup>
+      
+            <Popup isOpen={showExportOptions} title="Export Members" onClose={() => setShowExportOptions(false)} maxWidth="sm">
+              <p className="text-sm text-gray-500 text-center mb-6">Choose file format</p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    handleExportCSV();
+                    setShowExportOptions(false);
                   }}
-                  className={`w-full px-3 py-2 rounded-lg mt-2 border transition
-                      ${
-                        customCourseError
-                          ? "border-red-500 ring-2 ring-red-200"
-                          : "border-gray-300"
-                      }`}
+                  className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white hover:opacity-90 cursor-pointer"
+                >
+                  Export as CSV
+                </button>
+                <button
+                  onClick={() => {
+                    handleExportPDF();
+                    setShowExportOptions(false);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white hover:opacity-90 cursor-pointer"
+                >
+                  Export as PDF
+                </button>
+              </div>
+              <div className="flex justify-center mt-5">
+                <button
+                  onClick={() => setShowExportOptions(false)}
+                  className="text-sm text-gray-400 hover:underline cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </Popup>
+      
+            <Popup isOpen={!!deleteMember} title="Delete Member" onClose={() => setDeleteMember(null)} maxWidth="sm">
+              <p className="text-sm text-gray-500 text-center mb-6">
+                Are you sure you want to delete{" "}
+                <span className="font-semibold text-[#011638]">
+                  {deleteMember?.mem_fname} {deleteMember?.mem_lname}
+                </span>?
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setDeleteMember(null)}
+                  className="px-4 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteConfirm()}
+                  className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </Popup>
+      
+            <Popup isOpen={!!editMember} title="Edit Member" onClose={() => setEditMember(null)} maxWidth="lg">
+              <div className="space-y-3">
+                <label className="text-sm text-gray-600">Name</label>
+                <input
+                  maxLength={30}
+                  type="text"
+                  placeholder="First Name"
+                  value={editForm.mem_fname}
+                  onChange={(e) => {
+                    setEditForm((prev) => ({ ...prev, mem_fname: e.target.value }));
+                    setEditFieldErrors((prev) => ({ ...prev, mem_fname: false }));
+                  }}
+                  className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_fname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
                 />
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setEditMember(null)}
-                className="px-4 py-2 border rounded-xl cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleEditSave}
-                disabled={!hasEditChanges}
-                className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
-                  hasEditChanges
-                    ? "bg-[#011638] hover:opacity-90"
-                    : "bg-gray-300 cursor-not-allowed"
-                }`}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* confirm  */}
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[350px] text-center">
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Save Changes?
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to apply all updates?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-xl border cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showImagesConfirm && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[380px] text-center">
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Confirm Picture Import
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              You are about to upload{" "}
-              <span className="font-semibold text-[#011638]">
-                {pendingImages.length}
-              </span>{" "}
-              images. Existing photos with the same filenames will be
-              overwritten.
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => {
-                  setPendingImages([]);
-                  setShowImagesConfirm(false);
-                }}
-                className="px-4 py-2 rounded-xl border cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmImagesImport}
-                className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-              >
-                Confirm Upload
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showImagesSuccess && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[350px] text-center">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl font-bold">
-                ✓
+      
+                <input
+                  maxLength={20}
+                  type="text"
+                  placeholder="Last Name"
+                  value={editForm.mem_lname}
+                  onChange={(e) => {
+                    setEditForm((prev) => ({ ...prev, mem_lname: e.target.value }));
+                    setEditFieldErrors((prev) => ({ ...prev, mem_lname: false }));
+                  }}
+                  className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_lname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
+                />
+      
+                <input
+                  maxLength={2}
+                  type="text"
+                  placeholder="Middle Initial"
+                  value={editForm.mem_minit}
+                  onChange={(e) => {
+                    let value = e.target.value.toUpperCase();
+                    value = value.replace(/[^A-Z]/g, "");
+                    value = value.slice(0, 2);
+                    setEditForm((prev) => ({ ...prev, mem_minit: value }));
+                    setEditFieldErrors((prev) => ({ ...prev, mem_minit: value.trim() !== "" && value.length > 3 }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+      
+              <div className="mt-5 space-y-1">
+                <label className="text-sm text-gray-600">Email</label>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={editForm.mem_email}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, mem_email: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_email ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
+                />
+              </div>
+      
+              <div className="mt-5 space-y-1">
+                <label className="text-sm text-gray-600">School</label>
+                <SchoolDropdown
+                  value={editForm.school}
+                  options={schools.map((s) => ({ label: s.school_name, value: s.id }))}
+                  onChange={(val) => {
+                    setEditForm((prev) => ({ ...prev, school: val }));
+                    if (val === "other") {
+                      setIsAddingSchool(true);
+                    } else {
+                      setIsAddingSchool(false);
+                      setCustomSchool("");
+                    }
+                  }}
+                />
+                {isAddingSchool && (
+                  <input
+                    type="text"
+                    placeholder="Enter new school"
+                    value={customSchool}
+                    onChange={(e) => {
+                      setCustomSchool(e.target.value);
+                      setCustomSchoolError(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customSchoolError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
+                  />
+                )}
+              </div>
+      
+              <div className="mt-5 space-y-1">
+                <label className="text-sm text-gray-600">Course</label>
+                <CourseDropdown
+                  value={editForm.course}
+                  options={courses.map((c) => ({ label: c.course_name, value: c.id }))}
+                  onChange={(val) => {
+                    setEditForm((prev) => ({ ...prev, course: val }));
+                    if (val === "other") {
+                      setIsAddingCourse(true);
+                    } else {
+                      setIsAddingCourse(false);
+                      setCustomCourse("");
+                    }
+                  }}
+                />
+                {isAddingCourse && (
+                  <input
+                    type="text"
+                    placeholder="Enter new course"
+                    value={customCourse}
+                    onChange={(e) => {
+                      setCustomCourse(e.target.value);
+                      setCustomCourseError(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customCourseError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
+                  />
+                )}
+              </div>
+      
+              <div className="flex justify-end gap-3 mt-6">
+                <button onClick={() => setEditMember(null)} className="px-4 py-2 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  disabled={!hasEditChanges}
+                  className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${hasEditChanges ? "bg-[#1e4db7] hover:opacity-90" : "bg-gray-300 cursor-not-allowed"}`}
+                >
+                  Save
+                </button>
+              </div>
+            </Popup>
+      
+            {/* confirm  */}
+            <Popup isOpen={showConfirm} title="Save Changes?" onClose={() => setShowConfirm(false)} maxWidth="sm">
+              <p className="text-sm text-gray-500 text-center mb-6">
+                Are you sure you want to apply all updates?
+              </p>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button onClick={handleSave} className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer">
+                  Confirm
+                </button>
+              </div>
+            </Popup>
+      
+            <Popup isOpen={showImagesConfirm} title="Confirm Picture Import" onClose={() => {
+              setPendingImages([]);
+              setShowImagesConfirm(false);
+            }} maxWidth="sm">
+              <p className="text-sm text-gray-500 text-center mb-6">
+                You are about to upload{" "}
+                <span className="font-semibold text-[#011638]">{pendingImages.length}</span>{" "}
+                images. Existing photos with the same filenames will be overwritten.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setPendingImages([]);
+                    setShowImagesConfirm(false);
+                  }}
+                  className="px-4 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmImagesImport}
+                  className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer"
+                >
+                  Confirm Upload
+                </button>
+              </div>
+            </Popup>
+      
+            {showImagesSuccess && (
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="h-2 bg-[#011638]" />
+                
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                    <svg
+                      className="w-10 h-10 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+      
+                  <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                    Upload Successful
+                  </h2>
+      
+                  <p className="text-[#475569] font-ubuntu-mono mb-6">
+                    All pictures have been successfully imported.
+                  </p>
+      
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setShowImagesSuccess(false)}
+                      className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Upload Successful
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              All pictures have been successfully imported.
-            </p>
-            <button
-              onClick={() => setShowImagesSuccess(false)}
-              className="px-4 py-2 rounded-xl bg-[#011638] text-white cursor-pointer"
-            >
-              OK
-            </button>
+          )}   
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        );
+      }

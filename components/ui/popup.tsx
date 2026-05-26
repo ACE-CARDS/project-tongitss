@@ -21,6 +21,7 @@ export default function Popup({ isOpen, title, onClose, children, maxWidth = "md
     xl: "max-w-xl",
   };
 
+  // useEffect must be called before any conditional return
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
       if (frameRef.current && !frameRef.current.contains(e.target as Node)) {
@@ -30,6 +31,11 @@ export default function Popup({ isOpen, title, onClose, children, maxWidth = "md
     if (isOpen) document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isOpen, onClose]);
+
+  // Don't render anything if popup is not open (after all hooks)
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>
