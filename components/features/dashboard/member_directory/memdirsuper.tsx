@@ -2049,8 +2049,8 @@ export default function MembersPage() {
                       });
 
                       return {
-                        mem_fname: obj.mem_fname || "",
-                        mem_lname: obj.mem_lname || "",
+                        mem_fname: obj.mem_fname,
+                        mem_lname: obj.mem_lname,
                         mem_minit: obj.mem_minit || "",
                         role: obj.role || "member",
                         comm: obj.comm ? Number(obj.comm) : DEFAULT_COMM,
@@ -2064,8 +2064,7 @@ export default function MembersPage() {
                           : DEFAULT_SCHOOL,
                         is_active: true,
                         mem_email:
-                          obj.mem_email?.trim() ||
-                          `temp_${Date.now()}_${Math.random().toString(16).slice(2)}@example.com`,
+                          obj.mem_email?.trim(),
                         acadyear: obj.acadyear || DEFAULT_ACADYEAR,
                       };
                     });
@@ -2411,7 +2410,7 @@ export default function MembersPage() {
           </div>
         </div>
         <p className="text-sm text-gray-500 text-center mb-6">
-          {importErrorMessage || "Something went wrong while importing members."}
+          Failed to import members. Please check your file format and column names then try again.
         </p>
         <div className="flex justify-center">
           <button
