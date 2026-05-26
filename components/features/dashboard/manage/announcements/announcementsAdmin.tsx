@@ -319,7 +319,7 @@ export default function AnnouncementsAdmin() {
           <thead className="manage_thead">
             <tr>
               <th
-                className={`w-[30%] th-sortable ${sortField === "title" ? "is-active" : ""}`}
+                className={`w-[250px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
                 onClick={() => handleSort("title")}
               >
                 <div>
@@ -328,10 +328,10 @@ export default function AnnouncementsAdmin() {
                 </div>
               </th>
 
-              <th className="w-[40%]">Description</th>
+              <th className="w-[350px]">Description</th>
 
               <th
-                className={`w-[18%] th-sortable ${sortField === "start_date" ? "is-active" : ""}`}
+                className={`w-[150px] th-sortable ${sortField === "start_date" ? "is-active" : ""}`}
                 onClick={() => handleSort("start_date")}
               >
                 <div>
@@ -340,7 +340,7 @@ export default function AnnouncementsAdmin() {
                 </div>
               </th>
 
-              <th className="w-[12%]">Actions</th>
+              <th className="w-[100px]">Actions</th>
             </tr>
           </thead>
 

@@ -284,10 +284,10 @@ export default function NewsAdmin() {
         <table className="manage_table">
           <thead className="manage_thead">
             <tr>
-              <th className="w-[15%]">Image</th>
+              <th className="w-[200px]">Image</th>
               
               <th
-                className={`w-[55%] th-sortable ${sortField === "title" ? "is-active" : ""}`}
+                className={`w-[500px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
                 onClick={() => handleSort("title")}
               >
                 <div>
@@ -297,7 +297,7 @@ export default function NewsAdmin() {
               </th>
 
               <th
-                className={`w-[18%] th-sortable ${sortField === "fb_post_date" ? "is-active" : ""}`}
+                className={`w-[150px] th-sortable ${sortField === "fb_post_date" ? "is-active" : ""}`}
                 onClick={() => handleSort("fb_post_date")}
               >
                 <div>
@@ -306,7 +306,7 @@ export default function NewsAdmin() {
                 </div>
               </th>
 
-              <th className="w-[12%]">Actions</th>
+              <th className="w-[100px]">Actions</th>
             </tr>
           </thead>
 

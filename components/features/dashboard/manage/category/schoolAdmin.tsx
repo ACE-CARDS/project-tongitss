@@ -17,7 +17,6 @@ interface School {
   school_name: string;
   province: number;
   created_at: string;
-  province_name?: string;
 }
 
 interface Province {
@@ -339,32 +338,32 @@ function AddPopup({
     }
   }, [isOpen]);
 
-const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setName(value);
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
 
-  const trimmedValue = value.trim();
+    const trimmedValue = value.trim();
 
-  if (value === "") {
-    setNameError("");
-    return;
-  }
+    if (value === "") {
+      setNameError("");
+      return;
+    }
 
-  if (trimmedValue.length > 0 && trimmedValue.length < 2) {
-    setNameError("Name too short");
-  } else {
-    setNameError("");
-  }
-};
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+    } else {
+      setNameError("");
+    }
+  };
 
-const handleProvinceChange = (val: string | null) => {
-  const selectedId = Number(val);
-  setProvinceId(selectedId);
-  
-  if (selectedId !== 0) {
-    setProvinceError("");
-  }
-};
+  const handleProvinceChange = (val: string | null) => {
+    const selectedId = Number(val);
+    setProvinceId(selectedId);
+    
+    if (selectedId !== 0) {
+      setProvinceError("");
+    }
+  };
 
   const handleAdd = async () => {
     setNameError("");
@@ -405,14 +404,12 @@ const handleProvinceChange = (val: string | null) => {
     }
   };
 
-  
   const dropdownOptions = useMemo(() => {
     return provinces.map((p) => ({
       label: p.prov_name,
       value: p.id.toString(),
     }));
   }, [provinces]);
-
 
   if (!isOpen) return null;
 
@@ -460,7 +457,6 @@ const handleProvinceChange = (val: string | null) => {
           {isAdding ? "Adding..." : "Add School"}
         </button>
       </div>
-
     </Popup>
   );
 }
@@ -501,18 +497,15 @@ export default function SchoolAdmin() {
         supabase.from("school").select("*").order("school_name"),
       ]);
       if (!provRes.error) setProvinces(provRes.data || []);
-      if (!schoolRes.error) {
-        setSchools(
-          (schoolRes.data || []).map((s: any) => ({
-            ...s,
-            province_name: s.province?.prov_name,
-          })),
-        );
-      }
+      if (!schoolRes.error) setSchools(schoolRes.data || []);
       setLoading(false);
     };
     init();
   }, []);
+
+  const provinceLookup = useMemo(() => {
+    return Object.fromEntries(provinces.map((p) => [p.id, p.prov_name]));
+  }, [provinces]);
 
   const handleSort = (field: Exclude<SchoolSortField, null>) => {
     if (sortField !== field) {
@@ -522,6 +515,7 @@ export default function SchoolAdmin() {
       if (sortOrder === "asc") setSortOrder("desc");
       else {
         setSortField(null);
+        sortOrder === null;
         setSortOrder(null);
       }
     }
@@ -534,19 +528,21 @@ export default function SchoolAdmin() {
     if (sortField && sortOrder) {
       result = [...result].sort((a, b) => {
         let comp = 0;
-        if (sortField === "name")
+        if (sortField === "name") {
           comp = a.school_name.localeCompare(b.school_name);
-        else if (sortField === "province")
-          comp = (a.province_name || "").localeCompare(b.province_name || "");
-        else if (sortField === "created_at")
-          comp =
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        } else if (sortField === "province") {
+          const nameA = provinceLookup[a.province] || "";
+          const nameB = provinceLookup[b.province] || "";
+          comp = nameA.localeCompare(nameB);
+        } else if (sortField === "created_at") {
+          comp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
         return sortOrder === "asc" ? comp : -comp;
       });
     }
     setFilteredSchools(result);
     setCurrentPage(1);
-  }, [searchTerm, schools, sortField, sortOrder]);
+  }, [searchTerm, schools, sortField, sortOrder, provinceLookup]);
 
   const checkUsage = async (id: number) => {
     const queries = [
@@ -582,13 +578,10 @@ export default function SchoolAdmin() {
     if (error) {
       setIsProcessing(false);
       return error.message;
-    }
-
-    else {
-      const provName = provinces.find((p) => p.id === provinceId)?.prov_name;
+    } else {
       await logCreateAudit(name);
       setSchools((prev) =>
-        [...prev, { ...data, province_name: provName }].sort((a, b) =>
+        [...prev, data].sort((a, b) =>
           a.school_name.localeCompare(b.school_name),
         ),
       );
@@ -611,11 +604,9 @@ export default function SchoolAdmin() {
     if (error) {
       setIsProcessing(false);
       return error.message;
-    }
-
-    else {
-      const provName = provinces.find((p) => p.id === provinceId)?.prov_name;
-      await logEditAudit(originalSchool, name, provinceId, provName || "N/A");
+    } else {
+      const provName = provinceLookup[provinceId] || "N/A";
+      await logEditAudit(originalSchool, name, provinceId, provName);
       setSchools((prev) =>
         prev.map((s) =>
           s.id === id
@@ -623,7 +614,6 @@ export default function SchoolAdmin() {
                 ...s,
                 school_name: name,
                 province: provinceId,
-                province_name: provName,
               }
             : s,
         ),
@@ -645,9 +635,7 @@ export default function SchoolAdmin() {
     if (error) {
       setIsProcessing(false);
       return error.message;
-    }
-
-    else {
+    } else {
       await logDeleteAudit(selectedSchool.id, selectedSchool.school_name);
       setSchools((prev) => prev.filter((s) => s.id !== selectedSchool.id));
       setPopups((p) => ({ ...p, del: false }));
@@ -664,7 +652,6 @@ export default function SchoolAdmin() {
     currentPage * itemsPerPage,
   );
 
-  //audit log
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -709,10 +696,6 @@ export default function SchoolAdmin() {
       console.error("Failed to write audit log:", error);
     }
   };
-
-  const provinceLookup = useMemo(() => {
-    return Object.fromEntries(provinces.map((p) => [p.id, p.prov_name]));
-  }, [provinces]);
 
   const logEditAudit = async (
     old: School,
@@ -769,12 +752,10 @@ export default function SchoolAdmin() {
     };
 
     const { error } = await supabase.from("audit_log").insert([logEntry]);
-
     if (error) {
       console.error("Failed to log.");
     }
   };
-
 
   return (
     <div className="py-4">
@@ -795,7 +776,7 @@ export default function SchoolAdmin() {
           <thead className="manage_thead">
             <tr>
               <th
-                className={`w-[40%] th-sortable ${sortField === "name" ? "is-active" : ""}`}
+                className={`w-[300px] th-sortable ${sortField === "name" ? "is-active" : ""}`}
                 onClick={() => handleSort("name")}
               >
                 <div>
@@ -805,7 +786,7 @@ export default function SchoolAdmin() {
               </th>
 
               <th
-                className={`w-[20%] th-sortable ${sortField === "province" ? "is-active" : ""}`}
+                className={`w-[200px] th-sortable ${sortField === "province" ? "is-active" : ""}`}
                 onClick={() => handleSort("province")}
               >
                 <div>
@@ -815,7 +796,7 @@ export default function SchoolAdmin() {
               </th>
 
               <th
-                className={`w-[20%] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
+                className={`w-[150px] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
                 onClick={() => handleSort("created_at")}
               >
                 <div>
@@ -824,7 +805,7 @@ export default function SchoolAdmin() {
                 </div>
               </th>
 
-              <th className="w-[20%]">
+              <th className="w-[150px]">
                 Actions
               </th>
             </tr>
@@ -833,64 +814,58 @@ export default function SchoolAdmin() {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="status"
-                >
+                <td colSpan={4} className="status">
                   Loading records...
                 </td>
               </tr>
             ) : paginatedItems.length === 0 ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="status"
-                >
+                <td colSpan={4} className="status">
                   No schools found.
                 </td>
               </tr>
             ) : (
-            paginatedItems.map((school) => (
-              <tr
-                key={school.id}
-                className="hover:bg-blue-50/50 transition-colors"
-              >
-                <td className="title">
-                  {school.school_name}
-                </td>
+              paginatedItems.map((school) => (
+                <tr
+                  key={school.id}
+                  className="hover:bg-blue-50/50 transition-colors"
+                >
+                  <td className="title">
+                    {school.school_name}
+                  </td>
 
-                <td >
-                  {provinceLookup[school.province] || "N/A"}
-                </td>
+                  <td>
+                    {provinceLookup[school.province] || "N/A"}
+                  </td>
 
-                <td className="date_col">
-                  {formatDate(school.created_at)}
-                </td>
+                  <td className="date_col">
+                    {formatDate(school.created_at)}
+                  </td>
 
-                <td className="text-center">
-                  <TableActions 
-                    item={school}
-                    onEditClick={() =>{
-                      setSelectedSchool(school);
-                      setPopups((p) => ({ ...p, edit: true }));
-                    }}
-                    onDeleteClick={async (school) => {
-                      setSelectedSchool(school);
-                      setPopups((p) => ({ ...p, del: true }));
-                      setIsCheckingUsage(true);
-                      
-                      try {
-                        const usage = await checkUsage(school.id);
-                        setUsageCount(usage);
-                      } catch (err) {
-                        console.error(err);
-                      } finally {
-                        setIsCheckingUsage(false);
-                      }
-                    }}
-                  />
-                </td>
-              </tr>
+                  <td className="text-center">
+                    <TableActions 
+                      item={school}
+                      onEditClick={() =>{
+                        setSelectedSchool(school);
+                        setPopups((p) => ({ ...p, edit: true }));
+                      }}
+                      onDeleteClick={async (school) => {
+                        setSelectedSchool(school);
+                        setPopups((p) => ({ ...p, del: true }));
+                        setIsCheckingUsage(true);
+                        
+                        try {
+                          const usage = await checkUsage(school.id);
+                          setUsageCount(usage);
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsCheckingUsage(false);
+                        }
+                      }}
+                    />
+                  </td>
+                </tr>
               ))
             )}
           </tbody>

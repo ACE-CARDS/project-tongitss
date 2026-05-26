@@ -353,9 +353,10 @@ export default function EventsAdmin() {
         <table className="manage_table">
           <thead className="manage_thead">
             <tr>
-              <th className="w-[120px]">Media</th>
+              <th className="w-[150px]">Media</th>
+
               <th
-                className={`th-sortable ${sortField === "title" ? "is-active" : ""}`}
+                className={`w-[400px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
                 onClick={() => handleSort("title")}
               >
                 <div>
@@ -363,8 +364,9 @@ export default function EventsAdmin() {
                   <SortIcon field="title" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th
-                className={`w-[160px] th-sortable ${sortField === "start_date" ? "is-active" : ""}`}
+                className={`w-[150px] th-sortable ${sortField === "start_date" ? "is-active" : ""}`}
                 onClick={() => handleSort("start_date")}
               >
                 <div>
@@ -372,8 +374,9 @@ export default function EventsAdmin() {
                   <SortIcon field="start_date" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th
-                className={`w-[120px] th-sortable ${sortField === "location" ? "is-active" : ""}`}
+                className={`w-[150px] th-sortable ${sortField === "location" ? "is-active" : ""}`}
                 onClick={() => handleSort("location")}
               >
                 <div>
@@ -381,6 +384,7 @@ export default function EventsAdmin() {
                   <SortIcon field="location" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th
                 className={`w-[110px] th-sortable ${sortField === "status" ? "is-active" : ""}`}
                 onClick={() => handleSort("status")}
@@ -390,6 +394,7 @@ export default function EventsAdmin() {
                   <SortIcon field="status" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
+
               <th className="w-[100px]">Actions</th>
             </tr>
           </thead>

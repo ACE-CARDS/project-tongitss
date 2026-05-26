@@ -111,7 +111,7 @@ p {
   }
 
 @utility th-sortable {
-  @apply w-[30%] cursor-pointer hover:bg-[#012a5a] transition-colors;
+  @apply w-full cursor-pointer hover:bg-[#012a5a] transition-colors;
   
   &.is-active {
     @apply bg-[#012a5a];
@@ -119,11 +119,11 @@ p {
 }
 
 @utility manage_table_div {
-    @apply bg-[#fbfaf8] rounded-xl shadow-lg overflow-hidden border border-gray-200;
+    @apply bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200 overflow-x-auto;
   }
 
 @utility manage_table {
-    @apply w-full text-left border-collapse table-fixed;
+    @apply w-full text-left border-collapse table-fixed overflow-x-auto;
   }
 
 .manage_table_div table tbody {
