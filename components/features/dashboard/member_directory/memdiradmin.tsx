@@ -2237,7 +2237,7 @@ export default function MembersPage() {
             </div>
 
             <h2 className="text-xl font-bold text-[#011638] mb-2">
-              Rename Successful
+              Edit Successful
             </h2>
 
             <p className="text-sm text-gray-500 mb-6">
