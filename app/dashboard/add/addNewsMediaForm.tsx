@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/components/context/userContext";
+import BackButton from "@/components/ui/backButton";
 
 export default function AddNewsMediaForm() {
   const router = useRouter();
@@ -306,18 +307,15 @@ export default function AddNewsMediaForm() {
 
   return (
     <main className="container mx-auto py-8 px-4 max-w-3xl">
-      <div className="mb-6">
-        <Link
+      <div className="flex flex-col mb-6 gap-4">
+        <BackButton
           href={
             from === "admin"
               ? "/dashboard?tab=manage&section=news"
               : "/dashboard"
           }
-          className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-          onClick={() => sessionStorage.removeItem("newsMediaDraft")}
-        >
-          ← Back
-        </Link>
+          className="!mb-0"
+        />
         <h1 className="text-2xl font-oswald font-bold text-[#011638]">
           Add News & Media
         </h1>

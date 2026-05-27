@@ -8,6 +8,7 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import { useUser } from "@/components/context/userContext";
+import BackButton from "@/components/ui/backButton";
 
 // Types
 interface NewsItem {
@@ -361,17 +362,11 @@ function EditNewsMediaContent() {
       >
         <div className="pt-5">
           <main className="container mx-auto py-8 px-4 max-w-3xl">
-            <div className="mb-6">
-              <button
-                onClick={() =>
-                  from === "admin"
-                    ? router.push("/dashboard?tab=manage&section=news")
-                    : router.back()
-                }
-                className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-              >
-                ← Back
-              </button>
+            <div className="flex flex-col mb-6 gap-4">
+              <BackButton
+                href="/dashboard?tab=manage&section=news"
+                className="!mb-0"
+              />
               <h1 className="text-2xl font-oswald font-bold text-[#011638]">
                 Edit News Article
               </h1>
