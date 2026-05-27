@@ -22,7 +22,7 @@ export default function EventsTimeline() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const DEFAULT_IMAGE = "/assets/logos/Ace Cards logo.png"; 
+  const DEFAULT_IMAGE = "/assets/logos/ACE CARDS logo.png"; 
 
   useEffect(() => {
     const handleResize = () => {

@@ -108,7 +108,7 @@ export default function Members({id}: {id?: string}) {
               <Image
                 height={600}
                 width={600}
-                src="/assets/logos/ga.jpg"
+                src="/"
                 alt="Members"
                 className="w-full max-w-lg lg:max-w-3xl rounded-3xl object-cover shadow-2xl ring-8 ring-white/70 hover:scale-105 transition-all duration-700 hover:shadow-4xl"
               />
