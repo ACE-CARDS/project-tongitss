@@ -27,7 +27,6 @@ export default function SurveyAdminWrapper() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
-  const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
 
   // count of pending surveys
   const [pendingCount, setPendingCount] = useState(0);
@@ -43,11 +42,10 @@ export default function SurveyAdminWrapper() {
   // fetch data
   useEffect(() => {
     const fetchInitialData = async () => {
-      const [categoriesRes, schoolsRes, yearsRes, keywordsRes] = await Promise.all([
+      const [categoriesRes, schoolsRes, yearsRes] = await Promise.all([
         supabase.from("r_category").select("id, r_category_name").order("r_category_name"),
         supabase.from("school").select("id, school_name").order("school_name"),
         supabase.from("survey").select("survey_start"),
-        supabase.from("survey").select("survey_keyword"),
       ]);
 
       // set for dropdown
@@ -64,16 +62,6 @@ export default function SurveyAdminWrapper() {
             .filter((year: number | null) => year !== null)
         )].sort((a, b) => b - a);
         setAvailableYears(years);
-      }
-
-      if (keywordsRes.data) {
-        const keywords = keywordsRes.data
-          ?.flatMap((s: any) =>
-            s.survey_keyword?.split(",").map((k: string) => k.trim()).filter(Boolean) || []
-          )
-          .filter((value: string, index: number, self: string[]) => self.indexOf(value) === index)
-          .sort();
-        setAvailableKeywords(keywords);
       }
     };
 
@@ -92,7 +80,6 @@ export default function SurveyAdminWrapper() {
           id,
           survey_title,
           survey_desc,
-          survey_keyword,
           survey_start,
           survey_end,
           survey_link,
@@ -156,7 +143,6 @@ export default function SurveyAdminWrapper() {
             let hay = "";
             hay += s.survey_title ?? "";
             hay += " " + (s.survey_desc ?? "");
-            hay += " " + (s.survey_keyword ?? "");
             hay += " " + (s.r_category?.r_category_name ?? "");
             hay += " " + (s.school?.school_name ?? "");
             hay += " " + (s.survey_respondents ?? "");
@@ -216,7 +202,6 @@ export default function SurveyAdminWrapper() {
         initialSchool={selectedSchool}
         initialYears={selectedYears}
         initialStatuses={selectedStatuses}
-        availableKeywords={availableKeywords}
         pendingCount={pendingCount}
         onFilterChange={handleFilterChange}
       />
