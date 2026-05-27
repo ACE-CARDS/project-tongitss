@@ -7,14 +7,20 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
 
+// Expanded parser for YouTube, Google Drive, and Facebook
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
   try {
-    if (url.includes("watch?v="))
-      return `https://www.youtube.com/embed/${url.split("watch?v=")[1].split("&")[0]}`;
-    if (url.includes("youtu.be/"))
-      return `https://www.youtube.com/embed/${url.split("youtu.be/")[1].split("?")[0]}`;
-    return url;
+    const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+    const driveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/i);
+    if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+    const fbMatch = url.match(/(?:facebook\.com|fb\.watch|fb\.me)\/.+/i);
+    if (fbMatch) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0`;
+
+    return null;
   } catch {
     return null;
   }
@@ -29,6 +35,7 @@ function EditMemAppForm() {
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
@@ -48,6 +55,10 @@ function EditMemAppForm() {
     description: "",
     order_index: "" as string | number,
   });
+
+  useEffect(() => {
+    setIframeError(false);
+  }, [formData.description]);
 
   useEffect(() => {
     if (id) fetchItem();
@@ -197,7 +208,7 @@ function EditMemAppForm() {
     }
 
     if (formData.type === "video" && !getEmbedUrl(formData.description)) {
-      setErrorMsg("Please enter a valid YouTube URL.");
+      setErrorMsg("Please enter a valid YouTube, Facebook, or Google Drive URL.");
       setInvalidFields(["description"]);
       formTopRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -296,8 +307,7 @@ function EditMemAppForm() {
       </div>
     );
 
-  const embedUrl =
-    formData.type === "video" ? getEmbedUrl(formData.description) : null;
+  const embedUrl = formData.type === "video" ? getEmbedUrl(formData.description) : null;
   const dynamicMax =
     formData.type === "instruction"
       ? initialType === "instruction"
@@ -322,18 +332,8 @@ function EditMemAppForm() {
             <div className="bg-white rounded-lg shadow-lg overflow-hidden border-t-[8px] border-[#011638] p-10 sm:p-14 flex flex-col items-center text-center w-full">
               <div className="w-[72px] h-[72px] rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center mb-6 p-1.5">
                 <div className="w-full h-full rounded-full border-[1.5px] border-[#22c55e] flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6 text-[#22c55e]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.5"
-                      d="M5 13l4 4L19 7"
-                    />
+                  <svg className="w-6 h-6 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
               </div>
@@ -341,14 +341,11 @@ function EditMemAppForm() {
                 Content Updated!
               </h2>
               <p className="text-[#475569] font-ubuntu-mono mb-10 text-[15px]">
-                Your content changes have been successfully saved to the
-                database.
+                Your content changes have been successfully saved to the database.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
                 <button
-                  onClick={() =>
-                    router.push("/dashboard?tab=manage&section=memapp")
-                  }
+                  onClick={() => router.push("/dashboard?tab=manage&section=memapp")}
                   className="px-6 py-2.5 bg-[#20409a] text-white rounded-md hover:bg-[#1e3a8a] transition-colors text-[15px] font-oswald uppercase tracking-widest font-bold"
                 >
                   Go back to Dashboard
@@ -367,28 +364,13 @@ function EditMemAppForm() {
           </div>
         ) : (
           <div className="w-full flex-1">
-            <div
-              ref={formTopRef}
-              className="mb-6 flex items-center justify-between"
-            >
+            <div ref={formTopRef} className="mb-6 flex items-center justify-between">
               <button
-                onClick={() =>
-                  router.push("/dashboard?tab=manage&section=memapp")
-                }
+                onClick={() => router.push("/dashboard?tab=manage&section=memapp")}
                 className="flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors"
               >
-                <svg
-                  className="w-5 h-5 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M15 19l-7-7 7-7"
-                  />
+                <svg className="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                 </svg>{" "}
                 Back
               </button>
@@ -401,23 +383,12 @@ function EditMemAppForm() {
                 </h1>
               </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="px-6 py-6 flex flex-col gap-6"
-              >
+              <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-6">
                 {errorMsg && (
                   <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
                     <div className="flex items-center">
-                      <svg
-                        className="h-5 w-5 text-red-500 mr-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
+                      <svg className="h-5 w-5 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
                       <p className="text-sm text-red-700 font-ubuntu-mono font-bold">
                         {errorMsg}
@@ -427,13 +398,7 @@ function EditMemAppForm() {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
-                  <div
-                    className={
-                      formData.type === "video" || formData.type === "reminder"
-                        ? "sm:col-span-2 min-w-0"
-                        : "min-w-0"
-                    }
-                  >
+                  <div className={formData.type === "video" || formData.type === "reminder" ? "sm:col-span-2 min-w-0" : "min-w-0"}>
                     <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
                       Content Type
                     </label>
@@ -441,9 +406,7 @@ function EditMemAppForm() {
                       value={formData.type}
                       onChange={(e) => {
                         setFormData({ ...formData, type: e.target.value });
-                        setInvalidFields((prev) =>
-                          prev.filter((f) => f !== "type"),
-                        );
+                        setInvalidFields((prev) => prev.filter((f) => f !== "type"));
                       }}
                       className={getFieldClass("type")}
                       disabled={formData.type === "deadline"}
@@ -465,13 +428,8 @@ function EditMemAppForm() {
                         max={dynamicMax}
                         value={formData.order_index}
                         onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            order_index: e.target.value,
-                          });
-                          setInvalidFields((prev) =>
-                            prev.filter((f) => f !== "order_index"),
-                          );
+                          setFormData({ ...formData, order_index: e.target.value });
+                          setInvalidFields((prev) => prev.filter((f) => f !== "order_index"));
                         }}
                         className={getFieldClass("order_index")}
                         required
@@ -482,33 +440,26 @@ function EditMemAppForm() {
 
                 <div className="min-w-0 relative">
                   <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
-                    {formData.type === "video" ? "YouTube URL" : "Description"}
+                    {formData.type === "video" ? "Video URL (YouTube, FB, Google Drive)" : "Description"}
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => {
                       setFormData({ ...formData, description: e.target.value });
-                      setInvalidFields((prev) =>
-                        prev.filter((f) => f !== "description"),
-                      );
+                      setInvalidFields((prev) => prev.filter((f) => f !== "description"));
                     }}
                     rows={formData.type === "video" ? 2 : 5}
                     maxLength={formData.type !== "video" ? 500 : undefined}
                     placeholder={
                       formData.type === "video"
-                        ? "https://youtube.com/..."
+                        ? "https://youtube.com/..., https://drive.google.com/..., or fb.watch/..."
                         : "Enter text here..."
                     }
-                    className={getFieldClass(
-                      "description",
-                      "resize-y break-all whitespace-pre-wrap pb-8",
-                    )}
+                    className={getFieldClass("description", "resize-y break-all whitespace-pre-wrap pb-8")}
                     required
                   />
                   {formData.type !== "video" && (
-                    <span
-                      className={`absolute bottom-3 right-4 text-xs font-ubuntu-mono font-bold ${formData.description.length >= 500 ? "text-red-500" : "text-slate-400"}`}
-                    >
+                    <span className={`absolute bottom-3 right-4 text-xs font-ubuntu-mono font-bold ${formData.description.length >= 500 ? "text-red-500" : "text-slate-400"}`}>
                       {formData.description.length}/500
                     </span>
                   )}
@@ -517,18 +468,28 @@ function EditMemAppForm() {
                 {formData.type === "video" && formData.description && (
                   <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">
-                      Preview
+                      Video Preview Check
                     </h3>
-                    {embedUrl ? (
-                      <iframe
-                        src={embedUrl}
-                        className="w-full aspect-video rounded-lg shadow-sm border-0"
-                        allowFullScreen
-                      ></iframe>
+                    {embedUrl && !iframeError ? (
+                      <>
+                        <iframe
+                          src={embedUrl}
+                          onError={() => setIframeError(true)}
+                          className="w-full aspect-video rounded-lg shadow-sm border-0 bg-black"
+                          allowFullScreen
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        ></iframe>
+                        <div className="mt-4 text-sm text-amber-800 bg-amber-50 p-4 rounded-md border border-amber-200 flex items-start gap-3">
+                          <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                          <p className="font-ubuntu-mono leading-relaxed">
+                            <strong>Privacy & Availability Warning:</strong> If the preview above shows an error or asks you to sign in, the video is set to private. Ensure you change the settings on the host platform to <strong>"Public"</strong> or <strong>"Anyone with the link"</strong> so applicants can view it.
+                          </p>
+                        </div>
+                      </>
                     ) : (
-                      <p className="text-sm text-red-500 font-ubuntu-mono font-bold">
-                        Invalid YouTube URL
-                      </p>
+                      <div className="text-sm text-red-700 bg-red-50 p-4 rounded border border-red-200 font-ubuntu-mono font-bold">
+                        The URL is either formatted incorrectly or completely blocks embedding. Please verify the URL and make sure its visibility is set to Public.
+                      </div>
                     )}
                   </div>
                 )}
@@ -536,9 +497,7 @@ function EditMemAppForm() {
                 <div className="mt-4 flex justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() =>
-                      router.push("/dashboard?tab=manage&section=memapp")
-                    }
+                    onClick={() => router.push("/dashboard?tab=manage&section=memapp")}
                     className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
                   >
                     Cancel

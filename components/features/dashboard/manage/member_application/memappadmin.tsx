@@ -141,7 +141,6 @@ function DeleteConfirmPopup({
   );
 }
 
-// --- Sortable Row Component ---
 function SortableRow({
   item,
   index,
@@ -170,8 +169,6 @@ function SortableRow({
     id: item.id.toString(),
   });
 
-  // FIX 1: Lock the drag transform to the Y-axis only. 
-  // This physically prevents horizontal dragging, stopping the scrollbar from appearing.
   const style = {
     transform: transform ? `translate3d(0px, ${transform.y}px, 0)` : undefined,
     transition,
@@ -218,12 +215,11 @@ function SortableRow({
         </span>
       </td>
 
-      <td className="px-4 py-2 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[45%]">
+      <td className="px-4 py-2 pr-8 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[40%]">
         {item.description}
       </td>
 
-      {/* FIX 2: Split the actions into 3 fixed-width zones to lock alignment */}
-      <td className="px-4 py-2 text-center w-[30%]">
+      <td className="px-4 py-2 text-center w-[35%]">
         <div className="flex justify-center items-center w-full">
           
           {/* ZONE 1: Arrow Buttons (Fixed Width) */}
@@ -290,13 +286,11 @@ export default function MemAppAdmin() {
   const [filteredItems, setFilteredItems] = useState<MemAppItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Deadline States
   const [deadlineItem, setDeadlineItem] = useState<MemAppItem | null>(null);
   const [deadlineDate, setDeadlineDate] = useState("");
   const [initialDeadlineDate, setInitialDeadlineDate] = useState("");
   const [savingDeadline, setSavingDeadline] = useState(false);
 
-  // Signup Link States
   const [signupLinkItem, setSignupLinkItem] =
     useState<MemAppItem | null>(null);
 
@@ -304,7 +298,6 @@ export default function MemAppAdmin() {
   const [initialSignupLink, setInitialSignupLink] = useState("");
   const [savingLink, setSavingLink] = useState(false);
 
-  // Other States
   const [activeTab, setActiveTab] = useState("ALL");
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -325,7 +318,6 @@ export default function MemAppAdmin() {
     { id: "video", label: "Videos" },
   ];
 
-  // DnD Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -460,30 +452,28 @@ export default function MemAppAdmin() {
     }
   };
 
-  // NEW: handleMove logic for Arrows
+
   const handleMove = async (id: number, dir: 'up' | 'down') => {
     const currentIndex = filteredItems.findIndex(i => i.id === id);
     const targetIndex = dir === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-    // Boundary check
+
     if (targetIndex < 0 || targetIndex >= filteredItems.length) return;
 
     const item = filteredItems[currentIndex];
     const target = filteredItems[targetIndex];
 
-    // Optimistically update the UI instantly
     const newOrder = arrayMove(filteredItems, currentIndex, targetIndex);
     setFilteredItems(newOrder);
 
     try {
-      // Swap order_index values in DB
       await supabase.from("announce_memapp").update({ order_index: target.order_index }).eq("id", item.id);
       await supabase.from("announce_memapp").update({ order_index: item.order_index }).eq("id", target.id);
       
       fetchItems();
     } catch (err: any) {
       setToast({ message: "Failed to move item", type: "error" });
-      fetchItems(); // revert on fail
+      fetchItems(); 
     }
   };
 
@@ -665,12 +655,14 @@ export default function MemAppAdmin() {
         startIndex + ITEMS_PER_PAGE
       );
 
-  // CHANGE DETECTION
   const isDeadlineChanged =
     deadlineDate !== initialDeadlineDate;
 
   const isSignupLinkChanged =
     signupLink.trim() !== initialSignupLink.trim();
+
+  const today = new Date();
+  const minDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-full overflow-hidden flex flex-col">
@@ -724,6 +716,7 @@ export default function MemAppAdmin() {
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="date"
+              min={minDateString} 
               value={deadlineDate}
               onChange={(e) =>
                 setDeadlineDate(e.target.value)
@@ -791,7 +784,6 @@ export default function MemAppAdmin() {
         </div>
       </div>
 
-      {/* TABS */}
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
@@ -829,7 +821,6 @@ export default function MemAppAdmin() {
         </div>
       )}
 
-      {/* TABLE - Fixed DndContext structure to prevent Hydration errors */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-x-auto border border-gray-200 flex flex-col">
         <div className="min-w-[700px]">
           <DndContext
@@ -846,11 +837,11 @@ export default function MemAppAdmin() {
                     Type
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[50%]">
+                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[40%]">
                     Content Details
                   </th>
 
-                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[25%]">
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[35%]">
                     Actions
                   </th>
                 </tr>
