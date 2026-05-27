@@ -1521,15 +1521,6 @@ export default function MembersPage() {
       showImagesConfirm ||
       showImagesSuccess;
 
-    if (isAnyModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [
     showConfirm,
     showImportConfirm,
