@@ -37,6 +37,9 @@ function DashboardContent() {
     comm: string;
     school: string;
     role?: string;
+    email: string;
+    year: string | number;
+    schol: string;
   } | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true); // Track loading state
   const [isTabLoading, setIsTabLoading] = useState(false);
@@ -66,20 +69,22 @@ function DashboardContent() {
       setIsLoadingRole(false);
       return "user";
     }
-    //it works trust me
+    const member = data as any;
+
     setMemberData({
-      fname: data.mem_fname,
-      lname: data.mem_lname,
-      comm: data.committee?.comm_name || "Member",
-      school: data.school?.school_name || "No School",
-      role: data.role,
-      email: data.mem_email,
-      year: data.mem_schol_year,
-      schol: data.mem_schol_type,
+      fname: member.mem_fname,
+      lname: member.mem_lname,
+      comm: member.committee.comm_name || "Member",
+      school: member.school.school_name || "No School",
+      role: member.role,
+      email: member.mem_email,
+      year: member.mem_schol_year,
+      schol: member.mem_schol_type,
     });
-    setUserRole(data.role);
+    setUserRole(member.role);
     setIsLoadingRole(false);
-    return data.role;
+
+    return member.role;
   };
 
   // Get tab from URL
