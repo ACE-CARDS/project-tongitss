@@ -140,7 +140,6 @@ function DeleteConfirmPopup({
   );
 }
 
-// --- Sortable Row Component ---
 function SortableRow({
   item,
   index,
@@ -232,12 +231,11 @@ function SortableRow({
         </span>
       </td>
 
-      <td className="px-4 py-2 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[45%]">
+      <td className="px-4 py-2 pr-8 text-sm font-ubuntu-mono text-[#475569] truncate max-w-sm w-[40%]">
         {item.description}
       </td>
 
-      {/* FIX 2: Split the actions into 3 fixed-width zones to lock alignment */}
-      <td className="px-4 py-2 text-center w-[30%]">
+      <td className="px-4 py-2 text-center w-[35%]">
         <div className="flex justify-center items-center w-full">
           {/* ZONE 1: Arrow Buttons (Fixed Width) */}
           <div className="w-[30px] flex justify-center">
@@ -285,7 +283,6 @@ function SortableRow({
             )}
           </div>
 
-          {/* ZONE 2: Active Video Badge (Fixed Width) */}
           <div className="w-[100px] flex justify-center mx-2">
             {item.type === "video" && item.order_index !== 1 && (
               <button
@@ -302,7 +299,6 @@ function SortableRow({
             )}
           </div>
 
-          {/* ZONE 3: Edit & Delete Icons (Fixed Width) */}
           <div className="w-[60px] flex justify-center items-center gap-4">
             <button
               onClick={() => onEdit(item.id)}
@@ -358,7 +354,6 @@ export default function MemAppAdmin() {
   const [filteredItems, setFilteredItems] = useState<MemAppItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Deadline States
   const [deadlineItem, setDeadlineItem] = useState<MemAppItem | null>(null);
   const [deadlineDate, setDeadlineDate] = useState("");
   const [initialDeadlineDate, setInitialDeadlineDate] = useState("");
@@ -371,7 +366,6 @@ export default function MemAppAdmin() {
   const [initialSignupLink, setInitialSignupLink] = useState("");
   const [savingLink, setSavingLink] = useState(false);
 
-  // Other States
   const [activeTab, setActiveTab] = useState("ALL");
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -392,7 +386,6 @@ export default function MemAppAdmin() {
     { id: "video", label: "Videos" },
   ];
 
-  // DnD Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -520,13 +513,11 @@ export default function MemAppAdmin() {
     const currentIndex = filteredItems.findIndex((i) => i.id === id);
     const targetIndex = dir === "up" ? currentIndex - 1 : currentIndex + 1;
 
-    // Boundary check
     if (targetIndex < 0 || targetIndex >= filteredItems.length) return;
 
     const item = filteredItems[currentIndex];
     const target = filteredItems[targetIndex];
 
-    // Optimistically update the UI instantly
     const newOrder = arrayMove(filteredItems, currentIndex, targetIndex);
     setFilteredItems(newOrder);
 
@@ -544,7 +535,7 @@ export default function MemAppAdmin() {
       fetchItems();
     } catch (err: any) {
       setToast({ message: "Failed to move item", type: "error" });
-      fetchItems(); // revert on fail
+      fetchItems();
     }
   };
 
@@ -838,6 +829,9 @@ export default function MemAppAdmin() {
     }
   };
 
+  const today = new Date();
+  const minDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-full overflow-hidden flex flex-col">
       <Toast
@@ -889,6 +883,7 @@ export default function MemAppAdmin() {
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="date"
+              min={minDateString}
               value={deadlineDate}
               onChange={(e) => setDeadlineDate(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono focus:ring-1 focus:ring-[#011638]"
@@ -897,10 +892,10 @@ export default function MemAppAdmin() {
             <button
               onClick={saveDeadline}
               disabled={savingDeadline || !isDeadlineChanged}
-              className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
+              className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
                 savingDeadline || !isDeadlineChanged
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#011638] text-white hover:bg-[#0d21a1]"
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#1e4db7] hover:opacity-90"
               }`}
             >
               Save
@@ -935,10 +930,10 @@ export default function MemAppAdmin() {
             <button
               onClick={saveSignupLink}
               disabled={savingLink || !isSignupLinkChanged}
-              className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
+              className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
                 savingLink || !isSignupLinkChanged
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:bg-green-700"
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#1e4db7] hover:opacity-90"
               }`}
             >
               Update
@@ -947,13 +942,12 @@ export default function MemAppAdmin() {
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-full border-b border-gray-200 mb-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-3 font-oswald font-bold tracking-wide uppercase transition-colors whitespace-nowrap ${
+            className={`flex-1 text-center px-6 py-3 font-oswald font-bold tracking-wide uppercase transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-b-4 border-[#011638] text-[#011638]"
                 : "text-slate-400 hover:text-[#011638] hover:bg-slate-50"
@@ -984,7 +978,6 @@ export default function MemAppAdmin() {
         </div>
       )}
 
-      {/* TABLE - Fixed DndContext structure to prevent Hydration errors */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-lg overflow-x-auto border border-gray-200 flex flex-col">
         <div className="min-w-[700px]">
           <DndContext
@@ -1001,11 +994,11 @@ export default function MemAppAdmin() {
                     Type
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[50%]">
+                  <th className="px-4 py-3 text-left text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[40%]">
                     Content Details
                   </th>
 
-                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[25%]">
+                  <th className="px-4 py-3 text-center text-xs font-oswald font-bold text-[#eff0f2] uppercase tracking-wider w-[35%]">
                     Actions
                   </th>
                 </tr>
