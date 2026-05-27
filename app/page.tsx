@@ -16,8 +16,6 @@ import Members from "@/components/features/landing_page/members";
 import Province from "@/components/features/landing_page/province";
 import Acedemics from "@/components/features/landing_page/academics";
 
-export const supabase = createClient();
-
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
   const [isDialogueShowing, setIsDialogueShowing] = useState(false);

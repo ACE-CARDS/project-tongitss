@@ -1,7 +1,7 @@
-import { supabase } from "@/app/page";
 import { useEffect, useRef, useState, useMemo } from "react";
 import FormDropdown from "@/components/ui/formDropdown";
 import FilterDropdown from "@/components/ui/filterDropdown";
+import { createClient } from "@/utils/supabase/client";
 
 interface School {
   id: number;
@@ -10,6 +10,7 @@ interface School {
 }
 
 export default function Province({ id }: { id?: string }) {
+  const supabase = createClient();
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [provinceMembers, setProvinceMembers] = useState(0);
 

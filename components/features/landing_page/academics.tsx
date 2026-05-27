@@ -2,9 +2,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import GradientLine from "@/components/ui/gradientLine";
 import { createClient } from "@/utils/supabase/client"; 
-import { supabase } from "@/app/page";
 
 export default function Academics({id}: {id?: string}) {
+  const supabase = createClient();
   const [surveyCount, setSurveyCount] = useState(0);
   const [thesesCount, setThesesCount] = useState(0);
 
