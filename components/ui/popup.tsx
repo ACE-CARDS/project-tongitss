@@ -44,7 +44,7 @@ export default function Popup({ isOpen, title, onClose, children, maxWidth = "md
         <ModalBlur onClose={onClose} />
       </span>
 
-      <div className={`fixed inset-0 z-[400] flex items-center justify-center ${className}`}>
+      <div className={`fixed inset-0 z-[10001] flex items-center justify-center ${className}`}>
         <div
           ref={frameRef}
           className={`bg-[#fbfaf8] w-full mx-4 shadow-2xl rounded-lg transition-all ${maxWidthClasses[maxWidth]}`}
