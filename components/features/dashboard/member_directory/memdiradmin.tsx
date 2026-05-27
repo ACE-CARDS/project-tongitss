@@ -1645,8 +1645,7 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-pics"
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl 
-                hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638] text-center cursor-pointer"
+                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Images
                   <input
@@ -1669,8 +1668,8 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-members"
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638] text-white rounded-xl 
-                  hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638] text-center cursor-pointer"
+                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+
                 >
                   Import Members
                 </label>
@@ -1773,8 +1772,7 @@ export default function MembersPage() {
                 {/* export */}
                 <button
                   onClick={() => setShowExportOptions(true)}
-                  className="px-4 py-2 bg-[#011638] border-2 border-[#011638]
-                   text-white rounded-xl hover:bg-[#f0f4f8] transition whitespace-nowrap hover:text-[#011638] cursor-pointer"
+                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Export Members
                 </button>
