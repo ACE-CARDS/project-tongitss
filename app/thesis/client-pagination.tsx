@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"; 
 import ThesisAbstract from './thesis_abstract';
 import SpotlightCard from "@/components/ui/SpotlightCard"; 
-import Pagination from "@/components/ui/pagination"; 
 import { useRouter } from "next/navigation"; 
 import PaginationNav from "@/components/ui/pagination";
 
