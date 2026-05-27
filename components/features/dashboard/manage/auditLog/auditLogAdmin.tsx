@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
+import Pagination from "@/components/ui/pagination";
 
 type AuditLog = {
   id: number;
@@ -111,11 +112,13 @@ export default function AuditLogAdmin() {
     setCurrentPage(1);
   }, [auditLogs, selectedAction, selectedTable, searchTerm]);
 
-  const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedLogs = filteredLogs.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE,
+  const itemsPerPage = 5;
+  const totalItems = filteredLogs.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const paginatedItems = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
   const formatDate = (dateString: string) => {
@@ -308,117 +311,12 @@ export default function AuditLogAdmin() {
 
           {/* audit log mismo */}
           <div className="bg-white/70 backdrop-blur-xl border border-gray-300 rounded-xl shadow-md p-6 space-y-4">
-            {totalPages > 1 && (
-              <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-2 rounded-lg text-sm transition ${
-                    currentPage === 1
-                      ? "text-[#94a3b8]"
-                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                  }`}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                <div className="flex items-center space-x-1">
-                  {(() => {
-                    const pages: (number | string)[] = [];
-
-                    if (totalPages <= 4) {
-                      for (let i = 1; i <= totalPages; i++) {
-                        pages.push(i);
-                      }
-                    } else {
-                      const showLeft = currentPage <= 2;
-                      const showRight = currentPage >= totalPages - 1;
-
-                      if (showLeft) {
-                        pages.push(1, 2, "...", totalPages);
-                      } else if (showRight) {
-                        pages.push(1, "...", totalPages - 1, totalPages);
-                      } else {
-                        pages.push(1, "...", currentPage, "...", totalPages);
-                      }
-                    }
-
-                    return pages.map((page, idx) =>
-                      page === "..." ? (
-                        <span
-                          key={`ellipsis-${idx}`}
-                          className="px-2 text-gray-500"
-                        >
-                          ...
-                        </span>
-                      ) : (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page as number)}
-                          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition ${
-                            page === currentPage
-                              ? "bg-[#011638] text-white font-bold"
-                              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ),
-                    );
-                  })()}
-                </div>
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-2 rounded-lg text-sm transition ${
-                    currentPage === totalPages
-                      ? "text-[#94a3b8]"
-                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                  }`}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </nav>
-            )}
-
-            <div className="text-sm text-gray-600 pt-2">
-              Showing {paginatedLogs.length > 0 ? startIndex + 1 : 0} to{" "}
-              {Math.min(startIndex + ITEMS_PER_PAGE, filteredLogs.length)} of{" "}
-              {filteredLogs.length} results
-            </div>
 
             {isLoading ? (
               <div className="min-h-[300px] flex items-center justify-center">
                 <div className="text-gray-500">Loading activity logs...</div>
               </div>
-            ) : filteredLogs.length === 0 ? (
+            ) : paginatedItems.length === 0 ? (
               <div className="min-h-[300px] flex items-center justify-center">
                 <div className="text-gray-500 text-center">
                   <p className="text-lg font-semibold">No activity detected</p>
@@ -426,7 +324,7 @@ export default function AuditLogAdmin() {
               </div>
             ) : (
               <div className="space-y-3 max-h-[720px] overflow-y-auto pr-2">
-                {paginatedLogs.map((log) => {
+                {paginatedItems.map((log) => {
                   const expanded = expandedDetails.includes(log.id);
                   const showReadMore = shouldShowReadMore(log.details);
 
@@ -498,6 +396,14 @@ export default function AuditLogAdmin() {
                 })}
               </div>
             )}
+            
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </main>
