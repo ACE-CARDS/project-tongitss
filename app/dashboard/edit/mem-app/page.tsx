@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
+import BackButton from "@/components/ui/backButton";
 
 // Expanded parser for YouTube, Google Drive, and Facebook
 const getEmbedUrl = (url: string) => {
@@ -364,24 +365,17 @@ function EditMemAppForm() {
           </div>
         ) : (
           <div className="w-full flex-1">
-            <div ref={formTopRef} className="mb-6 flex items-center justify-between">
-              <button
-                onClick={() => router.push("/dashboard?tab=manage&section=memapp")}
-                className="flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors"
-              >
-                <svg className="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>{" "}
-                Back
-              </button>
+            <div ref={formTopRef} className="flex flex-col gap-4 mb-6">
+              <BackButton
+                href="/dashboard?tab=manage&section=memapp"
+                className="!mb-0"
+              />
+              <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638]">
+                Edit Content
+              </h1>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-              <div className="bg-[#011638] px-6 py-4">
-                <h1 className="text-xl font-oswald font-bold text-[#fbfaf8] uppercase tracking-wide">
-                  Edit Content
-                </h1>
-              </div>
 
               <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-6">
                 {errorMsg && (
@@ -399,7 +393,7 @@ function EditMemAppForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
                   <div className={formData.type === "video" || formData.type === "reminder" ? "sm:col-span-2 min-w-0" : "min-w-0"}>
-                    <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                    <label className="form_label">
                       Content Type
                     </label>
                     <select
@@ -408,7 +402,7 @@ function EditMemAppForm() {
                         setFormData({ ...formData, type: e.target.value });
                         setInvalidFields((prev) => prev.filter((f) => f !== "type"));
                       }}
-                      className={getFieldClass("type")}
+                      className={getFieldClass("type","form_input")}
                       disabled={formData.type === "deadline"}
                     >
                       <option value="instruction">Instruction</option>
@@ -419,7 +413,7 @@ function EditMemAppForm() {
 
                   {formData.type === "instruction" && (
                     <div className="min-w-0">
-                      <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                      <label className="form_label">
                         Sequence Order (1 to {dynamicMax})
                       </label>
                       <input
@@ -431,7 +425,7 @@ function EditMemAppForm() {
                           setFormData({ ...formData, order_index: e.target.value });
                           setInvalidFields((prev) => prev.filter((f) => f !== "order_index"));
                         }}
-                        className={getFieldClass("order_index")}
+                        className={getFieldClass("order_index","form_input")}
                         required
                       />
                     </div>
@@ -439,7 +433,7 @@ function EditMemAppForm() {
                 </div>
 
                 <div className="min-w-0 relative">
-                  <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                  <label className="form_label">
                     {formData.type === "video" ? "Video URL (YouTube, FB, Google Drive)" : "Description"}
                   </label>
                   <textarea
@@ -455,7 +449,7 @@ function EditMemAppForm() {
                         ? "https://youtube.com/..., https://drive.google.com/..., or fb.watch/..."
                         : "Enter text here..."
                     }
-                    className={getFieldClass("description", "resize-y break-all whitespace-pre-wrap pb-8")}
+                    className={getFieldClass("description", "resize-y break-all whitespace-pre-wrap pb-8 form_input_area")}
                     required
                   />
                   {formData.type !== "video" && (
@@ -498,14 +492,14 @@ function EditMemAppForm() {
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard?tab=manage&section=memapp")}
-                    className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
+                    className="form_btn-cancel"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50"
+                    className="form_btn-blue"
                   >
                     {loading ? "Updating..." : "Update Content"}
                   </button>

@@ -377,21 +377,17 @@ export default function AddEventForm() {
             </div>
           </div>
 
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-end mt-4 items-center gap-3">
+            <Link
+              href="/dashboard?tab=manage&section=events"
+              className="from_btn-cancel"
+            >
+              Cancel
+            </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="
-                bg-[#011638]
-                text-[#fbfaf8]
-                font-oswald
-                font-medium 
-                px-8
-                py-2
-                rounded-md
-                hover:bg-[#1a2a4f]
-                transition-colors
-                disabled:opacity-50
+              className="form_btn-blue
               "
             >
               {isSubmitting ? "Posting..." : "Post Event"}

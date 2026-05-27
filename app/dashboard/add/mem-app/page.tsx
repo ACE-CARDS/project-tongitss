@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
+import BackButton from "@/components/ui/backButton";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -239,11 +240,10 @@ export default function AddMemApp() {
     <>
       <NavBar />
       <div
-        className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
+        className="w-full mx-auto max-w-[1920px] min-h-screen bg-[#fbfaf8]"
         style={{
           backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
           backgroundSize: "20px 20px",
-          backgroundAttachment: "fixed",
         }}
       >
         <main className="flex-1 container mx-auto py-10 px-4 sm:px-6 max-w-3xl flex flex-col">
@@ -294,37 +294,17 @@ export default function AddMemApp() {
             </div>
           ) : (
             <div className="w-full flex-1">
-              <div
-                ref={formTopRef}
-                className="mb-6 flex items-center justify-between"
-              >
-                <button
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2 text-[#475569] hover:text-[#011638] font-ubuntu-mono transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>{" "}
-                  Back
-                </button>
-              </div>
+            <div ref={formTopRef} className="flex flex-col gap-4 mb-6">
+              <BackButton
+                href="/dashboard?tab=manage&section=memapp"
+                className="!mb-0"
+              />
+              <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638]">
+                Edit Content
+              </h1>
+            </div>
 
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-                <div className="bg-[#011638] px-6 py-4">
-                  <h1 className="text-xl font-oswald font-bold text-[#fbfaf8] uppercase tracking-wide">
-                    Add Content
-                  </h1>
-                </div>
 
                 <form
                   onSubmit={handleSubmit}
@@ -360,7 +340,7 @@ export default function AddMemApp() {
                           : "min-w-0"
                       }
                     >
-                      <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                      <label className="form_label">
                         Content Type
                       </label>
                       <select
@@ -371,7 +351,7 @@ export default function AddMemApp() {
                             prev.filter((f) => f !== "type"),
                           );
                         }}
-                        className={getFieldClass("type")}
+                        className={getFieldClass("type","form_input")}
                       >
                         <option value="instruction">Instruction</option>
                         <option value="reminder">Reminder</option>
@@ -381,7 +361,7 @@ export default function AddMemApp() {
 
                     {formData.type === "instruction" && (
                       <div className="min-w-0">
-                        <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                        <label className="form_label">
                           Sequence Order (1 to {instructionCount + 1})
                         </label>
                         <input
@@ -398,7 +378,7 @@ export default function AddMemApp() {
                               prev.filter((f) => f !== "order_index"),
                             );
                           }}
-                          className={getFieldClass("order_index")}
+                          className={getFieldClass("order_index","form_input")}
                           required
                         />
                       </div>
@@ -406,7 +386,7 @@ export default function AddMemApp() {
                   </div>
 
                   <div className="min-w-0 relative">
-                    <label className="block text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-2">
+                    <label className="form_label">
                       {formData.type === "video"
                         ? "YouTube URL"
                         : "Description"}
@@ -431,8 +411,8 @@ export default function AddMemApp() {
                       }
                       className={getFieldClass(
                         "description",
-                        "resize-y break-all whitespace-pre-wrap pb-8",
-                      )}
+                        "resize-y break-all whitespace-pre-wrap pb-8 form_input_area",
+                      ) }
                       required
                     />
                     {formData.type !== "video" && (
@@ -467,14 +447,14 @@ export default function AddMemApp() {
                     <button
                       type="button"
                       onClick={() => router.back()}
-                      className="px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] transition-colors"
+                      className="form_btn-cancel"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-[#eec643] text-[#011638] rounded-lg hover:bg-[#d9b237] transition-colors font-oswald uppercase tracking-widest whitespace-nowrap shadow-sm disabled:opacity-50"
+                      className="form_btn-blue"
                     >
                       {loading ? "Saving..." : "Save Content"}
                     </button>
