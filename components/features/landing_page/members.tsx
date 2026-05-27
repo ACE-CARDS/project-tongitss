@@ -106,6 +106,7 @@ export default function Members({id}: {id?: string}) {
           <div className="flex justify-center">
             <div className="relative">
               <Image
+                height={600}
                 width={600}
                 src="/assets/logos/ga.jpg"
                 alt="Members"
