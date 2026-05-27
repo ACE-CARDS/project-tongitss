@@ -736,11 +736,11 @@ export default function MemAppAdmin() {
               disabled={
                 savingDeadline || !isDeadlineChanged
               }
-              className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
+              className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
                 savingDeadline || !isDeadlineChanged
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#011638] text-white hover:bg-[#0d21a1]"
-              }`}
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#1e4db7] hover:opacity-90"
+              }`} 
             >
               Save
             </button>
@@ -778,11 +778,12 @@ export default function MemAppAdmin() {
               disabled={
                 savingLink || !isSignupLinkChanged
               }
-              className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
+              className={`px-4 py-2 rounded-xl text-white transition cursor-pointer ${
                 savingLink || !isSignupLinkChanged
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:bg-green-700"
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#1e4db7] hover:opacity-90"
               }`}
+
             >
               Update
             </button>
