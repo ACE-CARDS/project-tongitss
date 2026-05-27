@@ -1645,7 +1645,7 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-pics"
-                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Images
                   <input
@@ -1669,7 +1669,6 @@ export default function MembersPage() {
                 <label
                   htmlFor="import-members"
                   className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
-
                 >
                   Import Members
                 </label>
@@ -1756,8 +1755,7 @@ export default function MembersPage() {
                           ? Number(obj.school)
                           : DEFAULT_SCHOOL,
                         is_active: true,
-                        mem_email:
-                          obj.mem_email?.trim(),
+                        mem_email: obj.mem_email?.trim(),
                         acadyear: obj.acadyear || DEFAULT_ACADYEAR,
                       };
                     });
@@ -2070,16 +2068,28 @@ export default function MembersPage() {
       </main>
 
       {/* mowdals */}
-      <Popup isOpen={showImportError} title="Import Failed" onClose={() => setShowImportError(false)} maxWidth="sm">
+      <Popup
+        isOpen={showImportError}
+        title="Import Failed"
+        onClose={() => setShowImportError(false)}
+        maxWidth="sm"
+      >
         <div className="flex justify-center mb-3">
           <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
         </div>
         <p className="text-sm text-gray-500 text-center mb-6">
-          Failed to import members. Please check your file format and column names then try again.
+          Failed to import members. Please check your file format and column
+          names then try again.
         </p>
         <div className="flex justify-center">
           <button
@@ -2092,186 +2102,193 @@ export default function MembersPage() {
       </Popup>
 
       {showSaveSuccess && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
-          <div className="h-2 bg-[#011638]" />
-          
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
-              <svg
-                className="w-10 h-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="h-2 bg-[#011638]" />
 
-            <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-              Changes Saved
-            </h2>
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                <svg
+                  className="w-10 h-10 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-6">
-              All updates have been successfully saved.
-            </p>
+              <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                Changes Saved
+              </h2>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowSaveSuccess(false)}
-                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
-              >
-                Close
-              </button>
+              <p className="text-[#475569] font-ubuntu-mono mb-6">
+                All updates have been successfully saved.
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setShowSaveSuccess(false)}
+                  className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
       {showDeleteSuccess && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
-          <div className="h-2 bg-[#011638]" />
-          
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-200">
-              <svg
-                className="w-10 h-10 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 12H4"
-                />
-              </svg>
-            </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="h-2 bg-[#011638]" />
 
-            <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-              Delete Successful
-            </h2>
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-200">
+                <svg
+                  className="w-10 h-10 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20 12H4"
+                  />
+                </svg>
+              </div>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-6">
-              Member has been successfully removed.
-            </p>
+              <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                Delete Successful
+              </h2>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowDeleteSuccess(false)}
-                className="px-6 py-2 text-[#fbfaf8] bg-red-500 rounded-lg hover:bg-red-600 transition-colors font-oswald cursor-pointer"
-              >
-                Close
-              </button>
+              <p className="text-[#475569] font-ubuntu-mono mb-6">
+                Member has been successfully removed.
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setShowDeleteSuccess(false)}
+                  className="px-6 py-2 text-[#fbfaf8] bg-red-500 rounded-lg hover:bg-red-600 transition-colors font-oswald cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
       {showRenameSuccess && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
-          <div className="h-2 bg-[#011638]" />
-          
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
-              <svg
-                className="w-10 h-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="h-2 bg-[#011638]" />
 
-            <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-              Edit Successful
-            </h2>
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                <svg
+                  className="w-10 h-10 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-6">
-              Member details have been successfully updated.
-            </p>
+              <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                Edit Successful
+              </h2>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowRenameSuccess(false)}
-                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
-              >
-                Close
-              </button>
+              <p className="text-[#475569] font-ubuntu-mono mb-6">
+                Member details have been successfully updated.
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setShowRenameSuccess(false)}
+                  className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
       {showImportSuccess && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
-          <div className="h-2 bg-[#011638]" />
-          
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
-              <svg
-                className="w-10 h-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="h-2 bg-[#011638]" />
 
-            <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-              Import Successful
-            </h2>
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                <svg
+                  className="w-10 h-10 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-6">
-              {pendingImport.length === 0
-                ? "Members have been successfully imported and updated."
-                : "Members have been successfully imported."}
-            </p>
+              <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                Import Successful
+              </h2>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowImportSuccess(false)}
-                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
-              >
-                Close
-              </button>
+              <p className="text-[#475569] font-ubuntu-mono mb-6">
+                {pendingImport.length === 0
+                  ? "Members have been successfully imported and updated."
+                  : "Members have been successfully imported."}
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setShowImportSuccess(false)}
+                  className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-      <Popup isOpen={showImportConfirm} title="Confirm Import" onClose={() => {
-        setPendingImport([]);
-        setShowImportConfirm(false);
-      }} maxWidth="sm">
+      <Popup
+        isOpen={showImportConfirm}
+        title="Confirm Import"
+        onClose={() => {
+          setPendingImport([]);
+          setShowImportConfirm(false);
+        }}
+        maxWidth="sm"
+      >
         <p className="text-sm text-gray-500 text-center mb-6">
           You are about to import{" "}
-          <span className="font-semibold text-[#011638]">{pendingImport.length}</span>{" "}
+          <span className="font-semibold text-[#011638]">
+            {pendingImport.length}
+          </span>{" "}
           members into the database.
         </p>
         <div className="flex justify-end gap-4 mt-4">
@@ -2293,8 +2310,15 @@ export default function MembersPage() {
         </div>
       </Popup>
 
-      <Popup isOpen={showExportOptions} title="Export Members" onClose={() => setShowExportOptions(false)} maxWidth="sm">
-        <p className="text-sm text-gray-500 text-center mb-6">Choose file format</p>
+      <Popup
+        isOpen={showExportOptions}
+        title="Export Members"
+        onClose={() => setShowExportOptions(false)}
+        maxWidth="sm"
+      >
+        <p className="text-sm text-gray-500 text-center mb-6">
+          Choose file format
+        </p>
         <div className="flex flex-col gap-3">
           <button
             onClick={() => {
@@ -2325,12 +2349,18 @@ export default function MembersPage() {
         </div>
       </Popup>
 
-      <Popup isOpen={!!deleteMember} title="Delete Member" onClose={() => setDeleteMember(null)} maxWidth="sm">
+      <Popup
+        isOpen={!!deleteMember}
+        title="Delete Member"
+        onClose={() => setDeleteMember(null)}
+        maxWidth="sm"
+      >
         <p className="text-sm text-gray-500 text-center mb-6">
           Are you sure you want to delete{" "}
           <span className="font-semibold text-[#011638]">
             {deleteMember?.mem_fname} {deleteMember?.mem_lname}
-          </span>?
+          </span>
+          ?
         </p>
         <div className="flex justify-center gap-4">
           <button
@@ -2348,7 +2378,12 @@ export default function MembersPage() {
         </div>
       </Popup>
 
-      <Popup isOpen={!!editMember} title="Edit Member" onClose={() => setEditMember(null)} maxWidth="lg">
+      <Popup
+        isOpen={!!editMember}
+        title="Edit Member"
+        onClose={() => setEditMember(null)}
+        maxWidth="lg"
+      >
         <div className="space-y-3">
           <label className="text-sm text-gray-600">Name</label>
           <input
@@ -2385,7 +2420,10 @@ export default function MembersPage() {
               value = value.replace(/[^A-Z]/g, "");
               value = value.slice(0, 2);
               setEditForm((prev) => ({ ...prev, mem_minit: value }));
-              setEditFieldErrors((prev) => ({ ...prev, mem_minit: value.trim() !== "" && value.length > 3 }));
+              setEditFieldErrors((prev) => ({
+                ...prev,
+                mem_minit: value.trim() !== "" && value.length > 3,
+              }));
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg"
           />
@@ -2397,7 +2435,9 @@ export default function MembersPage() {
             type="email"
             placeholder="Email"
             value={editForm.mem_email}
-            onChange={(e) => setEditForm((prev) => ({ ...prev, mem_email: e.target.value }))}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, mem_email: e.target.value }))
+            }
             className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_email ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
           />
         </div>
@@ -2406,7 +2446,10 @@ export default function MembersPage() {
           <label className="text-sm text-gray-600">School</label>
           <SchoolDropdown
             value={editForm.school}
-            options={schools.map((s) => ({ label: s.school_name, value: s.id }))}
+            options={schools.map((s) => ({
+              label: s.school_name,
+              value: s.id,
+            }))}
             onChange={(val) => {
               setEditForm((prev) => ({ ...prev, school: val }));
               if (val === "other") {
@@ -2435,7 +2478,10 @@ export default function MembersPage() {
           <label className="text-sm text-gray-600">Course</label>
           <CourseDropdown
             value={editForm.course}
-            options={courses.map((c) => ({ label: c.course_name, value: c.id }))}
+            options={courses.map((c) => ({
+              label: c.course_name,
+              value: c.id,
+            }))}
             onChange={(val) => {
               setEditForm((prev) => ({ ...prev, course: val }));
               if (val === "other") {
@@ -2461,7 +2507,10 @@ export default function MembersPage() {
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={() => setEditMember(null)} className="px-4 py-2 rounded-xl cursor-pointer">
+          <button
+            onClick={() => setEditMember(null)}
+            className="px-4 py-2 rounded-xl cursor-pointer"
+          >
             Cancel
           </button>
           <button
@@ -2475,27 +2524,45 @@ export default function MembersPage() {
       </Popup>
 
       {/* confirm  */}
-      <Popup isOpen={showConfirm} title="Save Changes?" onClose={() => setShowConfirm(false)} maxWidth="sm">
+      <Popup
+        isOpen={showConfirm}
+        title="Save Changes?"
+        onClose={() => setShowConfirm(false)}
+        maxWidth="sm"
+      >
         <p className="text-sm text-gray-500 text-center mb-6">
           Are you sure you want to apply all updates?
         </p>
         <div className="flex justify-center gap-4">
-          <button onClick={() => setShowConfirm(false)} className="px-4 py-2 rounded-xl cursor-pointer">
+          <button
+            onClick={() => setShowConfirm(false)}
+            className="px-4 py-2 rounded-xl cursor-pointer"
+          >
             Cancel
           </button>
-          <button onClick={handleSave} className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer">
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 rounded-xl bg-[#1e4db7] text-white cursor-pointer"
+          >
             Confirm
           </button>
         </div>
       </Popup>
 
-      <Popup isOpen={showImagesConfirm} title="Confirm Picture Import" onClose={() => {
-        setPendingImages([]);
-        setShowImagesConfirm(false);
-      }} maxWidth="sm">
+      <Popup
+        isOpen={showImagesConfirm}
+        title="Confirm Picture Import"
+        onClose={() => {
+          setPendingImages([]);
+          setShowImagesConfirm(false);
+        }}
+        maxWidth="sm"
+      >
         <p className="text-sm text-gray-500 text-center mb-6">
           You are about to upload{" "}
-          <span className="font-semibold text-[#011638]">{pendingImages.length}</span>{" "}
+          <span className="font-semibold text-[#011638]">
+            {pendingImages.length}
+          </span>{" "}
           images. Existing photos with the same filenames will be overwritten.
         </p>
         <div className="flex justify-center gap-4">
@@ -2518,47 +2585,47 @@ export default function MembersPage() {
       </Popup>
 
       {showImagesSuccess && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
-          <div className="h-2 bg-[#011638]" />
-          
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
-              <svg
-                className="w-10 h-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#fbfaf8] rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="h-2 bg-[#011638]" />
 
-            <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
-              Upload Successful
-            </h2>
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+                <svg
+                  className="w-10 h-10 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
 
-            <p className="text-[#475569] font-ubuntu-mono mb-6">
-              All pictures have been successfully imported.
-            </p>
+              <h2 className="text-2xl font-oswald font-bold text-[#011638] mb-2">
+                Upload Successful
+              </h2>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowImagesSuccess(false)}
-                className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
-              >
-                OK
-              </button>
+              <p className="text-[#475569] font-ubuntu-mono mb-6">
+                All pictures have been successfully imported.
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setShowImagesSuccess(false)}
+                  className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald cursor-pointer"
+                >
+                  OK
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}   
+      )}
     </div>
   );
 }
