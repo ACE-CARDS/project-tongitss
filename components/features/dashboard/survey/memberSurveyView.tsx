@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/components/context/userContext";
-import SurveyDescription from '@/app/survey/survey_description';
+import SurveyDescription from "@/app/survey/survey_description";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import PaginationNav from "@/components/ui/pagination";
 import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
@@ -18,33 +18,33 @@ import { FaSchool } from "react-icons/fa6";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {
-  if (typeof window === 'undefined') return 6;
+  if (typeof window === "undefined") return 6;
   const width = window.innerWidth;
   if (width < 640) return 2;
   if (width < 1024) return 4;
   return 6;
 };
 
-// Sort function 
+// Sort function
 const sortSurveys = (surveysArray: any[]) => {
   const statusOrder: Record<string, number> = {
-    'pending': 0,
-    'accepted': 1,
-    'archived': 2,
-    'rejected': 3
+    pending: 0,
+    accepted: 1,
+    archived: 2,
+    rejected: 3,
   };
-  
+
   return [...surveysArray].sort((a, b) => {
-    const statusA = a.survey_status?.toLowerCase() || '';
-    const statusB = b.survey_status?.toLowerCase() || '';
-    
+    const statusA = a.survey_status?.toLowerCase() || "";
+    const statusB = b.survey_status?.toLowerCase() || "";
+
     const orderA = statusOrder[statusA] ?? 4;
     const orderB = statusOrder[statusB] ?? 4;
-    
+
     if (orderA !== orderB) {
       return orderA - orderB;
     }
-    
+
     // Same status, sort by survey_start date (most recent first)
     const dateA = new Date(a.survey_start).getTime();
     const dateB = new Date(b.survey_start).getTime();
@@ -54,7 +54,7 @@ const sortSurveys = (surveysArray: any[]) => {
 
 // Filter Popup Component
 function FilterPopup({
-  isOpen, 
+  isOpen,
   onClose,
   categories,
   schools,
@@ -66,8 +66,8 @@ function FilterPopup({
   onSchoolChange,
   onYearToggle,
   onReset,
-  buttonRef
-}: { 
+  buttonRef,
+}: {
   isOpen: boolean;
   onClose: () => void;
   categories: Category[];
@@ -86,27 +86,33 @@ function FilterPopup({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (buttonRef.current && buttonRef.current.contains(event.target as Node)) {
+      if (
+        buttonRef.current &&
+        buttonRef.current.contains(event.target as Node)
+      ) {
         return;
       }
-      
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose, buttonRef]);
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={popupRef}
       className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
     >
@@ -114,7 +120,7 @@ function FilterPopup({
         <h3 className="font-oswald font-bold text-[#011638]">Filter Surveys</h3>
         <button
           onClick={onClose}
-          className="text-[#475569] hover:text-[#011638] transition-colors"
+          className="text-[#475569] hover:text-[#011638] transition-colors cursor-pointer"
         >
           ✕
         </button>
@@ -132,11 +138,11 @@ function FilterPopup({
             id="category"
             value={selectedCategory}
             onChange={onCategoryChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="cursor-pointer border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
+              <option key={cat.id} value={cat.id} className="cursor-pointer">
                 {cat.r_category_name}
               </option>
             ))}
@@ -146,7 +152,7 @@ function FilterPopup({
         <div>
           <label
             htmlFor="school"
-            className="block text-sm font-oswald font-medium text-[#011638] mb-2"
+            className="block text-sm font-oswald font-medium text-[#011638] mb-2 cursor-pointer"
           >
             University
           </label>
@@ -154,7 +160,7 @@ function FilterPopup({
             id="school"
             value={selectedSchool}
             onChange={onSchoolChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="cursor-pointer border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
           >
             <option value="">All Universities</option>
             {schools.map((school) => (
@@ -187,7 +193,7 @@ function FilterPopup({
                         ♠
                       </span>
                     </div>
-                    <label 
+                    <label
                       htmlFor={`year-${year}`}
                       className="text-sm font-ubuntu-mono text-[#475569] cursor-pointer hover:text-[#011638]"
                     >
@@ -204,7 +210,8 @@ function FilterPopup({
           </div>
           {selectedYears.length > 0 && (
             <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
-              {selectedYears.length} year{selectedYears.length > 1 ? 's' : ''} selected
+              {selectedYears.length} year{selectedYears.length > 1 ? "s" : ""}{" "}
+              selected
             </p>
           )}
         </div>
@@ -215,7 +222,7 @@ function FilterPopup({
               onReset();
               onClose();
             }}
-            className="w-full sm:w-auto px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#0d21a1] hover:border-[#0d21a1] transition-colors font-oswald"
+            className="cursor-pointer w-full sm:w-auto px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#0d21a1] hover:border-[#0d21a1] transition-colors font-oswald"
           >
             Reset Filter
           </button>
@@ -239,21 +246,31 @@ interface School {
 function SurveyCard({ survey }: { survey: any }) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "accepted": return "bg-green-100 text-green-800";
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "rejected": return "bg-red-100 text-red-800";
-      case "archived": return "bg-gray-100 text-gray-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "accepted":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "archived":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPingColor = (status: string) => {
     switch (status) {
-      case "accepted": return "bg-green-500";
-      case "pending": return "bg-yellow-500";
-      case "rejected": return "bg-red-500";
-      case "archived": return "bg-gray-500";
-      default: return "bg-gray-500";
+      case "accepted":
+        return "bg-green-500";
+      case "pending":
+        return "bg-yellow-500";
+      case "rejected":
+        return "bg-red-500";
+      case "archived":
+        return "bg-gray-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -262,7 +279,7 @@ function SurveyCard({ survey }: { survey: any }) {
     const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
     return {
       name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
-      email: author.author_email
+      email: author.author_email,
     };
   };
 
@@ -271,15 +288,17 @@ function SurveyCard({ survey }: { survey: any }) {
       return [];
     }
 
-    const authorsWithData = survey.survey_author.map((sa: any) => {
-      const author = sa.author;
-      if (!author) return null;
-      
-      return {
-        ...author,
-        displayName: getAuthorDisplayName(author)
-      };
-    }).filter((a: any) => a !== null);
+    const authorsWithData = survey.survey_author
+      .map((sa: any) => {
+        const author = sa.author;
+        if (!author) return null;
+
+        return {
+          ...author,
+          displayName: getAuthorDisplayName(author),
+        };
+      })
+      .filter((a: any) => a !== null);
 
     // Sort alphabetically by last name
     authorsWithData.sort((a: any, b: any) => {
@@ -300,17 +319,25 @@ function SurveyCard({ survey }: { survey: any }) {
         <h2 className="text-3xl font-oswald font-bold text-[#011638] line-clamp-3 break-words overflow-hidden">
           {survey.survey_title}
         </h2>
-        <GradientLine start/>
+        <GradientLine start />
       </div>
 
       {/* STATUS Section */}
       <div className="px-6 pb-2">
         <div className="mb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">STATUS</h3>
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(survey.survey_status)} inline-flex items-center gap-2 shadow-sm`}>
+          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+            STATUS
+          </h3>
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(survey.survey_status)} inline-flex items-center gap-2 shadow-sm`}
+          >
             <span className="relative flex size-2">
-              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(survey.survey_status)} opacity-75`}></span>
-              <span className={`relative inline-flex size-2 rounded-full ${getPingColor(survey.survey_status)}`}></span>
+              <span
+                className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(survey.survey_status)} opacity-75`}
+              ></span>
+              <span
+                className={`relative inline-flex size-2 rounded-full ${getPingColor(survey.survey_status)}`}
+              ></span>
             </span>
             {survey.survey_status?.toUpperCase()}
           </div>
@@ -318,9 +345,11 @@ function SurveyCard({ survey }: { survey: any }) {
       </div>
 
       {/* REJECTION REASON Section */}
-      {survey.survey_status === 'rejected' && survey.rejection_reason && (
+      {survey.survey_status === "rejected" && survey.rejection_reason && (
         <div className="px-6 pb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">REJECTION REASON</h3>
+          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+            REJECTION REASON
+          </h3>
           <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
             {survey.rejection_reason}
           </p>
@@ -340,41 +369,32 @@ function SurveyCard({ survey }: { survey: any }) {
         <div className="flex flex-col border-y-2 border-[#a6a6a6] mt-4">
           <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
             <FaRegCalendar className="text-[#011638]" />
-
-            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
-              Deadline 
+            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none">
+              Deadline
             </span>
-
             <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
-              {new Date(survey.survey_start).toLocaleDateString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              )}
+              {new Date(survey.survey_start).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </span>
             -
             <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
-              {new Date(survey.survey_end).toLocaleDateString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              )}
+              {new Date(survey.survey_end).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </span>
           </div>
 
-          
           <div className="flex flex-col gap-1 border-b-2 border-[#a6a6a6] py-2">
             <div className="flex items-center gap-1">
               <FaRegAddressBook className="text-[#011638]" />
 
               <span className="font-oswald uppercase text-[12px] leading-none">
-                Target Respondents 
+                Target Respondents
                 {survey.max_respondents && (
                   <span className="ml-2 text-[#1e4db7] font-normal">
                     (Max: {survey.max_respondents})
@@ -385,25 +405,29 @@ function SurveyCard({ survey }: { survey: any }) {
 
             <div className="flex flex-wrap gap-1 ml-5">
               {survey.survey_respondents ? (
-                survey.survey_respondents.split(',').map((criteria: string, index: number) => (
-                  <span 
-                    key={index} 
-                    className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words overflow-hidden"
-                  >
-                    {criteria.trim()}
-                  </span>
-                ))
+                survey.survey_respondents
+                  .split(",")
+                  .map((criteria: string, index: number) => (
+                    <span
+                      key={index}
+                      className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words overflow-hidden"
+                    >
+                      {criteria.trim()}
+                    </span>
+                  ))
               ) : (
-                <span className="text-[#475569] opacity-50 text-sm font-ubuntu-mono">No specific criteria</span>
+                <span className="text-[#475569] opacity-50 text-sm font-ubuntu-mono">
+                  No specific criteria
+                </span>
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
             <FaRegFolderClosed className="text-[#011638]" />
-            
-            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
-              Category 
+
+            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none">
+              Category
             </span>
 
             <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-[14px] pl-1">
@@ -411,13 +435,12 @@ function SurveyCard({ survey }: { survey: any }) {
             </span>
           </div>
 
-          
           <div className="flex items-baseline gap-1 py-1">
             <span className="items-center flex gap-1">
               <FaSchool className="text-[#011638] shrink-0" />
-              
-              <span className="font-oswald uppercase text-[12px] leading-none pr-2"> 
-                School 
+
+              <span className="font-oswald uppercase text-[12px] leading-none pr-2">
+                School
               </span>
             </span>
 
@@ -435,10 +458,10 @@ function SurveyCard({ survey }: { survey: any }) {
             {processedAuthors.length > 0 ? (
               processedAuthors.map((author: any, index: number) => {
                 const displayInfo = author.displayName;
-                
+
                 return (
                   <a
-                    key={`${survey.id}-${author.id || 'no-id'}-${index}`}
+                    key={`${survey.id}-${author.id || "no-id"}-${index}`}
                     href={`mailto:${displayInfo.email}`}
                     className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group"
                     title={`Email: ${displayInfo.email}`}
@@ -473,7 +496,7 @@ function SurveyCard({ survey }: { survey: any }) {
             {survey.survey_link ? (
               <>
                 <span>Take the Survey</span>
-                <LuCircleArrowRight className="size-10 group-hover:translate-x-1 transition transform duration-200"/>
+                <LuCircleArrowRight className="size-10 group-hover:translate-x-1 transition transform duration-200" />
               </>
             ) : (
               <span>No link available</span>
@@ -492,7 +515,7 @@ export default function MemberSurveyView() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [filteredSurveys, setFilteredSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [initialLoad, setInitialLoad] = useState(true); 
+  const [initialLoad, setInitialLoad] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSchool, setSelectedSchool] = useState<string>("");
@@ -503,7 +526,7 @@ export default function MemberSurveyView() {
   const [showFilters, setShowFilters] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
-  
+
   // Data for filters
   const [categories, setCategories] = useState<Category[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -515,11 +538,11 @@ export default function MemberSurveyView() {
     const handleResize = () => {
       setItemsPerPage(getItemsPerPage());
     };
-    
+
     handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Fetch filter data
@@ -529,14 +552,14 @@ export default function MemberSurveyView() {
         .from("r_category")
         .select("id, r_category_name")
         .order("r_category_name");
-      
+
       if (categoriesData) setCategories(categoriesData);
 
       const { data: schoolsData } = await supabase
         .from("school")
         .select("id, school_name")
         .order("school_name");
-      
+
       if (schoolsData) setSchools(schoolsData);
 
       // Fetch available years from surveys
@@ -544,9 +567,13 @@ export default function MemberSurveyView() {
         .from("survey")
         .select("survey_start")
         .not("survey_start", "is", null);
-      
+
       if (yearsData) {
-        const years = [...new Set(yearsData.map(s => new Date(s.survey_start).getFullYear()))];
+        const years = [
+          ...new Set(
+            yearsData.map((s) => new Date(s.survey_start).getFullYear()),
+          ),
+        ];
         years.sort((a, b) => b - a);
         setAvailableYears(years);
       }
@@ -557,7 +584,9 @@ export default function MemberSurveyView() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
       setIsAuthenticated(!!authUser);
     };
     checkAuth();
@@ -569,53 +598,73 @@ export default function MemberSurveyView() {
     }
   }, [user]);
 
-  // Filter and sort effect 
+  // Filter and sort effect
   useEffect(() => {
     if (initialLoad) return;
-    
+
     let filtered = [...surveys];
-    
+
     // Apply search filter
     if (searchQuery.trim() !== "") {
-      filtered = filtered.filter(survey =>
-        survey.survey_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        survey.survey_desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        survey.r_category?.r_category_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        survey.school?.school_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (survey) =>
+          survey.survey_title
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.survey_desc
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.r_category?.r_category_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.school?.school_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
       );
     }
-    
+
     // Apply category filter
     if (selectedCategory) {
       const categoryNum = Number(selectedCategory);
-      filtered = filtered.filter(survey => {
-        const surveyCategoryId = survey.r_category?.id ? Number(survey.r_category.id) : null;
+      filtered = filtered.filter((survey) => {
+        const surveyCategoryId = survey.r_category?.id
+          ? Number(survey.r_category.id)
+          : null;
         return surveyCategoryId === categoryNum;
       });
     }
-    
+
     // Apply school filter
     if (selectedSchool) {
       const schoolNum = Number(selectedSchool);
-      filtered = filtered.filter(survey => {
-        const surveySchoolId = survey.school?.id ? Number(survey.school.id) : null;
+      filtered = filtered.filter((survey) => {
+        const surveySchoolId = survey.school?.id
+          ? Number(survey.school.id)
+          : null;
         return surveySchoolId === schoolNum;
       });
     }
-    
+
     // Apply year filter
     if (selectedYears.length > 0) {
-      filtered = filtered.filter(survey => {
+      filtered = filtered.filter((survey) => {
         const surveyYear = new Date(survey.survey_start).getFullYear();
         return selectedYears.includes(surveyYear);
       });
     }
-    
+
     // Sort the filtered results
     const sortedFiltered = sortSurveys(filtered);
     setFilteredSurveys(sortedFiltered);
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedSchool, selectedYears, surveys, initialLoad]);
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedSchool,
+    selectedYears,
+    surveys,
+    initialLoad,
+  ]);
 
   const fetchUserSurveys = async () => {
     try {
@@ -631,10 +680,11 @@ export default function MemberSurveyView() {
         return;
       }
 
-      if (author) {      
+      if (author) {
         const { data: surveyLinks, error: surveyError } = await supabase
           .from("survey_author")
-          .select(`
+          .select(
+            `
             survey:survey(
               *,
               r_category:r_category(*),
@@ -643,16 +693,17 @@ export default function MemberSurveyView() {
                 author:author(*)
               )
             )
-          `)
+          `,
+          )
           .eq("author", author.id);
 
         if (surveyError) {
           console.error("Error fetching survey links:", surveyError);
           throw surveyError;
         }
-        
+
         if (surveyLinks && surveyLinks.length > 0) {
-          const fetchedSurveys = surveyLinks.map(link => link.survey);
+          const fetchedSurveys = surveyLinks.map((link) => link.survey);
           // Sort immediately during fetch
           const sortedSurveys = sortSurveys(fetchedSurveys);
           setSurveys(sortedSurveys);
@@ -661,7 +712,7 @@ export default function MemberSurveyView() {
           setSurveys([]);
           setFilteredSurveys([]);
         }
-      } 
+      }
     } catch (error) {
       console.error("Error fetching surveys:", error);
     } finally {
@@ -683,11 +734,11 @@ export default function MemberSurveyView() {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
     const params = new URLSearchParams(window.location.search);
-    params.set('page', page.toString());
-    
+    params.set("page", page.toString());
+
     const scrollPosition = window.scrollY;
     router.replace(`?${params.toString()}`, { scroll: false });
-    
+
     setTimeout(() => {
       window.scrollTo(0, scrollPosition);
     }, 0);
@@ -702,10 +753,10 @@ export default function MemberSurveyView() {
   };
 
   const handleYearToggle = (year: number) => {
-    setSelectedYears(prev => 
+    setSelectedYears((prev) =>
       prev.includes(year)
-        ? prev.filter(y => y !== year)
-        : [...prev, year].sort((a, b) => b - a)
+        ? prev.filter((y) => y !== year)
+        : [...prev, year].sort((a, b) => b - a),
     );
   };
 
@@ -720,58 +771,93 @@ export default function MemberSurveyView() {
     setSearchQuery("");
   };
 
-  const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length;
+  const activeFilterCount =
+    (selectedCategory ? 1 : 0) +
+    (selectedSchool ? 1 : 0) +
+    selectedYears.length;
 
   if (loading) {
     return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Surveys</h1>
-        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-          View and manage your submitted surveys
-        </p>
-      </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+            My Surveys
+          </h1>
+          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+            View and manage your submitted surveys
+          </p>
+        </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="relative">
+        {/* Filter and Search Bar */}
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative">
+              <button
+                disabled
+                className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                Filters
+              </button>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by title, description, category or school..."
+                  disabled
+                  className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
+                />
+                <svg
+                  className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
             <button
               disabled
-              className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+              className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
-              Filters
+              Add Survey
             </button>
           </div>
-
-          <div className="flex-1 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by title, description, category or school..."
-                disabled
-                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
-              />
-              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          <button
-            disabled
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Survey
-          </button>
         </div>
-      </div>
       </div>
     );
   }
@@ -780,7 +866,9 @@ export default function MemberSurveyView() {
     <>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Surveys</h1>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">
+            My Surveys
+          </h1>
           <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
             View and manage your submitted surveys
           </p>
@@ -797,8 +885,18 @@ export default function MemberSurveyView() {
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
                 </svg>
                 Filters
                 {activeFilterCount > 0 && (
@@ -807,7 +905,7 @@ export default function MemberSurveyView() {
                   </span>
                 )}
               </button>
-              
+
               <FilterPopup
                 isOpen={showFilters}
                 onClose={() => setShowFilters(false)}
@@ -834,8 +932,18 @@ export default function MemberSurveyView() {
                   value={searchQuery}
                   className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
-                <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
 
                 {searchQuery && (
@@ -844,8 +952,18 @@ export default function MemberSurveyView() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
                     aria-label="Clear search"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 )}
@@ -857,8 +975,18 @@ export default function MemberSurveyView() {
                 href="/survey/add?returnTo=/dashboard?tab=survey"
                 className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Add Survey
               </Link>
@@ -873,18 +1001,24 @@ export default function MemberSurveyView() {
         ) : paginatedSurveys.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-[#475569] font-ubuntu-mono">
-              {searchQuery || selectedCategory || selectedSchool || selectedYears.length > 0 
-                ? "No surveys found." 
+              {searchQuery ||
+              selectedCategory ||
+              selectedSchool ||
+              selectedYears.length > 0
+                ? "No surveys found."
                 : "You haven't submitted any surveys yet."}
             </p>
-            {!searchQuery && !selectedCategory && !selectedSchool && selectedYears.length === 0 && (
-              <Link 
-                href="/survey/add"
-                className="inline-block mt-4 text-[#1e4db7] hover:text-[#011638] font-oswald"
-              >
-                Submit your first survey →
-              </Link>
-            )}
+            {!searchQuery &&
+              !selectedCategory &&
+              !selectedSchool &&
+              selectedYears.length === 0 && (
+                <Link
+                  href="/survey/add"
+                  className="inline-block mt-4 text-[#1e4db7] hover:text-[#011638] font-oswald"
+                >
+                  Submit your first survey →
+                </Link>
+              )}
           </div>
         ) : (
           <>
@@ -894,12 +1028,12 @@ export default function MemberSurveyView() {
               ))}
             </div>
 
-            <PaginationNav 
-              currentPage={validCurrentPage} 
-              totalPages={totalPages} 
-              itemsPerPage={itemsPerPage} 
-              totalItems={totalItems} 
-              onPageChange={handlePageChange} 
+            <PaginationNav
+              currentPage={validCurrentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={handlePageChange}
             />
           </>
         )}

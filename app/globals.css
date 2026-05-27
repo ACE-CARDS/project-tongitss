@@ -35,6 +35,14 @@ body {
   background-attachment: fixed;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 h1 {
   font-family: var(--font-oswald), ui-sans-serif, system-ui;
   font-weight: 700;
@@ -51,141 +59,140 @@ p {
 }
 
 @utility header {
-    @apply flex items-center gap-4 mx-auto lg:mx-0 justify-center lg:justify-start
+  @apply flex items-center gap-4 mx-auto lg:mx-0 justify-center lg:justify-start
     uppercase text-5xl md:text-6xl font-oswald font-extrabold 
     bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
-  }
+}
 
 @utility withspade {
-    &::before,
-    &::after {
-      content: "♠";
-      @apply text-[#eec643] font-normal font-ubuntu-mono text-4xl md:text-5xl;
-    }
+  &::before,
+  &::after {
+    content: "♠";
+    @apply text-[#eec643] font-normal font-ubuntu-mono text-4xl md:text-5xl;
   }
+}
 
 @utility headersub {
-    @apply text-3xl md:text-4xl font-oswald font-medium
+  @apply text-3xl md:text-4xl font-oswald font-medium
     bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
-  }
+}
 
 @utility gradient {
   @apply bg-gradient-to-r from-[#011638] to-[#0d21a1] bg-clip-text text-transparent tracking-tight;
 }
 
 @utility withminispade {
-    &::before,
-    &::after {
-      content: "♠";
-      @apply text-[#eec643] font-ubuntu-mono text-2xl md:text-3xl px-2;
-    }
+  &::before,
+  &::after {
+    content: "♠";
+    @apply text-[#eec643] font-ubuntu-mono text-2xl md:text-3xl px-2;
   }
+}
 
 @utility btn-yellow {
-    @apply px-10 py-4 rounded-3xl
+  @apply px-10 py-4 rounded-3xl
       bg-[#d9b237]/90 shadow-[0_0_0_#d9b237] border-2 border-[#d9b237]
       text-white text-lg text-center
       hover:bg-[#d9b237] hover:shadow-[0_0_25px_#d9b237] hover:text-white
       hover:scale-105 
       transition-all duration-300 transform;
-  }
+}
 
 @utility btn-blue {
-    @apply px-10 py-4 rounded-3xl
+  @apply px-10 py-4 rounded-3xl
       bg-[#011638]/90 shadow-[0_0_0_#011638] border-2 border-[#011638]
       text-white text-lg text-center
       hover:bg-[#011638] hover:shadow-[0_0_25px_#011638] hover:text-white
       hover:scale-105 
       transition-all duration-300 transform;
-  }
+}
 
 @utility box {
-    @apply text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-center lg:text-left;
-  }
+  @apply text-[#141414]/80 text-base lg:text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-center lg:text-left;
+}
 
 @utility manage_thead {
-    @apply bg-[#011638] text-[#eff0f2] font-oswald uppercase text-sm tracking-wider font-bold;
-  }
+  @apply bg-[#011638] text-[#eff0f2] font-oswald uppercase text-sm tracking-wider font-bold;
+}
 
 .manage_thead tr th {
-    @apply px-4 py-3 text-center text-sm font-oswald font-bold text-[#eff0f2] uppercase tracking-wider;
-  }
+  @apply px-4 py-3 text-center text-sm font-oswald font-bold text-[#eff0f2] uppercase tracking-wider;
+}
 
 .manage_thead tr th div {
-    @apply flex items-center justify-center gap-2;
-  }
+  @apply flex items-center justify-center gap-2;
+}
 
 @utility th-sortable {
   @apply w-full cursor-pointer hover:bg-[#012a5a] transition-colors;
-  
+
   &.is-active {
     @apply bg-[#012a5a];
   }
 }
 
 @utility manage_table_div {
-    @apply bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200 overflow-x-auto;
-  }
+  @apply bg-[#fbfaf8] rounded-xl shadow-lg border border-gray-200 overflow-x-auto;
+}
 
 @utility manage_table {
-    @apply w-full text-left border-collapse table-fixed overflow-x-auto;
-  }
+  @apply w-full text-left border-collapse table-fixed overflow-x-auto;
+}
 
 .manage_table_div table tbody {
-    @apply divide-y divide-gray-200 text-[#012a5a] font-ubuntu-mono;
-  }
+  @apply divide-y divide-gray-200 text-[#012a5a] font-ubuntu-mono;
+}
 
 .manage_table_div table tbody tr td {
-    @apply px-6 py-4;
-  }
+  @apply px-6 py-4;
+}
 
 .manage_table_div table tbody tr td.status {
-    @apply py-10 text-center font-ubuntu-mono text-gray-400;
-  }
+  @apply py-10 text-center font-ubuntu-mono text-gray-400;
+}
 
 .manage_table_div table tbody tr {
-    @apply bg-white odd:bg-[#fbfaf8] hover:bg-blue-50/50 transition-colors;
-  }
+  @apply bg-white odd:bg-[#fbfaf8] hover:bg-blue-50/50 transition-colors;
+}
 
 .manage_table_div table tbody tr .title {
-    @apply font-oswald font-medium text-[#011638] text-lg break-words;
-  }
+  @apply font-oswald font-medium text-[#011638] text-lg break-words;
+}
 
 .manage_table_div table tbody tr .date_col {
-    @apply text-center text-sm text-[#475569] font-ubuntu-mono;
-  }
+  @apply text-center text-sm text-[#475569] font-ubuntu-mono;
+}
 
 @utility form_label {
-    @apply block text-sm font-medium font-oswald text-[#011638] mb-1;
-    
-    &.not_required {
-      &::after {
-        content: " ";
-      }
-    }
+  @apply block text-sm font-medium font-oswald text-[#011638] mb-1;
 
+  &.not_required {
     &::after {
-      content: " *";
-      @apply text-[#eec643];
+      content: " ";
     }
-
   }
+
+  &::after {
+    content: " *";
+    @apply text-[#eec643];
+  }
+}
 
 Popup .form_error:first-child {
-    @apply text-xs text-red-600 flex;
-  }
+  @apply text-xs text-red-600 flex;
+}
 
 @utility form_error {
-    @apply text-xs text-red-600 mb-2 flex;
-  }
+  @apply text-xs text-red-600 mb-2 flex;
+}
 
 @utility form_input {
-    @apply placeholder:text-slate-400 w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-2 bg-[#fbfaf8] font-ubuntu-mono focus:ring-[#011638] focus:ring-1 active:ring-[#011638] active:ring-1 outline-none transition custom-scrollbar-blue;
+  @apply placeholder:text-slate-400 w-full px-3 py-2 border border-[#94a3b8] rounded-lg mb-2 bg-[#fbfaf8] font-ubuntu-mono focus:ring-[#011638] focus:ring-1 active:ring-[#011638] active:ring-1 outline-none transition custom-scrollbar-blue;
 
-    &[data-error="true"] {
-      @apply border-red-600 focus:border-red-600 focus:ring-red-600;
-    }
+  &[data-error="true"] {
+    @apply border-red-600 focus:border-red-600 focus:ring-red-600;
   }
+}
 
 @utility form_input_area {
   @apply form_input;
@@ -193,22 +200,22 @@ Popup .form_error:first-child {
 }
 
 @utility form_dropdown_container {
-    &[data-error="true"] button {
-      @apply border-red-600 focus:border-red-600 focus:ring-red-600;
-    }
+  &[data-error="true"] button {
+    @apply border-red-600 focus:border-red-600 focus:ring-red-600;
   }
+}
 
 @utility form_btn-cancel {
-    @apply px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] cursor-pointer disabled:cursor-not-allowed transition-colors;
-  }
+  @apply px-4 py-2 text-[#475569] font-ubuntu-mono hover:text-[#011638] cursor-pointer disabled:cursor-not-allowed transition-colors;
+}
 
 @utility form_btn-red {
-    @apply px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-red-600/50 disabled:text-white/50 transition-colors;
-  }
+  @apply px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-red-600/50 disabled:text-white/50 transition-colors;
+}
 
 @utility form_btn-blue {
-    @apply px-6 py-2 bg-[#1e4db7] text-white rounded-lg hover:bg-[#1e4db7]/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-[#1e4db7]/50 disabled:text-white/50 transition-colors;
-  }
+  @apply px-6 py-2 bg-[#1e4db7] text-white rounded-lg hover:bg-[#1e4db7]/80 font-oswald disabled:cursor-not-allowed cursor-pointer disabled:bg-[#1e4db7]/50 disabled:text-white/50 transition-colors;
+}
 /* group inline-block px-6 sm:px-10 py-3 sm:py-4 rounded-3xl border-2 border-[#011638] font-bold text-base sm:text-lg whitespace-nowrap bg-[#011638]/75 hover:bg-[#011638] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 transform */
 
 @utility custom-scrollbar-blue {

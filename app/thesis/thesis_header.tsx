@@ -8,7 +8,7 @@ import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
 
 //filter popup
 function FilterPopup({
-  isOpen, 
+  isOpen,
   onClose,
   categories,
   schools,
@@ -20,8 +20,8 @@ function FilterPopup({
   onSchoolChange,
   onYearToggle,
   onReset,
-  buttonRef
-}: { 
+  buttonRef,
+}: {
   isOpen: boolean;
   onClose: () => void;
   categories: Category[];
@@ -40,27 +40,33 @@ function FilterPopup({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (buttonRef.current && buttonRef.current.contains(event.target as Node)) {
+      if (
+        buttonRef.current &&
+        buttonRef.current.contains(event.target as Node)
+      ) {
         return;
       }
-      
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose, buttonRef]);
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={popupRef}
       className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
     >
@@ -68,7 +74,7 @@ function FilterPopup({
         <h3 className="font-oswald font-bold text-[#011638]">Filter Theses</h3>
         <button
           onClick={onClose}
-          className="text-[#475569] hover:text-[#011638] transition-colors"
+          className="text-[#475569] hover:text-[#011638] transition-colors cursor-pointer"
         >
           ✕
         </button>
@@ -86,7 +92,7 @@ function FilterPopup({
             id="category"
             value={selectedCategory}
             onChange={onCategoryChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="cursor-pointer border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -141,7 +147,7 @@ function FilterPopup({
                         ♠
                       </span>
                     </div>
-                    <label 
+                    <label
                       htmlFor={`year-${year}`}
                       className="text-sm font-ubuntu-mono text-[#475569] cursor-pointer hover:text-[#011638]"
                     >
@@ -158,7 +164,8 @@ function FilterPopup({
           </div>
           {selectedYears.length > 0 && (
             <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
-              {selectedYears.length} year{selectedYears.length > 1 ? 's' : ''} selected
+              {selectedYears.length} year{selectedYears.length > 1 ? "s" : ""}{" "}
+              selected
             </p>
           )}
         </div>
@@ -207,7 +214,7 @@ function LiveSuggestions({
       // Filter keywords that start with the query & case insensitive
       const lowerQuery = query.toLowerCase();
       const filtered = allKeywords
-        .filter(keyword => keyword.toLowerCase().startsWith(lowerQuery))
+        .filter((keyword) => keyword.toLowerCase().startsWith(lowerQuery))
         .slice(0, 50); // Limit results
       setFilteredKeywords(filtered);
     }
@@ -216,16 +223,19 @@ function LiveSuggestions({
   // Click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+      if (
+        suggestionRef.current &&
+        !suggestionRef.current.contains(event.target as Node)
+      ) {
         onClose(); //closes still
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -234,43 +244,48 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden"
-  >
-    <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
-      <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
-        {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
-      </span>
-    </div>
+      className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden"
+    >
+      <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
+        <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
+          {query.trim() ? "SUGGESTED KEYWORDS" : "ALL KEYWORDS"}
+        </span>
+      </div>
 
-    <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
-      {filteredKeywords.map((keyword, index) => (
-        <button
-          key={index}
-          onClick={() => {
-            onSelect(keyword);
-            onClose();
-          }}
-          className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
-        >
-          <span className="flex items-center gap-2">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
-              />
-            </svg>
-            <span className="truncate">{keyword}</span>
-          </span>
-        </button>
-      ))}
-      {filteredKeywords.length === 50 && allKeywords.length > 50 && (
-        <div className="px-4 py-2 text-xs text-[#475569] font-ubuntu-mono text-center border-t border-[#1e4db7] border-opacity-20">
-          Showing first 50 keywords. Type to filter more specifically.
-        </div>
-      )}
-    </div>
+      <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+        {filteredKeywords.map((keyword, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              onSelect(keyword);
+              onClose();
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+          >
+            <span className="flex items-center gap-2">
+              <svg
+                className="w-4 h-4 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                />
+              </svg>
+              <span className="truncate">{keyword}</span>
+            </span>
+          </button>
+        ))}
+        {filteredKeywords.length === 50 && allKeywords.length > 50 && (
+          <div className="px-4 py-2 text-xs text-[#475569] font-ubuntu-mono text-center border-t border-[#1e4db7] border-opacity-20">
+            Showing first 50 keywords. Type to filter more specifically.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -313,10 +328,10 @@ export default function ThesisHeader({
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-      if (typeof window !== 'undefined') {
-        return sessionStorage.getItem("isAuthenticated") === "true";
-      }
-      return false;
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("isAuthenticated") === "true";
+    }
+    return false;
   });
   const [isMounted, setIsMounted] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
@@ -325,41 +340,52 @@ export default function ThesisHeader({
   const isUpdatingRef = useRef(false);
 
   useEffect(() => {
-      setIsMounted(true);
-      const checkAuth = async () => {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        const authenticated = !!user;
-        setIsAuthenticated(authenticated);
-        sessionStorage.setItem("isAuthenticated", authenticated.toString());
-      };
-      
-      checkAuth();
-    }, []);
-    
-  const updateUrl = useCallback((searchQuery: string, category: string, school: string, years: number[], page: number = 1) => {
-    isUpdatingRef.current = true;
-    
-    const params = new URLSearchParams();
-    if (searchQuery) params.append("query", searchQuery);
-    if (category) params.append("category", category);
-    if (school) params.append("school", school);
-    
-    years.forEach(year => {
-      params.append("year", year.toString());
-    });
+    setIsMounted(true);
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    params.append("page", page.toString());
+      const authenticated = !!user;
+      setIsAuthenticated(authenticated);
+      sessionStorage.setItem("isAuthenticated", authenticated.toString());
+    };
 
-    const queryString = params.toString();
-    router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
-    
-    // Reset the flag after a short delay
-    setTimeout(() => {
-      isUpdatingRef.current = false;
-    }, 100);
-  }, [router]);
+    checkAuth();
+  }, []);
+
+  const updateUrl = useCallback(
+    (
+      searchQuery: string,
+      category: string,
+      school: string,
+      years: number[],
+      page: number = 1,
+    ) => {
+      isUpdatingRef.current = true;
+
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("query", searchQuery);
+      if (category) params.append("category", category);
+      if (school) params.append("school", school);
+
+      years.forEach((year) => {
+        params.append("year", year.toString());
+      });
+
+      params.append("page", page.toString());
+
+      const queryString = params.toString();
+      router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
+
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 100);
+    },
+    [router],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -387,11 +413,11 @@ export default function ThesisHeader({
   };
 
   const handleYearToggle = (year: number) => {
-    setSelectedYears(prev => {
+    setSelectedYears((prev) => {
       const newYears = prev.includes(year)
-        ? prev.filter(y => y !== year)
+        ? prev.filter((y) => y !== year)
         : [...prev, year].sort((a, b) => b - a);
-      
+
       updateUrl(query, selectedCategory, selectedSchool, newYears, 1);
       return newYears;
     });
@@ -417,7 +443,9 @@ export default function ThesisHeader({
       <h1 className="text-3xl font-oswald font-bold text-[#011638]">
         Scholar Theses Collection
       </h1>
-      <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">Browse all available theses</p>
+      <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+        Browse all available theses
+      </p>
 
       {/* Member feature banner */}
       {!isAuthenticated && (
@@ -433,17 +461,31 @@ export default function ThesisHeader({
                 showFilters ? "bg-[#011638]" : "bg-[#011638]"
               } text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
               </svg>
               Filters
-              {(selectedCategory || selectedSchool || selectedYears.length > 0) && (
+              {(selectedCategory ||
+                selectedSchool ||
+                selectedYears.length > 0) && (
                 <span className="bg-[#eec643] text-[#011638] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {(selectedCategory ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length}
+                  {(selectedCategory ? 1 : 0) +
+                    (selectedSchool ? 1 : 0) +
+                    selectedYears.length}
                 </span>
               )}
             </button>
-            
+
             <FilterPopup
               isOpen={showFilters}
               onClose={() => setShowFilters(false)}
@@ -472,8 +514,18 @@ export default function ThesisHeader({
                 value={query}
                 className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
               />
-              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
 
               {/* clear/X button */}
@@ -510,16 +562,26 @@ export default function ThesisHeader({
           </div>
 
           {isMounted && isAuthenticated && (
-          <Link
-            href="/thesis/add?returnTo=/thesis"
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
-            onClick={() => sessionStorage.removeItem("thesisDraft")}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Thesis
-          </Link>
+            <Link
+              href="/thesis/add?returnTo=/thesis"
+              className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+              onClick={() => sessionStorage.removeItem("thesisDraft")}
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add Thesis
+            </Link>
           )}
         </div>
       </div>
