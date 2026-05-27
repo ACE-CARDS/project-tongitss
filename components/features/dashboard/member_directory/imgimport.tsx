@@ -7,8 +7,10 @@ const ImgImport = () => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
 
-  const handleUpload = async (event) => {
-    const files = Array.from(event.target.files);
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files;
+    if (!fileList || fileList.length === 0) return;
+    const files: File[] = Array.from(fileList);
     if (files.length === 0) return;
 
     const fileNames = files.map((f) => f.name);
