@@ -50,16 +50,6 @@ export default async function SurveyData({
       )].sort((a, b) => b - a)
     : [];
 
-  const { data: keywordsData } = await supabase
-    .from("survey")
-    .select("survey_keyword")
-    .eq("survey_status", "accepted");
-
-  const allKeywords = keywordsData
-    ?.flatMap(s => s.survey_keyword?.split(',').map((k: string) => k.trim()).filter(Boolean) || [])
-    .filter((value, index, self) => self.indexOf(value) === index)
-    .sort() || [];
-
   const { data: categories } = await supabase
     .from("r_category")
     .select("id, r_category_name")
@@ -77,7 +67,6 @@ export default async function SurveyData({
       id,
       survey_title,
       survey_desc,
-      survey_keyword,
       survey_start,
       survey_end,
       survey_link,
@@ -175,7 +164,6 @@ export default async function SurveyData({
       let hay = "";
       hay += s.survey_title ?? "";
       hay += " " + (s.survey_desc ?? "");
-      hay += " " + (s.survey_keyword ?? "");
       hay += " " + (s.r_category?.r_category_name ?? "");
       hay += " " + (s.school?.school_name ?? "");
       hay += " " + (s.survey_respondents ?? "");
@@ -212,7 +200,6 @@ export default async function SurveyData({
         initialCategory={categoryId || ""}
         initialSchool={schoolId || ""}
         initialYears={selectedYears}
-        availableKeywords={allKeywords}
       />
 
       <ClientPagination 
