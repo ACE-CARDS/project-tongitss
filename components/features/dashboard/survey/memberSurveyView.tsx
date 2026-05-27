@@ -9,6 +9,12 @@ import SurveyDescription from '@/app/survey/survey_description';
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import PaginationNav from "@/components/ui/pagination";
 import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
+import GradientLine from "@/components/ui/gradientLine";
+import { LuCircleArrowRight } from "react-icons/lu";
+import { FaRegCalendar } from "react-icons/fa6";
+import { FaRegAddressBook } from "react-icons/fa6";
+import { FaRegFolderClosed } from "react-icons/fa6";
+import { FaSchool } from "react-icons/fa6";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {
@@ -251,20 +257,54 @@ function SurveyCard({ survey }: { survey: any }) {
     }
   };
 
+  // Get author display name from member or author table
+  const getAuthorDisplayName = (author: any) => {
+    const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
+    return {
+      name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
+      email: author.author_email
+    };
+  };
+
+  const getProcessedAuthors = (survey: any) => {
+    if (!survey.survey_author || survey.survey_author.length === 0) {
+      return [];
+    }
+
+    const authorsWithData = survey.survey_author.map((sa: any) => {
+      const author = sa.author;
+      if (!author) return null;
+      
+      return {
+        ...author,
+        displayName: getAuthorDisplayName(author)
+      };
+    }).filter((a: any) => a !== null);
+
+    // Sort alphabetically by last name
+    authorsWithData.sort((a: any, b: any) => {
+      return a.author_lname.localeCompare(b.author_lname);
+    });
+
+    return authorsWithData;
+  };
+
+  const processedAuthors = getProcessedAuthors(survey);
+
   return (
     <SpotlightCard
-      className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
+      className="border border-[#011638] rounded-4xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
       spotlightColor="rgba(239, 240, 242, 0.16)"
     >
-      <div className="bg-[#011638] px-6 py-4 min-h-[110px] flex items-center">
-        <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden">
+      <div className="px-6 py-4 min-h-[110px] flex flex-col">
+        <h2 className="text-3xl font-oswald font-bold text-[#011638] line-clamp-3 break-words overflow-hidden">
           {survey.survey_title}
         </h2>
+        <GradientLine start/>
       </div>
 
-      <div className="px-6 py-4 flex flex-col flex-1">
-        
-        {/* STATUS Section */}
+      {/* STATUS Section */}
+      <div className="px-6 pb-2">
         <div className="mb-4">
           <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">STATUS</h3>
           <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(survey.survey_status)} inline-flex items-center gap-2 shadow-sm`}>
@@ -275,110 +315,171 @@ function SurveyCard({ survey }: { survey: any }) {
             {survey.survey_status?.toUpperCase()}
           </div>
         </div>
+      </div>
 
-        {/* REJECTION REASON Section */}
-        {survey.survey_status === 'rejected' && survey.rejection_reason && (
-          <div className="mb-4">
-            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">REJECTION REASON</h3>
-            <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
-              {survey.rejection_reason}
-            </p>
-          </div>
-        )}
-
-        {/* Author(s) */}
-        <div className="mb-4 min-h-[60px]">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">Author(s)</h3>
-          <div className="flex flex-wrap gap-2">
-            {survey.survey_author && survey.survey_author.length > 0 ? (
-              survey.survey_author.map((sa: any, index: number) => {
-                const author = sa.author;
-                if (!author) return null;
-                return (
-                  <div key={author.id || index} className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {author.author_fname} {author.author_minit ? `${author.author_minit}.` : ""} {author.author_lname}
-                  </div>
-                );
-              })
-            ) : (
-              <span className="text-[#475569] opacity-50 text-sm">No authors listed</span>
-            )}
-          </div>
+      {/* REJECTION REASON Section */}
+      {survey.survey_status === 'rejected' && survey.rejection_reason && (
+        <div className="px-6 pb-4">
+          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">REJECTION REASON</h3>
+          <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+            {survey.rejection_reason}
+          </p>
         </div>
+      )}
 
-        {/* Description */}
-        <div className="mb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">Description</h3>
+      <div className="px-6 pb-4 flex-col flex">
+        <div className="">
+          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+            Description
+          </h3>
           <div>
             <SurveyDescription description={survey.survey_desc} />
           </div>
         </div>
 
-        {/* Details */}
-        <div className="mb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">Details</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono text-xs">Category:</span>
-              <span className="font-ubuntu-mono text-[#011638] text-sm">
-                {survey.r_category?.r_category_name || "Uncategorized"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono text-xs">School:</span>
-              <span className="font-ubuntu-mono text-[#011638] text-sm">
-                {survey.school?.school_name || "No School"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono text-xs">Start Date:</span>
-              <span className="font-ubuntu-mono text-[#011638] text-sm">
-                {new Date(survey.survey_start).toLocaleDateString("en-US", {
+        <div className="flex flex-col border-y-2 border-[#a6a6a6] mt-4">
+          <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
+            <FaRegCalendar className="text-[#011638]" />
+
+            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
+              Deadline 
+            </span>
+
+            <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
+              {new Date(survey.survey_start).toLocaleDateString(
+                "en-US",
+                {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                })}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono text-xs">End Date:</span>
-              <span className="font-ubuntu-mono text-[#011638] text-sm">
-                {new Date(survey.survey_end).toLocaleDateString("en-US", {
+                }
+              )}
+            </span>
+            -
+            <span className="font-ubuntu-mono pl-1 text-[14px] text-[#011638] flex flex-wrap items-center gap-1">
+              {new Date(survey.survey_end).toLocaleDateString(
+                "en-US",
+                {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                })}
+                }
+              )}
+            </span>
+          </div>
+
+          
+          <div className="flex flex-col gap-1 border-b-2 border-[#a6a6a6] py-2">
+            <div className="flex items-center gap-1">
+              <FaRegAddressBook className="text-[#011638]" />
+
+              <span className="font-oswald uppercase text-[12px] leading-none">
+                Target Respondents 
+                {survey.max_respondents && (
+                  <span className="ml-2 text-[#1e4db7] font-normal">
+                    (Max: {survey.max_respondents})
+                  </span>
+                )}
               </span>
             </div>
-            {survey.max_respondents && (
-              <div>
-                <span className="text-[#475569] block font-ubuntu-mono text-xs">Max Respondents:</span>
-                <span className="font-ubuntu-mono text-[#011638] text-sm">{survey.max_respondents}</span>
-              </div>
+
+            <div className="flex flex-wrap gap-1 ml-5">
+              {survey.survey_respondents ? (
+                survey.survey_respondents.split(',').map((criteria: string, index: number) => (
+                  <span 
+                    key={index} 
+                    className="bg-[#1e4db7] text-[#fbfaf8] px-[9px] py-1 rounded-full text-xs font-ubuntu-mono break-words overflow-hidden"
+                  >
+                    {criteria.trim()}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[#475569] opacity-50 text-sm font-ubuntu-mono">No specific criteria</span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1 border-b-2 border-[#a6a6a6] py-1">
+            <FaRegFolderClosed className="text-[#011638]" />
+            
+            <span className="border-r-2 border-[#a6a6a6] pr-3 font-oswald uppercase text-[12px] leading-none"> 
+              Category 
+            </span>
+
+            <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-[14px] pl-1">
+              {survey.r_category?.r_category_name || "Uncategorized"}
+            </span>
+          </div>
+
+          
+          <div className="flex items-baseline gap-1 py-1">
+            <span className="items-center flex gap-1">
+              <FaSchool className="text-[#011638] shrink-0" />
+              
+              <span className="font-oswald uppercase text-[12px] leading-none pr-2"> 
+                School 
+              </span>
+            </span>
+
+            <span className="border-l-2 border-[#a6a6a6] pl-1 font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal text-[14px]">
+              {survey.school?.school_name || "No School"}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 mb-16 min-h-[60px]">
+          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+            Author(s)
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {processedAuthors.length > 0 ? (
+              processedAuthors.map((author: any, index: number) => {
+                const displayInfo = author.displayName;
+                
+                return (
+                  <a
+                    key={`${survey.id}-${author.id || 'no-id'}-${index}`}
+                    href={`mailto:${displayInfo.email}`}
+                    className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    title={`Email: ${displayInfo.email}`}
+                  >
+                    <svg
+                      className="w-4 h-4 group-hover:scale-110 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    {displayInfo.name}
+                  </a>
+                );
+              })
+            ) : (
+              <span className="text-[#475569] opacity-50 text-sm">
+                No authors listed
+              </span>
             )}
           </div>
         </div>
 
-        {/* Survey Link */}
-        {survey.survey_link && (
-          <div className="mt-auto">
-            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">Survey Link</h3>
-            <a 
-              href={survey.survey_link} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono break-all"
-            >
-              Take Survey
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
+        <Link href={survey.survey_link || "#"} target="_blank" className="mt-4">
+          <div className="group font-bold cursor-pointer absolute rounded-t-4xl text-[15px] bottom-0 left-0 w-full bg-[#011638] text-[#fbfaf8] py-3 items-center justify-between flex gap-2 px-3 pl-6">
+            {survey.survey_link ? (
+              <>
+                <span>Take the Survey</span>
+                <LuCircleArrowRight className="size-10 group-hover:translate-x-1 transition transform duration-200"/>
+              </>
+            ) : (
+              <span>No link available</span>
+            )}
           </div>
-        )}
+        </Link>
       </div>
     </SpotlightCard>
   );
@@ -468,7 +569,7 @@ export default function MemberSurveyView() {
     }
   }, [user]);
 
-  // MODIFIED: Add initialLoad check
+  // Filter and sort effect 
   useEffect(() => {
     if (initialLoad) return;
     
@@ -502,7 +603,7 @@ export default function MemberSurveyView() {
       });
     }
     
-    // Apply year filter - CHANGED to use survey_start
+    // Apply year filter
     if (selectedYears.length > 0) {
       filtered = filtered.filter(survey => {
         const surveyYear = new Date(survey.survey_start).getFullYear();
@@ -516,7 +617,6 @@ export default function MemberSurveyView() {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedSchool, selectedYears, surveys, initialLoad]);
 
-  // MODIFIED: Sort during fetch
   const fetchUserSurveys = async () => {
     try {
       const { data: author, error: authorError } = await supabase
@@ -651,7 +751,7 @@ export default function MemberSurveyView() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by title, abstract, category, school, keywords, or physical location..."
+                placeholder="Search by title, description, category or school..."
                 disabled
                 className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
               />
