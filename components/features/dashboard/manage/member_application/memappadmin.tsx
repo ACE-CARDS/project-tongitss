@@ -93,8 +93,7 @@ function DeleteConfirmPopup({
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -157,7 +156,7 @@ function SortableRow({
   onActivate: (id: number) => void;
   onDelete: (id: number) => void;
   onEdit: (id: number) => void;
-  onMove: (id: number, dir: 'up' | 'down') => void;
+  onMove: (id: number, dir: "up" | "down") => void;
 }) {
   const {
     attributes,
@@ -170,7 +169,7 @@ function SortableRow({
     id: item.id.toString(),
   });
 
-  // FIX 1: Lock the drag transform to the Y-axis only. 
+  // FIX 1: Lock the drag transform to the Y-axis only.
   // This physically prevents horizontal dragging, stopping the scrollbar from appearing.
   const style = {
     transform: transform ? `translate3d(0px, ${transform.y}px, 0)` : undefined,
@@ -183,9 +182,7 @@ function SortableRow({
     <tr
       ref={setNodeRef}
       style={style}
-      className={`${
-        index % 2 === 0 ? "bg-white" : "bg-[#fbfaf8]"
-      } h-[80px] ${
+      className={`${index % 2 === 0 ? "bg-white" : "bg-[#fbfaf8]"} h-[80px] ${
         isDragging ? "opacity-50 shadow-2xl bg-blue-50" : ""
       }`}
     >
@@ -197,21 +194,38 @@ function SortableRow({
             className="text-slate-400 hover:text-[#011638] cursor-grab active:cursor-grabbing p-1"
             title="Drag to reorder"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 9h8M8 15h8"
+              />
             </svg>
           </button>
         ) : (
-          <span className="text-slate-200" title="Reordering disabled in this tab">—</span>
+          <span
+            className="text-slate-200"
+            title="Reordering disabled in this tab"
+          >
+            —
+          </span>
         )}
       </td>
 
       <td className="px-4 py-2 w-[20%]">
         <span
           className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-            item.type === "video" ? "bg-purple-100 text-purple-700" :
-            item.type === "reminder" ? "bg-orange-100 text-orange-700" :
-            "bg-blue-100 text-blue-700"
+            item.type === "video"
+              ? "bg-purple-100 text-purple-700"
+              : item.type === "reminder"
+                ? "bg-orange-100 text-orange-700"
+                : "bg-blue-100 text-blue-700"
           }`}
         >
           {item.type === "instruction" ? "Announcement" : item.type}
@@ -225,16 +239,47 @@ function SortableRow({
       {/* FIX 2: Split the actions into 3 fixed-width zones to lock alignment */}
       <td className="px-4 py-2 text-center w-[30%]">
         <div className="flex justify-center items-center w-full">
-          
           {/* ZONE 1: Arrow Buttons (Fixed Width) */}
           <div className="w-[30px] flex justify-center">
             {isDragEnabled && (
               <div className="flex flex-col gap-0.5">
-                <button onClick={() => onMove(item.id, 'up')} className="text-slate-400 hover:text-[#011638] transition-colors" title="Move Up">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" /></svg>
+                <button
+                  onClick={() => onMove(item.id, "up")}
+                  className="text-slate-400 hover:text-[#011638] transition-colors"
+                  title="Move Up"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 15l7-7 7 7"
+                    />
+                  </svg>
                 </button>
-                <button onClick={() => onMove(item.id, 'down')} className="text-slate-400 hover:text-[#011638] transition-colors" title="Move Down">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                <button
+                  onClick={() => onMove(item.id, "down")}
+                  className="text-slate-400 hover:text-[#011638] transition-colors"
+                  title="Move Down"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
               </div>
             )}
@@ -263,17 +308,40 @@ function SortableRow({
               onClick={() => onEdit(item.id)}
               className="text-[#0d21a1] hover:scale-110 transition-transform"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                />
+              </svg>
             </button>
 
             <button
               onClick={() => onDelete(item.id)}
               className="text-red-600 hover:scale-110 transition-transform"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                />
+              </svg>
             </button>
           </div>
-
         </div>
       </td>
     </tr>
@@ -297,8 +365,7 @@ export default function MemAppAdmin() {
   const [savingDeadline, setSavingDeadline] = useState(false);
 
   // Signup Link States
-  const [signupLinkItem, setSignupLinkItem] =
-    useState<MemAppItem | null>(null);
+  const [signupLinkItem, setSignupLinkItem] = useState<MemAppItem | null>(null);
 
   const [signupLink, setSignupLink] = useState("");
   const [initialSignupLink, setInitialSignupLink] = useState("");
@@ -332,7 +399,7 @@ export default function MemAppAdmin() {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -341,14 +408,11 @@ export default function MemAppAdmin() {
 
   useEffect(() => {
     let filtered = items.filter(
-      (item) =>
-        item.type !== "deadline" && item.type !== "signup_link"
+      (item) => item.type !== "deadline" && item.type !== "signup_link",
     );
 
     if (activeTab !== "ALL") {
-      filtered = filtered.filter(
-        (item) => item.type === activeTab
-      );
+      filtered = filtered.filter((item) => item.type === activeTab);
     }
 
     setFilteredItems(filtered);
@@ -378,10 +442,7 @@ export default function MemAppAdmin() {
 
           if (!isNaN(parsed.getTime())) {
             const year = parsed.getFullYear();
-            const month = String(parsed.getMonth() + 1).padStart(
-              2,
-              "0"
-            );
+            const month = String(parsed.getMonth() + 1).padStart(2, "0");
             const day = String(parsed.getDate()).padStart(2, "0");
 
             const formatted = `${year}-${month}-${day}`;
@@ -391,9 +452,7 @@ export default function MemAppAdmin() {
           }
         }
 
-        const sl = data.find(
-          (d) => d.type === "signup_link"
-        );
+        const sl = data.find((d) => d.type === "signup_link");
 
         if (sl) {
           setSignupLinkItem(sl);
@@ -419,18 +478,14 @@ export default function MemAppAdmin() {
     if (!isDragEnabled) return;
 
     const oldIndex = filteredItems.findIndex(
-      (item) => item.id.toString() === active.id
+      (item) => item.id.toString() === active.id,
     );
 
     const newIndex = filteredItems.findIndex(
-      (item) => item.id.toString() === over.id
+      (item) => item.id.toString() === over.id,
     );
 
-    const newOrder = arrayMove(
-      filteredItems,
-      oldIndex,
-      newIndex
-    );
+    const newOrder = arrayMove(filteredItems, oldIndex, newIndex);
 
     setFilteredItems(newOrder);
 
@@ -461,9 +516,9 @@ export default function MemAppAdmin() {
   };
 
   // NEW: handleMove logic for Arrows
-  const handleMove = async (id: number, dir: 'up' | 'down') => {
-    const currentIndex = filteredItems.findIndex(i => i.id === id);
-    const targetIndex = dir === 'up' ? currentIndex - 1 : currentIndex + 1;
+  const handleMove = async (id: number, dir: "up" | "down") => {
+    const currentIndex = filteredItems.findIndex((i) => i.id === id);
+    const targetIndex = dir === "up" ? currentIndex - 1 : currentIndex + 1;
 
     // Boundary check
     if (targetIndex < 0 || targetIndex >= filteredItems.length) return;
@@ -477,9 +532,15 @@ export default function MemAppAdmin() {
 
     try {
       // Swap order_index values in DB
-      await supabase.from("announce_memapp").update({ order_index: target.order_index }).eq("id", item.id);
-      await supabase.from("announce_memapp").update({ order_index: item.order_index }).eq("id", target.id);
-      
+      await supabase
+        .from("announce_memapp")
+        .update({ order_index: target.order_index })
+        .eq("id", item.id);
+      await supabase
+        .from("announce_memapp")
+        .update({ order_index: item.order_index })
+        .eq("id", target.id);
+
       fetchItems();
     } catch (err: any) {
       setToast({ message: "Failed to move item", type: "error" });
@@ -498,32 +559,34 @@ export default function MemAppAdmin() {
     setSavingDeadline(true);
 
     try {
-      const formattedDate = new Date(
-        deadlineDate
-      ).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).toUpperCase();
+      const formattedDate = new Date(deadlineDate)
+        .toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+        .toUpperCase();
+
+      const oldDeadline = deadlineItem?.description || "Not set";
 
       const { error } = deadlineItem
         ? await supabase
             .from("announce_memapp")
             .update({ description: formattedDate })
             .eq("id", deadlineItem.id)
-        : await supabase
-            .from("announce_memapp")
-            .insert([
-              {
-                type: "deadline",
-                description: formattedDate,
-                order_index: 0,
-              },
-            ]);
+        : await supabase.from("announce_memapp").insert([
+            {
+              type: "deadline",
+              description: formattedDate,
+              order_index: 0,
+            },
+          ]);
 
       if (error) throw error;
 
       setInitialDeadlineDate(deadlineDate);
+
+      await logEditDeadlineAudit(oldDeadline, formattedDate);
 
       setToast({
         message: "Deadline updated!",
@@ -553,25 +616,26 @@ export default function MemAppAdmin() {
 
     try {
       const trimmedLink = signupLink.trim();
+      const oldLink = signupLinkItem?.description || "Not set";
 
       const { error } = signupLinkItem
         ? await supabase
             .from("announce_memapp")
             .update({ description: trimmedLink })
             .eq("id", signupLinkItem.id)
-        : await supabase
-            .from("announce_memapp")
-            .insert([
-              {
-                type: "signup_link",
-                description: trimmedLink,
-                order_index: 0,
-              },
-            ]);
+        : await supabase.from("announce_memapp").insert([
+            {
+              type: "signup_link",
+              description: trimmedLink,
+              order_index: 0,
+            },
+          ]);
 
       if (error) throw error;
 
       setInitialSignupLink(trimmedLink);
+
+      await logSignupLinkAudit(oldLink, trimmedLink);
 
       setToast({
         message: "Link saved!",
@@ -619,6 +683,8 @@ export default function MemAppAdmin() {
     if (!selectedId) return;
 
     try {
+      const deletedItem = items.find((item) => item.id === selectedId);
+
       const { error } = await supabase
         .from("announce_memapp")
         .delete()
@@ -626,10 +692,14 @@ export default function MemAppAdmin() {
 
       if (error) throw error;
 
-      setToast({
-        message: "Content deleted.",
-        type: "success",
-      });
+      if (deletedItem)
+        await logDeleteAudit(
+          deletedItem?.type,
+          deletedItem?.description.trim(),
+          selectedId,
+        );
+
+      setToast({ message: "Content deleted.", type: "success" });
 
       setDeletePopupOpen(false);
 
@@ -646,31 +716,127 @@ export default function MemAppAdmin() {
 
   const totalItems = filteredItems.length;
 
-  const totalPages = Math.ceil(
-    totalItems / ITEMS_PER_PAGE
-  );
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-  const validCurrentPage = Math.min(
-    Math.max(1, currentPage),
-    totalPages || 1
-  );
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
-  const startIndex =
-    (validCurrentPage - 1) * ITEMS_PER_PAGE;
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
 
   const paginatedItems = isDragEnabled
     ? filteredItems
-    : filteredItems.slice(
-        startIndex,
-        startIndex + ITEMS_PER_PAGE
-      );
+    : filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // CHANGE DETECTION
-  const isDeadlineChanged =
-    deadlineDate !== initialDeadlineDate;
+  const isDeadlineChanged = deadlineDate !== initialDeadlineDate;
 
-  const isSignupLinkChanged =
-    signupLink.trim() !== initialSignupLink.trim();
+  const isSignupLinkChanged = signupLink.trim() !== initialSignupLink.trim();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const loadCurrentUser = async (email: string) => {
+    const { data, error } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logEditDeadlineAudit = async (
+    oldDate: string | null,
+    newDate: string,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    let detailedMessage = "";
+
+    if (oldDate !== newDate) {
+      detailedMessage = `Changed membership application deadline from "${oldDate}" to "${newDate}"`;
+    } else {
+      detailedMessage = `Re-saved membership application deadline as "${newDate}" (No changes made)`;
+    }
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "announce_memapp",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+
+    if (error) {
+      console.error("Failed to log.");
+    }
+  };
+
+  const logSignupLinkAudit = async (oldLink: string, newLink: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Updated Google Form signup link from "${oldLink}" to "${newLink}"`;
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "announce_memapp",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+
+    if (error) {
+      console.error("Failed to log.");
+    }
+  };
+
+  const logDeleteAudit = async (
+    contentType: string,
+    text: string,
+    recordID: number,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    let detailedMessage = "";
+    if (contentType === "instruction") {
+      detailedMessage = `Deleted membership application content "${contentType || "Unknown Title"}" (ID: ${recordID || "Unknown ID"})`;
+    } else if (contentType === "video") {
+      detailedMessage = `Deleted video link: "${text}"`;
+    } else {
+      detailedMessage = `Deleted membership application content "${contentType || "Unknown Title"}" (ID: ${recordID || "Unknown ID"})`;
+    }
+
+    const logEntry = {
+      action: "Delete",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "announce_memapp",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+
+    if (error) {
+      console.error("Failed to log.");
+    }
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-full overflow-hidden flex flex-col">
@@ -708,7 +874,6 @@ export default function MemAppAdmin() {
               d="M12 4v16m8-8H4"
             />
           </svg>
-
           Add Content
         </Link>
       </div>
@@ -725,17 +890,13 @@ export default function MemAppAdmin() {
             <input
               type="date"
               value={deadlineDate}
-              onChange={(e) =>
-                setDeadlineDate(e.target.value)
-              }
+              onChange={(e) => setDeadlineDate(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono focus:ring-1 focus:ring-[#011638]"
             />
 
             <button
               onClick={saveDeadline}
-              disabled={
-                savingDeadline || !isDeadlineChanged
-              }
+              disabled={savingDeadline || !isDeadlineChanged}
               className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
                 savingDeadline || !isDeadlineChanged
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -766,18 +927,14 @@ export default function MemAppAdmin() {
             <input
               type="url"
               value={signupLink}
-              onChange={(e) =>
-                setSignupLink(e.target.value)
-              }
+              onChange={(e) => setSignupLink(e.target.value)}
               placeholder="https://docs.google.com/forms/..."
               className="w-full px-4 py-2.5 rounded-lg border border-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono focus:ring-1 focus:ring-[#011638]"
             />
 
             <button
               onClick={saveSignupLink}
-              disabled={
-                savingLink || !isSignupLinkChanged
-              }
+              disabled={savingLink || !isSignupLinkChanged}
               className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-oswald tracking-wide shadow-sm transition-colors ${
                 savingLink || !isSignupLinkChanged
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -822,7 +979,6 @@ export default function MemAppAdmin() {
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-
           Reorder Mode Active: Drag the handles or use the arrows on the right
           to reorder items.
         </div>
@@ -856,12 +1012,8 @@ export default function MemAppAdmin() {
               </thead>
 
               <SortableContext
-                items={paginatedItems.map((i) =>
-                  i.id.toString()
-                )}
-                strategy={
-                  verticalListSortingStrategy
-                }
+                items={paginatedItems.map((i) => i.id.toString())}
+                strategy={verticalListSortingStrategy}
               >
                 <tbody className="divide-y divide-gray-200">
                   {loading ? (
@@ -896,9 +1048,7 @@ export default function MemAppAdmin() {
                           setDeletePopupOpen(true);
                         }}
                         onEdit={(id) =>
-                          router.push(
-                            `/dashboard/edit/mem-app?id=${id}`
-                          )
+                          router.push(`/dashboard/edit/mem-app?id=${id}`)
                         }
                       />
                     ))
@@ -917,9 +1067,7 @@ export default function MemAppAdmin() {
             totalPages={totalPages || 1}
             totalItems={totalItems}
             itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={(page) =>
-              setCurrentPage(page)
-            }
+            onPageChange={(page) => setCurrentPage(page)}
           />
         </div>
       )}
@@ -928,10 +1076,7 @@ export default function MemAppAdmin() {
         isOpen={deletePopupOpen}
         onClose={() => setDeletePopupOpen(false)}
         onConfirm={handleDelete}
-        title={
-          items.find((i) => i.id === selectedId)?.type ||
-          "item"
-        }
+        title={items.find((i) => i.id === selectedId)?.type || "item"}
       />
     </div>
   );
