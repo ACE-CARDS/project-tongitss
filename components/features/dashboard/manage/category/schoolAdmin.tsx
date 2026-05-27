@@ -164,6 +164,8 @@ function EditPopup({
   const [provinceError, setProvinceError] = useState("");
   const [error, setError] = useState("");
 
+  const [hasError, setHasError] = useState(false);
+
   const noChange =
     school !== null &&
     name.trim() === school.school_name &&
@@ -176,6 +178,7 @@ function EditPopup({
       setNameError("");
       setProvinceError("");
       setError("");
+      setHasError(false);
     }
   }, [isOpen, school]);
 
@@ -187,13 +190,16 @@ function EditPopup({
 
     if (value === "") {
       setNameError("");
+      setHasError(false);
       return;
     }
 
     if (trimmedValue.length > 0 && trimmedValue.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
     } else {
       setNameError("");
+      setHasError(false);
     }
   };
 
@@ -203,6 +209,7 @@ function EditPopup({
     
     if (selectedId !== 0) {
       setProvinceError("");
+      setHasError(false);
     }
   };
 
@@ -216,14 +223,17 @@ function EditPopup({
 
     if (!trimmedName) {
       setNameError("Name is required");
+      setHasError(true);
       hasError = true;
     } else if (trimmedName.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
       hasError = true;
     }
 
     if (provinceId === 0) {
       setProvinceError("Please select a province");
+      setHasError(true);
       hasError = true;
     }
 
@@ -235,6 +245,7 @@ function EditPopup({
       )
     ) {
       setNameError("School name already exists");
+      setHasError(true);
       hasError = true;
     }
 
@@ -288,6 +299,7 @@ function EditPopup({
         onSubmitClick={handleEdit}
         isStatus={isSaving}
         noChange={noChange}
+        hasError={hasError}
         variant="blue"
         showBorder={false}
         submitLabel="Save Changes"
@@ -319,6 +331,8 @@ function AddPopup({
   const [provinceError, setProvinceError] = useState("");
   const [error, setError] = useState("");
 
+  const [hasError, setHasError] = useState(false);
+
   const noChange = name.trim() === "" && provinceId === 0;
 
   useEffect(() => {
@@ -328,6 +342,7 @@ function AddPopup({
       setNameError("");
       setProvinceError("");
       setError("");
+      setHasError(false);
     }
   }, [isOpen]);
 
@@ -339,13 +354,16 @@ function AddPopup({
 
     if (value === "") {
       setNameError("");
+      setHasError(false);
       return;
     }
 
     if (trimmedValue.length > 0 && trimmedValue.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
     } else {
       setNameError("");
+      setHasError(false);
     }
   };
 
@@ -355,6 +373,7 @@ function AddPopup({
     
     if (selectedId !== 0) {
       setProvinceError("");
+      setHasError(false);
     }
   };
 
@@ -368,14 +387,17 @@ function AddPopup({
 
     if (!trimmedName) {
       setNameError("Name is required");
+      setHasError(true);
       hasError = true;
     } else if (trimmedName.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
       hasError = true;
     }
 
     if (provinceId === 0) {
       setProvinceError("Please select a province");
+      setHasError(true);
       hasError = true;
     }
 
@@ -386,6 +408,7 @@ function AddPopup({
       )
     ) {
       setNameError("School name already exists");
+      setHasError(true);
       hasError = true;
     }
 
@@ -443,6 +466,7 @@ function AddPopup({
         onSubmitClick={handleAdd}
         isStatus={isAdding}
         noChange={noChange}
+        hasError={hasError}
         variant="blue"
         showBorder={false}
         submitLabel="Add School"

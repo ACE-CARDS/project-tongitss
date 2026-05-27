@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, use } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
@@ -131,6 +131,8 @@ function EditPopup({
   const [nameError, setNameError] = useState("");
   const [error, setError] = useState("");
 
+  const [hasError, setHasError] = useState(false);
+
   const noChange = name.trim() === category.r_category_name;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,13 +143,16 @@ function EditPopup({
 
     if (value === "") {
       setNameError("");
+      setHasError(false);
       return;
     }
 
     if (trimmedValue.length > 0 && trimmedValue.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
     } else {
       setNameError("");
+      setHasError(false);
     }
   };
 
@@ -155,9 +160,11 @@ function EditPopup({
   const handleEdit = async () => {
     setNameError("");
     setError("");
+    setHasError(false);
 
     if (!name.trim()) {
       setNameError("Category name is required");
+      setHasError(true);
       return;
     }
     if (
@@ -168,6 +175,7 @@ function EditPopup({
       )
     ) {
       setNameError("This category name already exists");
+      setHasError(true);
       return;
     }
 
@@ -202,6 +210,7 @@ function EditPopup({
         onSubmitClick={handleEdit}
         isStatus={isSaving}
         noChange={noChange}
+        hasError={hasError}
         variant="blue"
         showBorder={false}
         submitLabel="Save Changes"
@@ -229,6 +238,8 @@ function AddPopup({
   const [nameError, setNameError] = useState("");
   const [error, setError] = useState("");
 
+  const [hasError, setHasError] = useState(false);
+
   const noChange = name.trim() === "";
 
   useEffect(() => {
@@ -236,6 +247,7 @@ function AddPopup({
       setName("");
       setNameError("");
       setError("");
+      setHasError(false);
     }
   }, [isOpen]);
 
@@ -247,30 +259,36 @@ function AddPopup({
 
     if (value === "") {
       setNameError("");
+      setHasError(false);
       return;
     }
 
     if (trimmedValue.length > 0 && trimmedValue.length < 2) {
       setNameError("Name too short");
+      setHasError(true);
     } else {
       setNameError("");
+      setHasError(false);
     }
   };
 
   const handleAdd = async () => {
     setNameError("");
     setError("");
+    setHasError(false);
 
     const trimmedName = name.trim();
 
     // Final sweep validation on Submit
     if (!trimmedName) {
       setNameError("Category name is required");
+      setHasError(true);
       return;
     }
 
     if (categories.some((c) => c.r_category_name.toLowerCase() === trimmedName.toLowerCase())) {
       setNameError("This category name already exists");
+      setHasError(true);
       return;
     }
 
@@ -304,6 +322,7 @@ function AddPopup({
         onSubmitClick={handleAdd}
         isStatus={isAdding}
         noChange={noChange}
+        hasError={hasError}
         variant="blue"
         showBorder={false}
         submitLabel="Add Category"
