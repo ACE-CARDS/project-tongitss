@@ -99,6 +99,8 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
   const [dateError, setDateError] = useState("");
   const [submitError, setSubmitError] = useState("");
 
+  const [hasError, setHasError] = useState(false);
+
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
@@ -154,8 +156,10 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     setTitle(value);
     if (value.trim().length < 2 && value.trim().length > 0) {
       setTitleError("Title is too short.");
+      setHasError(true);
     } else {
       setTitleError("");
+      setHasError(false);
     }
   };
 
@@ -164,8 +168,10 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     setDescription(value);
     if (value.trim().length < 10 && value.trim().length > 0) {
       setDescError("Description is too short.");
+      setHasError(true);
     } else {
       setDescError("");
+      setHasError(false);
     }
   };
 
@@ -199,25 +205,31 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     if (!trimmedTitle) {
       setTitleError("Title is required.");
       hasError = true;
+      setHasError(true);
     } else if (trimmedTitle.length < 2) {
       setTitleError("Title is too short.");
       hasError = true;
+      setHasError(true);
     }
 
     if (!trimmedDesc) {
       setDescError("Description is required.");
       hasError = true;
+      setHasError(true);
     } else if (trimmedDesc.length < 10) {
       setDescError("Description is too short.");
       hasError = true;
+      setHasError(true);
     }
 
     if (!startDate || !endDate) {
       setDateError("Both start and end dates are required.");
       hasError = true;
+      setHasError(true);
     } else if (new Date(endDate) < new Date(startDate)) {
       setDateError("End date cannot be earlier than start date or vice versa.");
       hasError = true;
+      setHasError(true);
     }
 
     if (hasError) {
@@ -406,6 +418,7 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
           cancelHref="/dashboard?tab=manage&section=announcements"
           isStatus={isSubmitting}
           noChange={noChange}
+          hasError={hasError}
           variant="blue"
           submitLabel="Update Announcement"
           submittingLabel="Updating..."
