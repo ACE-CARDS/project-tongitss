@@ -527,7 +527,7 @@ export default function MembersPage() {
                   onChange(o.value);
                   setOpen(false);
                 }}
-                className={`${getRoleStyle(o.value as string)} px-3 py-2 hover:opacity-30`}
+                className={`${getRoleStyle(o.value as string)} px-3 py-2 hover:opacity-30 cursor-pointer`}
               >
                 {o.label}
               </li>
@@ -605,7 +605,7 @@ export default function MembersPage() {
                       setOpen(false);
                       setSearch("");
                     }}
-                    className={`${getCommitteeStyle(o.label)} px-3 py-2 cursor-pointer hover:opacity-50`}
+                    className={`${getCommitteeStyle(o.label)} px-3 py-2 cursor-pointer hover:opacity-50 cursor-pointer`}
                   >
                     {o.label}
                   </li>
