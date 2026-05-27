@@ -122,7 +122,7 @@ export default function BigCalendar() {
     const selectedLabel = value.toString();
 
     return (
-      <div ref={ref} className="relative z-[100] font-sans">
+      <div ref={ref} className="relative z-[7] font-sans">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
