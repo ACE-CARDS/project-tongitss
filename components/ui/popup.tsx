@@ -40,8 +40,10 @@ export default function Popup({ isOpen, title, onClose, children, maxWidth = "md
 
   return (
     <>
-      <ModalBlur onClose={onClose} />
-      
+      <span className="z-[10000]">
+        <ModalBlur onClose={onClose} />
+      </span>
+
       <div className={`fixed inset-0 z-[400] flex items-center justify-center ${className}`}>
         <div
           ref={frameRef}
