@@ -22,13 +22,13 @@ export default function FormWrapper({
           href={backHref}
           className="!mb-0"
         />
+        <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638]">
+          {title}
+        </h1>
       </div>
 
       {/* Form Card Body */}
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
-        <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638] mb-6">
-          {title}
-        </h1>
         {children}
       </div>
     </main>

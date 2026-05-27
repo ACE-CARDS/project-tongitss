@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useUser } from "@/components/context/userContext";
 import Popup from "@/components/ui/popup";
+import Pagination from "@/components/ui/pagination";
 
 type Member = {
   id: number;
@@ -57,7 +58,6 @@ export default function MembersPage() {
   const supabase = createClient();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
   const [members, setMembers] = useState<Member[]>([]);
   const [originalMembers, setOriginalMembers] = useState<Member[]>([]);
   const [committees, setCommittees] = useState<Committee[]>([]);
@@ -231,11 +231,13 @@ export default function MembersPage() {
   });
 
   // pagination
-  const totalPages = Math.ceil(sortedMembers.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedMembers = sortedMembers.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE,
+  const itemsPerPage = 5;
+  const totalItems = sortedMembers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const paginatedItems = sortedMembers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
   const hasChanges =
@@ -1521,15 +1523,6 @@ export default function MembersPage() {
       showImagesConfirm ||
       showImagesSuccess;
 
-    if (isAnyModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [
     showConfirm,
     showImportConfirm,
@@ -1614,15 +1607,15 @@ export default function MembersPage() {
 
           {/* Members Table */}
           <div className="bg-white/70 backdrop-blur-xl border border-gray-300 border-t-transparent rounded-b-xl shadow-[0_15px_15px_rgba(0,0,0,0.1)] p-6 pt-4 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
               {/* Name Search */}
-              <div className="w-full sm:flex-1 relative">
+              <div className="w-full lg:flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search member..."
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 text-sm sm:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                  className="w-full px-4 py-2.5 pl-10 text-sm lg:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
                 <svg
                   className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -1640,12 +1633,12 @@ export default function MembersPage() {
               </div>
 
               {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="flex flex-col lg:flex-row gap-2 lg:gap-4 w-full lg:w-auto">
                 {/* import */}
 
                 <label
                   htmlFor="import-pics"
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Images
                   <input
@@ -1668,7 +1661,7 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-members"
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Members
                 </label>
@@ -1770,7 +1763,7 @@ export default function MembersPage() {
                 {/* export */}
                 <button
                   onClick={() => setShowExportOptions(true)}
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Export Members
                 </button>
@@ -1779,7 +1772,7 @@ export default function MembersPage() {
 
             <div className="overflow-y-visible"></div>
             {/* grid start */}
-            <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
+            <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
               <button
                 onClick={() =>
                   setNameSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
@@ -1798,12 +1791,12 @@ export default function MembersPage() {
             <div className="space-y-4">
               {isLoading ? (
                 <div className="min-h-[200px]"></div>
-              ) : paginatedMembers.length === 0 ? (
+              ) : paginatedItems.length === 0 ? (
                 <p className="text-center text-gray-500 text-lg py-6">
                   No members found.
                 </p>
               ) : (
-                paginatedMembers.map((member) => {
+                paginatedItems.map((member) => {
                   const commName =
                     typeof member.comm === "number"
                       ? committees.find((c) => c.id === member.comm)
@@ -1815,7 +1808,7 @@ export default function MembersPage() {
                       key={member.id}
                       className={`
                         flex flex-col gap-3
-                        sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] sm:items-start
+                        lg:grid lg:grid-cols-[1.5fr_1.5fr_0.5fr] lg:items-start
                         px-4 py-3 rounded-xl ring shadow-0 ring-[#d7d7d7] ease-in-out duration-200 transition-all
                         hover:shadow-lg border-l-4
                         ${
@@ -1905,7 +1898,7 @@ export default function MembersPage() {
                               mem_minit: false,
                             });
                           }}
-                          className="text-[#011638] hover:scale-110 transition-transform p-1 sm:p-0 cursor-pointer"
+                          className="text-[#011638] hover:scale-110 transition-transform p-1 lg:p-0 cursor-pointer"
                         >
                           {/* edit icon */}
                           <svg
@@ -1946,108 +1939,13 @@ export default function MembersPage() {
             </div>
 
             {/* pagination */}
-            {totalPages > 1 && (
-              <nav className="flex justify-center items-center space-x-2 mt-8 mb-4">
-                {/* Prev button */}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                    currentPage === 1
-                      ? "text-[#94a3b8]"
-                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                  }`}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                {/* Page numbers */}
-                <div className="flex items-center space-x-1">
-                  {(() => {
-                    const pages = [];
-
-                    if (totalPages <= 4) {
-                      for (let i = 1; i <= totalPages; i++) {
-                        pages.push(i);
-                      }
-                    } else {
-                      const showLeft = currentPage <= 2;
-                      const showRight = currentPage >= totalPages - 1;
-
-                      if (showLeft) {
-                        pages.push(1, 2, "...", totalPages);
-                      } else if (showRight) {
-                        pages.push(1, "...", totalPages - 1, totalPages);
-                      } else {
-                        pages.push(1, "...", currentPage, "...", totalPages);
-                      }
-                    }
-
-                    return pages.map((page, idx) =>
-                      page === "..." ? (
-                        <span
-                          key={`ellipsis-${idx}`}
-                          className="px-2 text-gray-500"
-                        >
-                          ...
-                        </span>
-                      ) : (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page as number)}
-                          className={`min-w-[40px] px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                            page === currentPage
-                              ? "bg-[#011638] text-white font-bold"
-                              : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ),
-                    );
-                  })()}
-                </div>
-
-                {/* Next button */}
-                <button
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-2 rounded-lg text-sm transition cursor-pointer ${
-                    currentPage === totalPages
-                      ? "text-[#94a3b8]"
-                      : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638]"
-                  }`}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </nav>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
 
             {/* save Changes  */}
             <div className="flex justify-end pt-4">

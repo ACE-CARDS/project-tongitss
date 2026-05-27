@@ -9,9 +9,10 @@ interface PopupProps {
   onClose: () => void;
   children: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl"; // Optional customizable width
+  className?: string;
 }
 
-export default function Popup({ isOpen, title, onClose, children, maxWidth = "md" }: PopupProps) {
+export default function Popup({ isOpen, title, onClose, children, maxWidth = "md", className }: PopupProps) {
   const frameRef = useRef<HTMLDivElement>(null);
 
   const maxWidthClasses = {
@@ -39,9 +40,11 @@ export default function Popup({ isOpen, title, onClose, children, maxWidth = "md
 
   return (
     <>
-      <ModalBlur onClose={onClose} />
-      
-      <div className="fixed inset-0 z-[400] flex items-center justify-center">
+      <span className="z-[10000]">
+        <ModalBlur onClose={onClose} />
+      </span>
+
+      <div className={`fixed inset-0 z-[400] flex items-center justify-center ${className}`}>
         <div
           ref={frameRef}
           className={`bg-[#fbfaf8] w-full mx-4 shadow-2xl rounded-lg transition-all ${maxWidthClasses[maxWidth]}`}

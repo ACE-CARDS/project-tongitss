@@ -318,7 +318,7 @@ function DashboardContent() {
                     <button
                       key={tab.key}
                       onClick={() => handleTabChange(tab.key)}
-                      className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase ${
+                      className={`flex-1 py-3 px-4 rounded-t-xl font-bold text-sm md:text-base transition-all whitespace-nowrap uppercase cursor-pointer ${
                         activeTab === tab.key
                           ? "bg-[#011638] text-white shadow-lg"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"

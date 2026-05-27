@@ -13,6 +13,7 @@ interface FormActionsProps {
   
   isStatus?: boolean;
   noChange?: boolean;
+  hasError?: boolean;
   
   variant: "blue" | "red";
   showBorder?: boolean;
@@ -27,6 +28,7 @@ export default function FormActions({
   submittingLabel,
   isStatus = false,
   noChange,
+  hasError,
   variant,
   showBorder = true,
 }: FormActionsProps) {
@@ -62,7 +64,7 @@ export default function FormActions({
       <button
         type={onSubmitClick ? "button" : "submit"}
         onClick={onSubmitClick}
-        disabled={isStatus || noChange}
+        disabled={isStatus || noChange || hasError}
         className={primaryBtnClass}
       >
         {isStatus ? submittingLabel : submitLabel}

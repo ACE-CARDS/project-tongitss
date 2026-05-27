@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "../context/userContext";
 import { createClient } from "@/utils/supabase/client";
+import Popup from "@/components/ui/popup";
 
 const siteName = "ACE CARDS";
 
@@ -16,6 +17,8 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+  
   const academicsRef = useRef<HTMLLIElement>(null);
   const membersRef = useRef<HTMLLIElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -25,8 +28,6 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
     if (path === "/") {
       return pathname === "/";
     }
-    // const rootPath = `/${pathname.split('/')[1]}`;
-    // return rootPath === path;
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
@@ -67,13 +68,13 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
     };
   }, []);
 
-   // Clear saved tab before logout
   const handleLogout = async () => {
     if (user?.email) {
       localStorage.removeItem(`dashboard_tab_${user.email}`);
     }
     
     await supabase.auth.signOut();
+    setIsLogoutOpen(false);
     router.push("/");
     router.refresh();
   };
@@ -217,12 +218,6 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                 </ul>
               </li>
 
-              {/*
-                Academics dropdown
-                — On mobile: submenu renders as normal flow (no absolute),
-                  so it's never clipped by the scrollable ul.
-                — On xl: submenu is absolute-positioned as before.
-              */}
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
@@ -309,7 +304,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                   </Link>
 
                   <li
-                    onClick={handleLogout}
+                    onClick={() => setIsLogoutOpen(true)}
                     className={`text-center cursor-pointer rounded-[50px] bg-red-500/60  text-white duration-200 transition-all px-[13px] py-[4px]
                       hover:bg-red-500/90 hover:scale-[1.04] hover:shadow-[0_0_15px_#fb2c36]`}
                   >
@@ -401,6 +396,35 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
         backgroundAttachment: "fixed",
       }}>
     </div>
+
+    {/* Logout Confirmation Popup */}
+    <Popup 
+      isOpen={isLogoutOpen} 
+      title="Confirm Logout" 
+      onClose={() => setIsLogoutOpen(false)}
+      maxWidth="sm"
+      className="z-[999999999]"
+    >
+      <div className="flex flex-col gap-5 pt-4">
+        <p className="text-base font-medium text-slate-700">
+          Are you sure you want to log out of your account?
+        </p>
+        <div className="flex flex-row justify-end gap-3">
+          <button
+            onClick={() => setIsLogoutOpen(false)}
+            className="form_btn-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleLogout}
+            className="form_btn-red"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </Popup>
     </>
   );
 }

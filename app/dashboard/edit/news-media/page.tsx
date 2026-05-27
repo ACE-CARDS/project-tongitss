@@ -8,6 +8,7 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import { useUser } from "@/components/context/userContext";
+import BackButton from "@/components/ui/backButton";
 
 // Types
 interface NewsItem {
@@ -350,209 +351,205 @@ function EditNewsMediaContent() {
   if (loading) return <LoadingState />;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-[#fbfaf8] overflow-y-auto"
-      style={{
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-      }}
-    >
+    <>
       <NavBar />
-      <div className="pt-5">
-        <main className="container mx-auto py-8 px-4 max-w-3xl">
-          <div className="mb-6">
-            <button
-              onClick={() =>
-                from === "admin"
-                  ? router.push("/dashboard?tab=manage&section=news")
-                  : router.back()
-              }
-              className="text-[#011638] hover:text-[#1a2a4f] inline-block mb-2 font-ubuntu-mono"
-            >
-              ← Back
-            </button>
-            <h1 className="text-2xl font-oswald font-bold text-[#011638]">
-              Edit News Article
-            </h1>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
+      <div
+        className="w-full mx-auto max-w-[1920px] min-h-screen bg-[#fbfaf8]"
+        style={{
+          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      >
+        <div className="pt-5">
+          <main className="container mx-auto py-8 px-4 max-w-3xl">
+            <div className="flex flex-col mb-6 gap-4">
+              <BackButton
+                href="/dashboard?tab=manage&section=news"
+                className="!mb-0"
+              />
+              <h1 className="text-2xl font-oswald font-bold text-[#011638]">
+                Edit News Article
+              </h1>
             </div>
-          )}
 
-          <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                  <h2 className="text-lg font-oswald font-semibold">
-                    Basic Information
-                  </h2>
-                </div>
-                <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      maxLength={200}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    />
+            {error && (
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+                    <h2 className="text-lg font-oswald font-semibold">
+                      Basic Information
+                    </h2>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      name="content"
-                      value={formData.content}
-                      onChange={handleChange}
-                      rows={6}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
-                    />
-                    {titleContentError && (
-                      <span className="text-xs text-red-600 font-ubuntu-mono">
-                        {titleContentError}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Image
-                    </label>
-                    <div
-                      className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
-                      onClick={() =>
-                        document.getElementById("image-upload")?.click()
-                      }
-                    >
-                      <div className="space-y-1 text-center">
-                        {imagePreview ? (
-                          <div className="relative">
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="mx-auto h-48 w-auto object-cover rounded-lg"
-                            />
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeImage();
-                              }}
-                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="text-sm text-[#475569]">
-                            <p className="font-medium text-[#011638]">
-                              Click to upload
-                            </p>
-                            <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
-                          </div>
-                        )}
-                      </div>
+                  <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        maxLength={200}
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      />
                     </div>
-                    <input
-                      id="image-upload"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
+
+                    <div>
+                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        name="content"
+                        value={formData.content}
+                        onChange={handleChange}
+                        rows={6}
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
+                      />
+                      {titleContentError && (
+                        <span className="text-xs text-red-600 font-ubuntu-mono">
+                          {titleContentError}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Image
+                      </label>
+                      <div
+                        className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
+                        onClick={() =>
+                          document.getElementById("image-upload")?.click()
+                        }
+                      >
+                        <div className="space-y-1 text-center">
+                          {imagePreview ? (
+                            <div className="relative">
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="mx-auto h-48 w-auto object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeImage();
+                                }}
+                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-[#475569]">
+                              <p className="font-medium text-[#011638]">
+                                Click to upload
+                              </p>
+                              <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-                  <h2 className="text-lg font-oswald font-semibold">
-                    Source Details
-                  </h2>
-                </div>
-                <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Post URL <span className="text-[#eec643]">*</span>
-                    </label>
-                    <input
-                      type="url"
-                      name="post_url"
-                      value={formData.post_url}
-                      onChange={handleChange}
-                      required
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    />
-                    {postUrlError && (
-                      <span className="text-xs text-red-600 font-ubuntu-mono">
-                        {postUrlError}
-                      </span>
-                    )}
+                <div>
+                  <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+                    <h2 className="text-lg font-oswald font-semibold">
+                      Source Details
+                    </h2>
                   </div>
+                  <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Post URL <span className="text-[#eec643]">*</span>
+                      </label>
+                      <input
+                        type="url"
+                        name="post_url"
+                        value={formData.post_url}
+                        onChange={handleChange}
+                        required
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      />
+                      {postUrlError && (
+                        <span className="text-xs text-red-600 font-ubuntu-mono">
+                          {postUrlError}
+                        </span>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                      Post Date <span className="text-[#eec643]">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="fb_post_date"
-                      value={formData.fb_post_date}
-                      onChange={handleChange}
-                      required
-                      max={new Date().toISOString().split("T")[0]}
-                      className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    />
+                    <div>
+                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Post Date <span className="text-[#eec643]">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="fb_post_date"
+                        value={formData.fb_post_date}
+                        onChange={handleChange}
+                        required
+                        max={new Date().toISOString().split("T")[0]}
+                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
-                <Link
-                  href={
-                    from === "admin"
-                      ? "/dashboard?tab=manage&section=news"
-                      : "/dashboard"
-                  }
-                  className="px-4 py-2 text-[#011638] font-ubuntu-mono"
-                >
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  disabled={saving || isUnchanged}
-                  className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed"
-                >
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </main>
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
+                  <Link
+                    href={
+                      from === "admin"
+                        ? "/dashboard?tab=manage&section=news"
+                        : "/dashboard"
+                    }
+                    className="px-4 py-2 text-[#011638] font-ubuntu-mono"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    disabled={saving || isUnchanged}
+                    className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </main>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </>
   );
 }
 
