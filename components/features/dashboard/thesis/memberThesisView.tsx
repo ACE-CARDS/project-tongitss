@@ -234,6 +234,33 @@ const getProcessedAuthors = (thesis: any) => {
   return authorsWithData;
 };
 
+// Sort function
+const sortTheses = (thesesArray: any[]) => {
+  const statusOrder: Record<string, number> = {
+    'pending': 0,
+    'accepted': 1,
+    'archived': 2,
+    'rejected': 3
+  };
+  
+  return [...thesesArray].sort((a, b) => {
+    const statusA = a.thesis_status?.toLowerCase() || '';
+    const statusB = b.thesis_status?.toLowerCase() || '';
+    
+    const orderA = statusOrder[statusA] ?? 4;
+    const orderB = statusOrder[statusB] ?? 4;
+    
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    
+    // Same status, sort by thesis_date (most recent first)
+    const dateA = new Date(a.thesis_date).getTime();
+    const dateB = new Date(b.thesis_date).getTime();
+    return dateB - dateA;
+  });
+};
+
 // Card Component for Thesis
 function ThesisCard({ thesis }: { thesis: any }) {
   const processedAuthors = getProcessedAuthors(thesis);
@@ -480,6 +507,7 @@ export default function MemberThesisView() {
   const [theses, setTheses] = useState<any[]>([]);
   const [filteredTheses, setFilteredTheses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSchool, setSelectedSchool] = useState<string>("");
@@ -555,17 +583,25 @@ export default function MemberThesisView() {
     }
   }, [user]);
 
+  // Filter and sort effect 
   useEffect(() => {
+    if (initialLoad) return;
+    
     let filtered = [...theses];
     
+    // Apply search filter
     if (searchQuery.trim() !== "") {
       filtered = filtered.filter(thesis =>
         thesis.thesis_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         thesis.thesis_abstract?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_keyword?.toLowerCase().includes(searchQuery.toLowerCase())
+        thesis.thesis_keyword?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        thesis.r_category?.r_category_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        thesis.school?.school_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        thesis.thesis_phys?.toLowerCase().includes(searchQuery.toLowerCase()) 
       );
     }
     
+    // Apply category filter
     if (selectedCategory) {
       const categoryNum = Number(selectedCategory);
       filtered = filtered.filter(thesis => {
@@ -574,6 +610,7 @@ export default function MemberThesisView() {
       });
     }
     
+    // Apply school filter
     if (selectedSchool) {
       const schoolNum = Number(selectedSchool);
       filtered = filtered.filter(thesis => {
@@ -582,6 +619,7 @@ export default function MemberThesisView() {
       });
     }
     
+    // Apply year filter
     if (selectedYears.length > 0) {
       filtered = filtered.filter(thesis => {
         const thesisYear = new Date(thesis.thesis_date).getFullYear();
@@ -589,9 +627,11 @@ export default function MemberThesisView() {
       });
     }
     
-    setFilteredTheses(filtered);
+    // Sort the filtered results
+    const sortedFiltered = sortTheses(filtered);
+    setFilteredTheses(sortedFiltered);
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedSchool, selectedYears, theses]);
+  }, [searchQuery, selectedCategory, selectedSchool, selectedYears, theses, initialLoad]);
 
   const fetchUserTheses = async () => {
     try {
@@ -603,6 +643,7 @@ export default function MemberThesisView() {
 
       if (authorError) {
         setLoading(false);
+        setInitialLoad(false);
         return;
       }
 
@@ -628,8 +669,10 @@ export default function MemberThesisView() {
         
         if (thesisLinks && thesisLinks.length > 0) {
           const fetchedTheses = thesisLinks.map(link => link.thesis);
-          setTheses(fetchedTheses);
-          setFilteredTheses(fetchedTheses);
+          // Sort immediately during fetch
+          const sortedTheses = sortTheses(fetchedTheses);
+          setTheses(sortedTheses);
+          setFilteredTheses(sortedTheses);
         } else {
           setTheses([]);
           setFilteredTheses([]);
@@ -639,10 +682,10 @@ export default function MemberThesisView() {
       console.error("Error fetching theses:", error);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
-  // Pagination logic (matching code 2)
   const totalItems = filteredTheses.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
@@ -650,7 +693,6 @@ export default function MemberThesisView() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedTheses = filteredTheses.slice(startIndex, endIndex);
 
-  // Page change handler (matching code 2)
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
@@ -696,31 +738,46 @@ export default function MemberThesisView() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
-          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-            View and manage your submitted theses
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
+        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+          View and manage your submitted theses
+        </p>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search by title, abstract, or keywords..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-50"
-            />
-            <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative">
+            <button
+              disabled
+              className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+            </button>
           </div>
-          
+
+          <div className="flex-1 relative">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by title, abstract, category, school, keywords, or physical location..."
+                disabled
+                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
+              />
+              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
           <button
             disabled
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg opacity-50 cursor-not-allowed flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -728,8 +785,7 @@ export default function MemberThesisView() {
             Add Thesis
           </button>
         </div>
-
-        <div className="min-h-[400px] w-full"></div>
+      </div>
       </div>
     );
   }
@@ -787,7 +843,7 @@ export default function MemberThesisView() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by title, abstract, or keywords..."
+                  placeholder="Search by title, abstract, category, school, keywords, or physical location..."
                   onChange={(e) => setSearchQuery(e.target.value)}
                   value={searchQuery}
                   className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
