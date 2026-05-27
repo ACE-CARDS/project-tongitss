@@ -21,14 +21,6 @@ const ShowMoreEventsModal: FC<Props> = ({
   events,
   onEventClick,
 }) => {
-  useEffect(() => {
-    if (isShowing) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [isShowing]);
 
   const container = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: container });
