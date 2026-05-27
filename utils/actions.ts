@@ -8,9 +8,11 @@ export async function signinWithGoogle() {
   const supabase = await createClient();
 
   const headerList = await headers();
-  const host = headerList.get("host");
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  const origin = `${protocol}://${host}`; 
+
+  const proto = headerList.get("x-forwarded-proto") || "http"; 
+  const host = headerList.get("x-forwarded-host") || headerList.get("host"); 
+  
+  const origin = `${proto}://${host}`;
 
   const targetPath = '/dashboard';
   const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(targetPath)}`;
