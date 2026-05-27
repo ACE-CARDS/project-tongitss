@@ -236,7 +236,7 @@ function CommitteeContent() {
           nodeRef={container}
         >
           <div ref={container} className="fixed inset-0 z-[10000]">
-            <ModalBlur isShowing={Boolean(selectedNode)} onClose={onClose} />
+            <ModalBlur onClose={onClose} />
             <div
               className="content absolute z-50 w-[90%] max-w-xs bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6 pointer-events-auto"
               style={{ left: modalPosition.x, top: modalPosition.y }}
