@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
 
             <h2>4. Contact Us</h2>
             <p>
-              If you have any questions about this Privacy Policy, you can reach out to us at <Link href="emailto:acecards.dev@gmail.com" className="font-bold hover:text-slate-600">acecards.dev@gmail.com</Link>.
+              If you have any questions about this Privacy Policy, you can reach out to us at <Link href="mailto:acecards.dev@gmail.com" className="font-bold hover:text-slate-600">acecards.dev@gmail.com</Link>.
             </p>
           </div>
       </div>
