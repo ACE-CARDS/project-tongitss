@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function AboutLogo() {
   return (
-    <section id="about-logo" className="relative flex flex-col pt-10 pb-20 px-6 lg:px-20 z-10">
+    <section id="about-logo" className="relative flex flex-col pt-10 pb-20 px-6 lg:px-20 z-5">
       <div className="max-w-7xl mx-auto w-full">
         
         {/* Header */}

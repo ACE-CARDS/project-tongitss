@@ -27,7 +27,7 @@ export default function AboutMission() {
   ];
 
   return (
-    <section id="about-mission" className="relative flex flex-col pt-10 pb-8 px-6 lg:px-20 z-10">
+    <section id="about-mission" className="relative flex flex-col pt-10 pb-8 px-6 lg:px-20 z-5">
       <div className="max-w-7xl mx-auto w-full space-y-10 lg:space-y-16">
         
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:h-[480px]">

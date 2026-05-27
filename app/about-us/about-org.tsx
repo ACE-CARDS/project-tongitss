@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function AboutOrg() {
   return (
-    <section id="about-org" className="relative flex flex-col pt-0 pb-20 px-6 lg:px-20 z-10">
+    <section id="about-org" className="relative flex flex-col pt-0 pb-20 px-6 lg:px-20 z-5">
       <div className="max-w-6xl mx-auto w-full flex flex-col items-center">
         
         {/* TITLE ANIMATION */}

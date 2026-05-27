@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function AboutMascot() {
   return (
-    <section id="about-mascot" className="relative flex flex-col lg:flex-row items-center justify-center px-6 lg:px-20 pt-8 pb-24 z-10">
+    <section id="about-mascot" className="relative flex flex-col lg:flex-row items-center justify-center px-6 lg:px-20 pt-8 pb-24 z-5">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 w-full">
         
         <motion.div 
