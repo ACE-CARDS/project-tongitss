@@ -365,15 +365,13 @@ export default function NewsAdmin() {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={validCurrentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
+      <Pagination
+        currentPage={validCurrentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       <DeleteConfirmPopup
         isOpen={deletePopupOpen}
