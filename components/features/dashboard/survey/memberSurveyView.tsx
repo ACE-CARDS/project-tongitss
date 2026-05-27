@@ -19,6 +19,33 @@ const getItemsPerPage = () => {
   return 6;
 };
 
+// Sort function 
+const sortSurveys = (surveysArray: any[]) => {
+  const statusOrder: Record<string, number> = {
+    'pending': 0,
+    'accepted': 1,
+    'archived': 2,
+    'rejected': 3
+  };
+  
+  return [...surveysArray].sort((a, b) => {
+    const statusA = a.survey_status?.toLowerCase() || '';
+    const statusB = b.survey_status?.toLowerCase() || '';
+    
+    const orderA = statusOrder[statusA] ?? 4;
+    const orderB = statusOrder[statusB] ?? 4;
+    
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    
+    // Same status, sort by survey_start date (most recent first)
+    const dateA = new Date(a.survey_start).getTime();
+    const dateB = new Date(b.survey_start).getTime();
+    return dateB - dateA;
+  });
+};
+
 // Filter Popup Component
 function FilterPopup({
   isOpen, 
@@ -364,6 +391,7 @@ export default function MemberSurveyView() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [filteredSurveys, setFilteredSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true); 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSchool, setSelectedSchool] = useState<string>("");
@@ -413,11 +441,11 @@ export default function MemberSurveyView() {
       // Fetch available years from surveys
       const { data: yearsData } = await supabase
         .from("survey")
-        .select("created_at")
-        .not("created_at", "is", null);
+        .select("survey_start")
+        .not("survey_start", "is", null);
       
       if (yearsData) {
-        const years = [...new Set(yearsData.map(s => new Date(s.created_at).getFullYear()))];
+        const years = [...new Set(yearsData.map(s => new Date(s.survey_start).getFullYear()))];
         years.sort((a, b) => b - a);
         setAvailableYears(years);
       }
@@ -440,7 +468,10 @@ export default function MemberSurveyView() {
     }
   }, [user]);
 
+  // MODIFIED: Add initialLoad check
   useEffect(() => {
+    if (initialLoad) return;
+    
     let filtered = [...surveys];
     
     // Apply search filter
@@ -448,7 +479,8 @@ export default function MemberSurveyView() {
       filtered = filtered.filter(survey =>
         survey.survey_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         survey.survey_desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        survey.survey_keyword?.toLowerCase().includes(searchQuery.toLowerCase())
+        survey.r_category?.r_category_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        survey.school?.school_name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     
@@ -470,44 +502,21 @@ export default function MemberSurveyView() {
       });
     }
     
-    // Apply year filter
+    // Apply year filter - CHANGED to use survey_start
     if (selectedYears.length > 0) {
       filtered = filtered.filter(survey => {
-        const surveyYear = new Date(survey.created_at).getFullYear();
+        const surveyYear = new Date(survey.survey_start).getFullYear();
         return selectedYears.includes(surveyYear);
       });
     }
     
-    // Sort by status: pending -> accepted -> archived -> rejected
-    // Within each status, most recent first
-    const statusOrder: Record<string, number> = {
-      'pending': 0,
-      'accepted': 1,
-      'archived': 2,
-      'rejected': 3
-    };
-    
-    filtered.sort((a, b) => {
-    const statusA = a.survey_status?.toLowerCase() || '';
-    const statusB = b.survey_status?.toLowerCase() || '';
-    
-    const orderA = statusOrder[statusA] ?? 4;
-    const orderB = statusOrder[statusB] ?? 4;
-    
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    
-    // Same status, sort by survey_start date
-    const dateA = new Date(a.survey_start).getTime();
-    const dateB = new Date(b.survey_start).getTime();
-    return dateB - dateA;
-  });
-  
-  setFilteredSurveys(filtered);
-  setCurrentPage(1);
-}, [searchQuery, selectedCategory, selectedSchool, selectedYears, surveys]);
+    // Sort the filtered results
+    const sortedFiltered = sortSurveys(filtered);
+    setFilteredSurveys(sortedFiltered);
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedSchool, selectedYears, surveys, initialLoad]);
 
+  // MODIFIED: Sort during fetch
   const fetchUserSurveys = async () => {
     try {
       const { data: author, error: authorError } = await supabase
@@ -518,6 +527,7 @@ export default function MemberSurveyView() {
 
       if (authorError) {
         setLoading(false);
+        setInitialLoad(false);
         return;
       }
 
@@ -543,8 +553,10 @@ export default function MemberSurveyView() {
         
         if (surveyLinks && surveyLinks.length > 0) {
           const fetchedSurveys = surveyLinks.map(link => link.survey);
-          setSurveys(fetchedSurveys);
-          setFilteredSurveys(fetchedSurveys);
+          // Sort immediately during fetch
+          const sortedSurveys = sortSurveys(fetchedSurveys);
+          setSurveys(sortedSurveys);
+          setFilteredSurveys(sortedSurveys);
         } else {
           setSurveys([]);
           setFilteredSurveys([]);
@@ -554,6 +566,7 @@ export default function MemberSurveyView() {
       console.error("Error fetching surveys:", error);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -611,31 +624,46 @@ export default function MemberSurveyView() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Surveys</h1>
-          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-            View and manage your submitted surveys
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Surveys</h1>
+        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+          View and manage your submitted surveys
+        </p>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search by title, description, or keywords..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-50"
-            />
-            <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative">
+            <button
+              disabled
+              className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+            </button>
           </div>
-          
+
+          <div className="flex-1 relative">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by title, abstract, category, school, keywords, or physical location..."
+                disabled
+                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
+              />
+              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
           <button
             disabled
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg opacity-50 cursor-not-allowed flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -643,8 +671,7 @@ export default function MemberSurveyView() {
             Add Survey
           </button>
         </div>
-
-        <div className="min-h-[400px] w-full"></div>
+      </div>
       </div>
     );
   }
@@ -702,7 +729,7 @@ export default function MemberSurveyView() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by title, description, or keywords..."
+                  placeholder="Search by title, description, category or school..."
                   onChange={(e) => setSearchQuery(e.target.value)}
                   value={searchQuery}
                   className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
