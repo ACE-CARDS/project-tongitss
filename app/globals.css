@@ -275,6 +275,10 @@ Popup .form_error:first-child {
   }
 }
 
+select {
+  @apply custom-scrollbar-blue;
+}
+
 /* DONT MIND THIS*/
 #kidla {
   z-index: 40;
