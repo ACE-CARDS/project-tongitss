@@ -1614,15 +1614,15 @@ export default function MembersPage() {
 
           {/* Members Table */}
           <div className="bg-white/70 backdrop-blur-xl border border-gray-300 border-t-transparent rounded-b-xl shadow-[0_15px_15px_rgba(0,0,0,0.1)] p-6 pt-4 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
               {/* Name Search */}
-              <div className="w-full sm:flex-1 relative">
+              <div className="w-full lg:flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search member..."
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 text-sm sm:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+                  className="w-full px-4 py-2.5 pl-10 text-sm lg:text-base border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
                 />
                 <svg
                   className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -1640,12 +1640,12 @@ export default function MembersPage() {
               </div>
 
               {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="flex flex-col lg:flex-row gap-2 lg:gap-4 w-full lg:w-auto">
                 {/* import */}
 
                 <label
                   htmlFor="import-pics"
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Images
                   <input
@@ -1668,7 +1668,7 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-members"
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Members
                 </label>
@@ -1770,7 +1770,7 @@ export default function MembersPage() {
                 {/* export */}
                 <button
                   onClick={() => setShowExportOptions(true)}
-                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full lg:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Export Members
                 </button>
@@ -1779,7 +1779,7 @@ export default function MembersPage() {
 
             <div className="overflow-y-visible"></div>
             {/* grid start */}
-            <div className="hidden sm:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
+            <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_0.5fr] font-semibold text-[#011638]/70 px-4">
               <button
                 onClick={() =>
                   setNameSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
@@ -1815,7 +1815,7 @@ export default function MembersPage() {
                       key={member.id}
                       className={`
                         flex flex-col gap-3
-                        sm:grid sm:grid-cols-[1.5fr_1.5fr_0.5fr] sm:items-start
+                        lg:grid lg:grid-cols-[1.5fr_1.5fr_0.5fr] lg:items-start
                         px-4 py-3 rounded-xl ring shadow-0 ring-[#d7d7d7] ease-in-out duration-200 transition-all
                         hover:shadow-lg border-l-4
                         ${
@@ -1905,7 +1905,7 @@ export default function MembersPage() {
                               mem_minit: false,
                             });
                           }}
-                          className="text-[#011638] hover:scale-110 transition-transform p-1 sm:p-0 cursor-pointer"
+                          className="text-[#011638] hover:scale-110 transition-transform p-1 lg:p-0 cursor-pointer"
                         >
                           {/* edit icon */}
                           <svg
