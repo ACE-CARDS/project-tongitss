@@ -2612,47 +2612,72 @@ export default function MembersPage() {
       >
         <div className="space-y-3">
           <label className="text-sm text-gray-600">Name</label>
+          <div>
           <input
             maxLength={30}
             type="text"
             placeholder="First Name"
             value={editForm.mem_fname}
             onChange={(e) => {
-              setEditForm((prev) => ({ ...prev, mem_fname: e.target.value }));
-              setEditFieldErrors((prev) => ({ ...prev, mem_fname: false }));
+              const value = e.target.value;
+              setEditForm((prev) => ({ ...prev, mem_fname: value }));
+              setEditFieldErrors((prev) => ({ ...prev, mem_fname: value.trim() === "" }));
             }}
             className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_fname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
           />
+          {editFieldErrors.mem_fname && (
+              <p className="text-red-500 text-sm mt-1">
+                First name is required
+              </p>
+            )}
+          </div>
 
+          <div>
           <input
             maxLength={20}
             type="text"
             placeholder="Last Name"
             value={editForm.mem_lname}
             onChange={(e) => {
-              setEditForm((prev) => ({ ...prev, mem_lname: e.target.value }));
-              setEditFieldErrors((prev) => ({ ...prev, mem_lname: false }));
+              const value = e.target.value;
+              setEditForm((prev) => ({ ...prev, mem_lname: value }));
+              setEditFieldErrors((prev) => ({ ...prev, mem_lname: value.trim() === "" }));
             }}
             className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_lname ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
           />
+          {editFieldErrors.mem_lname && (
+              <p className="text-red-500 text-sm mt-1">
+                Last name is required
+              </p>
+            )}
+          </div>
 
+          <div>
           <input
-            maxLength={2}
             type="text"
             placeholder="Middle Initial"
             value={editForm.mem_minit}
             onChange={(e) => {
-              let value = e.target.value.toUpperCase();
-              value = value.replace(/[^A-Z]/g, "");
-              value = value.slice(0, 2);
-              setEditForm((prev) => ({ ...prev, mem_minit: value }));
-              setEditFieldErrors((prev) => ({
-                ...prev,
-                mem_minit: value.trim() !== "" && value.length > 3,
-              }));
+              const rawValue = e.target.value.toUpperCase();
+
+              const lettersOnly = rawValue.replace(/[^A-Z]/g, "");
+
+              const hasInvalidChar = /[^A-Z]/.test(rawValue);
+              const hasTooManyLetters = lettersOnly.length > 2;
+
+              const cleanedValue = lettersOnly.slice(0, 2);
+
+              setEditForm((prev) => ({...prev, mem_minit: cleanedValue,}));
+              setEditFieldErrors((prev) => ({...prev, mem_minit: hasInvalidChar || hasTooManyLetters,}));
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            className={`w-full px-3 py-2 border rounded-lg transition ${ editFieldErrors.mem_minit ? "border-red-500 ring-2 ring-red-200" : "border-gray-300" }`}
           />
+          {editFieldErrors.mem_minit && (
+            <p className="text-red-500 text-sm mt-1">
+              Only letters allowed and maximum of 2 characters only
+            </p>
+          )}
+        </div>
         </div>
 
         <div className="mt-5 space-y-1">
@@ -2661,11 +2686,18 @@ export default function MembersPage() {
             type="email"
             placeholder="Email"
             value={editForm.mem_email}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, mem_email: e.target.value }))
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditForm((prev) => ({...prev, mem_email: value,}));
+              setEditFieldErrors((prev) => ({...prev, mem_email: value.trim() === "" ||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),}));
+            }}
             className={`w-full px-3 py-2 border rounded-lg transition ${editFieldErrors.mem_email ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
           />
+          {editFieldErrors.mem_email && (
+            <p className="text-red-500 text-sm mt-1">
+              Invalid email address
+            </p>
+          )}
         </div>
 
         <div className="mt-5 space-y-1">
@@ -2698,39 +2730,57 @@ export default function MembersPage() {
               className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customSchoolError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
             />
           )}
+          {customSchoolError && (
+            <p className="text-red-500 text-sm mt-1">
+              Please enter a school name
+            </p>
+          )}
         </div>
 
         <div className="mt-5 space-y-1">
-          <label className="text-sm text-gray-600">Course</label>
-          <CourseDropdown
-            value={editForm.course}
-            options={courses.map((c) => ({
-              label: c.course_name,
-              value: c.id,
-            }))}
-            onChange={(val) => {
-              setEditForm((prev) => ({ ...prev, course: val }));
-              if (val === "other") {
-                setIsAddingCourse(true);
-              } else {
-                setIsAddingCourse(false);
-                setCustomCourse("");
-              }
+        <label className="text-sm text-gray-600">Course</label>
+
+        <CourseDropdown
+          value={editForm.course}
+          options={courses.map((c) => ({
+            label: c.course_name,
+            value: c.id,
+          }))}
+          onChange={(val) => {
+            setEditForm((prev) => ({ ...prev, course: val }));
+
+            if (val === "other") {
+              setIsAddingCourse(true);
+            } else {
+              setIsAddingCourse(false);
+              setCustomCourse("");
+            }
+          }}
+        />
+
+        {isAddingCourse && (
+          <input
+            type="text"
+            placeholder="Enter new course"
+            value={customCourse}
+            onChange={(e) => {
+              setCustomCourse(e.target.value);
+              setCustomCourseError(false);
             }}
+            className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${
+              customCourseError
+                ? "border-red-500 ring-2 ring-red-200"
+                : "border-gray-300"
+            }`}
           />
-          {isAddingCourse && (
-            <input
-              type="text"
-              placeholder="Enter new course"
-              value={customCourse}
-              onChange={(e) => {
-                setCustomCourse(e.target.value);
-                setCustomCourseError(false);
-              }}
-              className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customCourseError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
-            />
-          )}
-        </div>
+        )}
+
+        {customCourseError && (
+          <p className="text-red-500 text-sm mt-1">
+            Please enter a course name
+          </p>
+        )}
+      </div>
 
         <div className="flex justify-end gap-3 mt-6">
           <button
