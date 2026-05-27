@@ -15,22 +15,22 @@ export default function PaginationNav({
   itemsPerPage, 
   onPageChange 
 }: PaginationNavProps) {
-  if (totalPages <= 1 && totalItems <= itemsPerPage) return null;
+  if (totalPages <= 0 && totalItems <= itemsPerPage) return null;
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
   const renderPages = () => {
     const pages = [];
-    if (totalPages <= 4) {
+    if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 2) {
-        pages.push(1, 2, "...", totalPages);
-      } else if (currentPage >= totalPages - 1) {
-        pages.push(1, "...", totalPages - 1, totalPages);
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3 , 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2 , totalPages - 1, totalPages);
       } else {
-        pages.push(1, "...", currentPage, "...", totalPages);
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
       }
     }
 
@@ -41,7 +41,7 @@ export default function PaginationNav({
         <button
           key={page}
           onClick={() => onPageChange(page as number)}
-          className={`min-w-[40px] px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
+          className={`sm:min-w-[40px] min-w-[30px] px-1 sm:px-3 py-2 rounded-lg font-ubuntu-mono text-sm transition-colors ${
             page === currentPage
               ? "bg-[#011638] text-[#fbfaf8] font-bold cursor-pointer"
               : "text-[#011638] hover:bg-[#eec643] hover:text-[#011638] cursor-pointer"
@@ -56,7 +56,7 @@ export default function PaginationNav({
   return (
     <div className="mt-8 mb-4 w-full">
       {/* Results Info Block */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 pt-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:gap-2 pt-4">
         <p className="text-[#475569] font-ubuntu-mono text-sm">
           Showing {totalItems === 0 ? 0 : startIndex + 1} - {Math.min(endIndex, totalItems)} of {totalItems} items
         </p>
@@ -66,7 +66,7 @@ export default function PaginationNav({
       </div>
 
       {/* Navigation Buttons */}
-      <nav className="flex justify-center items-center space-x-2">
+      <nav className="flex justify-center items-center sm:space-x-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -79,7 +79,7 @@ export default function PaginationNav({
           </svg>
         </button>
 
-        <div className="flex items-center space-x-1">{renderPages()}</div>
+        <div className="flex items-center sm:space-x-1">{renderPages()}</div>
 
         <button
           onClick={() => onPageChange(currentPage + 1)}

@@ -386,17 +386,14 @@ export default function AnnouncementsAdmin() {
       </div>
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
-      {/* Standard Portal Modal Layout instance */}
       <DeleteConfirmPopup
         isOpen={deletePopupOpen}
         isDeleting={isDeleting}
