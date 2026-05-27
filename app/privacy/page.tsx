@@ -1,5 +1,6 @@
 import Footer from "@/components/layout/footer";
-import NavBar from "@/components/layout/navbar"
+import NavBar from "@/components/layout/navbar";
+import Link from "next/link";
 
 export default function PrivacyPolicy() {
   return (
@@ -34,14 +35,9 @@ export default function PrivacyPolicy() {
               Your user profile data is securely stored and managed using Supabase. We implement standard security practices to protect your information from unauthorized access.
             </p>
 
-            <h2>4. User Rights and Data Deletion</h2>
+            <h2>4. Contact Us</h2>
             <p>
-              You can request the deletion of your account and associated user data at any time by contacting us directly at [your-email@example.com].
-            </p>
-
-            <h2>5. Contact Us</h2>
-            <p>
-              If you have any questions about this Privacy Policy, you can reach out to us at [your-email@example.com or your university details].
+              If you have any questions about this Privacy Policy, you can reach out to us at <Link href="emailto:acecards.dev@gmail.com" className="font-bold hover:text-slate-600">acecards.dev@gmail.com</Link>.
             </p>
           </div>
       </div>

@@ -24,6 +24,12 @@ export default function Footer() {
             <span className="text-[14px] text-center">
               &copy; 2026 ACE CARDS. All rights reserved.
             </span>
+            <span className="text-[14px] hover:text-[#a6a6a6] text-center -mb-2">
+              <Link
+                href={"/privacy"}>
+                Privacy Policy
+              </Link>
+            </span>
           </div>
         </div>
         {/* {new Date().getFullYear()} */}
