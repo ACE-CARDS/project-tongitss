@@ -1974,7 +1974,7 @@ export default function MembersPage() {
 
                 <label
                   htmlFor="import-members"
-                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Import Members
                 </label>
@@ -2076,14 +2076,14 @@ export default function MembersPage() {
                 {/* export */}
                 <button
                   onClick={() => setShowExportOptions(true)}
-                  className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Export Members
                 </button>
 
                 <button
                   onClick={() => setShowTransitionConfirm(true)}
-                  className="w-full sm:w-auto border-2 border-[#eec643] bg-[#eec643]/30 text-[#011638] px-6 py-2 rounded-lg hover:bg-[#eec643]/60 transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+                  className="cursor-pointer w-full sm:w-auto border-2 border-[#eec643] bg-[#eec643]/30 text-[#011638] px-6 py-2 rounded-lg hover:bg-[#eec643]/60 transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
                 >
                   Transition to New Academic Year
                 </button>
