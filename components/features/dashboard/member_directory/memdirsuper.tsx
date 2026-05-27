@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-import jsPDF from "jspdf";
+import { jsPDF, GState } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useUser } from "@/components/context/userContext";
 import Popup from "@/components/ui/popup";
@@ -22,6 +22,9 @@ type Member = {
   course: number | string;
   role: string;
   is_active: boolean;
+  acadyear?: string;
+  school_rel: { school_name: string } | null;
+  course_rel: { course_name: string } | null;
 };
 type Committee = {
   id: number;
@@ -1183,7 +1186,7 @@ export default function MembersPage() {
 
             didDrawPage: () => {
               doc.saveGraphicsState();
-              doc.setGState(new doc.GState({ opacity: 0.06 }));
+              doc.setGState(new GState({ opacity: 0.06 }));
 
               doc.addImage(
                 img,
@@ -1850,6 +1853,11 @@ export default function MembersPage() {
     id: number;
     school_name: string;
   };
+  
+  interface Course {
+    id: number;
+    course_name: string;
+  }
 
   const [schools, setSchools] = useState<School[]>([]);
 
@@ -1859,7 +1867,7 @@ export default function MembersPage() {
 
   const [roleSort, setRoleSort] = useState<"asc" | "desc">("asc");
 
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [isAddingCourse, setIsAddingCourse] = useState(false);
   const [customCourse, setCustomCourse] = useState("");
   const [customCourseError, setCustomCourseError] = useState(false);
@@ -2215,14 +2223,15 @@ export default function MembersPage() {
                                 mem_lname: member.mem_lname,
                                 mem_minit: member.mem_minit || "",
                                 mem_email: member.mem_email || "",
-                                school: member.school,
-                                course: member.course,
+                                school: member.school?.toString() || "",
+                                course: member.course?.toString() || "",
                               });
 
                               setEditFieldErrors({
                                 mem_fname: false,
                                 mem_lname: false,
                                 mem_minit: false,
+                                mem_email: false,
                               });
                             }}
                             className="text-[#011638] hover:scale-110 transition-transform p-1 lg:p-0 cursor-pointer"
@@ -2709,7 +2718,9 @@ export default function MembersPage() {
               value: s.id,
             }))}
             onChange={(val) => {
-              setEditForm((prev) => ({ ...prev, school: val }));
+              const stringVal = val?.toString() || "";
+              setEditForm((prev) => ({ ...prev, school: stringVal }));
+
               if (val === "other") {
                 setIsAddingSchool(true);
               } else {
@@ -2747,7 +2758,8 @@ export default function MembersPage() {
             value: c.id,
           }))}
           onChange={(val) => {
-            setEditForm((prev) => ({ ...prev, course: val }));
+            const stringVal = val?.toString() || "";
+            setEditForm((prev) => ({ ...prev, school: stringVal }));
 
             if (val === "other") {
               setIsAddingCourse(true);
