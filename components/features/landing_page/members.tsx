@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import GradientLine from "@/components/ui/gradientLine";
+import Image from "next/image";
 
 export default function Members({id}: {id?: string}) {
   const supabase = createClient();
@@ -104,7 +105,8 @@ export default function Members({id}: {id?: string}) {
           {/* img */}
           <div className="flex justify-center">
             <div className="relative">
-              <img
+              <Image
+                width={600}
                 src="/assets/logos/ga.jpg"
                 alt="Members"
                 className="w-full max-w-lg lg:max-w-3xl rounded-3xl object-cover shadow-2xl ring-8 ring-white/70 hover:scale-105 transition-all duration-700 hover:shadow-4xl"
