@@ -222,7 +222,6 @@ function SortableRow({
       <td className="px-4 py-2 text-center w-[35%]">
         <div className="flex justify-center items-center w-full">
           
-          {/* ZONE 1: Arrow Buttons (Fixed Width) */}
           <div className="w-[30px] flex justify-center">
             {isDragEnabled && (
               <div className="flex flex-col gap-0.5">
@@ -236,7 +235,6 @@ function SortableRow({
             )}
           </div>
 
-          {/* ZONE 2: Active Video Badge (Fixed Width) */}
           <div className="w-[100px] flex justify-center mx-2">
             {item.type === "video" && item.order_index !== 1 && (
               <button
@@ -253,7 +251,6 @@ function SortableRow({
             )}
           </div>
 
-          {/* ZONE 3: Edit & Delete Icons (Fixed Width) */}
           <div className="w-[60px] flex justify-center items-center gap-4">
             <button
               onClick={() => onEdit(item.id)}
@@ -784,12 +781,12 @@ export default function MemAppAdmin() {
         </div>
       </div>
 
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-full border-b border-gray-200 mb-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-3 font-oswald font-bold tracking-wide uppercase transition-colors whitespace-nowrap ${
+            className={`flex-1 text-center px-6 py-3 font-oswald font-bold tracking-wide uppercase transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-b-4 border-[#011638] text-[#011638]"
                 : "text-slate-400 hover:text-[#011638] hover:bg-slate-50"
