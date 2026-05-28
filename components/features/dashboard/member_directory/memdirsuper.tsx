@@ -845,6 +845,19 @@ export default function MembersPage() {
   });
 
   const handleEditSave = async () => {
+    let hasError = false;
+
+  if (isAddingSchool && !customSchool.trim()) {
+    setCustomSchoolError(true);
+    hasError = true;
+  }
+
+  if (isAddingCourse && !customCourse.trim()) {
+    setCustomCourseError(true);
+    hasError = true;
+  }
+
+  if (hasError) return;
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.mem_email);
     if (!editMember) return;
 
@@ -2711,15 +2724,20 @@ export default function MembersPage() {
 
         <div className="mt-5 space-y-1">
           <label className="text-sm text-gray-600">School</label>
+
           <SchoolDropdown
             value={editForm.school}
             options={schools.map((s) => ({
               label: s.school_name,
-              value: s.id,
+              value: s.id.toString(),
             }))}
             onChange={(val) => {
               const stringVal = val?.toString() || "";
-              setEditForm((prev) => ({ ...prev, school: stringVal }));
+
+              setEditForm((prev) => ({
+                ...prev,
+                school: stringVal,
+              }));
 
               if (val === "other") {
                 setIsAddingSchool(true);
@@ -2729,6 +2747,7 @@ export default function MembersPage() {
               }
             }}
           />
+
           {isAddingSchool && (
             <input
               type="text"
@@ -2738,9 +2757,14 @@ export default function MembersPage() {
                 setCustomSchool(e.target.value);
                 setCustomSchoolError(false);
               }}
-              className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customSchoolError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
+              className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${
+                customSchoolError
+                  ? "border-red-500 ring-2 ring-red-200"
+                  : "border-gray-300"
+              }`}
             />
           )}
+
           {customSchoolError && (
             <p className="text-red-500 text-sm mt-1">
               Please enter a school name
@@ -2749,50 +2773,54 @@ export default function MembersPage() {
         </div>
 
         <div className="mt-5 space-y-1">
-        <label className="text-sm text-gray-600">Course</label>
+          <label className="text-sm text-gray-600">Course</label>
 
-        <CourseDropdown
-          value={editForm.course}
-          options={courses.map((c) => ({
-            label: c.course_name,
-            value: c.id,
-          }))}
-          onChange={(val) => {
-            const stringVal = val?.toString() || "";
-            setEditForm((prev) => ({ ...prev, school: stringVal }));
+          <CourseDropdown
+            value={editForm.course}
+            options={courses.map((c) => ({
+              label: c.course_name,
+              value: c.id.toString(),
+            }))}
+            onChange={(val) => {
+              const stringVal = val?.toString() || "";
 
-            if (val === "other") {
-              setIsAddingCourse(true);
-            } else {
-              setIsAddingCourse(false);
-              setCustomCourse("");
-            }
-          }}
-        />
+              setEditForm((prev) => ({
+                ...prev,
+                course: stringVal,
+              }));
 
-        {isAddingCourse && (
-          <input
-            type="text"
-            placeholder="Enter new course"
-            value={customCourse}
-            onChange={(e) => {
-              setCustomCourse(e.target.value);
-              setCustomCourseError(false);
+              if (val === "other") {
+                setIsAddingCourse(true);
+              } else {
+                setIsAddingCourse(false);
+                setCustomCourse("");
+              }
             }}
-            className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${
-              customCourseError
-                ? "border-red-500 ring-2 ring-red-200"
-                : "border-gray-300"
-            }`}
           />
-        )}
 
-        {customCourseError && (
-          <p className="text-red-500 text-sm mt-1">
-            Please enter a course name
-          </p>
-        )}
-      </div>
+          {isAddingCourse && (
+            <input
+              type="text"
+              placeholder="Enter new course"
+              value={customCourse}
+              onChange={(e) => {
+                setCustomCourse(e.target.value);
+                setCustomCourseError(false);
+              }}
+              className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${
+                customCourseError
+                  ? "border-red-500 ring-2 ring-red-200"
+                  : "border-gray-300"
+              }`}
+            />
+          )}
+
+          {customCourseError && (
+            <p className="text-red-500 text-sm mt-1">
+              Please enter a course name
+            </p>
+          )}
+        </div>
 
         <div className="flex justify-end gap-3 mt-6">
           <button
