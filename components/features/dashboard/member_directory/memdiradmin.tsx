@@ -713,6 +713,18 @@ export default function MembersPage() {
   });
 
   const handleEditSave = async () => {
+    let hasError = false;
+
+  if (isAddingSchool && !customSchool.trim()) {
+    setCustomSchoolError(true);
+    hasError = true;
+  }
+
+  if (isAddingCourse && !customCourse.trim()) {
+    setCustomCourseError(true);
+    hasError = true;
+  }
+
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.mem_email);
     if (!editMember) return;
 
@@ -2382,57 +2394,72 @@ export default function MembersPage() {
               </div>
       
               <div className="mt-5 space-y-1">
-                <label className="text-sm text-gray-600">School</label>
-                <SchoolDropdown
-                  value={editForm.school}
-                  options={schools.map((s) => ({
-                    label: s.school_name,
-                    value: s.id,
-                  }))}
-                  onChange={(val) => {
-                    const stringVal = val?.toString() || "";
-                    setEditForm((prev) => ({ ...prev, school: stringVal }));
+              <label className="text-sm text-gray-600">School</label>
 
-                    if (val === "other") {
-                      setIsAddingSchool(true);
-                    } else {
-                      setIsAddingSchool(false);
-                      setCustomSchool("");
-                    }
+              <SchoolDropdown
+                value={editForm.school}
+                options={schools.map((s) => ({
+                  label: s.school_name,
+                  value: s.id.toString(),
+                }))}
+                onChange={(val) => {
+                  const stringVal = val?.toString() || "";
+
+                  setEditForm((prev) => ({
+                    ...prev,
+                    school: stringVal,
+                  }));
+
+                  if (val === "other") {
+                    setIsAddingSchool(true);
+                  } else {
+                    setIsAddingSchool(false);
+                    setCustomSchool("");
+                  }
+                }}
+              />
+
+              {isAddingSchool && (
+                <input
+                  type="text"
+                  placeholder="Enter new school"
+                  value={customSchool}
+                  onChange={(e) => {
+                    setCustomSchool(e.target.value);
+                    setCustomSchoolError(false);
                   }}
+                  className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${
+                    customSchoolError
+                      ? "border-red-500 ring-2 ring-red-200"
+                      : "border-gray-300"
+                  }`}
                 />
-                {isAddingSchool && (
-                  <input
-                    type="text"
-                    placeholder="Enter new school"
-                    value={customSchool}
-                    onChange={(e) => {
-                      setCustomSchool(e.target.value);
-                      setCustomSchoolError(false);
-                    }}
-                    className={`w-full px-3 py-2 rounded-lg mt-2 border transition ${customSchoolError ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
-                  />
-                )}
-                {customSchoolError && (
-                  <p className="text-red-500 text-sm mt-1">
-                    Please enter a school name
-                  </p>
-                )}
+              )}
+
+              {customSchoolError && (
+                <p className="text-red-500 text-sm mt-1">
+                  Please enter a school name
+                </p>
+              )}
               </div>
-      
+
               <div className="mt-5 space-y-1">
               <label className="text-sm text-gray-600">Course</label>
-      
+
               <CourseDropdown
                 value={editForm.course}
                 options={courses.map((c) => ({
                   label: c.course_name,
-                  value: c.id,
+                  value: c.id.toString(),
                 }))}
                 onChange={(val) => {
                   const stringVal = val?.toString() || "";
-                  setEditForm((prev) => ({ ...prev, course: stringVal }));
-      
+
+                  setEditForm((prev) => ({
+                    ...prev,
+                    course: stringVal,
+                  }));
+
                   if (val === "other") {
                     setIsAddingCourse(true);
                   } else {
@@ -2441,7 +2468,7 @@ export default function MembersPage() {
                   }
                 }}
               />
-      
+
               {isAddingCourse && (
                 <input
                   type="text"
@@ -2458,13 +2485,13 @@ export default function MembersPage() {
                   }`}
                 />
               )}
-      
+
               {customCourseError && (
                 <p className="text-red-500 text-sm mt-1">
                   Please enter a course name
                 </p>
               )}
-            </div>
+              </div>
       
               <div className="flex justify-end gap-3 mt-6">
                 <button

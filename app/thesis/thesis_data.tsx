@@ -56,7 +56,8 @@ export default async function ThesisData({
   // Fetch thesis keywords for search suggestions
   const { data: keywordsData } = await supabase
     .from("thesis")
-    .select("thesis_keyword"); // Only need keyword field
+    .select("thesis_keyword") // Only need keyword field
+    .eq("thesis_status", "accepted");
 
   // Get keywwords
   const allKeywords = keywordsData
