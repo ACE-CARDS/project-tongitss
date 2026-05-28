@@ -249,7 +249,7 @@ export default function Province({ id }: { id?: string }) {
               {/* Mobile custom dropdown wrappers */}
               <div className="xl:hidden w-full mb-4 flex gap-3 flex-col sm:flex-row z-[30]">
                 {/* Province Dropdown */}
-                <div className="flex-1 text-left">
+                <div className="flex-1 text-left z-5">
                   <FormDropdown
                     placeholder="All Provinces"
                     options={provinceOptions}
@@ -261,7 +261,7 @@ export default function Province({ id }: { id?: string }) {
                 </div>
 
                 {/* AY Dropdown */}
-                <div className="flex-1 text-left">
+                <div className="flex-1 text-left z-4">
                   <FilterDropdown
                     options={ayOptions}
                     value={selectedAY}
