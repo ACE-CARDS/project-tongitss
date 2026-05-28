@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
 
             <h2>2. How We Use Your Information</h2>
             <p>
-              We use this information solely to create your personal user account, manage your game sessions, and personalize your experience on our platform. We do not sell, rent, or distribute your personal information to third parties.
+              We use this information solely to create your personal user account and personalize your experience on our platform. We do not sell, rent, or distribute your personal information to third parties.
             </p>
 
             <h2>3. Data Storage and Security</h2>
