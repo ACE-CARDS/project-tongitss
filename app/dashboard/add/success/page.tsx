@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 import SuccessPageWrapper from "@/components/ui/wrapper/SuccessPageWrapper";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AddSuccessPage() {
   const { user } = useUser();
@@ -38,7 +38,8 @@ export default function AddSuccessPage() {
         title: "Announcement Posted!",
         message: "Your announcement has been successfully saved to the database and is now live based on your scheduled dates.",
         buttonText: "Create Another Announcement",
-        buttonLink: "/dashboard/add/announcement"
+        buttonLink: "/dashboard/add/announcement",
+        buttonBack: "/dashboard?tab=manage&section=announcements"
       };
     }
 
@@ -47,7 +48,8 @@ export default function AddSuccessPage() {
         title: "News & Media Posted!",
         message: "Your news post has been successfully saved.",
         buttonText: "Add Another",
-        buttonLink: "/dashboard/add/news-media"
+        buttonLink: "/dashboard/add/news-media",
+        buttonBack: "/dashboard?tab=manage&section=news"
       };
     }
     
@@ -56,7 +58,8 @@ export default function AddSuccessPage() {
         title: "Event Posted!",
         message: "Your event has been successfully saved.",
         buttonText: "Add Another",
-        buttonLink: "/dashboard/add/events"
+        buttonLink: "/dashboard/add/events",
+        buttonBack: "dashboard?tab=manage&section=events"
       };
     }
     return null;
@@ -112,14 +115,14 @@ export default function AddSuccessPage() {
 
             <div className="flex gap-4 justify-center">
               <Link
-                href={'/dashboard?tab=manage&section=news'}
+                href={content.buttonBack}
                 className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
               >
                 Go back to Dashboard
               </Link>
 
               <Link
-                href={'/dashboard/add/news-media'}
+                href={content.buttonLink}
                 className="px-6 py-2 text-[#011638] border border-[#011638] rounded-lg hover:bg-[#f0f0f0] transition-colors font-oswald"
               >
                 {content.buttonText}
