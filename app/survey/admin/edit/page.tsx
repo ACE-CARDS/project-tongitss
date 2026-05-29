@@ -219,8 +219,6 @@ function EditSurveyContent() {
     const titleValid = titleInput?.value && titleInput.value.length >= 5;
     const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
     const descriptionValid = descriptionInput?.value && descriptionInput.value.length >= 10;
-    const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
-    const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
     const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
     const categoryValid = !!categorySelect?.value;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
@@ -243,7 +241,7 @@ function EditSurveyContent() {
     }
     
     const duplicateError = checkDuplicateAuthors();
-    const formValid = !titleValid || !descriptionValid || !keywordsValid || !categoryValid || 
+    const formValid = !titleValid || !descriptionValid || !categoryValid || 
                       !schoolValid || !surveyLinkValid || !respondentsValid || !datesValid || 
                       !hasValidAuthor || !!categoryError || !!schoolError || !!duplicateError;
     
@@ -586,7 +584,6 @@ function EditSurveyContent() {
       // get form values
       const titleInput = form.elements.namedItem("title") as HTMLInputElement;
       const descriptionInput = form.elements.namedItem("description") as HTMLTextAreaElement;
-      const keywordsInput = form.elements.namedItem("keywords") as HTMLInputElement;
       const startDateInput = form.elements.namedItem("start_date") as HTMLInputElement;
       const endDateInput = form.elements.namedItem("end_date") as HTMLInputElement;
       const surveyLinkInput = form.elements.namedItem("survey_link") as HTMLInputElement;
@@ -594,7 +591,7 @@ function EditSurveyContent() {
       const maxRespondentsInput = form.elements.namedItem("max_respondents") as HTMLInputElement;
 
       // validation
-      if (!titleInput?.value || !descriptionInput?.value || !keywordsInput?.value || 
+      if (!titleInput?.value || !descriptionInput?.value || 
           !startDateInput?.value || !endDateInput?.value || !surveyLinkInput?.value || !respondentsInput?.value) {
         throw new Error("Please fill in all required fields");
       }
@@ -641,7 +638,6 @@ function EditSurveyContent() {
         .update({
           survey_title: titleInput.value,
           survey_desc: descriptionInput.value,
-          survey_keyword: keywordsInput.value,
           survey_start: startDateInput.value,
           survey_end: endDateInput.value,
           survey_link: surveyLinkInput.value,
@@ -777,7 +773,6 @@ function EditSurveyContent() {
     // Get current form values
     const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
     const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
-    const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
     const surveyLinkInput = document.querySelector('input[name="survey_link"]') as HTMLInputElement;
     const respondentsInput = document.querySelector('input[name="respondents"]') as HTMLInputElement;
     const maxRespondentsInput = document.querySelector('input[name="max_respondents"]') as HTMLInputElement;
@@ -786,7 +781,6 @@ function EditSurveyContent() {
     
     const currentTitle = titleInput?.value || "";
     const currentDescription = descriptionInput?.value || "";
-    const currentKeywords = keywordsInput?.value || "";
     const currentStartDate = startDate;
     const currentEndDate = endDate;
     const currentLink = surveyLinkInput?.value || "";
@@ -799,7 +793,6 @@ function EditSurveyContent() {
     const basicFieldsChanged = 
       currentTitle !== (survey.survey_title || "") ||
       currentDescription !== (survey.survey_desc || "") ||
-      currentKeywords !== (survey.survey_keyword || "") ||
       currentStartDate !== (survey.survey_start?.split("T")[0] || "") ||
       currentEndDate !== (survey.survey_end?.split("T")[0] || "") ||
       currentLink !== (survey.survey_link || "") ||
@@ -961,45 +954,6 @@ function EditSurveyContent() {
                         }}
                       />
                       <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-                    </div>
-
-                    <div>
-                      <label htmlFor="keywords" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Keywords <span className="text-[#eec643]">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="keywords"
-                        name="keywords"
-                        value={formData.survey_keyword}
-                        required
-                        maxLength={300}
-                        placeholder="Enter keywords separated by commas"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          if (!/[A-Za-z\s\-'.,]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onChange={(e) => {
-                          setFormData(prev => ({ ...prev, survey_keyword: e.target.value }));
-                          const errorSpan = document.getElementById('keywords-error');
-                          if (e.target.value.length === 0) {
-                            errorSpan!.textContent = 'Atleast 1 keyword is required.';
-                            errorSpan!.style.display = 'block';
-                          } else if (e.target.value.length < 2) {
-                            errorSpan!.textContent = 'Keywords must be at least 2 characters.';
-                            errorSpan!.style.display = 'block';
-                          } else {
-                            errorSpan!.style.display = 'none';
-                          }
-                          validateForm();
-                        }}
-                      />
-                      <span id="keywords-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
                   </div>
                 </div>
