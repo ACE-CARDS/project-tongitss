@@ -38,7 +38,8 @@ export default function EditSuccessPage() {
         title: "Announcement Updated!",
         message: "Your announcement has been successfully updated in the database.",
         buttonText: "Edit Another Announcement",
-        buttonLink: "/dashboard/edit/announcement"
+        buttonLink: "/dashboard/edit/announcement",
+        buttonBack: "/dashboard?tab=manage&section=announcements"
       };
     }
 
@@ -47,7 +48,8 @@ export default function EditSuccessPage() {
         title: "News & Media Updated!",
         message: "Your news post has been successfully updated.",
         buttonText: "Edit Another",
-        buttonLink: "/dashboard/edit/news-media"
+        buttonLink: "/dashboard/edit/news-media",
+        buttonBack: "/dashboard?tab=manage&section=news"
       };
     }
     
@@ -56,7 +58,8 @@ export default function EditSuccessPage() {
         title: "Event Updated!",
         message: "Your event has been successfully updated.",
         buttonText: "Edit Another",
-        buttonLink: "/dashboard/edit/events"
+        buttonLink: "/dashboard/edit/events",
+        buttonBack: "dashboard?tab=manage&section=events"
       };
     }
     return null;
@@ -112,7 +115,7 @@ export default function EditSuccessPage() {
 
             <div className="flex gap-4 justify-center">
               <Link
-                href={'/dashboard?tab=manage&section=news'}
+                href={content.buttonBack}
                 className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
               >
                 Go back to Dashboard
