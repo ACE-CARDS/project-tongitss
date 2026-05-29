@@ -89,6 +89,7 @@ export default function ThesisAdminWrapper() {
           thesis_phys,
           thesis_digi,
           thesis_status,
+          rejection_reason,
           r_category (
             id,
             r_category_name

@@ -86,6 +86,7 @@ export default function SurveyAdminWrapper() {
           survey_respondents,
           max_respondents,
           survey_status,
+          rejection_reason,
           r_category (
             id,
             r_category_name
