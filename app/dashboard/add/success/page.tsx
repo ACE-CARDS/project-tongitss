@@ -112,14 +112,14 @@ export default function AddSuccessPage() {
 
             <div className="flex gap-4 justify-center">
               <Link
-                href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
+                href={'/dashboard?tab=manage&section=news'}
                 className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
               >
                 Go back to Dashboard
               </Link>
 
               <Link
-                href={from === 'admin' ? `/dashboard/add/news-media?from=admin` : content.buttonLink}
+                href={'/dashboard/add/news-media'}
                 className="px-6 py-2 text-[#011638] border border-[#011638] rounded-lg hover:bg-[#f0f0f0] transition-colors font-oswald"
               >
                 {content.buttonText}

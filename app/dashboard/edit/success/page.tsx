@@ -112,7 +112,7 @@ export default function EditSuccessPage() {
 
             <div className="flex gap-4 justify-center">
               <Link
-                href={from === 'admin' ? '/dashboard?tab=manage&section=news' : '/dashboard'}
+                href={'/dashboard?tab=manage&section=news'}
                 className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg hover:bg-[#0d21a1] transition-colors font-oswald"
               >
                 Go back to Dashboard
