@@ -114,7 +114,7 @@ function ReviewContent() {
         .eq("id", surveyId);
 
       if (error) throw error;
-      router.push("/dashboard?tab=survey&page=1");
+      router.push("/survey/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to reject survey.");
       setIsSubmitting(false);
