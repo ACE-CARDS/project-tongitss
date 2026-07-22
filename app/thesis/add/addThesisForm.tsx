@@ -1715,7 +1715,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               <div className="space-y-4">
                 <div>
                   <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Category <span className="text-[#eec643]">*</span>
+                    Research Thematic Area <span className="text-[#eec643]">*</span>
                   </label>
                   {!showNewCategory ? (
                     <div className="flex gap-2">

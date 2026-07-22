@@ -426,7 +426,7 @@ function ThesisCard({ thesis }: { thesis: any }) {
             </div>
 
             <div>
-              <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
+              <span className="text-[#475569] block font-ubuntu-mono">Research Thematic Area:</span>
               <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
                 {thesis.r_category?.r_category_name || "Uncategorized"}
               </span>
