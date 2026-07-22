@@ -13,7 +13,7 @@ export default function AboutLogo() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mb-16"
+          className="text-center mb-6 lg:mb-10"
         >
           <div className="inline-flex items-center justify-center gap-4">
             <span className="w-10 lg:w-16 h-[2px] bg-[#eec643]"></span>
