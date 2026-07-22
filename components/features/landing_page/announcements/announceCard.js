@@ -8,15 +8,10 @@ const AnnounceCard = ({ announce_landing }) => {
     });
   };
 
-  const isSame =
-    announce_landing.announce_landing_start ===
-    announce_landing.announce_landing_end;
-
   return (
     <div className="mb-4 p-4 rounded-md border border-[#eff0f2] pr-6 pl-6 bg-[#bfc4cd]/10">
       <p className="text-[#eff0f2] text-justify text-sm opacity-60">
         {formatDate(announce_landing.announce_landing_start)}
-        {!isSame && ` - ${formatDate(announce_landing.announce_landing_end)}`}
       </p>
 
       <h3 className="text-2xl font-bold text-[#eff0f2] pb-2 hyphens-auto break-words">
