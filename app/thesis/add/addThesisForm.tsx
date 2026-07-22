@@ -1546,7 +1546,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               <div className="space-y-4">
                 <div>
                   <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Thesis Date <span className="text-[#eec643]">*</span>
+                    Publication Year <span className="text-[#eec643]">*</span>
                   </label>
                   <input
                     type="date"
