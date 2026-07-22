@@ -32,7 +32,6 @@ export default function NewsMedia() {
   // Flip animation states
   const [flippedLatestCards, setFlippedLatestCards] = useState<number[]>([]); 
   const [flippedCarouselCards, setFlippedCarouselCards] = useState<number[]>([]); 
-  const [carouselHasFlipped, setCarouselHasFlipped] = useState(false);  
   const [firstRowAnimationComplete, setFirstRowAnimationComplete] = useState(false); 
   const [showContent, setShowContent] = useState(false);
   const [isCarouselVisible, setIsCarouselVisible] = useState(false); 
@@ -42,6 +41,11 @@ export default function NewsMedia() {
   // Timeout IDs
   const latestTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
   const carouselTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  
+  // Refs for flip control
+  const isFlippingRef = useRef(false);
+  const flipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingFlipsRef = useRef<number[]>([]);
 
   // Data fetch
   useEffect(() => {
@@ -166,135 +170,194 @@ export default function NewsMedia() {
       if (idx >= carouselPosts.length) return;
       
       const cardRect = card.getBoundingClientRect();
-      // How much card is visible
-      const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
-      const totalWidth = cardRect.width;
-      const visiblePercentage = visibleWidth / totalWidth; // % of visible
+      // Check if card is visible
+      const isVisible = (
+        cardRect.left < containerRect.right &&
+        cardRect.right > containerRect.left &&
+        cardRect.bottom > containerRect.top &&
+        cardRect.top < containerRect.bottom
+      );
       
-      // Visible if at least 40%
-      if (visiblePercentage > 0.4) {
-        visibleIndices.push(idx); 
+      // Additional check for how much is visible
+      if (isVisible) {
+        const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
+        const totalWidth = cardRect.width;
+        const visiblePercentage = visibleWidth / totalWidth;
+        
+        // Visible if at least 20% is showing
+        if (visiblePercentage > 0.2) {
+          visibleIndices.push(idx);
+        }
       }
     });
     
     return visibleIndices; 
   };
 
-  // Flip visible cards 
-  const flipVisibleCarouselCards = () => {
-    const visibleIndices = getVisibleCarouselIndices(); // Get current visible cards
-    if (visibleIndices.length === 0) return; // Exit if none
+  // Flip visible cards
+  const flipVisibleCarouselCards = (flippedState: number[] = flippedCarouselCards) => {
+    if (isFlippingRef.current) return;
     
-    // Sort to flip (left to right)
-    visibleIndices.sort((a, b) => a - b);
+    const visibleIndices = getVisibleCarouselIndices();
+    if (visibleIndices.length === 0) return;
+    
+    const unflippedIndices = visibleIndices.filter(idx => !flippedState.includes(idx));
+    if (unflippedIndices.length === 0) return;
+    
+    isFlippingRef.current = true;
     
     clearTimeouts(carouselTimeoutsRef.current);
     carouselTimeoutsRef.current = [];
     
-    // Flip sequentially
-    visibleIndices.forEach((idx, order) => {
+    pendingFlipsRef.current = unflippedIndices;
+    
+    unflippedIndices.forEach((idx, order) => {
       const timeout = setTimeout(() => {
         setFlippedCarouselCards(prev => {
-          if (prev.includes(idx)) return prev; 
-          return [...prev, idx]; 
+          // Double-check we haven't already flipped this card
+          if (prev.includes(idx)) return prev;
+          
+          // Remove from pending
+          pendingFlipsRef.current = pendingFlipsRef.current.filter(i => i !== idx);
+          
+          // Check if this is the last one
+          if (pendingFlipsRef.current.length === 0) {
+            setTimeout(() => {
+              isFlippingRef.current = false;
+            }, 100);
+          }
+          
+          return [...prev, idx];
         });
-      }, order * 100); // 100ms delay 
-      carouselTimeoutsRef.current.push(timeout); 
+      }, order * 60); 
+      carouselTimeoutsRef.current.push(timeout);
     });
     
-    setCarouselHasFlipped(true); // Mark as flipped
+    setTimeout(() => {
+      if (isFlippingRef.current) {
+        isFlippingRef.current = false;
+        pendingFlipsRef.current = [];
+      }
+    }, 1000);
   };
 
   // Carousel posts flip
   useEffect(() => {
-    if (!isCarouselVisible || !showSecondRow || carouselPosts.length === 0 || !firstRowAnimationComplete || carouselHasFlipped) return;
+    if (!isCarouselVisible || !showSecondRow || carouselPosts.length === 0 || !firstRowAnimationComplete) {
+      return;
+    }
 
-    // Delay for all cards to render
-    const timer = setTimeout(() => {
-      if (!carouselHasFlipped) { // Double-check before flipping
-      flipVisibleCarouselCards(); // Flip
+    if (flipTimeoutRef.current) {
+      clearTimeout(flipTimeoutRef.current);
+      flipTimeoutRef.current = null;
+    }
+
+    // Small delay to ensure DOM is ready
+    flipTimeoutRef.current = setTimeout(() => {
+      flipVisibleCarouselCards();
+      flipTimeoutRef.current = null;
+    }, 300);
+
+    return () => {
+      if (flipTimeoutRef.current) {
+        clearTimeout(flipTimeoutRef.current);
+        flipTimeoutRef.current = null;
       }
-    }, 100);
+    };
+  }, [isCarouselVisible, showSecondRow, carouselPosts.length, firstRowAnimationComplete]);
 
-    return () => clearTimeout(timer); 
-  }, [isCarouselVisible, showSecondRow, carouselPosts.length, firstRowAnimationComplete, carouselHasFlipped]); // Re-run
+  // Check scroll position and update button states
+  const checkScrollPosition = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const newCanScrollLeft = scrollLeft > 5;
+      const newCanScrollRight = scrollLeft + clientWidth < scrollWidth - 5;
+      
+      setCanScrollLeft(newCanScrollLeft);
+      setCanScrollRight(newCanScrollRight);
+    }
+  };
 
+  // Update button states on mount and resize
   useEffect(() => {
     if (!scrollRef.current || !showSecondRow || carouselPosts.length === 0) return;
     
+    const timer = setTimeout(() => {
+      checkScrollPosition();
+    }, 150);
+    
     const handleResize = () => {
-      const container = scrollRef.current;
-      if (!container) return;
-      
-      // Scroll padding based on screen size
-      const screenWidth = window.innerWidth;
-      let snapPadding;
-      
-      if (screenWidth < 640) {
-        snapPadding = 'calc(50% - 130px)'; // Smaller cards on mobile
-      } else if (screenWidth < 768) {
-        snapPadding = 'calc(50% - 140px)';
-      } else if (screenWidth < 1024) {
-        snapPadding = 'calc(50% - 150px)';
-      } else {
-        snapPadding = 'calc(50% - 160px)';
-      }
-      
-      container.style.scrollPaddingLeft = snapPadding;
-      container.style.scrollPaddingRight = snapPadding;
+      checkScrollPosition();
     };
     
-    handleResize();
     window.addEventListener('resize', handleResize);
     
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [showSecondRow, carouselPosts.length]);
 
   // Scroll position changes 
   useEffect(() => {
-    if (!scrollRef.current || !showSecondRow || !isCarouselVisible) return; // Exit if not met
+    if (!scrollRef.current || !showSecondRow || !isCarouselVisible) return;
     
     let scrollTimeout: NodeJS.Timeout; 
     let rafId: number; 
     
     const handleScroll = () => {
-      if (rafId) cancelAnimationFrame(rafId); // Cancel pending animation frame for "smooth handling" daw
+      if (rafId) cancelAnimationFrame(rafId);
       
       rafId = requestAnimationFrame(() => {
         clearTimeout(scrollTimeout); 
         
-        updateButtonStates(); 
+        // Update button states
+        checkScrollPosition(); 
         
         scrollTimeout = setTimeout(() => {
-          if (isCarouselVisible) { 
-            const newVisibleIndices = getVisibleCarouselIndices(); 
-            
-            // Keep visible flipped cards
-            setFlippedCarouselCards(prev => {
-              // Find unflipped visible cards
-              const newlyVisible = newVisibleIndices.filter(idx => !prev.includes(idx));
+          if (isCarouselVisible && !isFlippingRef.current) { 
+
+            setFlippedCarouselCards(currentFlipped => {
+              const visibleIndices = getVisibleCarouselIndices();
+              const unflippedIndices = visibleIndices.filter(idx => !currentFlipped.includes(idx));
               
-              if (newlyVisible.length > 0) {
+              if (unflippedIndices.length > 0) {
                 clearTimeouts(carouselTimeoutsRef.current);
                 carouselTimeoutsRef.current = [];
                 
-                // Flip newly visible cards sequentially
-                newlyVisible.sort((a, b) => a - b);
-                newlyVisible.forEach((idx, order) => {
+                isFlippingRef.current = true;
+                pendingFlipsRef.current = unflippedIndices;
+                
+                unflippedIndices.forEach((idx, order) => {
                   const timeout = setTimeout(() => {
-                    setFlippedCarouselCards(current => {
-                      if (current.includes(idx)) return current; // Skip if flipped
-                      return [...current, idx]; // Add to flipped
+                    setFlippedCarouselCards(prev => {
+                      if (prev.includes(idx)) return prev;
+                      pendingFlipsRef.current = pendingFlipsRef.current.filter(i => i !== idx);
+                      
+                      if (pendingFlipsRef.current.length === 0) {
+                        setTimeout(() => {
+                          isFlippingRef.current = false;
+                        }, 100);
+                      }
+                      
+                      return [...prev, idx];
                     });
-                  }, order * 100); // 100ms delay 
-                  carouselTimeoutsRef.current.push(timeout); 
+                  }, order * 60);
+                  carouselTimeoutsRef.current.push(timeout);
                 });
+                
+                setTimeout(() => {
+                  if (isFlippingRef.current) {
+                    isFlippingRef.current = false;
+                    pendingFlipsRef.current = [];
+                  }
+                }, 1000);
               }
               
-              return prev;
+              return currentFlipped;
             });
           }
-        }, 150); // Wait 150ms
+        }, 150);
       });
     };
     
@@ -306,43 +369,10 @@ export default function NewsMedia() {
       clearTimeout(scrollTimeout); 
       if (rafId) cancelAnimationFrame(rafId);
       clearTimeouts(carouselTimeoutsRef.current); 
+      isFlippingRef.current = false;
+      pendingFlipsRef.current = [];
     };
-  }, [showSecondRow, carouselHasFlipped, isCarouselVisible]); // Re-run
-
-  // Check scroll position and update button states
-  const checkScrollPosition = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
-    }
-  };
-
-  // Scroll event listener
-  const updateButtonStates = checkScrollPosition;
-
-  useEffect(() => {
-    const scrollElement = scrollRef.current;
-    if (scrollElement && carouselPosts.length > 0 && showSecondRow && isCarouselVisible && firstRowAnimationComplete) {
-      const check = () => {
-        checkScrollPosition(); 
-        if (!carouselHasFlipped && isCarouselVisible && firstRowAnimationComplete) {
-          const visibleIndices = getVisibleCarouselIndices();
-          const allVisibleFlipped = visibleIndices.every(idx => flippedCarouselCards.includes(idx));
-          if (!allVisibleFlipped) {
-            flipVisibleCarouselCards();
-          }
-        }
-      };
-      
-      setTimeout(check, 150);
-      window.addEventListener('resize', check); // Re-check
-      
-      return () => {
-        window.removeEventListener('resize', check);
-      };
-    }
-  }, [carouselPosts.length, showSecondRow, isCarouselVisible, firstRowAnimationComplete, carouselHasFlipped, flippedCarouselCards.length]); // Re-run when dependencies change
+  }, [showSecondRow, isCarouselVisible]);
 
   // Horizontal scrolling for carousel
   const scroll = (dir: 'left' | 'right') => {
@@ -352,52 +382,70 @@ export default function NewsMedia() {
       
       if (cards.length === 0) return;
       
-      // Get current scroll position and visible area
-      const containerRect = container.getBoundingClientRect();
-      const containerCenter = containerRect.left + containerRect.width / 2;
+      // Get scroll position
+      const currentScrollLeft = container.scrollLeft;
+      const cardWidth = cards[0]?.getBoundingClientRect().width || 0;
+      const gap = 20;
+      const scrollAmount = cardWidth + gap;
       
-      let targetCard: Element | null = null;
-      let closestDistance = Infinity;
-      
-      // Find card closest to center
-      cards.forEach((card) => {
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const distance = Math.abs(cardCenter - containerCenter);
-        
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          targetCard = card;
-        }
-      });
-      
-      if (!targetCard) return;
-      
-      // Find target card index
-      const targetIndex = Array.from(cards).indexOf(targetCard);
-      
-      let newIndex;
+      let newScrollLeft;
       if (dir === 'left') {
-        newIndex = Math.max(0, targetIndex - 1);
+        newScrollLeft = Math.max(0, currentScrollLeft - scrollAmount);
       } else {
-        newIndex = Math.min(cards.length - 1, targetIndex + 1);
+        newScrollLeft = Math.min(container.scrollWidth - container.clientWidth, currentScrollLeft + scrollAmount);
       }
       
-      // Scroll to the new card
-      const newTargetCard = cards[newIndex] as HTMLElement;
-      if (newTargetCard) {
-        newTargetCard.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
+      // Smooth scroll
+      container.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
       
       // Flip new visible cards
       setTimeout(() => {
-        if (isCarouselVisible && firstRowAnimationComplete && !carouselHasFlipped) {
-          flipVisibleCarouselCards();
+        if (isCarouselVisible && firstRowAnimationComplete && !isFlippingRef.current) {
+          // Get current flipped state
+          setFlippedCarouselCards(currentFlipped => {
+            const visibleIndices = getVisibleCarouselIndices();
+            const unflippedIndices = visibleIndices.filter(idx => !currentFlipped.includes(idx));
+            
+            if (unflippedIndices.length > 0) {
+              clearTimeouts(carouselTimeoutsRef.current);
+              carouselTimeoutsRef.current = [];
+              
+              isFlippingRef.current = true;
+              pendingFlipsRef.current = unflippedIndices;
+              
+              unflippedIndices.forEach((idx, order) => {
+                const timeout = setTimeout(() => {
+                  setFlippedCarouselCards(prev => {
+                    if (prev.includes(idx)) return prev;
+                    pendingFlipsRef.current = pendingFlipsRef.current.filter(i => i !== idx);
+                    
+                    if (pendingFlipsRef.current.length === 0) {
+                      setTimeout(() => {
+                        isFlippingRef.current = false;
+                      }, 100);
+                    }
+                    
+                    return [...prev, idx];
+                  });
+                }, order * 60);
+                carouselTimeoutsRef.current.push(timeout);
+              });
+              
+              setTimeout(() => {
+                if (isFlippingRef.current) {
+                  isFlippingRef.current = false;
+                  pendingFlipsRef.current = [];
+                }
+              }, 1000);
+            }
+            
+            return currentFlipped;
+          });
         }
+        setTimeout(checkScrollPosition, 100);
       }, 400);
     }
   };
@@ -582,6 +630,7 @@ export default function NewsMedia() {
                     post={post} 
                     isFlipped={flippedCarouselCards.includes(idx)}
                     index={idx + latestPosts.length}
+                    isCarouselCard={true}
                   />
                 </div>
               ))}
