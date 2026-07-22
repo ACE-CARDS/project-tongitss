@@ -14,13 +14,6 @@ export default function AboutMascot() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex-1 text-center lg:text-left"
         >
-          <motion.div 
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white shadow-sm mb-6"
-          >
-            <span className="text-xs font-bold text-[#0d21a1] tracking-widest uppercase">The Face of the Org</span>
-          </motion.div>
 
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}

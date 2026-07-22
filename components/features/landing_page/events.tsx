@@ -122,7 +122,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white text-xs font-semibold">
                   UP Baguio Fair
                 </h3>
@@ -142,7 +142,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white text-xs font-semibold">
                   Undergraduate Examination
                 </h3>
@@ -162,7 +162,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white text-xs font-semibold">
                   Inadalan
                 </h3>
@@ -182,7 +182,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-3xl" />
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="bg-black/60 backdrop-blur-md rounded px-3 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white text-xs font-semibold">
                   Blood Donation Drive
                 </h3>
@@ -204,7 +204,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
             <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-              <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white font-bold text-sm">
                   UP Baguio Fair
                 </h3>
@@ -223,7 +223,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
             <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-              <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white font-bold text-sm">
                   Undergraduate Examination
                 </h3>
@@ -242,7 +242,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
             <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-              <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white font-bold text-sm">Inadalan</h3>
                 <p className="text-white/80 text-xs">2024</p>
               </div>
@@ -259,7 +259,7 @@ export default function Events({id}: {id?: string}) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
             <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-              <div className="bg-black/60 backdrop-blur-md rounded px-4 py-2">
+              <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
                 <h3 className="text-white font-bold text-sm">
                   Blood Donation Drive
                 </h3>

@@ -13,14 +13,16 @@ import FilterDropdown from "@/components/ui/filterDropdown";
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
 
-interface Member {
-  fname: string;
-  lname: string;
-  email: string;
-  acadyear: string;
-  fblink?: string;
-  position: string;
-}
+  interface Member {
+    fname: string;
+    lname: string;
+    email: string;
+    acadyear: string;
+    fblink?: string;
+    position: string;
+    school: string;
+    course: string;
+  }
 
 function ExecutivesContent() {
   const [executives, setExecutives] = useState<Member[]>([]);
@@ -76,10 +78,16 @@ function ExecutivesContent() {
           mem_email,
           acadyear,
           fblink,
-          committee!inner (comm_name)
+          school (
+            school_name
+          ),
+          course (
+            course_name
+          ),
+          committee!inner (
+            comm_name
+          )
         `)
-        .eq("acadyear", selectedAY)
-        .in("committee.comm_name", roleOrder);
 
       if (execError) {
         console.error("Fetch error:", execError);
@@ -94,6 +102,8 @@ function ExecutivesContent() {
           email: person.mem_email,
           acadyear: person.acadyear,
           fblink: person.fblink,
+          school: person.school?.school_name || "",
+          course: person.course?.course_name || "",
           position: person.committee?.comm_name || "Member",
         }));
 
@@ -204,6 +214,13 @@ function ExecutivesContent() {
                         <span className="mt-1 text-[10px] sm:text-xs text-[#0d21a1] px-2 py-1 rounded-lg bg-[#0d21a1]/10 font-bold uppercase text-center line-clamp-2">
                           {exec.position}
                         </span>
+                        <p className="mt-2 text-[11px] sm:text-xs text-slate-600 text-center line-clamp-2">
+                          {exec.course}
+                        </p>
+
+                        <p className="text-[10px] sm:text-xs text-slate-500 text-center line-clamp-2">
+                          {exec.school}
+                        </p>
                       </div>
 
                       <div className="flex justify-center gap-3 mt-4 pb-2">

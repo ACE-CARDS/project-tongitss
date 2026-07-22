@@ -89,7 +89,13 @@ export default function AboutMission() {
                 alt="ACE CARDS Vision Action 1" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              <div className="absolute inset-0 bg-[#011638]/10 group-hover:bg-transparent transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Inadalan</h3>
+                  <p className="text-white/80 text-xs">2024</p>
+                </div>
+              </div>
             </div>
             <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
               <img 
@@ -97,7 +103,13 @@ export default function AboutMission() {
                 alt="ACE CARDS Vision Action 2" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              <div className="absolute inset-0 bg-[#011638]/10 group-hover:bg-transparent transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Undergraduate Examination</h3>
+                  <p className="text-white/80 text-xs">2025</p>
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -166,7 +178,13 @@ export default function AboutMission() {
                 alt="ACE CARDS Mission Action 1" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              <div className="absolute inset-0 bg-[#011638]/5 group-hover:bg-transparent transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Undergraduate Examination</h3>
+                  <p className="text-white/80 text-xs">2026</p>
+                </div>
+              </div>
             </div>
             <div className="flex-1 relative overflow-hidden rounded-[2.5rem] shadow-xl group bg-slate-200">
               <img 
@@ -174,7 +192,13 @@ export default function AboutMission() {
                 alt="ACE CARDS Mission Action 2" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              <div className="absolute inset-0 bg-[#011638]/5 group-hover:bg-transparent transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute bottom-0 left-0 w-full p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded-2xl px-4 py-2">
+                  <h3 className="text-white font-bold text-sm">Undergraduate Examination</h3>
+                  <p className="text-white/80 text-xs">2026</p>
+                </div>
+              </div>
             </div>
           </motion.div>
 
