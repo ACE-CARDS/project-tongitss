@@ -27,7 +27,7 @@ export default function AboutMission() {
   ];
 
   return (
-    <section id="about-mission" className="relative flex flex-col pt-10 pb-8 px-6 lg:px-20 z-5">
+    <section id="about-mission" className="relative flex flex-col pt-6 pb-10 lg:pt-10 lg:pb-20 lg:px-20 z-5">
       <div className="max-w-7xl mx-auto w-full space-y-10 lg:space-y-16">
         
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:h-[480px]">
@@ -40,8 +40,8 @@ export default function AboutMission() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-[60%] h-full"
           >
-            <div className="bg-[#011638] p-10 lg:p-14 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-center h-full group border border-white/10 transition-transform duration-500 hover:scale-[1.02]">
-              <div className="absolute -bottom-4 -right-4 text-[100px] lg:text-[140px] font-black text-white/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
+            <div className="bg-[#011638] p-6 sm:p-8 md:p-10 lg:p-14 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-center h-full group border border-white/10 transition-transform duration-500 hover:scale-[1.02]">
+              <div className="absolute -bottom-4 -right-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-black text-white/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
                 VISION
               </div>
 
@@ -53,7 +53,7 @@ export default function AboutMission() {
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   className="mb-8"
                 >
-                  <h2 className="text-[#eec643] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
+                  <h2 className="text-[#eec643] font-bold uppercase tracking-[0.2em] text-xs sm:text-sm lg:text-base">
                     Our Vision
                   </h2>
                 </motion.div>
@@ -63,7 +63,7 @@ export default function AboutMission() {
                     &ldquo;
                   </span>
                   
-                  <p className="text-white text-3xl lg:text-5xl font-black leading-tight z-10 relative">
+                  <p className="text-white text-xl sm:text-2xl md:text-4xl lg:text-5xl font-black leading-tight z-10 relative">
                     Building the next generation of S&T professionals committed to the well-being of every Filipino.
                   </p>
                   
@@ -124,8 +124,8 @@ export default function AboutMission() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-[60%] h-full"
           >
-            <div className="bg-white/95 backdrop-blur-2xl border-2 border-white p-10 lg:p-14 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-center relative overflow-hidden group transition-transform duration-500 hover:scale-[1.02]">
-              <div className="absolute -bottom-4 -left-4 text-[100px] lg:text-[140px] font-black text-[#011638]/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
+            <div className="bg-white/95 backdrop-blur-2xl border-2 border-white p-6 sm:p-8 md:p-10 lg:p-14 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-center relative overflow-hidden group transition-transform duration-500 hover:scale-[1.02]">
+              <div className="absolute -bottom-4 -right-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-black text-[#011638]/5 select-none pointer-events-none tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
                 MISSION
               </div>
 
@@ -137,7 +137,7 @@ export default function AboutMission() {
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   className="mb-8"
                 >
-                  <h2 className="text-[#011638] font-bold uppercase tracking-[0.2em] text-sm lg:text-base">
+                  <h2 className="text-[#eec643] font-bold uppercase tracking-[0.2em] text-xs sm:text-sm lg:text-base">
                     Our Mission
                   </h2>
                 </motion.div>
@@ -147,7 +147,7 @@ export default function AboutMission() {
                     &ldquo;
                   </span>
                   
-                  <p className="text-slate-700 text-xl lg:text-3xl font-medium leading-relaxed relative z-10">
+                  <p className="text-slate-700 text-base sm:text-xl md:text-2xl lg:text-3xl font-medium leading-relaxed relative z-10">
                     To develop the country&apos;s S&T human resource and improve science education through responsive scholarships and innovative programs.
                   </p>
                   
@@ -214,7 +214,7 @@ export default function AboutMission() {
           >
             <div className="inline-flex items-center justify-center gap-4">
               <span className="w-10 lg:w-16 h-[3px] bg-gradient-to-r from-transparent to-[#eec643] rounded-full"></span>
-              <h2 className="text-3xl lg:text-4xl font-black text-[#011638] uppercase tracking-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#011638] uppercase tracking-tight">
                 Core Objectives
               </h2>
               <span className="w-10 lg:w-16 h-[3px] bg-gradient-to-l from-transparent to-[#eec643] rounded-full"></span>
@@ -240,7 +240,7 @@ export default function AboutMission() {
                 <div className="size-8 rounded-full bg-[#011638] text-[#eec643] flex items-center justify-center shrink-0 font-black text-sm shadow-inner">
                   {i + 1}
                 </div>
-                <p className="text-slate-600 font-medium text-sm leading-relaxed">{obj}</p>
+                <p className="text-slate-600 font-medium text-xs sm:text-sm leading-relaxed">{obj}</p>
               </motion.div>
             ))}
           </motion.div>

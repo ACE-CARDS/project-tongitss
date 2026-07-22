@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function AboutOrg() {
   return (
-    <section id="about-org" className="relative flex flex-col pt-0 pb-20 px-6 lg:px-20 z-5">
+    <section id="about-org" className="relative flex flex-col pt-6 pb-10 lg:pt-10 lg:pb-20 lg:px-20 z-5">
       <div className="max-w-6xl mx-auto w-full flex flex-col items-center">
         
         {/* TITLE ANIMATION */}
@@ -35,7 +35,7 @@ export default function AboutOrg() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           className="w-full max-w-5xl mt-6 lg:mt-[-6rem] relative z-30 px-2 lg:px-6"
         >
-          <div className="bg-white/95 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-2xl p-10 lg:p-16 flex flex-col lg:flex-row gap-12 items-stretch">
+          <div className="bg-white/95 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-10 lg:p-16 flex flex-col lg:flex-row gap-8 md:gap-10 lg:gap-12 items-stretch">
             
             <div className="flex-1 space-y-8 flex flex-col justify-center">
               <motion.p 
@@ -43,7 +43,7 @@ export default function AboutOrg() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-                className="text-xl lg:text-2xl text-slate-800 leading-relaxed font-medium"
+                className="text-sm sm:text-lg lg:text-xl text-slate-600 leading-relaxed font-medium"
               >
                 The <strong className="text-[#011638] font-bold">Association of Competent and Empowered Cordillera Administrative Region DOST Scholars (ACE CARDS)</strong> serves as the official mother organization for all scholars across the Cordilleras.
               </motion.p>
@@ -52,21 +52,21 @@ export default function AboutOrg() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
-                className="text-lg lg:text-xl text-slate-600 leading-relaxed font-medium"
+                className="text-sm sm:text-lg lg:text-xl text-slate-600 leading-relaxed font-medium"
               >
                 We embody the ideals of a Patriot Scholar, committed to Professional Excellence, Servant Leadership, and Social Responsibility.
               </motion.p>
             </div>
 
-            <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#fefce8] to-white rounded-[2rem] p-10 lg:p-12 border border-[#fde047] shadow-lg relative overflow-hidden transition-transform duration-300 hover:scale-[1.02] flex flex-col justify-center text-center sm:text-left cursor-default">
+            <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#fefce8] to-white rounded-[2rem] p-6 sm:p-8 lg:p-12 border border-[#fde047] shadow-lg relative overflow-hidden transition-transform duration-300 hover:scale-[1.02] flex flex-col justify-center text-center sm:text-left cursor-default">
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                   <div className="size-12 rounded-full bg-[#011638] flex items-center justify-center text-white shadow-md shrink-0">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                   </div>
-                  <h3 className="text-[#011638] font-bold uppercase tracking-widest text-sm lg:text-base">Official Status</h3>
+                  <h3 className="text-[#011638] font-bold uppercase tracking-widest text-xs sm:text-sm lg:text-base">Official Status</h3>
                 </div>
-                <p className="text-slate-700 leading-relaxed text-base lg:text-lg font-medium">
+                <p className="text-slate-700 leading-relaxed text-sm sm:text-base lg:text-lg font-medium">
                   ACE CARDS is a regional socio-civic group <strong className="text-[#011638]">duly certified by DOST-SEI</strong>, acting as the mother organization for all DOST orgs in CAR.
                 </p>
               </div>
