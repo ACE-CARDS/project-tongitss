@@ -96,11 +96,23 @@ const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
         <div
           ref={container}
           id="popUpAnnouncement"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
         >
           <ModalBlur onClose={onClose}/>
 
-          <div className="content relative z-10 flex flex-col w-full max-w-6xl h-[85vh] bg-[#011638] rounded-2xl shadow-3xl overflow-hidden">
+          <div
+            className="
+              content
+              relative z-10 flex flex-col
+              w-[78%] sm:w-[85%] md:w-full
+              max-w-xs sm:max-w-md md:max-w-4xl lg:max-w-6xl
+              h-[75vh] sm:h-[72vh] md:h-[80vh] lg:h-[85vh]
+              bg-[#011638]
+              rounded-2xl
+              shadow-3xl
+              overflow-hidden
+            "
+          >
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
               <BsSuitSpadeFill className="absolute top-[-5%] right-[-5%] rotate-12 size-40 md:size-64 text-slate-600/70" />
               <BsSuitSpadeFill className="absolute top-8/12 -left-20 -rotate-12 size-60 md:size-96 text-slate-600/70" />
@@ -111,16 +123,15 @@ const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
               <BsSuitSpadeFill className="absolute top-3/4 right-32 -rotate-[6deg] size-40 text-slate-600/70" />
             </div>
 
-            <div className="absolute right-6 top-6 z-30">
+            <div className="absolute right-3 top-3 md:right-6 md:top-6 z-30">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white 
-                backdrop-blur-md transition hover:bg-white/20 focus:outline-none"
+                className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 focus:outline-none"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-4 w-4 md:h-6 md:w-6"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -134,19 +145,22 @@ const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
                 </svg>
               </button>
             </div>
-            <div id="announcementHeader" className="relative z-10 pt-10 pb-6">
-              <h2 className="text-4xl lg:text-6xl font-bold text-[#eff0f2] text-center">
+            <div
+              id="announcementHeader"
+              className="relative z-10 pt-5 pb-3 md:pt-10 md:pb-6"
+            >
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-[#eff0f2] text-center">
                 ANNOUNCEMENT
               </h2>
             </div>
 
-            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar-white px-6 lg:px-12 pb-10">
+            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar-white px-4 md:px-6 lg:px-12 pb-6 md:pb-10">
               {announcements.length === 0 ? (
                 <div className="flex h-64 w-full items-center justify-center">
                   <p className="text-white/50 animate-pulse">Loading...</p>
                 </div>
               ) : (
-                <div className="announcements grid grid-cols-1 gap-6 ">
+                <div className="announcements grid grid-cols-1 gap-3 md:gap-6">
                   {announcements.map((announce_landing) => (
                     <AnnounceCard
                       key={announce_landing.id}

@@ -240,37 +240,27 @@ Popup .form_error:first-child {
 
 @utility custom-scrollbar-white {
   &::-webkit-scrollbar {
-    width: 10px;
+    width: 4px; 
   }
+
   &::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 1rem;
   }
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
-    border: 2px solid transparent;
     background-clip: padding-box;
+
     &:hover {
-      background: rgba(255, 255, 255, 0.6);
-      cursor: pointer;
+      background: rgba(255, 255, 255, 0.8);
     }
   }
-}
 
-@utility custom-scrollbar-white-nobg {
-  &::-webkit-scrollbar {
-    width: 10px;
-  }
-  /* Tracks have no background here */
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-    &:hover {
-      background: rgba(255, 255, 255, 0.6);
-      cursor: pointer;
+  @media (min-width: 768px) {
+    &::-webkit-scrollbar {
+      width: 10px; 
     }
   }
 }

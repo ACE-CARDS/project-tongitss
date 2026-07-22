@@ -81,6 +81,28 @@ export default function Hero({id}: {id?: string}) {
               ))}
             </div>
           </div>
+
+          {/* TAGLINE */}
+          <div className="mt-10 flex flex-col gap-1">
+            <p
+              className="
+                text-[#eec643]/50 font-bold italic
+                text-lg sm:text-xl lg:text-2xl
+              "
+            >
+              "All in for progress, All in for service"
+            </p>
+
+            <p
+              className="
+                text-white/50 font-medium tracking-wider
+                text-xs sm:text-sm
+              "
+            >
+              #AceCardsAllin
+            </p>
+          </div>
+
         </div>
 
         {/* RIGHT */}
