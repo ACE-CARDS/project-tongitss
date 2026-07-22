@@ -104,9 +104,9 @@ const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
             className="
               content
               relative z-10 flex flex-col
-              w-[78%] sm:w-[85%] md:w-full
+              w-[80%] sm:w-[85%] md:w-full
               max-w-xs sm:max-w-md md:max-w-4xl lg:max-w-6xl
-              h-[75vh] sm:h-[72vh] md:h-[80vh] lg:h-[85vh]
+              h-[65dvh] sm:h-[72dvh] md:h-[80vh] lg:h-[85vh]
               bg-[#011638]
               rounded-2xl
               shadow-3xl
