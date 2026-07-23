@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/ui/backButton";
@@ -61,6 +61,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [physicalError, setPhysicalError] = useState("");
   const [digitalLinkError, setDigitalLinkError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
+  const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
+  const formSubmittedRef = useRef(false);
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -570,9 +574,28 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       );
 
       if (existingCategory) {
+        setSelectedCategory(existingCategory.id);
         const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
         if (categorySelect) {
-          setSelectedCategory(existingCategory.id);
+          categorySelect.value = existingCategory.id;
+        }
+        setShowNewCategory(false);
+        setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
+        validateForm();
+        return;
+      }
+
+      const existingPending = pendingNewCategories.find(
+        c => c.r_category_name.toLowerCase() === newCategoryName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setSelectedCategory(existingPending.id);
+        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+        if (categorySelect) {
+          categorySelect.value = existingPending.id;
         }
         setShowNewCategory(false);
         setNewCategoryName("");
@@ -590,14 +613,11 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
       if (existingCategoryInDb) {
         setAvailableCategories(prev => [...prev, existingCategoryInDb]);
-        
-        setTimeout(() => {
-          const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-          if (categorySelect) {
-            categorySelect.value = existingCategoryInDb.id;
-          }
-        }, 100);
-        
+        setSelectedCategory(existingCategoryInDb.id);
+        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+        if (categorySelect) {
+          categorySelect.value = existingCategoryInDb.id;
+        }
         setShowNewCategory(false);
         setNewCategoryName("");
         setCategoryError("");
@@ -606,33 +626,23 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         return;
       }
 
-      const { data: newCategory, error: categoryError } = await supabase
-        .from("r_category")
-        .insert({ r_category_name: newCategoryName })
-        .select("id, r_category_name")
-        .single();
+      // Temporary category with a temporary ID
+      const tempId = `temp-cat-${Date.now()}`;
+      const tempCategory: Category = {
+        id: tempId,
+        r_category_name: newCategoryName.trim()
+      };
 
-      if (categoryError) {
-        // Handle database error
-        if (categoryError.code === '23505') { // Unique violation
-          setCategoryError("This category already exists in the database");
-        } else if (categoryError.code === '23514') {
-          setCategoryError("Category name is invalid");
-        } else {
-          setCategoryError(`Database error: ${categoryError.message}`);
-        }
-        console.error("Error adding category:", categoryError);
-        return;
+      // Add to list
+      setPendingNewCategories(prev => [...prev, tempCategory]);
+      setAvailableCategories(prev => [...prev, tempCategory]);
+      setSelectedCategory(tempId);
+      
+      // Update select element
+      const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+      if (categorySelect) {
+        categorySelect.value = tempId;
       }
-
-      setAvailableCategories(prev => [...prev, newCategory]);
-
-      setTimeout(() => {
-        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-        if (categorySelect) {
-          setSelectedCategory(newCategory.id);
-        }
-      }, 100);
 
       setShowNewCategory(false);
       setNewCategoryName("");
@@ -664,9 +674,28 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       );
 
       if (existingSchool) {
+        setSelectedSchool(existingSchool.id);
         const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
         if (schoolSelect) {
-          setSelectedSchool(existingSchool.id);
+          schoolSelect.value = existingSchool.id;
+        }
+        setShowNewSchool(false);
+        setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
+        validateForm();
+        return;
+      }
+
+      const existingPending = pendingNewSchools.find(
+        s => s.school_name.toLowerCase() === newSchoolName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setSelectedSchool(existingPending.id);
+        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+        if (schoolSelect) {
+          schoolSelect.value = existingPending.id;
         }
         setShowNewSchool(false);
         setNewSchoolName("");
@@ -684,14 +713,11 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
       if (existingSchoolInDb) {
         setAvailableSchools(prev => [...prev, existingSchoolInDb]);
-        
-        setTimeout(() => {
-          const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
-          if (schoolSelect) {
-            schoolSelect.value = existingSchoolInDb.id;
-          }
-        }, 100);
-        
+        setSelectedSchool(existingSchoolInDb.id);
+        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+        if (schoolSelect) {
+          schoolSelect.value = existingSchoolInDb.id;
+        }
         setShowNewSchool(false);
         setNewSchoolName("");
         setSchoolError("");
@@ -700,42 +726,23 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         return;
       }
 
-      const { data: defaultProvince } = await supabase
-        .from("province")
-        .select("id")
-        .limit(1)
-        .single();
+      // Temporary school with a temporary ID
+      const tempId = `temp-school-${Date.now()}`;
+      const tempSchool: School = {
+        id: tempId,
+        school_name: newSchoolName.trim()
+      };
 
-      const { data: newSchool, error: schoolError } = await supabase
-        .from("school")
-        .insert({ 
-          school_name: newSchoolName,
-          province: defaultProvince?.id || 1
-        })
-        .select("id, school_name")
-        .single();
-
-      if (schoolError) {
-        // Handle database error
-        if (schoolError.code === '23505') { // Unique violation
-          setSchoolError("This school already exists in the database");
-        } else if (schoolError.code === '23514') {
-          setSchoolError("School name is invalid");
-        } else {
-          setSchoolError(`Database error: ${schoolError.message}`);
-        }
-        console.error("Error adding school:", schoolError);
-        return;
+      // Add to list
+      setPendingNewSchools(prev => [...prev, tempSchool]);
+      setAvailableSchools(prev => [...prev, tempSchool]);
+      setSelectedSchool(tempId);
+      
+      // Update select element
+      const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+      if (schoolSelect) {
+        schoolSelect.value = tempId;
       }
-
-      setAvailableSchools(prev => [...prev, newSchool]);
-
-      setTimeout(() => {
-        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
-        if (schoolSelect) {
-          setSelectedSchool(newSchool.id);
-        }
-      }, 100);
 
       setShowNewSchool(false);
       setNewSchoolName("");
@@ -778,9 +785,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate category and school before submission
-    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement | null;
-    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement | null;
+    // 2. Validate category and school before submission
+    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement;
+    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement;
     
     let hasError = false;
     
@@ -805,7 +812,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       return;
     }
 
+    // 3. Prevent double clicks
     setIsSubmitting(true);
+    formSubmittedRef.current = true;
 
     try {
       const form = e.currentTarget;
@@ -834,15 +843,75 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         }
       }
 
-      if (!categorySelect?.value) {
-        throw new Error("Please select a category");
-      }
-      const categoryId = categorySelect.value;
+      // Get the selected category ID
+      const selectedCategoryId = categorySelect.value;
+      
+      // Check if needs to be saved
+      let finalCategoryId = selectedCategoryId;
+      const isTempCategory = selectedCategoryId.startsWith('temp-cat-');
+      
+      if (isTempCategory) {
+        // Find the pending category
+        const pendingCategory = pendingNewCategories.find(c => c.id === selectedCategoryId);
+        if (pendingCategory) {
+          // Save to database
+          const { data: newCategory, error: categoryError } = await supabase
+            .from("r_category")
+            .insert({ r_category_name: pendingCategory.r_category_name })
+            .select("id, r_category_name")
+            .single();
 
-      if (!schoolSelect?.value) {
-        throw new Error("Please select a school");
+          if (categoryError) {
+            throw new Error(`Failed to save category: ${categoryError.message}`);
+          }
+
+          // Update final category ID
+          finalCategoryId = newCategory.id;
+          
+          // Update pending categories and available categories
+          setPendingNewCategories(prev => prev.filter(c => c.id !== selectedCategoryId));
+          setAvailableCategories(prev => 
+            prev.map(c => c.id === selectedCategoryId ? newCategory : c)
+          );
+        }
       }
-      const schoolId = schoolSelect.value;
+
+      // Same logic as category
+      const selectedSchoolId = schoolSelect.value;
+      
+      let finalSchoolId = selectedSchoolId;
+      const isTempSchool = selectedSchoolId.startsWith('temp-school-');
+      
+      if (isTempSchool) {
+        const pendingSchool = pendingNewSchools.find(s => s.id === selectedSchoolId);
+        if (pendingSchool) {
+          const { data: defaultProvince } = await supabase
+            .from("province")
+            .select("id")
+            .limit(1)
+            .single();
+
+          const { data: newSchool, error: schoolError } = await supabase
+            .from("school")
+            .insert({ 
+              school_name: pendingSchool.school_name,
+              province: defaultProvince?.id || 1
+            })
+            .select("id, school_name")
+            .single();
+
+          if (schoolError) {
+            throw new Error(`Failed to save school: ${schoolError.message}`);
+          }
+
+          finalSchoolId = newSchool.id;
+          
+          setPendingNewSchools(prev => prev.filter(s => s.id !== selectedSchoolId));
+          setAvailableSchools(prev => 
+            prev.map(s => s.id === selectedSchoolId ? newSchool : s)
+          );
+        }
+      }
 
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
       const lastNameInputs = form.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
@@ -923,8 +992,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
           thesis_date: dateInput.value,
           thesis_phys: physicalInput?.value || null,
           thesis_digi: digitalInput?.value || null,
-          r_category: parseInt(categoryId),
-          school: parseInt(schoolId),
+          r_category: parseInt(finalCategoryId),
+          school: parseInt(finalSchoolId),
           thesis_status: 'pending',
         })
         .select("id")
@@ -949,8 +1018,16 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     } catch (error) {
       console.error("Submission error:", error);
       alert(error instanceof Error ? error.message : "Failed to submit thesis");
-    } finally {
+      
       setIsSubmitting(false);
+      formSubmittedRef.current = false;
+    } finally {
+      setTimeout(() => {
+        if (document.querySelector('form')) {
+          setIsSubmitting(false);
+          formSubmittedRef.current = false;
+        }
+      }, 500);
     }
   };
 
@@ -1826,6 +1903,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         name="category"
                         required
                         value={selectedCategory}
+                        disabled={showNewCategory}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         onChange={(e) => {
                           const value = e.target.value;
