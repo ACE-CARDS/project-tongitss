@@ -29,6 +29,9 @@ function ExecutivesContent() {
   const [selectedAY, setSelectedAY] = useState("AY 2025-2026");
   const [isLoading, setIsLoading] = useState(true);
 
+  const normalize = (str: string = "") =>
+    str.toLowerCase().replace(/\s+/g, " ").trim();
+
   const roleOrder = [
     "Regional Director",
     "Director for Internal Affairs",
@@ -45,7 +48,7 @@ function ExecutivesContent() {
     "Education and Research Committee Deputy",
     "Events and Logistics Committee Head",
     "Events and Logistics Committee Deputy",
-  ];
+  ].map(normalize);
 
   const ayOptions = [
     { label: "AY 2025-2026", value: "AY 2025-2026" },
@@ -69,7 +72,7 @@ function ExecutivesContent() {
     const fetchExecutives = async () => {
       setIsLoading(true);
       const supabase = createClient();
-
+  
       const { data: execData, error: execError } = await supabase
         .from("member")
         .select(`
@@ -78,47 +81,48 @@ function ExecutivesContent() {
           mem_email,
           acadyear,
           fblink,
-          school (
-            school_name
-          ),
-          course (
-            course_name
-          ),
-          committee!inner (
-            comm_name
-          )
+          school ( school_name ),
+          course ( course_name ),
+          committee!inner ( comm_name )
         `)
-
+        .eq("acadyear", selectedAY)
+        .eq("is_active", true);
+  
       if (execError) {
         console.error("Fetch error:", execError);
         setIsLoading(false);
         return;
       }
-
+  
       if (execData) {
-        const formatted: Member[] = execData.map((person: any) => ({
-          fname: person.mem_fname,
-          lname: person.mem_lname,
-          email: person.mem_email,
-          acadyear: person.acadyear,
-          fblink: person.fblink,
-          school: person.school?.school_name || "",
-          course: person.course?.course_name || "",
-          position: person.committee?.comm_name || "Member",
-        }));
-
+        const formatted: Member[] = execData
+          .map((person: any) => ({
+            fname: person.mem_fname,
+            lname: person.mem_lname,
+            email: person.mem_email,
+            acadyear: person.acadyear,
+            fblink: person.fblink,
+            school: person.school?.school_name || "",
+            course: person.course?.course_name || "",
+            position: person.committee?.comm_name || "",
+          }))
+          .filter((person) => roleOrder.includes(normalize(person.position)));
+  
         const sorted = formatted.sort((a, b) => {
-          return roleOrder.indexOf(a.position) - roleOrder.indexOf(b.position);
+          return (
+            roleOrder.indexOf(normalize(a.position)) -
+            roleOrder.indexOf(normalize(b.position))
+          );
         });
-
+  
         setExecutives(sorted);
       }
-
+  
       setTimeout(() => {
         setIsLoading(false);
       }, 800);
     };
-
+  
     fetchExecutives();
   }, [selectedAY]);
 

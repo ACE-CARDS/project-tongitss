@@ -1756,20 +1756,14 @@ export default function MembersPage() {
                       return {
                         mem_fname: obj.mem_fname,
                         mem_lname: obj.mem_lname,
-                        mem_minit: (obj.mem_minit || "")
-                          .toUpperCase()
-                          .replace(/[^A-Z]/g, "")
-                          .slice(0, 2),
+                        mem_minit: (obj.mem_minit || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2),
                         role: obj.role || "member",
                         comm: obj.comm ? Number(obj.comm) : DEFAULT_COMM,
-                        mem_schol_type:
-                          obj.mem_schol_type || DEFAULT_SCHOL_TYPE,
-                        mem_schol_year: obj.mem_schol_year
-                          ? Number(obj.mem_schol_year)
-                          : DEFAULT_SCHOL_YEAR,
-                        school: obj.school
-                          ? Number(obj.school)
-                          : DEFAULT_SCHOOL,
+                        mem_schol_type: obj.mem_schol_type || DEFAULT_SCHOL_TYPE,
+                        mem_schol_year: obj.mem_schol_year ? Number(obj.mem_schol_year) : DEFAULT_SCHOL_YEAR,
+                        school: obj.school ? Number(obj.school) : DEFAULT_SCHOOL,
+                        course: obj.course ? Number(obj.course) : null,
+                        fblink: obj.fblink?.trim() || null,
                         is_active: true,
                         mem_email: obj.mem_email?.trim(),
                         acadyear: obj.acadyear || DEFAULT_ACADYEAR,
