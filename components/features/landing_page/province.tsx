@@ -304,7 +304,7 @@ export default function Province({ id }: { id?: string }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         title={org.name}
-                        className="w-13 h-13 rounded-full bg-white/30 flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all duration-200"
+                        className="hover:scale-110 transition-all duration-200"
                       >
                         <img
                           src={org.logo}
