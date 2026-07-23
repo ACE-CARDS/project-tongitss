@@ -206,6 +206,19 @@ export default function Province({ id }: { id?: string }) {
     setProvinceAnimKey((prev) => prev + 1);
   }, [selectedProvince, selectedAY]);
 
+  const schoolOrgs = [
+    { name: "BAGGS", province: "Benguet", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE" },
+    { name: "UB TALAS", province: "Benguet", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
+    { name: "UC CATS", province: "Benguet", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
+    { name: "UP SIKAT", province: "Benguet", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
+    { name: "KAINDS", province: "Kalinga", logo: "/assets/logos/KAINDS.png", fb: "https://www.facebook.com/KalingaDOSTscholars" },
+  ];
+
+  const filteredOrgs = useMemo(() => {
+    if (!selectedProvince) return schoolOrgs;
+    return schoolOrgs.filter((org) => org.province === selectedProvince);
+  }, [selectedProvince]);
+
   return (
     <section
       id={id}
@@ -280,6 +293,28 @@ export default function Province({ id }: { id?: string }) {
                 <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-1">
                   {selectedAY}
                 </p>
+
+                {/* School Org Logos */}
+                <div className="flex flex-wrap gap-2 justify-center xl:justify-start mt-4">
+                  {filteredOrgs.map((org) => {
+                    return (
+                      <a
+                        key={org.name}
+                        href={org.fb}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={org.name}
+                        className="w-13 h-13 rounded-full bg-white/30 flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all duration-200"
+                      >
+                        <img
+                          src={org.logo}
+                          alt={org.name}
+                          className="w-12 h-12 object-contain"
+                        />
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* School List*/}
