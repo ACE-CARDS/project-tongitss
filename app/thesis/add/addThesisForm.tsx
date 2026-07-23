@@ -22,6 +22,7 @@ interface Author {
   lastName?: string;
   email?: string;
   memberId?: number | null;
+  isScholar?: boolean;
 }
 
 interface AddThesisFormProps {
@@ -40,10 +41,13 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
   const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
+  const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/thesis");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSchool, setSelectedSchool] = useState("");
   
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -88,7 +92,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               middleInitial: member.mem_minit || "",
               lastName: member.mem_lname,
               email: member.mem_email,
-              memberId: member.id
+              memberId: member.id,
+              isScholar: true // Members are automatically scholars
             }]);
           }
         } else {
@@ -97,7 +102,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
           if (userEmail.user?.email) {
             const { data: existingAuthor } = await supabase
               .from("author")
-              .select("id, author_fname, author_lname, author_minit, author_email, mem_id")
+              .select("id, author_fname, author_lname, author_minit, author_email, mem_id, scholar")
               .eq("author_email", userEmail.user.email)
               .maybeSingle();
             
@@ -108,7 +113,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                 middleInitial: existingAuthor.author_minit || "",
                 lastName: existingAuthor.author_lname,
                 email: existingAuthor.author_email,
-                memberId: existingAuthor.mem_id
+                memberId: existingAuthor.mem_id,
+                isScholar: existingAuthor.scholar || false
               }]);
             }
           }
@@ -203,7 +209,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       middleInitial: member.minit || "",
       lastName: member.lname,
       email: member.email,
-      memberId: member.id
+      memberId: member.id,
+      isScholar: true // Members are automatically scholars
     };
     setAuthors(updatedAuthors);
     setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
@@ -224,48 +231,44 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   };
 
   // Select email suggestion
-  const selectEmailSuggestion = (suggestion: {email: string, memberId: number, fname: string, lname: string, minit: string | null}, authorIndex: number) => {
-    const updatedAuthors = [...authors];
-    updatedAuthors[authorIndex] = {
-      ...updatedAuthors[authorIndex],
-      email: suggestion.email,
-      memberId: suggestion.memberId,
-      firstName: suggestion.fname,
-      lastName: suggestion.lname,
-      middleInitial: suggestion.minit || ""
-    };
-    setAuthors(updatedAuthors);
+  const selectEmailSuggestion = (
+    suggestion: {
+        email: string,
+        memberId: number,
+        fname: string,
+        lname: string,
+        minit: string | null
+    },
+    authorIndex: number
+    ) => {
+    
+    setAuthors(prev =>
+        prev.map((author, index) =>
+        index === authorIndex
+            ? {
+                ...author,
+                email: suggestion.email,
+                memberId: suggestion.memberId,
+                firstName: suggestion.fname,
+                lastName: suggestion.lname,
+                middleInitial: suggestion.minit || "",
+                isScholar: true // Members are automatically scholars
+            }
+            : author
+        )
+    );
+
     setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
-    
-    // Update email input field
-    const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
-    if (emailInput) {
-      emailInput.value = suggestion.email;
-      // Trigger validation and clear error
-      const errorSpan = document.getElementById(`email-error-${authorIndex}`);
-      if (errorSpan) {
-        errorSpan.style.display = 'none';
-      }
+
+    const errorSpan = document.getElementById(`email-error-${authorIndex}`);
+    if (errorSpan) {
+        errorSpan.style.display = "none";
     }
-    
-    // Update name fields if they're empty or mismatched
-    const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
-    const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
-    const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
-    
-    if (firstNameInput && (!firstNameInput.value || firstNameInput.value !== suggestion.fname)) {
-      firstNameInput.value = suggestion.fname;
-    }
-    if (lastNameInput && (!lastNameInput.value || lastNameInput.value !== suggestion.lname)) {
-      lastNameInput.value = suggestion.lname;
-    }
-    if (middleInitialInput && (!middleInitialInput.value || middleInitialInput.value !== (suggestion.minit || ""))) {
-      middleInitialInput.value = suggestion.minit || "";
-    }
-    
-    // Re-validate
-    validateForm();
-  };
+
+    setTimeout(() => {
+        validateForm();
+    }, 0);
+    };
 
   // Check duplicate authors on each field
   const checkDuplicateAuthors = () => {
@@ -339,7 +342,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const firstNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="firstName[]"]');
     const lastNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="lastName[]"]');
     const emailInputs = document.querySelectorAll<HTMLInputElement>('input[name="email[]"]');
-  
+
     let hasValidAuthor = false;
     for (let i = 0; i < firstNameInputs.length; i++) {
       if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && emailInputs[i]?.value) {
@@ -378,9 +381,18 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const privacyCheckbox = document.querySelector('input[name="privacy"]') as HTMLInputElement;
     const privacyValid = privacyCheckbox?.checked;
     
+    // If non-member hasn't selected scholar status
+    let hasScholarStatusSelected = true;
+    for (let i = 0; i < authors.length; i++) {
+      if (!authors[i].memberId && authors[i].isScholar === undefined) {
+        hasScholarStatusSelected = false;
+        break;
+      }
+    }
+    
     const hasErrors = !titleValid || !abstractValid || !keywordsValid || !dateValid || !categoryValid || 
                       !schoolValid || !physicalValid || !digitalLinkValid || !hasValidAuthor || !!categoryError || 
-                      !!schoolError || hasDuplicateAuthor || !privacyValid;
+                      !!schoolError || hasDuplicateAuthor || !privacyValid || !hasScholarStatusSelected;
     
     setIsFormValid(!hasErrors);
   };
@@ -450,7 +462,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
             middleInitial: author.middleInitial,
             lastName: author.lastName,
             email: author.email,
-            memberId: author.memberId
+            memberId: author.memberId,
+            isScholar: author.isScholar || false
           })));
 
           setTimeout(() => {
@@ -493,9 +506,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   }, [returnTo]);
 
-
   const addAuthor = () => {
-    setAuthors([...authors, { id: Date.now() }]);
+    setAuthors([...authors, { id: Date.now(), isScholar: undefined }]);
   }; 
 
   const removeAuthor = (id: number) => {
@@ -505,12 +517,30 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
     setSearchResults(prev => {
       const newMap = new Map(prev);
-      newMap.delete(id);
+      const authorIndex = authors.findIndex(a => a.id === id);
+      if (authorIndex !== -1) {
+        newMap.delete(authorIndex);
+        setEmailSuggestions(prevMap => {
+          const newEmailMap = new Map(prevMap);
+          newEmailMap.delete(authorIndex);
+          return newEmailMap;
+        });
+        setShowSearchDropdown(prevMap => {
+          const newShowMap = new Map(prevMap);
+          newShowMap.delete(authorIndex);
+          return newShowMap;
+        });
+        setShowScholarDialog(prevMap => {
+          const newDialogMap = new Map(prevMap);
+          newDialogMap.delete(authorIndex);
+          return newDialogMap;
+        });
+      }
       return newMap;
     });
   };
 
-  const updateAuthor = (id: number, field: keyof Author, value: string) => {
+  const updateAuthor = (id: number, field: keyof Author, value: string | boolean | undefined) => {
   setAuthors(prev => prev.map(auth => 
     auth.id === id ? { ...auth, [field]: value } : auth
   ));
@@ -519,7 +549,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   // 2. Form Validation Effect
   useEffect(() => {
     validateForm();
-    // Dependency array is correct, but ensure validateForm is defined inside the component
   }, [categoryError, schoolError, digitalLinkError, authors]);
 
   const handleAddNewCategory = async () => {
@@ -543,7 +572,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       if (existingCategory) {
         const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
         if (categorySelect) {
-          categorySelect.value = existingCategory.id;
+          setSelectedCategory(existingCategory.id);
         }
         setShowNewCategory(false);
         setNewCategoryName("");
@@ -601,7 +630,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       setTimeout(() => {
         const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
         if (categorySelect) {
-          categorySelect.value = newCategory.id;
+          setSelectedCategory(newCategory.id);
         }
       }, 100);
 
@@ -637,7 +666,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       if (existingSchool) {
         const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
         if (schoolSelect) {
-          schoolSelect.value = existingSchool.id;
+          setSelectedSchool(existingSchool.id);
         }
         setShowNewSchool(false);
         setNewSchoolName("");
@@ -704,7 +733,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       setTimeout(() => {
         const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
         if (schoolSelect) {
-          schoolSelect.value = newSchool.id;
+          setSelectedSchool(newSchool.id);
         }
       }, 100);
 
@@ -717,6 +746,33 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       console.error("Error adding school:", error);
       setSchoolError("An unexpected error occurred. Please try again.");
     }
+  };
+
+  const handleScholarResponse = (authorIndex: number, isScholar: boolean) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex].isScholar = isScholar;
+    setAuthors(updatedAuthors);
+    setShowScholarDialog(prev => new Map(prev).set(authorIndex, false));
+    validateForm();
+  };
+
+  const checkMemberEmailMatch = (authorIndex: number) => {
+    const author = authors[authorIndex];
+    if (!author.memberId) return true; // Not a member, skip check
+    
+    // If memberId exists, check if email matches registered email
+    const memberEmail = author.email;
+    const currentEmail = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
+    
+    if (memberEmail && currentEmail && memberEmail.toLowerCase() !== currentEmail.value.toLowerCase()) {
+      const errorSpan = document.getElementById(`email-error-${authorIndex}`);
+      if (errorSpan) {
+        errorSpan.textContent = 'Members must use their registered organization email.';
+        errorSpan.style.display = 'block';
+      }
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -814,6 +870,20 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         if (!firstNameInputs[i]?.value || !lastNameInputs[i]?.value || !emailInputs[i]?.value) continue;
 
         const memberIdFromState = authors[i]?.memberId || null;
+        const isScholar = authors[i]?.isScholar || false;
+        
+        if (memberIdFromState) {
+          // Verify email matches registered email
+          const { data: member } = await supabase
+            .from("member")
+            .select("mem_email")
+            .eq("id", memberIdFromState)
+            .single();
+          
+          if (member && member.mem_email.toLowerCase() !== emailInputs[i].value.toLowerCase()) {
+            throw new Error(`Author ${i + 1} is a member but the email does not match the registered organization email.`);
+          }
+        }
         
         // First check if author exists by email
         const { data: existingAuthor } = await supabase
@@ -825,7 +895,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         if (existingAuthor) {
           authorIds.push(existingAuthor.id);
         } else {
-          // Create new author with mem_id if available
+          // Create new author with mem_id and scholar status if available
           const { data: newAuthor, error: authorError } = await supabase
             .from("author")
             .insert({
@@ -833,7 +903,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
               author_minit: (document.querySelectorAll('input[name="middleInitial[]"]')[i] as HTMLInputElement)?.value || null,
-              mem_id: memberIdFromState || null
+              mem_id: memberIdFromState || null,
+              scholar: isScholar
             })
             .select("id")
             .single();
@@ -1109,7 +1180,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
 
                       <div>
                         <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          Middle Initial
+                          Middle Initial(s)
                         </label>
                         <input
                           type="text"
@@ -1119,57 +1190,18 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           value={author.middleInitial || ""}
                           disabled={index === 0}
                           className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          onBlur={() => {
-                            if (index !== 0) {
-                              const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                              const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                              const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-                              
-                              if (firstNameInput?.value && lastNameInput?.value) {
-                                searchMembers(
-                                  firstNameInput.value, 
-                                  lastNameInput.value, 
-                                  middleInitialInput?.value || "", 
-                                  index
-                                );
-                              }
-                            }
-                          }}
                           onChange={(e) => {
                             if (index === 0) return;
-
-
-                            let value = e.target.value.toUpperCase();
-                            value = value.replace(/[^A-Z.]/g, '');
-                            
-                            // Format: letter dot letter dot
-                            if (value.length === 1 && /[A-Z]/.test(value)) {
-                              value = value + '.';
-                            } else if (value.length === 2 && value[1] === '.') {
-
-                            } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
-                              value = value[0] + '.' + value[1];
-                            } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
-                              value = value + '.';
-                            } else if (value.length >= 4) {
-
-                              value = value.slice(0, 2) + value.slice(2, 3) + '.';
-                              if (value.length > 4) value = value.slice(0, 4);
-                            }
-                            
-                            e.target.value = value;
-                            
-                            const event = new Event('input', { bubbles: true });
-                            e.target.dispatchEvent(event);
-                            
-                            updateAuthor(author.id, 'middleInitial', e.target.value)
+                            updateAuthor(author.id, 'middleInitial', e.target.value);
                           }}
-                          onInput={(e) => {
-                            if (index === 0) return;
-                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                            if (firstNameInput?.value && lastNameInput?.value) {
-                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, author.id);
+                          onKeyDown={(e) => {
+                            // Allow backspace, delete, arrow keys, and letters
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Tab') {
+                              return;
+                            }
+                            // Only allow letters
+                            if (!/[A-Za-z]/.test(e.key)) {
+                              e.preventDefault();
                             }
                           }}
                         />
@@ -1332,19 +1364,15 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           }
                         }}
                         // Search trigger
-                        onInput={async (e) => {
+                        onFocus={async (e) => {
                           if (index === 0) return;
                           const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById(`email-error-${index}`);
-                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                          if (input.value.length === 0) {
-                            errorSpan!.textContent = 'Email is required.';
-                            errorSpan!.style.display = 'block';
-                            validateForm();
+                          
+                          // Show suggestions if email is empty
+                          if (!input.value || input.value.length === 0) {
+                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                            const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
                             
                             if (firstNameInput?.value && lastNameInput?.value) {
                               const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
@@ -1354,7 +1382,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                                 .select("id, mem_fname, mem_lname, mem_minit, mem_email")
                                 .ilike("mem_fname", firstNameInput.value)
                                 .ilike("mem_lname", lastNameInput.value)
-                                .limit(1);
+                                .limit(3);
                               
                               if (matchingMembers && matchingMembers.length > 0) {
                                 const exactMatch = matchingMembers.find(m => {
@@ -1379,15 +1407,60 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             } else {
                               setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
-                            return;
                           }
-                          
+                        }}
+                        onInput={async (e) => {
+                          if (index === 0) return;
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`email-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                          // Clear suggestions when user starts typing
+                          if (input.value.length > 0) {
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }
+
+                          if (input.value.length === 0) {
+                            errorSpan!.textContent = "Email is required.";
+                            errorSpan!.style.display = "block";
+
+                                if (firstNameInput?.value && lastNameInput?.value) {
+                                    await searchMembersByFullName(
+                                    firstNameInput.value,
+                                    lastNameInput.value,
+                                    middleInitialInput?.value || "",
+                                    index
+                                    );
+                                }
+
+                            validateForm();
+                            return;
+                            }
+                                                    
                           if (!emailRegex.test(input.value)) {
                             errorSpan!.textContent = 'Please enter a valid email address.';
                             errorSpan!.style.display = 'block';
                             validateForm();
-                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                             return;
+                          }
+
+                          // Check if author has memberId and verify email matches
+                          if (author.memberId) {
+                            const { data: member } = await supabase
+                              .from("member")
+                              .select("mem_email")
+                              .eq("id", author.memberId)
+                              .single();
+                            
+                            if (member && member.mem_email.toLowerCase() !== input.value.toLowerCase()) {
+                              errorSpan!.textContent = 'Members must use their registered organization email.';
+                              errorSpan!.style.display = 'block';
+                              validateForm();
+                              return;
+                            }
                           }
 
                           // Check duplicate emails
@@ -1399,13 +1472,12 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                                 errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
                                 errorSpan!.style.display = 'block';
                                 validateForm();
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
                                 return;
                               }
                             }
                           }
 
-                          // Check if full name matches a member and show suggestions
+                          // Check if email matches a member
                           if (firstNameInput?.value && lastNameInput?.value) {
                             const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
                             
@@ -1417,48 +1489,30 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               .limit(3);
                             
                             if (matchingMembers && matchingMembers.length > 0) {
-                              const exactMatch = matchingMembers.find(m => {
-                                const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
-                                return memberMiddle === normalizedMiddle;
-                              });
-                              
-                              // Check if email matches any member email
                               const memberWithTypedEmail = matchingMembers.find(m => 
                                 m.mem_email.toLowerCase() === input.value.toLowerCase()
                               );
                               
                               if (memberWithTypedEmail) {
-                                errorSpan!.style.display = 'none';
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
-                                validateForm();
-                              } else if (exactMatch && input.value.length > 0 && 
-                                        exactMatch.mem_email.toLowerCase().includes(input.value.toLowerCase())) {
-                                setEmailSuggestions(prev => new Map(prev).set(index, [{
-                                  email: exactMatch.mem_email,
-                                  memberId: exactMatch.id,
-                                  fname: exactMatch.mem_fname,
-                                  lname: exactMatch.mem_lname,
-                                  minit: exactMatch.mem_minit
-                                }]));
+                                // Found a member with matching email
+                                const updatedAuthors = [...authors];
+                                updatedAuthors[index] = {
+                                  ...updatedAuthors[index],
+                                  memberId: memberWithTypedEmail.id,
+                                  isScholar: true // auto scholar
+                                };
+                                setAuthors(updatedAuthors);
                                 errorSpan!.style.display = 'none';
                                 validateForm();
-                              } else {
-                                errorSpan!.style.display = 'none';
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                return;
                               }
-                            } else {
-                              errorSpan!.style.display = 'none';
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
-                          } else {
-                            errorSpan!.style.display = 'none';
-                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }
                           
                           // Check existing author
                           const { data: existing } = await supabase
                           .from("author")
-                          .select("id, author_fname, author_lname")
+                          .select("id, author_fname, author_lname, mem_id, scholar")
                           .eq("author_email", input.value)
                           .maybeSingle();
                           
@@ -1467,11 +1521,18 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                             const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
                             
                             if (firstNameMatch && lastNameMatch) {
+                              // Update author with existing info
+                              const updatedAuthors = [...authors];
+                              updatedAuthors[index] = {
+                                ...updatedAuthors[index],
+                                memberId: existing.mem_id || null,
+                                isScholar: existing.scholar || false
+                              };
+                              setAuthors(updatedAuthors);
                               errorSpan!.style.display = 'none';
                             } else {
                               errorSpan!.textContent = 'This email is already registered to a different author.';
                               errorSpan!.style.display = 'block';
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
                           } else {
                             errorSpan!.style.display = 'none';
@@ -1487,7 +1548,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       
-                      {/* Email Suggestions Dropdown */}
                       {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && index !== 0 && 
                       !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
                         <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
@@ -1510,8 +1570,10 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                               <button
                                 key={idx}
                                 type="button"
-                                onClick={() => selectEmailSuggestion(suggestion, author.id)}
-                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                                onClick={() => {
+                                  selectEmailSuggestion(suggestion, index);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20 cursor-pointer"
                               >
                                 <div className="flex flex-col">
                                   <span className="font-medium">{suggestion.email}</span>
@@ -1523,6 +1585,46 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         </div>
                       )}
                     </div>
+                    
+                    {/* Scholar Status */}
+                    {index !== 0 && author.firstName && author.lastName && author.email && !author.memberId && (
+                    <div className="mt-2 pt-2">
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        DOST Scholar Status <span className="text-[#eec643]">*</span>
+                        </label>
+                        <div className="flex items-center space-x-6">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="relative flex items-center justify-center">
+                            <input
+                                type="checkbox"
+                                checked={author.isScholar === true}
+                                onChange={() => handleScholarResponse(index, true)}
+                                className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                ♠
+                            </span>
+                            </div>
+                            <span className="text-sm font-ubuntu-mono text-[#475569]">Yes</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="relative flex items-center justify-center">
+                            <input
+                                type="checkbox"
+                                checked={author.isScholar === false}
+                                onChange={() => handleScholarResponse(index, false)}
+                                className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                ♠
+                            </span>
+                            </div>
+                            <span className="text-sm font-ubuntu-mono text-[#475569]">No</span>
+                        </label>
+                        </div>
+                    </div>
+                    )}
                   </div>
                   {author.id < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                 </div>
@@ -1546,7 +1648,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               <div className="space-y-4">
                 <div>
                   <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Publication Year <span className="text-[#eec643]">*</span>
+                    Publication Date <span className="text-[#eec643]">*</span>
                   </label>
                   <input
                     type="date"
@@ -1723,19 +1825,12 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         id="category"
                         name="category"
                         required
-                        value={(() => {
-                          const selectElement = document.getElementById('category') as HTMLSelectElement;
-                          if (selectElement && selectElement.value) {
-                            return selectElement.value;
-                          }
-                          return "";
-                        })()}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          isCategoryTouched && categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
+                        value={selectedCategory}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         onChange={(e) => {
-                          setIsCategoryTouched(true);
                           const value = e.target.value;
+                          setSelectedCategory(value);
+                          setIsCategoryTouched(true);
                           if (!value || value === "") {
                             setCategoryError("Please select a category");
                           } else {
@@ -1852,19 +1947,11 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         id="school"
                         name="school"
                         required
-                        value={(() => {
-                          const selectElement = document.getElementById('school') as HTMLSelectElement;
-                          if (selectElement && selectElement.value) {
-                            return selectElement.value;
-                          }
-                          return "";
-                        })()}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                          isSchoolTouched && schoolError ? 'border-red-500' : 'border-[#94a3b8]'
-                        }`}
+                        value={selectedSchool}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         onChange={(e) => {
-                          setIsSchoolTouched(true);
-                          const value = e.target.value;
+                            const value = e.target.value;
+                        setSelectedSchool(value);
                           if (!value || value === "") {
                             setSchoolError("Please select a school");
                           } else {
