@@ -157,8 +157,8 @@ export default function AboutMission() {
                 </div>
                 <div className="pt-6 border-t-2 border-slate-100 flex items-center gap-3">
                    <div className="w-2 h-2 rounded-full bg-[#eec643]"></div>
-                   <p className="text-sm text-slate-500 font-medium">
-                     <strong className="text-[#011638] uppercase tracking-wider">Established Sep 2022</strong>
+                   <p className="text-2xl text-slate-500 font-medium">
+                     <strong className="text-[#011638] uppercase tracking-wider">Established September 28, 2022</strong>
                    </p>
                 </div>
               </div>

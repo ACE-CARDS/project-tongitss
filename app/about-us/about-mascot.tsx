@@ -52,7 +52,7 @@ export default function AboutMascot() {
             className="p-3 sm:p-4 bg-white/60 backdrop-blur-xl rounded-[2.5rem] sm:rounded-[3rem] border border-white shadow-2xl"
           >
             <img 
-              src="/assets/logos/mascot.png" 
+              src="/assets/logos/kidla.png" 
               className="w-[240px] sm:w-[300px] md:w-[380px] lg:w-[500px] h-auto object-contain rounded-[2.5rem]"
               alt="ACE CARDS Mascot" 
             />

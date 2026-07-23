@@ -35,6 +35,18 @@ export default function AboutOrg() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           className="w-full max-w-5xl mt-6 lg:mt-[-6rem] relative z-30 px-2 lg:px-6"
         >
+          {/* CAMPAIGN BADGE */}
+          <div className="flex justify-center relative z-40 mb-[-1.25rem]">
+            <div className="bg-[#011638] text-white rounded-full px-5 py-2.5 shadow-xl border-4 border-white flex flex-col sm:flex-row items-center gap-1 sm:gap-3">
+              <span className="text-xs sm:text-sm lg:text-base font-semibold tracking-wide">
+                All in for Progress, All in for Service
+              </span>
+              <span className="hidden sm:block text-white/50">•</span>
+              <span className="text-xs sm:text-sm lg:text-base font-extrabold text-[#FACC15]">
+                #AceCardsAllIn
+              </span>
+            </div>
+          </div>
           <div className="bg-white/95 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-10 lg:p-16 flex flex-col lg:flex-row gap-8 md:gap-10 lg:gap-12 items-stretch">
             
             <div className="flex-1 space-y-8 flex flex-col justify-center">
