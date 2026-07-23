@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { createClient } from "@/utils/supabase/client";
 import Pagination from "@/components/ui/pagination";
+import Image from "next/image";
 
 interface ClientPaginationProps {
   allTheses: any[];
@@ -190,25 +191,38 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
         return "bg-gray-500";
     }
   };
+  
+    const getAuthorDisplayName = (author: any) => {
+    const middleInitial = author.author_minit
+      ? ` ${author.author_minit}.`
+      : "";
+
+    return {
+      name: `${author.author_fname}${middleInitial} ${author.author_lname}`,
+      email: author.author_email,
+    };
+  };
 
    const getSortedAuthors = (thesis: any) => {
     if (!thesis.thesis_author || thesis.thesis_author.length === 0) {
       return [];
     }
 
-    const authorsWithData = thesis.thesis_author.map((sa: any) => {
-      const author = sa.author;
-      if (!author) return null;
-      
-      return {
-        ...author,
-      };
-    }).filter((a: any) => a !== null);
+    const authorsWithData = thesis.thesis_author
+      .map((sa: any) => {
+        const author = sa.author;
+        if (!author) return null;
 
-    // Sort alphabetically by last name
-    authorsWithData.sort((a: any, b: any) => {
-      return a.author_lname.localeCompare(b.author_lname);
-    });
+        return {
+          ...author,
+          displayName: getAuthorDisplayName(author),
+        };
+      })
+      .filter(Boolean);
+
+    authorsWithData.sort((a: any, b: any) =>
+      a.author_lname.localeCompare(b.author_lname)
+    );
 
     return authorsWithData;
   };
@@ -301,18 +315,98 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           const sortedAuthors = getSortedAuthors(thesis);
                           return sortedAuthors.length > 0 ? (
                             sortedAuthors.map((author: any, index: number) => {
-                              const middleInitial = author.author_minit ? ` ${author.author_minit}.` : "";
+                              const displayInfo = author.displayName;
+                              const isScholar = author.scholar;
+                              const isAceCards = !!author.mem_id;
                               return (
                                 <a
-                                  key={`${thesis.id}-${author.id || 'no-id'}-${index}`}
-                                  href={`mailto:${author.author_email}`}
-                                  className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group break-words max-w-full whitespace-normal"
-                                  title={`Email: ${author.author_email}`}
+                                  key={`${thesis.id}-${author.id || "no-id"}-${index}`}
+                                  href={`mailto:${displayInfo.email}`}
+                                  title={`Email: ${displayInfo.email}`}
+                                  className="
+                                    relative
+                                    overflow-hidden
+                                    bg-[#eec643]
+                                    text-[#011638]
+                                    px-3
+                                    py-1
+                                    rounded-full
+                                    text-sm
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    font-ubuntu-mono
+                                    hover:bg-[#d9b237]
+                                    hover:shadow-md
+                                    transition-all
+                                    duration-300
+                                    cursor-pointer
+                                    group
+                                  "
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                  </svg>
-                                  {author.author_fname} {middleInitial} {author.author_lname}
+                                  {/* Shine Effect */}
+                                  {isAceCards && (
+                                    <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                                      <span
+                                        className="
+                                          absolute
+                                          top-0
+                                          left-[-150%]
+                                          h-full
+                                          w-8
+                                          rotate-12
+                                          bg-white/60
+                                          blur-sm
+                                          transition-all
+                                          duration-700
+                                          group-hover:left-[150%]
+                                        "
+                                      />
+                                    </span>
+                                  )}
+
+                                 {isAceCards ? (
+                                    <Image
+                                      src="/assets/logos/ACE CARDS logo.png"
+                                      alt="ACE CARDS"
+                                      width={18}
+                                      height={18}
+                                      className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                                    />
+                                  ) : isScholar ? (
+                                    <Image
+                                      src="/assets/logos/DOST-SEI.png"
+                                      alt="DOST Scholar"
+                                      width={18}
+                                      height={18}
+                                      className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110"
+                                    />
+                                  ) : (
+                                    <svg
+                                      className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                      />
+                                    </svg>
+                                  )}
+
+                                  {/* Author Name */}
+                                  <div className="relative z-10 flex flex-col leading-tight">
+                                  <span className="relative z-10">{displayInfo.name}</span>
+
+                                    {(isScholar && !isAceCards) && (
+                                      <span className="text-[10px] font-medium text-[#011638]/65">
+                                        {"DOST Scholar"}
+                                      </span>
+                                    )}
+                                  </div>
                                 </a>
                               );
                             })
