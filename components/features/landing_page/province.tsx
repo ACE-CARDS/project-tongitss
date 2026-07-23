@@ -140,11 +140,18 @@ export default function Province({ id }: { id?: string }) {
       const { data, error } = await query;
 
       if (!error && data) {
-        const formatted = data.map((s) => ({
-          id: s.id,
-          name: s.school_name,
-          memberCount: s.member.length,
-        }));
+        const formatted = data
+          .map((s) => ({
+            id: s.id,
+            name: s.school_name,
+            memberCount: s.member.length,
+          }))
+          .sort((a, b) => {
+            if (b.memberCount !== a.memberCount) {
+              return b.memberCount - a.memberCount;
+            }
+            return a.name.localeCompare(b.name);
+          });
 
         const total = formatted.reduce((acc, curr) => acc + curr.memberCount, 0);
 
@@ -332,10 +339,10 @@ export default function Province({ id }: { id?: string }) {
                     provinceSchools.map((school) => (
                       <div
                         key={school.id}
-                        className="justify-between group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                        className="justify-between group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm transition-all duration-300"
                       >
                         <div className="flex-1 pr-4 text-left">
-                          <span className="font-semibold text-base sm:text-lg text-white group-hover:text-[#eec643] transition-colors leading-snug break-words whitespace-normal">
+                          <span className="font-semibold text-base sm:text-lg text-white transition-colors leading-snug break-words whitespace-normal">
                             {school.name}
                           </span>
                         </div>

@@ -2063,7 +2063,10 @@ export default function MembersPage() {
                       return {
                         mem_fname: obj.mem_fname,
                         mem_lname: obj.mem_lname,
-                        mem_minit: obj.mem_minit || "",
+                        mem_minit: (obj.mem_minit || "")
+                          .toUpperCase()
+                          .replace(/[^A-Z]/g, "")
+                          .slice(0, 2),
                         role: obj.role || "member",
                         comm: obj.comm ? Number(obj.comm) : DEFAULT_COMM,
                         mem_schol_type:
