@@ -214,17 +214,26 @@ export default function Province({ id }: { id?: string }) {
   }, [selectedProvince, selectedAY]);
 
   const schoolOrgs = [
-    { name: "BAGGS", province: "Benguet", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE" },
-    { name: "UB TALAS", province: "Benguet", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
-    { name: "UC CATS", province: "Benguet", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
-    { name: "UP SIKAT", province: "Benguet", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
-    { name: "KAINDS", province: "Kalinga", logo: "/assets/logos/KAINDS.png", fb: "https://www.facebook.com/KalingaDOSTscholars" },
+    { name: "BAGGS", school: "Saint Louis University", province: "Benguet", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE" },
+    { name: "UB TALAS", school: "University of Baguio", province: "Benguet", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
+    { name: "UC CATS", school: "University of the Cordilleras", province: "Benguet", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
+    { name: "UP SIKAT", school: "University of the Philippines - Baguio", province: "Benguet", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
+    { name: "KAINDS", school: "Kalinga State University", province: "Kalinga", logo: "/assets/logos/KAINDS.png", fb: "https://www.facebook.com/KalingaDOSTscholars" },
   ];
+
+  const getOrgForSchool = (schoolName: string) => {
+    return schoolOrgs.find(
+      (org) => org.school.toLowerCase().trim() === schoolName.toLowerCase().trim(),
+    );
+  };
 
   const filteredOrgs = useMemo(() => {
     if (!selectedProvince) return schoolOrgs;
     return schoolOrgs.filter((org) => org.province === selectedProvince);
   }, [selectedProvince]);
+
+const listContainerRef = useRef<HTMLDivElement>(null);
+const [hoveredOrg, setHoveredOrg] = useState<{ name: string; top: number; left: number } | null>(null);
 
   return (
     <section
@@ -301,7 +310,8 @@ export default function Province({ id }: { id?: string }) {
                   {selectedAY}
                 </p>
 
-                {/* School Org Logos */}
+                {/* 
+                School Org Logos 
                 <div className="flex flex-wrap gap-2 justify-center xl:justify-start mt-4">
                   {filteredOrgs.map((org) => {
                     return (
@@ -322,6 +332,8 @@ export default function Province({ id }: { id?: string }) {
                     );
                   })}
                 </div>
+                */}
+
               </div>
 
               {/* School List*/}
@@ -333,24 +345,55 @@ export default function Province({ id }: { id?: string }) {
                 </p>
               </div>
 
-              <div className="xl:w-[420px] h-[400px] flex-shrink-0">
+              <div ref={listContainerRef} className="relative xl:w-[420px] h-[400px] flex-shrink-0">
                 <div className="space-y-3 max-h-[360px] sm:max-h-[435px] overflow-y-auto overflow-x-visible px-2 py-2 pr-2 custom-scrollbar-white-nobg">
                   {provinceSchools.length > 0 ? (
-                    provinceSchools.map((school) => (
-                      <div
-                        key={school.id}
-                        className="justify-between group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm transition-all duration-300"
-                      >
-                        <div className="flex-1 pr-4 text-left">
-                          <span className="font-semibold text-base sm:text-lg text-white transition-colors leading-snug break-words whitespace-normal">
-                            {school.name}
+                    provinceSchools.map((school) => {
+                      const org = getOrgForSchool(school.name);
+
+                      return (
+                        <div
+                          key={school.id}
+                          className="justify-between group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm transition-all duration-300"
+                        >
+                          <div className="flex items-center gap-3 flex-1 pr-4 text-left">
+                            {org && (
+                              <a
+                                href={org.fb}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="shrink-0 hover:scale-110 transition-transform duration-200"
+                                onMouseEnter={(e) => {
+                                  const container = listContainerRef.current;
+                                  if (!container) return;
+                                  const containerRect = container.getBoundingClientRect();
+                                  const logoRect = e.currentTarget.getBoundingClientRect();
+
+                                  setHoveredOrg({
+                                    name: org.name,
+                                    top: logoRect.top - containerRect.top,
+                                    left: logoRect.left - containerRect.left + logoRect.width / 2,
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredOrg(null)}
+                              >
+                                <img
+                                  src={org.logo}
+                                  alt={org.name}
+                                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain cursor-pointer"
+                                />
+                              </a>
+                            )}
+                            <span className="font-semibold text-base sm:text-lg text-white transition-colors leading-snug break-words whitespace-normal">
+                              {school.name}
+                            </span>
+                          </div>
+                          <span className="text-lg sm:text-xl font-bold text-[#eec643] shrink-0">
+                            {school.memberCount}
                           </span>
                         </div>
-                        <span className="text-lg sm:text-xl font-bold text-[#eec643] shrink-0">
-                          {school.memberCount}
-                        </span>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-center py-8 text-white/60">
                       {selectedProvince
@@ -359,9 +402,18 @@ export default function Province({ id }: { id?: string }) {
                     </div>
                   )}
                 </div>
+
+                {hoveredOrg && (
+                  <span
+                    className="absolute px-2 py-1 bg-[#011638] text-white text-xs rounded-lg whitespace-nowrap z-[100] pointer-events-none -translate-x-1/2 -translate-y-full"
+                    style={{ top: hoveredOrg.top - 8, left: hoveredOrg.left }}
+                  >
+                    {hoveredOrg.name}
+                  </span>
+                )}
               </div>
-            </div>
-          </div>
+              </div>
+              </div>
 
           {/* RIGHT COLUMN */}
           <div className="hidden xl:block relative z-10 flex-1 mt-10 xl:mt-0">
