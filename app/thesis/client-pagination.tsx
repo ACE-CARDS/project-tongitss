@@ -223,7 +223,7 @@ export default function ClientPagination({ allTheses, currentPage }: ClientPagin
                       
                       {/* Thesis Date */}
                       <div>
-                        <span className="text-[#475569] block font-ubuntu-mono">Publication Year:</span>
+                        <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
                         <span className="font-ubuntu-mono text-[#011638]">
                           {new Date(thesis.thesis_date).toLocaleDateString(
                             "en-US",
