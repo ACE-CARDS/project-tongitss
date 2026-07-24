@@ -167,7 +167,7 @@ function FilterPopup({
         {/* year filter */}
         <div>
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
-            Publication Years
+            Survey Years
           </label>
           <div className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors">
             {years.length > 0 ? (

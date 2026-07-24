@@ -32,13 +32,25 @@ export default async function SurveyData({
       : [parseInt(yearParams)].filter(y => !isNaN(y))
     : [];
 
-  const { data: yearData, error: yearError } = await supabase
+  // Fetch categories and schools for the header
+  const [categoriesResult, schoolsResult] = await Promise.all([
+    supabase
+      .from("r_category")
+      .select("id, r_category_name")
+      .order("r_category_name", { ascending: true }),
+    supabase
+      .from("school")
+      .select("id, school_name")
+      .order("school_name", { ascending: true })
+  ]);
+
+  const categories = categoriesResult.data || [];
+  const schools = schoolsResult.data || [];
+
+  // Fetch available years
+  const { data: yearData } = await supabase
     .from("survey")
     .select("survey_start");
-
-  if (yearError) {
-    console.error("Error fetching years:", yearError);
-  }
 
   const availableYears = yearData && yearData.length > 0
     ? [...new Set(yearData
@@ -50,17 +62,8 @@ export default async function SurveyData({
       )].sort((a, b) => b - a)
     : [];
 
-  const { data: categories } = await supabase
-    .from("r_category")
-    .select("id, r_category_name")
-    .order("r_category_name");
-
-  const { data: schools } = await supabase
-    .from("school")
-    .select("id, school_name")
-    .order("school_name");
-
-  let baseQuery = supabase
+  // Build the query - same as admin but only show "accepted" surveys
+  let query = supabase
     .from("survey")
     .select(
       `
@@ -87,64 +90,28 @@ export default async function SurveyData({
           author_lname,
           author_minit,
           author_email,
-          mem_id
+          mem_id,
+          scholar
         )
       )
     `
     )
-    .eq("survey_status", "accepted")  // Show ongoing survyes
-    .order("survey_end", { ascending: true }); // Prio are the ones that end first
+    .eq("survey_status", "accepted")  // Only show accepted surveys
+    .order("created_at", { ascending: false }); // Same as admin - newest first
 
+  // Apply filters - same logic as admin
   if (categoryId) {
-    baseQuery = baseQuery.eq("r_category", categoryId);
+    query = query.eq("r_category", categoryId);
   }
-
   if (schoolId) {
-    baseQuery = baseQuery.eq("school", schoolId);
+    query = query.eq("school", schoolId);
   }
 
-  const { data: fetchedSurveys, error } = await baseQuery;
-
-  console.log("Fetched surveys:", fetchedSurveys);
-  console.log("Error:", error);
+  const { data: fetchedSurveys, error } = await query;
 
   let filteredSurveys = fetchedSurveys || [];
-  
-  // Collect all unique mem_ids from authors to fetch member data
-  const memIds = new Set();
-  filteredSurveys.forEach((survey: any) => {
-    if (survey.survey_author && Array.isArray(survey.survey_author)) {
-      survey.survey_author.forEach((sa: any) => {
-        if (sa.author?.mem_id) {
-          memIds.add(sa.author.mem_id);
-        }
-      });
-    }
-  });
 
-  // Fetch member data for all authors with mem_id
-  let membersData: any[] = [];
-  if (memIds.size > 0) {
-    const { data: members, error: membersError } = await supabase
-      .from("member")
-      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
-      .in("id", Array.from(memIds));
-    
-    if (!membersError && members) {
-      membersData = members;
-    } else if (membersError) {
-      console.error("Error fetching member data:", membersError);
-    }
-  }
-
-  // Attach member data to each survey for easy access
-  const surveysWithMemberData = filteredSurveys.map((survey: any) => ({
-    ...survey,
-    members_data: membersData
-  }));
-
-  filteredSurveys = surveysWithMemberData;
-  
+  // Filter by years - same as admin
   if (selectedYears.length > 0) {
     filteredSurveys = filteredSurveys.filter((s: any) => {
       const surveyDate = new Date(s.survey_start);
@@ -152,7 +119,8 @@ export default async function SurveyData({
       return !isNaN(surveyYear) && selectedYears.includes(surveyYear);
     });
   }
-  
+
+  // Search filtering - same as admin
   if (q) {
     const tokens = q
       .split(",")
@@ -170,17 +138,9 @@ export default async function SurveyData({
       if (s.survey_author && Array.isArray(s.survey_author)) {
         s.survey_author.forEach((sa: any) => {
           const a = sa.author;
-          // Include member data in search if available
-          if (a?.mem_id && s.members_data) {
-            const member = s.members_data.find((m: any) => m.id === a.mem_id);
-            if (member) {
-              hay += " " + (member.mem_fname ?? "") + " " + (member.mem_lname ?? "");
-            }
-          }
           hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
         });
       }
-
       const hayLower = hay.toLowerCase();
       return tokens.some((token) => hayLower.includes(token));
     });
@@ -193,8 +153,8 @@ export default async function SurveyData({
   return (
     <>
       <SurveyHeader
-        categories={categories || []}
-        schools={schools || []}
+        categories={categories}
+        schools={schools}
         years={availableYears}
         initialQuery={q || ""}
         initialCategory={categoryId || ""}
