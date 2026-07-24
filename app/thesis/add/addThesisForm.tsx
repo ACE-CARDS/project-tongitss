@@ -1903,7 +1903,6 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                         name="category"
                         required
                         value={selectedCategory}
-                        disabled={showNewCategory}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -1925,7 +1924,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           validateForm();
                         }}
                       >
-                        <option value="">Select a category</option>
+                        <option value="" disabled>Select a category</option>
                         {availableCategories.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.r_category_name}
@@ -2046,7 +2045,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           validateForm();
                         }}
                       >
-                        <option value="">Select a school</option>
+                        <option value="" disabled>Select a school</option>
                         {availableSchools.map((school) => (
                           <option key={school.id} value={school.id}>
                             {school.school_name}

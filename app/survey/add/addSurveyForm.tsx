@@ -1,7 +1,7 @@
 // same logic as thesis
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/ui/backButton";
@@ -23,6 +23,7 @@ interface Author {
   lastName?: string;
   email?: string;
   memberId?: number | null;
+  isScholar?: boolean;
 }
 
 interface AddSurveyFormProps {
@@ -34,17 +35,20 @@ interface AddSurveyFormProps {
 export default function AddSurveyForm({ categories, schools, returnTo }: AddSurveyFormProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
+  const [authors, setAuthors] = useState<Author[]>([{ id: 1, isScholar: true }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
   const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
+  const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/survey");
   const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSchool, setSelectedSchool] = useState("");
   
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -56,12 +60,15 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const [isCategoryTouched, setIsCategoryTouched] = useState(false);
   const [isSchoolTouched, setIsSchoolTouched] = useState(false);
   const [surveyLinkError, setSurveyLinkError] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dateError, setDateError] = useState("");
 
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
+  const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
+  const formSubmittedRef = useRef(false);
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -93,7 +100,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
               middleInitial: member.mem_minit || "",
               lastName: member.mem_lname,
               email: member.mem_email,
-              memberId: member.id
+              memberId: member.id,
+              isScholar: true // Members are automatically scholars
             }]);
           }
         } else {
@@ -102,7 +110,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
           if (userEmail.user?.email) {
             const { data: existingAuthor } = await supabase
               .from("author")
-              .select("id, author_fname, author_lname, author_minit, author_email, mem_id")
+              .select("id, author_fname, author_lname, author_minit, author_email, mem_id, scholar")
               .eq("author_email", userEmail.user.email)
               .maybeSingle();
             
@@ -113,7 +121,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                 middleInitial: existingAuthor.author_minit || "",
                 lastName: existingAuthor.author_lname,
                 email: existingAuthor.author_email,
-                memberId: existingAuthor.mem_id
+                memberId: existingAuthor.mem_id,
+                isScholar: existingAuthor.scholar || false
               }]);
             }
           }
@@ -199,7 +208,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       middleInitial: member.minit || "",
       lastName: member.lname,
       email: member.email,
-      memberId: member.id
+      memberId: member.id,
+      isScholar: true // Members are automatically scholars
     };
     setAuthors(updatedAuthors);
     setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
@@ -215,51 +225,39 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     if (middleInitialInput) middleInitialInput.value = member.minit || "";
     if (lastNameInput) lastNameInput.value = member.lname;
     if (emailInput) emailInput.value = member.email;
+    
+    validateForm();
   };
 
   // Select email suggestion
   const selectEmailSuggestion = (suggestion: {email: string, memberId: number, fname: string, lname: string, minit: string | null}, authorIndex: number) => {
-  const updatedAuthors = [...authors];
-  updatedAuthors[authorIndex] = {
-    ...updatedAuthors[authorIndex],
-    email: suggestion.email,
-    memberId: suggestion.memberId,
-    firstName: suggestion.fname,
-    lastName: suggestion.lname,
-    middleInitial: suggestion.minit || ""
-  };
-  setAuthors(updatedAuthors);
-  setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
-  
-  // Update email input field
-  const emailInput = document.querySelectorAll('input[name="email[]"]')[authorIndex] as HTMLInputElement;
-  if (emailInput) {
-    emailInput.value = suggestion.email;
-    // Trigger validation and clear error
+    setAuthors(prev =>
+      prev.map((author, index) =>
+        index === authorIndex
+          ? {
+              ...author,
+              email: suggestion.email,
+              memberId: suggestion.memberId,
+              firstName: suggestion.fname,
+              lastName: suggestion.lname,
+              middleInitial: suggestion.minit || "",
+              isScholar: true // Members are automatically scholars
+            }
+          : author
+      )
+    );
+
+    setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
+
     const errorSpan = document.getElementById(`email-error-${authorIndex}`);
     if (errorSpan) {
-      errorSpan.style.display = 'none';
+      errorSpan.style.display = "none";
     }
-  }
-  
-  // Update name fields if they're empty or mismatched
-  const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[authorIndex] as HTMLInputElement;
-  const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[authorIndex] as HTMLInputElement;
-  const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[authorIndex] as HTMLInputElement;
-  
-  if (firstNameInput && (!firstNameInput.value || firstNameInput.value !== suggestion.fname)) {
-    firstNameInput.value = suggestion.fname;
-  }
-  if (lastNameInput && (!lastNameInput.value || lastNameInput.value !== suggestion.lname)) {
-    lastNameInput.value = suggestion.lname;
-  }
-  if (middleInitialInput && (!middleInitialInput.value || middleInitialInput.value !== (suggestion.minit || ""))) {
-    middleInitialInput.value = suggestion.minit || "";
-  }
-  
-  // Re-validate
-  validateForm();
-};
+
+    setTimeout(() => {
+      validateForm();
+    }, 0);
+  };
 
   // Check duplicate authors on each field
   const checkDuplicateAuthors = () => {
@@ -308,6 +306,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     } else {
       setSurveyLinkError("");
     }
+    validateForm();
   };
 
   // Validate entire form
@@ -317,9 +316,9 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
     const descriptionValid = descriptionInput?.value && descriptionInput.value.length >= 10;
     const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-    const categoryValid = !!categorySelect?.value;
+    const categoryValid = !!categorySelect?.value && !categoryError;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
-    const schoolValid = !!schoolSelect?.value;
+    const schoolValid = !!schoolSelect?.value && !schoolError;
     const surveyLinkValid = !surveyLinkError;
     const respondentsInput = document.querySelector('input[name="respondents"]') as HTMLInputElement;
     const respondentsValid = respondentsInput?.value && respondentsInput.value.length >= 2;
@@ -327,7 +326,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     const firstNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="firstName[]"]');
     const lastNameInputs = document.querySelectorAll<HTMLInputElement>('input[name="lastName[]"]');
     const emailInputs = document.querySelectorAll<HTMLInputElement>('input[name="email[]"]');
-  
+
     let hasValidAuthor = false;
     for (let i = 0; i < firstNameInputs.length; i++) {
       if (firstNameInputs[i]?.value && lastNameInputs[i]?.value && emailInputs[i]?.value) {
@@ -363,9 +362,22 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       if (hasDuplicateAuthor) break;
     }
     
+    // If non-member hasn't selected scholar status
+    let hasScholarStatusSelected = true;
+    for (let i = 0; i < authors.length; i++) {
+      if (!authors[i].memberId && authors[i].isScholar === undefined) {
+        hasScholarStatusSelected = false;
+        break;
+      }
+    }
+    
+    const privacyCheckbox = document.querySelector('input[name="privacy"]') as HTMLInputElement;
+    const privacyValid = privacyCheckbox?.checked;
+    
     const hasErrors = !titleValid || !descriptionValid || !categoryValid || 
                       !schoolValid || !surveyLinkValid || !respondentsValid || !datesValid || 
-                      !hasValidAuthor || !!categoryError || !!schoolError || hasDuplicateAuthor;
+                      !hasValidAuthor || !!categoryError || !!schoolError || hasDuplicateAuthor || 
+                      !privacyValid || !hasScholarStatusSelected;
     
     setIsFormValid(!hasErrors);
   };
@@ -407,6 +419,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             if (categorySelect) categorySelect.value = draft.category;
             setIsCategoryTouched(true);
             setCategoryError("");
+            validateForm();
           }, 100);
         }
 
@@ -425,6 +438,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             if (schoolSelect) schoolSelect.value = draft.school;
             setIsSchoolTouched(true);
             setSchoolError("");
+            validateForm();
           }, 100);
         }
 
@@ -435,7 +449,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             middleInitial: author.middleInitial,
             lastName: author.lastName,
             email: author.email,
-            memberId: author.memberId
+            memberId: author.memberId,
+            isScholar: author.isScholar || false
           })));
 
           setTimeout(() => {
@@ -450,8 +465,13 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
               if (lastNameInputs[index]) lastNameInputs[index].value = author.lastName || "";
               if (emailInputs[index]) emailInputs[index].value = author.email || "";
             });
+            validateForm();
           }, 100);
         }
+        
+        setTimeout(() => {
+          validateForm();
+        }, 200);
       } catch (err) {
         console.error("Error loading draft:", err);
       }
@@ -460,7 +480,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
   useEffect(() => {
     if (returnTo) {
-      // save to sessionStorage
       sessionStorage.setItem("surveyReturnUrl", returnTo);
       setReturnUrl(returnTo);
     } else {
@@ -486,20 +505,53 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       middleInitial: "",
       lastName: "",
       email: "",
-      memberId: null
+      memberId: null,
+      isScholar: undefined
     }]);
   };
 
   const removeAuthor = (id: number) => {
     if (authors.length > 1) {
       const updatedAuthors = authors.filter(author => author.id !== id);
-      // Re-index
       const reindexedAuthors = updatedAuthors.map((author, idx) => ({ 
         ...author, 
         id: idx + 1
       }));
       setAuthors(reindexedAuthors);
+      
+      // Clean up search results for removed author
+      setSearchResults(prev => {
+        const newMap = new Map(prev);
+        const authorIndex = authors.findIndex(a => a.id === id);
+        if (authorIndex !== -1) {
+          newMap.delete(authorIndex);
+          setEmailSuggestions(prevMap => {
+            const newEmailMap = new Map(prevMap);
+            newEmailMap.delete(authorIndex);
+            return newEmailMap;
+          });
+          setShowSearchDropdown(prevMap => {
+            const newShowMap = new Map(prevMap);
+            newShowMap.delete(authorIndex);
+            return newShowMap;
+          });
+          setShowScholarDialog(prevMap => {
+            const newDialogMap = new Map(prevMap);
+            newDialogMap.delete(authorIndex);
+            return newDialogMap;
+          });
+        }
+        return newMap;
+      });
     }
+  };
+
+  const handleScholarResponse = (authorIndex: number, isScholar: boolean) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex].isScholar = isScholar;
+    setAuthors(updatedAuthors);
+    setShowScholarDialog(prev => new Map(prev).set(authorIndex, false));
+    validateForm();
   };
 
   const handleAddNewCategory = async () => {
@@ -521,6 +573,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       );
 
       if (existingCategory) {
+        setSelectedCategory(existingCategory.id);
         const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
         if (categorySelect) {
           categorySelect.value = existingCategory.id;
@@ -529,6 +582,25 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         setNewCategoryName("");
         setCategoryError("");
         setIsCategoryTouched(true);
+        validateForm();
+        return;
+      }
+
+      const existingPending = pendingNewCategories.find(
+        c => c.r_category_name.toLowerCase() === newCategoryName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setSelectedCategory(existingPending.id);
+        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+        if (categorySelect) {
+          categorySelect.value = existingPending.id;
+        }
+        setShowNewCategory(false);
+        setNewCategoryName("");
+        setCategoryError("");
+        setIsCategoryTouched(true);
+        validateForm();
         return;
       }
 
@@ -540,53 +612,42 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
       if (existingCategoryInDb) {
         setAvailableCategories(prev => [...prev, existingCategoryInDb]);
-        
-        setTimeout(() => {
-          const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-          if (categorySelect) {
-            categorySelect.value = existingCategoryInDb.id;
-          }
-        }, 100);
-        
+        setSelectedCategory(existingCategoryInDb.id);
+        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+        if (categorySelect) {
+          categorySelect.value = existingCategoryInDb.id;
+        }
         setShowNewCategory(false);
         setNewCategoryName("");
         setCategoryError("");
         setIsCategoryTouched(true);
+        validateForm();
         return;
       }
 
-      const { data: newCategory, error: categoryError } = await supabase
-        .from("r_category")
-        .insert({ r_category_name: newCategoryName })
-        .select("id, r_category_name")
-        .single();
+      // Temporary category with a temporary ID
+      const tempId = `temp-cat-${Date.now()}`;
+      const tempCategory: Category = {
+        id: tempId,
+        r_category_name: newCategoryName.trim()
+      };
 
-      if (categoryError) {
-        // Handle database error
-        if (categoryError.code === '23505') { // Unique violation
-          setCategoryError("This category already exists in the database");
-        } else if (categoryError.code === '23514') {
-          setCategoryError("Category name is invalid");
-        } else {
-          setCategoryError(`Database error: ${categoryError.message}`);
-        }
-        console.error("Error adding category:", categoryError);
-        return;
+      // Add to list
+      setPendingNewCategories(prev => [...prev, tempCategory]);
+      setAvailableCategories(prev => [...prev, tempCategory]);
+      setSelectedCategory(tempId);
+      
+      // Update select element
+      const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+      if (categorySelect) {
+        categorySelect.value = tempId;
       }
-
-      setAvailableCategories(prev => [...prev, newCategory]);
-
-      setTimeout(() => {
-        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-        if (categorySelect) {
-          categorySelect.value = newCategory.id;
-        }
-      }, 100);
 
       setShowNewCategory(false);
       setNewCategoryName("");
       setCategoryError("");
       setIsCategoryTouched(true);
+      validateForm();
     } catch (error) {
       console.error("Error adding category:", error);
       setCategoryError("An unexpected error occurred. Please try again.");
@@ -612,6 +673,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       );
 
       if (existingSchool) {
+        setSelectedSchool(existingSchool.id);
         const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
         if (schoolSelect) {
           schoolSelect.value = existingSchool.id;
@@ -620,6 +682,25 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         setNewSchoolName("");
         setSchoolError("");
         setIsSchoolTouched(true);
+        validateForm();
+        return;
+      }
+
+      const existingPending = pendingNewSchools.find(
+        s => s.school_name.toLowerCase() === newSchoolName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setSelectedSchool(existingPending.id);
+        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+        if (schoolSelect) {
+          schoolSelect.value = existingPending.id;
+        }
+        setShowNewSchool(false);
+        setNewSchoolName("");
+        setSchoolError("");
+        setIsSchoolTouched(true);
+        validateForm();
         return;
       }
 
@@ -631,62 +712,42 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
 
       if (existingSchoolInDb) {
         setAvailableSchools(prev => [...prev, existingSchoolInDb]);
-        
-        setTimeout(() => {
-          const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
-          if (schoolSelect) {
-            schoolSelect.value = existingSchoolInDb.id;
-          }
-        }, 100);
-        
+        setSelectedSchool(existingSchoolInDb.id);
+        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+        if (schoolSelect) {
+          schoolSelect.value = existingSchoolInDb.id;
+        }
         setShowNewSchool(false);
         setNewSchoolName("");
         setSchoolError("");
         setIsSchoolTouched(true);
+        validateForm();
         return;
       }
 
-      const { data: defaultProvince } = await supabase
-        .from("province")
-        .select("id")
-        .limit(1)
-        .single();
+      // Temporary school with a temporary ID
+      const tempId = `temp-school-${Date.now()}`;
+      const tempSchool: School = {
+        id: tempId,
+        school_name: newSchoolName.trim()
+      };
 
-      const { data: newSchool, error: schoolError } = await supabase
-        .from("school")
-        .insert({ 
-          school_name: newSchoolName,
-          province: defaultProvince?.id || 1
-        })
-        .select("id, school_name")
-        .single();
-
-      if (schoolError) {
-        // Handle database error
-        if (schoolError.code === '23505') { // Unique violation
-          setSchoolError("This school already exists in the database");
-        } else if (schoolError.code === '23514') {
-          setSchoolError("School name is invalid");
-        } else {
-          setSchoolError(`Database error: ${schoolError.message}`);
-        }
-        console.error("Error adding school:", schoolError);
-        return;
+      // Add to list
+      setPendingNewSchools(prev => [...prev, tempSchool]);
+      setAvailableSchools(prev => [...prev, tempSchool]);
+      setSelectedSchool(tempId);
+      
+      // Update select element
+      const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
+      if (schoolSelect) {
+        schoolSelect.value = tempId;
       }
-
-      setAvailableSchools(prev => [...prev, newSchool]);
-
-      setTimeout(() => {
-        const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
-        if (schoolSelect) {
-          schoolSelect.value = newSchool.id;
-        }
-      }, 100);
 
       setShowNewSchool(false);
       setNewSchoolName("");
       setSchoolError("");
       setIsSchoolTouched(true);
+      validateForm();
     } catch (error) {
       console.error("Error adding school:", error);
       setSchoolError("An unexpected error occurred. Please try again.");
@@ -696,19 +757,9 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (startDate && endDate && endDate <= startDate) {
-      setDateError("End date must be after start date");
-      // Scroll to the error
-      const dateSection = document.getElementById('end_date');
-      if (dateSection) {
-        dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
-    }
-
     // Validate category and school before submission
-    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement | null;
-    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement | null;
+    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement;
+    const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement;
     
     let hasError = false;
     
@@ -723,9 +774,17 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       setIsSchoolTouched(true);
       hasError = true;
     }
+
+    if (startDate && endDate && endDate <= startDate) {
+      setDateError("End date must be after start date");
+      const dateSection = document.getElementById('end_date');
+      if (dateSection) {
+        dateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
     
     if (hasError) {
-      // Scroll to the error
       const errorElement = document.querySelector('.border-red-500');
       if (errorElement) {
         errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -734,6 +793,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     }
 
     setIsSubmitting(true);
+    formSubmittedRef.current = true;
 
     try {
       const form = e.currentTarget;
@@ -745,8 +805,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       const surveyLinkInput = form.elements.namedItem("survey_link") as HTMLInputElement | null;
       const respondentsInput = form.elements.namedItem("respondents") as HTMLInputElement | null;
       const maxRespondentsInput = form.elements.namedItem("max_respondents") as HTMLInputElement | null;
-      const categorySelect = form.elements.namedItem("category") as HTMLSelectElement | null;
-      const schoolSelect = form.elements.namedItem("school") as HTMLSelectElement | null;
 
       if (!titleInput?.value || !descriptionInput?.value ||
           !startDateInput?.value || !endDateInput?.value || !surveyLinkInput?.value || !respondentsInput?.value) {
@@ -766,18 +824,75 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         }
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Get the selected category ID
+      const selectedCategoryId = categorySelect.value;
+      
+      // Check if needs to be saved
+      let finalCategoryId = selectedCategoryId;
+      const isTempCategory = selectedCategoryId.startsWith('temp-cat-');
+      
+      if (isTempCategory) {
+        // Find the pending category
+        const pendingCategory = pendingNewCategories.find(c => c.id === selectedCategoryId);
+        if (pendingCategory) {
+          // Save to database
+          const { data: newCategory, error: categoryError } = await supabase
+            .from("r_category")
+            .insert({ r_category_name: pendingCategory.r_category_name })
+            .select("id, r_category_name")
+            .single();
 
-      if (!categorySelect?.value) {
-        throw new Error("Please select a category");
-      }
-      const categoryId = categorySelect.value;
+          if (categoryError) {
+            throw new Error(`Failed to save category: ${categoryError.message}`);
+          }
 
-      if (!schoolSelect?.value) {
-        throw new Error("Please select a school");
+          // Update final category ID
+          finalCategoryId = newCategory.id;
+          
+          // Update pending categories and available categories
+          setPendingNewCategories(prev => prev.filter(c => c.id !== selectedCategoryId));
+          setAvailableCategories(prev => 
+            prev.map(c => c.id === selectedCategoryId ? newCategory : c)
+          );
+        }
       }
-      const schoolId = schoolSelect.value;
+
+      // Same logic for school
+      const selectedSchoolId = schoolSelect.value;
+      
+      let finalSchoolId = selectedSchoolId;
+      const isTempSchool = selectedSchoolId.startsWith('temp-school-');
+      
+      if (isTempSchool) {
+        const pendingSchool = pendingNewSchools.find(s => s.id === selectedSchoolId);
+        if (pendingSchool) {
+          const { data: defaultProvince } = await supabase
+            .from("province")
+            .select("id")
+            .limit(1)
+            .single();
+
+          const { data: newSchool, error: schoolError } = await supabase
+            .from("school")
+            .insert({ 
+              school_name: pendingSchool.school_name,
+              province: defaultProvince?.id || 1
+            })
+            .select("id, school_name")
+            .single();
+
+          if (schoolError) {
+            throw new Error(`Failed to save school: ${schoolError.message}`);
+          }
+
+          finalSchoolId = newSchool.id;
+          
+          setPendingNewSchools(prev => prev.filter(s => s.id !== selectedSchoolId));
+          setAvailableSchools(prev => 
+            prev.map(s => s.id === selectedSchoolId ? newSchool : s)
+          );
+        }
+      }
 
       const firstNameInputs = form.querySelectorAll('input[name="firstName[]"]') as NodeListOf<HTMLInputElement>;
       const lastNameInputs = form.querySelectorAll('input[name="lastName[]"]') as NodeListOf<HTMLInputElement>;
@@ -805,7 +920,21 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         if (!firstNameInputs[i]?.value || !lastNameInputs[i]?.value || !emailInputs[i]?.value) continue;
 
         const memberIdFromState = authors[i]?.memberId || null;
-        
+        const isScholar = authors[i]?.isScholar || false;
+
+        if (memberIdFromState) {
+          // Verify email matches registered email
+          const { data: member } = await supabase
+            .from("member")
+            .select("mem_email")
+            .eq("id", memberIdFromState)
+            .single();
+          
+          if (member && member.mem_email.toLowerCase() !== emailInputs[i].value.toLowerCase()) {
+            throw new Error(`Author ${i + 1} is a member but the email does not match the registered organization email.`);
+          }
+        }
+
         // First check if author exists by email
         const { data: existingAuthor } = await supabase
           .from("author")
@@ -830,7 +959,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
               author_lname: lastNameInputs[i].value,
               author_email: emailInputs[i].value,
               author_minit: cleanMinit || null,
-              mem_id: memberIdFromState || null
+              mem_id: memberIdFromState || null,
+              scholar: isScholar
             })
             .select("id")
             .single();
@@ -850,8 +980,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
           survey_link: surveyLinkInput.value,
           survey_respondents: respondentsInput.value,
           max_respondents: maxRespondentsInput?.value ? parseInt(maxRespondentsInput.value) : null,
-          r_category: parseInt(categoryId),
-          school: parseInt(schoolId),
+          r_category: parseInt(finalCategoryId),
+          school: parseInt(finalSchoolId),
           survey_status: 'pending',
         })
         .select("id")
@@ -876,8 +1006,16 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     } catch (error) {
       console.error("Submission error:", error);
       alert(error instanceof Error ? error.message : "Failed to submit survey");
-    } finally {
+      
       setIsSubmitting(false);
+      formSubmittedRef.current = false;
+    } finally {
+      setTimeout(() => {
+        if (document.querySelector('form')) {
+          setIsSubmitting(false);
+          formSubmittedRef.current = false;
+        }
+      }, 500);
     }
   };
 
@@ -917,7 +1055,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     maxLength={300}
                     placeholder="Enter survey title"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    // Error handling
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
                       const errorSpan = document.getElementById('title-error');
@@ -932,8 +1069,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       }
                       validateForm();
                     }}
-                />
-                <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  />
+                  <span id="title-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -948,7 +1085,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     maxLength={1500}
                     placeholder="Enter survey description"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
-                    // Error handling
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
                       const errorSpan = document.getElementById('description-error');
@@ -963,8 +1099,8 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                       }
                       validateForm();
                     }}
-                />
-                <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                  />
+                  <span id="description-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
@@ -979,7 +1115,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                 <div key={author.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-oswald font-bold text-[#011638]">AUTHOR {index + 1}</h3>
-                    {authors.length > 1 && (
+                    {index > 0 && (
                       <button
                         type="button"
                         onClick={() => removeAuthor(author.id)}
@@ -1002,8 +1138,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           maxLength={20}
                           placeholder="First Name"
                           value={author.firstName || ""}
-                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           onChange={(e) => {
+                            if (index === 0) return;
                             const updatedAuthors = [...authors];
                             updatedAuthors[index] = {
                               ...updatedAuthors[index],
@@ -1011,18 +1149,17 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             };
                             setAuthors(updatedAuthors);
                           }}
-                          // Key Limits
                           onKeyDown={(e) => {
+                            if (index === 0) return;
                             if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                               return;
                             }
-
                             if (!/[A-Za-z\s\-'.]/.test(e.key)) {
                               e.preventDefault();
                             }
                           }}
-                          // Error handling
                           onInput={(e) => {
+                            if (index === 0) return;
                             const input = e.target as HTMLInputElement;
                             const errorSpan = document.getElementById(`firstname-error-${index}`);
                             const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
@@ -1062,48 +1199,24 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           maxLength={4}
                           placeholder="M.I."
                           value={author.middleInitial || ""}
-                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                          disabled={index === 0}
+                          className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           onChange={(e) => {
+                            if (index === 0) return;
                             const updatedAuthors = [...authors];
                             updatedAuthors[index] = {
                               ...updatedAuthors[index],
                               middleInitial: e.target.value
                             };
                             setAuthors(updatedAuthors);
-                            
-                            let value = e.target.value.toUpperCase();
-                            value = value.replace(/[^A-Z.]/g, '');
-                            
-                            // Format: letter dot letter dot
-                            if (value.length === 1 && /[A-Z]/.test(value)) {
-                              value = value + '.';
-                            } else if (value.length === 2 && value[1] === '.') {
-                              // Do nothing
-                            } else if (value.length === 2 && /[A-Z]/.test(value[1])) {
-                              value = value[0] + '.' + value[1];
-                            } else if (value.length === 3 && value[1] === '.' && /[A-Z]/.test(value[2])) {
-                              value = value + '.';
-                            } else if (value.length >= 4) {
-                              value = value.slice(0, 2) + value.slice(2, 3) + '.';
-                              if (value.length > 4) value = value.slice(0, 4);
-                            }
-                            
-                            e.target.value = value;
-                            
-                            updatedAuthors[index] = {
-                              ...updatedAuthors[index],
-                              middleInitial: value
-                            };
-                            setAuthors(updatedAuthors);
-                            
-                            const event = new Event('input', { bubbles: true });
-                            e.target.dispatchEvent(event);
                           }}
-                          onInput={(e) => {
-                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                            if (firstNameInput?.value && lastNameInput?.value) {
-                              searchMembersByFullName(firstNameInput.value, lastNameInput.value, (e.target as HTMLInputElement).value, index);
+                          onKeyDown={(e) => {
+                            if (index === 0) return;
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+                            if (!/[A-Za-z]/.test(e.key)) {
+                              e.preventDefault();
                             }
                           }}
                         />
@@ -1120,8 +1233,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         maxLength={20}
                         placeholder="Last Name"
                         value={author.lastName || ""}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         onChange={(e) => {
+                          if (index === 0) return;
                           const updatedAuthors = [...authors];
                           updatedAuthors[index] = {
                             ...updatedAuthors[index],
@@ -1129,23 +1244,21 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           };
                           setAuthors(updatedAuthors);
                         }}
-                        // Key Limits
                         onKeyDown={(e) => {
+                          if (index === 0) return;
                           if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                             return;
                           }
-
                           if (!/[A-Za-z\s\-'.]/.test(e.key)) {
                             e.preventDefault();
                           }
                         }}
-                        // Error handling
                         onInput={(e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const errorSpan = document.getElementById(`lastname-error-${index}`);
                           const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
                           const lastNameInput = input;
-                          const emailInput = document.querySelectorAll('input[name="email[]"]')[index] as HTMLInputElement;
                           const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
 
                           if (input.value.length === 0) {
@@ -1187,13 +1300,11 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                               
                               const normalizedOtherMiddle = otherMiddleInitial ? otherMiddleInitial.charAt(0).toUpperCase() : '';
                               
-                              // Check name fields match
                               if (otherFirstName && otherLastName && currentFirstName && currentLastName) {
                                 const firstNameMatch = otherFirstName.toLowerCase() === currentFirstName.toLowerCase();
                                 const lastNameMatch = otherLastName.toLowerCase() === currentLastName.toLowerCase();
                                 
                                 if (firstNameMatch && lastNameMatch) {
-                                  // Check middle initial
                                   const middleMatch = normalizedCurrentMiddle === normalizedOtherMiddle;
                                   
                                   if (middleMatch) {
@@ -1210,7 +1321,6 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             }
                           }
 
-                          // No duplicate
                           if (errorSpan) {
                             errorSpan.style.display = 'none';
                           }
@@ -1231,8 +1341,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         maxLength={254}
                         placeholder="Email"
                         value={author.email || ""}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
+                        disabled={index === 0}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         onChange={(e) => {
+                          if (index === 0) return;
                           const updatedAuthors = [...authors];
                           updatedAuthors[index] = {
                             ...updatedAuthors[index],
@@ -1240,14 +1352,13 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           };
                           setAuthors(updatedAuthors);
                         }}
-                        // Key Limits
                         onKeyUp={(e) => {
+                          if (index === 0) return;
                           const input = e.target as HTMLInputElement;
                           const char = e.key;
                           const value = input.value;
                           const atCount = (value.match(/@/g) || []).length;
                           
-                          // Prevent second @
                           if (char === '@' && atCount >= 1) {
                             e.preventDefault();
                             return;
@@ -1259,20 +1370,75 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             }
                           }
                         }}
-                        // Search trigger
                         onInput={async (e) => {
-                        const input = e.target as HTMLInputElement;
-                        const errorSpan = document.getElementById(`email-error-${index}`);
-                        const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
-                        const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
-                        const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        
-                        if (input.value.length === 0) {
-                          errorSpan!.textContent = 'Email is required.';
-                          errorSpan!.style.display = 'block';
-                          validateForm();
-                          
+                          if (index === 0) return;
+                          const input = e.target as HTMLInputElement;
+                          const errorSpan = document.getElementById(`email-error-${index}`);
+                          const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                          const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                          const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                          // Clear suggestions when user starts typing
+                          if (input.value.length > 0) {
+                            setEmailSuggestions(prev => new Map(prev).set(index, []));
+                          }
+
+                          if (input.value.length === 0) {
+                            errorSpan!.textContent = "Email is required.";
+                            errorSpan!.style.display = "block";
+
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              await searchMembersByFullName(
+                                firstNameInput.value,
+                                lastNameInput.value,
+                                middleInitialInput?.value || "",
+                                index
+                              );
+                            }
+
+                            validateForm();
+                            return;
+                          }
+
+                          if (!emailRegex.test(input.value)) {
+                            errorSpan!.textContent = 'Please enter a valid email address.';
+                            errorSpan!.style.display = 'block';
+                            validateForm();
+                            return;
+                          }
+
+                          // Check if author has memberId and verify email matches
+                          if (author.memberId) {
+                            const { data: member } = await supabase
+                              .from("member")
+                              .select("mem_email")
+                              .eq("id", author.memberId)
+                              .single();
+                            
+                            if (member && member.mem_email.toLowerCase() !== input.value.toLowerCase()) {
+                              errorSpan!.textContent = 'Members must use their registered organization email.';
+                              errorSpan!.style.display = 'block';
+                              validateForm();
+                              return;
+                            }
+                          }
+
+                          // Check duplicate emails
+                          const allEmails = document.querySelectorAll('input[name="email[]"]');
+                          for (let i = 0; i < allEmails.length; i++) {
+                            if (i !== index) {
+                              const otherEmail = (allEmails[i] as HTMLInputElement).value;
+                              if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
+                                errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                                errorSpan!.style.display = 'block';
+                                validateForm();
+                                return;
+                              }
+                            }
+                          }
+
+                          // Check if email matches a member
                           if (firstNameInput?.value && lastNameInput?.value) {
                             const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
                             
@@ -1281,137 +1447,68 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                               .select("id, mem_fname, mem_lname, mem_minit, mem_email")
                               .ilike("mem_fname", firstNameInput.value)
                               .ilike("mem_lname", lastNameInput.value)
-                              .limit(1);
+                              .limit(3);
                             
                             if (matchingMembers && matchingMembers.length > 0) {
-                              const exactMatch = matchingMembers.find(m => {
-                                const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
-                                return memberMiddle === normalizedMiddle;
-                              });
+                              const memberWithTypedEmail = matchingMembers.find(m => 
+                                m.mem_email.toLowerCase() === input.value.toLowerCase()
+                              );
                               
-                              if (exactMatch) {
-                                setEmailSuggestions(prev => new Map(prev).set(index, [{
-                                  email: exactMatch.mem_email,
-                                  memberId: exactMatch.id,
-                                  fname: exactMatch.mem_fname,
-                                  lname: exactMatch.mem_lname,
-                                  minit: exactMatch.mem_minit
-                                }]));
-                              } else {
-                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              if (memberWithTypedEmail) {
+                                // Found a member with matching email
+                                const updatedAuthors = [...authors];
+                                updatedAuthors[index] = {
+                                  ...updatedAuthors[index],
+                                  memberId: memberWithTypedEmail.id,
+                                  isScholar: true // auto scholar
+                                };
+                                setAuthors(updatedAuthors);
+                                errorSpan!.style.display = 'none';
+                                validateForm();
+                                return;
                               }
-                            } else {
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
-                          } else {
-                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }
-                          return;
-                        }
-                        
-                        // Validate email
-                        if (!emailRegex.test(input.value)) {
-                          errorSpan!.textContent = 'Please enter a valid email address.';
-                          errorSpan!.style.display = 'block';
-                          validateForm();
-                          setEmailSuggestions(prev => new Map(prev).set(index, []));
-                          return;
-                        }
-
-                        // Check duplicate emails
-                        const allEmails = document.querySelectorAll('input[name="email[]"]');
-                        for (let i = 0; i < allEmails.length; i++) {
-                          if (i !== index) {
-                            const otherEmail = (allEmails[i] as HTMLInputElement).value;
-                            if (otherEmail && otherEmail.toLowerCase() === input.value.toLowerCase()) {
-                              errorSpan!.textContent = `This email is already used for Author ${i + 1}.`;
+                          
+                          // Check existing author
+                          const { data: existing } = await supabase
+                            .from("author")
+                            .select("id, author_fname, author_lname, mem_id, scholar")
+                            .eq("author_email", input.value)
+                            .maybeSingle();
+                          
+                          if (existing) {
+                            const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
+                            const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
+                            
+                            if (firstNameMatch && lastNameMatch) {
+                              // Update author with existing info
+                              const updatedAuthors = [...authors];
+                              updatedAuthors[index] = {
+                                ...updatedAuthors[index],
+                                memberId: existing.mem_id || null,
+                                isScholar: existing.scholar || false
+                              };
+                              setAuthors(updatedAuthors);
+                              errorSpan!.style.display = 'none';
+                            } else {
+                              errorSpan!.textContent = 'This email is already registered to a different author.';
                               errorSpan!.style.display = 'block';
-                              validateForm();
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
-                              return;
-                            }
-                          }
-                        }
-
-                        // Check if full name matches a member and show suggestions
-                        if (firstNameInput?.value && lastNameInput?.value) {
-                          const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
-                          
-                          const { data: matchingMembers } = await supabase
-                            .from("member")
-                            .select("id, mem_fname, mem_lname, mem_minit, mem_email")
-                            .ilike("mem_fname", firstNameInput.value)
-                            .ilike("mem_lname", lastNameInput.value)
-                            .limit(3);
-                          
-                          if (matchingMembers && matchingMembers.length > 0) {
-                            const exactMatch = matchingMembers.find(m => {
-                              const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
-                              return memberMiddle === normalizedMiddle;
-                            });
-                            
-                            // Check if email matches any member email
-                            const memberWithTypedEmail = matchingMembers.find(m => 
-                              m.mem_email.toLowerCase() === input.value.toLowerCase()
-                            );
-                            
-                            if (memberWithTypedEmail) {
-                              errorSpan!.style.display = 'none';
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
-                              validateForm();
-                            } else if (exactMatch && input.value.length > 0 && 
-                                      exactMatch.mem_email.toLowerCase().includes(input.value.toLowerCase())) {
-                              setEmailSuggestions(prev => new Map(prev).set(index, [{
-                                email: exactMatch.mem_email,
-                                memberId: exactMatch.id,
-                                fname: exactMatch.mem_fname,
-                                lname: exactMatch.mem_lname,
-                                minit: exactMatch.mem_minit
-                              }]));
-                              errorSpan!.style.display = 'none';
-                              validateForm();
-                            } else {
-                              errorSpan!.style.display = 'none';
-                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
                           } else {
                             errorSpan!.style.display = 'none';
-                            setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }
-                        } else {
-                          errorSpan!.style.display = 'none';
-                          setEmailSuggestions(prev => new Map(prev).set(index, []));
-                        }
-                        
-                        // Check existing author
-                        const { data: existing } = await supabase
-                          .from("author")
-                          .select("id, author_fname, author_lname")
-                          .eq("author_email", input.value)
-                          .maybeSingle();
-                        
-                        if (existing) {
-                          const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
-                          const lastNameMatch = existing.author_lname?.toLowerCase() === lastNameInput?.value?.toLowerCase();
-                          
-                          if (!firstNameMatch || !lastNameMatch) {
-                            errorSpan!.textContent = 'This email is already registered to a different author.';
-                            errorSpan!.style.display = 'block';
+                          validateForm();
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => {
                             setEmailSuggestions(prev => new Map(prev).set(index, []));
-                          }
-                        }
-                        validateForm();
-                      }}
-                      onBlur={() => {
-                        setTimeout(() => {
-                          setEmailSuggestions(prev => new Map(prev).set(index, []));
-                        }, 200);
-                      }}
+                          }, 200);
+                        }}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       
-                      {/* Email Suggestions Dropdown */}
-                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && index !== 0 && 
+                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && 
                       !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
                         <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
                           <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
@@ -1446,6 +1543,46 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         </div>
                       )}
                     </div>
+
+                    {/* Scholar Status */}
+                    {index !== 0 && author.firstName && author.lastName && author.email && !author.memberId && (
+                      <div className="mt-2 pt-2">
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                          DOST Scholar Status <span className="text-[#eec643]">*</span>
+                        </label>
+                        <div className="flex items-center space-x-6">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={author.isScholar === true}
+                                onChange={() => handleScholarResponse(index, true)}
+                                className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                              />
+                              <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                ♠
+                              </span>
+                            </div>
+                            <span className="text-sm font-ubuntu-mono text-[#475569]">Yes</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={author.isScholar === false}
+                                onChange={() => handleScholarResponse(index, false)}
+                                className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                              />
+                              <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                ♠
+                              </span>
+                            </div>
+                            <span className="text-sm font-ubuntu-mono text-[#475569]">No</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                 </div>
@@ -1487,13 +1624,11 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         return `${year}-${month}-${day}`;
                       })()}
                       className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                      // Date Limit
                       value={startDate}
                       onChange={(e) => {
                         const newStartDate = e.target.value;
                         setStartDate(newStartDate);
                         
-                        // If end date exists and is not after start date, clear it and show error
                         if (endDate && newStartDate >= endDate) {
                           setEndDate("");
                           setDateError("End date must be after start date");
@@ -1506,166 +1641,162 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                   </div>
                   
                   <div>
-                  <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    End Date <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    id="end_date"
-                    name="end_date"
-                    required
-                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                      dateError ? 'border-red-500' : 'border-[#94a3b8]'
-                    }`}
-                    value={endDate}
-                    min={(() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      tomorrow.setHours(0, 0, 0, 0);
-                      
-                      if (startDate) {
-                        const startDateObj = new Date(startDate);
+                    <label htmlFor="end_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      End Date <span className="text-[#eec643]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      id="end_date"
+                      name="end_date"
+                      required
+                      className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                        dateError ? 'border-red-500' : 'border-[#94a3b8]'
+                      }`}
+                      value={endDate}
+                      min={(() => {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        tomorrow.setHours(0, 0, 0, 0);
+                        
+                        if (startDate) {
+                          const startDateObj = new Date(startDate);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          
+                          if (startDateObj.getTime() === today.getTime()) {
+                            return tomorrow.toISOString().split('T')[0];
+                          }
+                          
+                          const dayAfterStart = new Date(startDate);
+                          dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+                          dayAfterStart.setHours(0, 0, 0, 0);
+                          
+                          if (dayAfterStart > tomorrow) {
+                            return dayAfterStart.toISOString().split('T')[0];
+                          }
+                        }
+                        
+                        return tomorrow.toISOString().split('T')[0];
+                      })()}
+                      onChange={(e) => {
+                        const newEndDate = e.target.value;
+                        setEndDate(newEndDate);
+                        
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
+                        const endDateObj = new Date(newEndDate);
+                        endDateObj.setHours(0, 0, 0, 0);
                         
-                        if (startDateObj.getTime() === today.getTime()) {
-                          return tomorrow.toISOString().split('T')[0];
+                        if (endDateObj <= today) {
+                          setDateError("End date must be after today");
+                          setEndDate("");
+                        } 
+                        else if (startDate && newEndDate <= startDate) {
+                          setDateError("End date must be after start date");
+                          setEndDate("");
+                        } 
+                        else {
+                          setDateError("");
                         }
+                        validateForm();
+                      }}
+                      onBlur={() => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const endDateObj = endDate ? new Date(endDate) : null;
+                        endDateObj?.setHours(0, 0, 0, 0);
                         
-                        const dayAfterStart = new Date(startDate);
-                        dayAfterStart.setDate(dayAfterStart.getDate() + 1);
-                        dayAfterStart.setHours(0, 0, 0, 0);
-                        
-                        if (dayAfterStart > tomorrow) {
-                          return dayAfterStart.toISOString().split('T')[0];
+                        if (endDateObj && endDateObj <= today) {
+                          setDateError("End date must be after today");
+                          setEndDate("");
+                        } else if (startDate && endDate && endDate <= startDate) {
+                          setDateError("End date must be after start date");
+                          setEndDate("");
                         }
+                        validateForm();
+                      }}
+                    />
+                    {dateError && (
+                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Survey Link <span className="text-[#eec643]">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    id="survey_link"
+                    name="survey_link"
+                    required
+                    maxLength={300}
+                    placeholder="Enter survey URL"
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                      surveyLinkError ? 'border-red-500' : 'border-[#94a3b8]'
+                    }`}
+                    onChange={async (e) => {
+                      const input = e.target;
+                      const value = input.value;
+                      const errorSpan = document.getElementById('survey-link-error');
+                      
+                      setSurveyLinkError("");
+                      
+                      if (value.length === 0) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Survey link is required.';
+                          errorSpan.style.display = 'block';
+                        }
+                        validateForm();
+                        return;
                       }
                       
-                      return tomorrow.toISOString().split('T')[0];
-                    })()}
-                    onChange={(e) => {
-                      const newEndDate = e.target.value;
-                      setEndDate(newEndDate);
-                      
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const endDateObj = new Date(newEndDate);
-                      endDateObj.setHours(0, 0, 0, 0);
-                      
-                      if (endDateObj <= today) {
-                        setDateError("End date must be after today");
-                        setEndDate("");
-                      } 
-                      else if (startDate && newEndDate <= startDate) {
-                        setDateError("End date must be after start date");
-                        setEndDate("");
-                      } 
-                      else {
-                        setDateError("");
+                      let isValidUrl = false;
+                      try {
+                        new URL(value);
+                        isValidUrl = true;
+                      } catch {
+                        isValidUrl = false;
                       }
-                      validateForm();
-                    }}
-                    onBlur={() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const endDateObj = endDate ? new Date(endDate) : null;
-                      endDateObj?.setHours(0, 0, 0, 0);
                       
-                      if (endDateObj && endDateObj <= today) {
-                        setDateError("End date must be after today");
-                        setEndDate("");
-                      } else if (startDate && endDate && endDate <= startDate) {
-                        setDateError("End date must be after start date");
-                        setEndDate("");
+                      if (!isValidUrl) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please enter a valid URL.';
+                          errorSpan.style.display = 'block';
+                        }
+                        validateForm();
+                        return;
+                      }
+                      
+                      if (errorSpan) {
+                        errorSpan.style.display = 'none';
+                      }
+                      
+                      const supabase = createClient();
+                      const { data: existingSurvey } = await supabase
+                        .from("survey")
+                        .select("id")
+                        .ilike("survey_link", value)
+                        .maybeSingle();
+                      
+                      if (existingSurvey) {
+                        setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
+                        if (errorSpan) {
+                          errorSpan.textContent = "This survey link is already in use. Please provide a unique link.";
+                          errorSpan.style.display = 'block';
+                        }
+                      } else {
+                        setSurveyLinkError("");
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
                       }
                       validateForm();
                     }}
                   />
-                  {dateError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{dateError}</p>
-                  )}
+                  <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
-                </div>
-
-                <div>
-                <label htmlFor="survey_link" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Survey Link <span className="text-[#eec643]">*</span>
-                </label>
-                <input
-                  type="url"
-                  id="survey_link"
-                  name="survey_link"
-                  required
-                  maxLength={300}
-                  placeholder="Enter survey URL"
-                  className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                    surveyLinkError ? 'border-red-500' : 'border-[#94a3b8]'
-                  }`}
-                  onChange={async (e) => {
-                    const input = e.target;
-                    const value = input.value;
-                    const errorSpan = document.getElementById('survey-link-error');
-                    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-                    
-                    setSurveyLinkError("");
-                    
-                    if (value.length === 0) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Survey link is required.';
-                        errorSpan.style.display = 'block';
-                      }
-                      validateForm();
-                      return;
-                    }
-                    
-                    // Check URL format
-                    let isValidUrl = false;
-                    try {
-                      new URL(value);
-                      isValidUrl = true;
-                    } catch {
-                      isValidUrl = false;
-                    }
-                    
-                    if (!isValidUrl) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Please enter a valid URL.';
-                        errorSpan.style.display = 'block';
-                      }
-                      validateForm();
-                      return;
-                    }
-                    
-                    // Hide error if valid
-                    if (errorSpan) {
-                      errorSpan.style.display = 'none';
-                    }
-                    
-                    // Check for duplicate link
-                    const supabase = createClient();
-                    const { data: existingSurvey } = await supabase
-                      .from("survey")
-                      .select("id")
-                      .ilike("survey_link", value)
-                      .maybeSingle();
-                    
-                    if (existingSurvey) {
-                      setSurveyLinkError("This survey link is already in use. Please provide a unique link.");
-                      if (errorSpan) {
-                        errorSpan.textContent = "This survey link is already in use. Please provide a unique link.";
-                        errorSpan.style.display = 'block';
-                      }
-                    } else {
-                      setSurveyLinkError("");
-                      if (errorSpan) {
-                        errorSpan.style.display = 'none';
-                      }
-                    }
-                    validateForm();
-                  }}
-                />
-                <span id="survey-link-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
-              </div>
 
                 <div>
                   <label htmlFor="respondents" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
@@ -1679,48 +1810,44 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     maxLength={200}
                     placeholder="Enter respondent criteria separated by commas"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    // Key Limits
                     onKeyDown={(e) => {
-                    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                      return;
-                    }
-                    
-                    if (!/[A-Za-z0-9\s,.'-]/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                  // Error Handling
+                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        return;
+                      }
+                      if (!/[A-Za-z0-9\s,.'-]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     onInput={(e) => {
-                    const input = e.target as HTMLInputElement;
-                    const errorSpan = document.getElementById('respondents-error');
-                    
-                    // No consecutive commas
-                    input.value = input.value.replace(/,{2,}/g, ',');
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('respondents-error');
+                      
+                      input.value = input.value.replace(/,{2,}/g, ',');
 
-                    if (input.value.length === 0) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Target respondents are required.';
-                        errorSpan.style.display = 'block';
+                      if (input.value.length === 0) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Target respondents are required.';
+                          errorSpan.style.display = 'block';
+                        }
+                      } else if (input.value.length < 2) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Please provide at least 1 respondent criteria.';
+                          errorSpan.style.display = 'block';
+                        }
+                      } else if (input.value.length > 200) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Target respondents must not exceed 200 characters.';
+                          errorSpan.style.display = 'block';
+                        }
+                      } else {
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
                       }
-                    } else if (input.value.length < 2) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Please provide at least 1 respondent criteria.';
-                        errorSpan.style.display = 'block';
-                      }
-                    } else if (input.value.length > 200) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Target respondents must not exceed 200 characters.';
-                        errorSpan.style.display = 'block';
-                      }
-                    } else {
-                      if (errorSpan) {
-                        errorSpan.style.display = 'none';
-                      }
-                    }
-                    validateForm();
-                  }}
-                />
-                <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      validateForm();
+                    }}
+                  />
+                  <span id="respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
 
                 <div>
@@ -1736,38 +1863,34 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     maxLength={6}
                     placeholder="e.g., 100"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                    // Key Limits
                     onKeyDown={(e) => {
-                    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                      return;
-                    }
-                    
-                    const input = e.target as HTMLInputElement;
-                    if (input.value.length >= 5 && /[0-9]/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-
-                  // Error Handling
+                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        return;
+                      }
+                      const input = e.target as HTMLInputElement;
+                      if (input.value.length >= 5 && /[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     onInput={(e) => {
-                    const input = e.target as HTMLInputElement;
-                    const errorSpan = document.getElementById('max-respondents-error');
-                    const value = parseInt(input.value);
-                    
-                    if (input.value && (value < 1 || value > 10000)) {
-                      if (errorSpan) {
-                        errorSpan.textContent = 'Maximum respondents must be between 1 and 10,000.';
-                        errorSpan.style.display = 'block';
+                      const input = e.target as HTMLInputElement;
+                      const errorSpan = document.getElementById('max-respondents-error');
+                      const value = parseInt(input.value);
+                      
+                      if (input.value && (value < 1 || value > 10000)) {
+                        if (errorSpan) {
+                          errorSpan.textContent = 'Maximum respondents must be between 1 and 10,000.';
+                          errorSpan.style.display = 'block';
+                        }
+                      } else {
+                        if (errorSpan) {
+                          errorSpan.style.display = 'none';
+                        }
                       }
-                    } else {
-                      if (errorSpan) {
-                        errorSpan.style.display = 'none';
-                      }
-                    }
-                    validateForm();
-                  }}
-                />
-                <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      validateForm();
+                    }}
+                  />
+                  <span id="max-respondents-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                 </div>
               </div>
             </div>
@@ -1780,136 +1903,129 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
               <div className="space-y-4">
                 <div>
-                <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Category <span className="text-[#eec643]">*</span>
-                </label>
-                {!showNewCategory ? (
-                  <div className="flex gap-2">
-                    <select
-                      id="category"
-                      name="category"
-                      required
-                      value={(() => {
-                        const selectElement = document.getElementById('category') as HTMLSelectElement;
-                        if (selectElement && selectElement.value) {
-                          return selectElement.value;
-                        }
-                        return "";
-                      })()}
-                      className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
-                        categoryError ? 'border-red-500' : 'border-[#94a3b8]'
-                      }`}
-                      onChange={(e) => {
-                        setIsCategoryTouched(true);
-                        const value = e.target.value;
-                        if (!value || value === "") {
-                          setCategoryError("Please select a category");
-                        } else {
-                          setCategoryError("");
-                        }
-                        validateForm();
-                      }}
-                      onBlur={() => {
-                        const select = document.getElementById('category') as HTMLSelectElement;
-                        if (!select?.value || select?.value === "") {
-                          setCategoryError("Please select a category");
+                  <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                    Category <span className="text-[#eec643]">*</span>
+                  </label>
+                  {!showNewCategory ? (
+                    <div className="flex gap-2">
+                      <select
+                        id="category"
+                        name="category"
+                        required
+                        value={selectedCategory}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
+                          categoryError ? 'border-red-500' : 'border-[#94a3b8]'
+                        }`}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSelectedCategory(value);
                           setIsCategoryTouched(true);
-                        }
-                        validateForm();
-                      }}
-                    >
-                      <option value="">Select a category</option>
-                      {availableCategories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.r_category_name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCategory(true)}
-                      className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
-                    >
-                      + New
-                    </button>
-                  </div>
-                ) : (
-                 <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => {
-                      setNewCategoryName(e.target.value);
-                      setCategoryError("");
-                      // Real-time validation while typing
-                      const value = e.target.value;
-                      if (!value.trim()) {
-                        setCategoryError("Category name is required.");
-                      } else if (value.trim().length < 2) {
-                        setCategoryError("Category name must be at least 2 characters.");
-                      } else {
-                        setCategoryError("");
-                      }
-                    }}
-                    onBlur={() => {
-                      if (!newCategoryName.trim()) {
-                        setCategoryError("Category name is required.");
-                      } else if (newCategoryName.trim().length < 2) {
-                        setCategoryError("Category name must be at least 2 characters.");
-                      }
-                    }}
-                    placeholder="Enter new category name"
-                    maxLength={50}
-                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
-                    required
-                    onKeyDown={(e) => {
-                      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                        return;
-                      }
-                      
-                      if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  {categoryError && (
-                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
-                      {categoryError}
-                    </p>
+                          if (!value || value === "") {
+                            setCategoryError("Please select a category");
+                          } else {
+                            setCategoryError("");
+                          }
+                          validateForm();
+                        }}
+                        onBlur={() => {
+                          const select = document.getElementById('category') as HTMLSelectElement;
+                          if (!select?.value || select?.value === "") {
+                            setCategoryError("Please select a category");
+                            setIsCategoryTouched(true);
+                          }
+                          validateForm();
+                        }}
+                      >
+                        <option value="" disabled>Select a category</option>
+                        {availableCategories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.r_category_name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewCategory(true)}
+                        className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
+                      >
+                        + New
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={newCategoryName}
+                          onChange={(e) => {
+                            setNewCategoryName(e.target.value);
+                            setCategoryError("");
+                            const value = e.target.value;
+                            if (!value.trim()) {
+                              setCategoryError("Category name is required.");
+                            } else if (value.trim().length < 2) {
+                              setCategoryError("Category name must be at least 2 characters.");
+                            } else {
+                              setCategoryError("");
+                            }
+                          }}
+                          onBlur={() => {
+                            if (!newCategoryName.trim()) {
+                              setCategoryError("Category name is required.");
+                            } else if (newCategoryName.trim().length < 2) {
+                              setCategoryError("Category name must be at least 2 characters.");
+                            }
+                          }}
+                          placeholder="Enter new category name"
+                          maxLength={50}
+                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          required
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+                            if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                        {categoryError && (
+                          <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                            {categoryError}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddNewCategory}
+                        disabled={!newCategoryName.trim() || newCategoryName.trim().length < 2}
+                        className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                          (!newCategoryName.trim() || newCategoryName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName("");
+                          setCategoryError("");
+                          validateForm();
+                        }}
+                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                  {isCategoryTouched && categoryError && !showNewCategory && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddNewCategory}
-                  disabled={!newCategoryName.trim() || newCategoryName.trim().length < 2}
-                  className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
-                    (!newCategoryName.trim() || newCategoryName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  Add
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowNewCategory(false);
-                    setNewCategoryName("");
-                    setCategoryError("");
-                    validateForm();
-                  }}
-                  className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                >
-                  Cancel
-                </button>
-              </div>
-                  )}
-                    {isCategoryTouched && categoryError && !showNewCategory && (
-                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
-                    )}
-                  </div>
 
-                <div className="mb-4">
-                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1 pt-4">
+                <div>
+                  <label htmlFor="school" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                     School <span className="text-[#eec643]">*</span>
                   </label>
                   {!showNewSchool ? (
@@ -1918,19 +2034,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         id="school"
                         name="school"
                         required
-                        value={(() => {
-                          const selectElement = document.getElementById('school') as HTMLSelectElement;
-                          if (selectElement && selectElement.value) {
-                            return selectElement.value;
-                          }
-                          return "";
-                        })()}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
+                        value={selectedSchool}
+                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
                           schoolError ? 'border-red-500' : 'border-[#94a3b8]'
                         }`}
                         onChange={(e) => {
-                          setIsSchoolTouched(true);
                           const value = e.target.value;
+                          setSelectedSchool(value);
+                          setIsSchoolTouched(true);
                           if (!value || value === "") {
                             setSchoolError("Please select a school");
                           } else {
@@ -1947,7 +2058,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           validateForm();
                         }}
                       >
-                        <option value="">Select a school</option>
+                        <option value="" disabled>Select a school</option>
                         {availableSchools.map((school) => (
                           <option key={school.id} value={school.id}>
                             {school.school_name}
@@ -1964,77 +2075,75 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        value={newSchoolName}
-                        onChange={(e) => {
-                          setNewSchoolName(e.target.value);
-                          setSchoolError("");
-                          // Real-time validation while typing
-                          const value = e.target.value;
-                          if (!value.trim()) {
-                            setSchoolError("School name is required.");
-                          } else if (value.trim().length < 2) {
-                            setSchoolError("School name must be at least 2 characters.");
-                          } else {
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={newSchoolName}
+                          onChange={(e) => {
+                            setNewSchoolName(e.target.value);
                             setSchoolError("");
-                          }
+                            const value = e.target.value;
+                            if (!value.trim()) {
+                              setSchoolError("School name is required.");
+                            } else if (value.trim().length < 2) {
+                              setSchoolError("School name must be at least 2 characters.");
+                            } else {
+                              setSchoolError("");
+                            }
+                          }}
+                          onBlur={() => {
+                            if (!newSchoolName.trim()) {
+                              setSchoolError("School name is required.");
+                            } else if (newSchoolName.trim().length < 2) {
+                              setSchoolError("School name must be at least 2 characters.");
+                            }
+                          }}
+                          placeholder="Enter new school name"
+                          maxLength={50}
+                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                          required
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              return;
+                            }
+                            if (!/[A-Za-z\s.'-]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                        {schoolError && (
+                          <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
+                            {schoolError}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddNewSchool}
+                        disabled={!newSchoolName.trim() || newSchoolName.trim().length < 2}
+                        className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
+                          (!newSchoolName.trim() || newSchoolName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewSchool(false);
+                          setNewSchoolName("");
+                          setSchoolError("");
+                          validateForm();
                         }}
-                        onBlur={() => {
-                          if (!newSchoolName.trim()) {
-                            setSchoolError("School name is required.");
-                          } else if (newSchoolName.trim().length < 2) {
-                            setSchoolError("School name must be at least 2 characters.");
-                          }
-                        }}
-                        placeholder="Enter new school name"
-                        maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
-                        required
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          
-                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      {schoolError && (
-                        <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
-                          {schoolError}
-                        </p>
-                      )}
+                        className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddNewSchool}
-                      disabled={!newSchoolName.trim() || newSchoolName.trim().length < 2}
-                      className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
-                        (!newSchoolName.trim() || newSchoolName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNewSchool(false);
-                        setNewSchoolName("");
-                        setSchoolError("");
-                        validateForm();
-                      }}
-                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                    >
-                      Cancel
-                    </button>
-                  </div>
                   )}
-                {isSchoolTouched && schoolError && !showNewSchool && (
-                  <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
-                )}
+                  {isSchoolTouched && schoolError && !showNewSchool && (
+                    <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{schoolError}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -2048,6 +2157,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                 name="privacy"
                 required
                 className="peer appearance-none w-4 h-4 border border-gray-400 rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none"
+                onChange={() => validateForm()}
               />
               <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
                 ♠
@@ -2076,7 +2186,9 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
             <button
               type="submit"
               disabled={isSubmitting || !isFormValid}
-              className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg transition-colors font-oswald ${
+                (isSubmitting || !isFormValid) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a2a4f]'
+              }`}
             >
               {isSubmitting ? "Submitting..." : "Submit Survey"}
             </button>
