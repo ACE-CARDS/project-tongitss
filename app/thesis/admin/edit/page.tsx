@@ -24,6 +24,7 @@ interface Author {
   lastName?: string;
   email?: string;
   memberId?: number | null;
+  isScholar?: boolean;
 }
 
 function EditThesisContent() {
@@ -50,8 +51,11 @@ function EditThesisContent() {
   const [searchResults, setSearchResults] = useState<Map<number, Array<{id: number, fname: string, lname: string, minit: string | null, email: string}>>>(new Map());
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
   const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
+  const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
   const [pubDate, setPubDate] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
+  const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
+  const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
 
   const [formData, setFormData] = useState({
     thesis_title: "",
@@ -141,7 +145,8 @@ function EditThesisContent() {
       middleInitial: member.minit || "",
       lastName: member.lname,
       email: member.email,
-      memberId: member.id
+      memberId: member.id,
+      isScholar: true // Members are automatically scholars
     };
     setAuthors(updatedAuthors);
     setShowSearchDropdown(prev => new Map(prev).set(authorIndex, false));
@@ -159,7 +164,8 @@ function EditThesisContent() {
       memberId: suggestion.memberId,
       firstName: suggestion.fname,
       lastName: suggestion.lname,
-      middleInitial: suggestion.minit || ""
+      middleInitial: suggestion.minit || "",
+      isScholar: true // Members are automatically scholars
     };
     setAuthors(updatedAuthors);
     setEmailSuggestions(prev => new Map(prev).set(authorIndex, []));
@@ -227,7 +233,8 @@ function EditThesisContent() {
       const author = authors[i];
       if (author?.firstName?.trim() && 
           author?.lastName?.trim() && 
-          author?.email?.trim()) {
+          author?.email?.trim() &&
+          author?.isScholar !== undefined) {
           hasValidAuthor = true;
           break;
       }
@@ -267,7 +274,8 @@ function EditThesisContent() {
               author_lname,
               author_minit,
               author_email,
-              mem_id
+              mem_id,
+              scholar
             )
           )
         `)
@@ -324,7 +332,8 @@ function EditThesisContent() {
             author_lname,
             author_minit,
             author_email,
-            mem_id
+            mem_id,
+            scholar
           )
         `)
         .eq("thesis", thesis.id);
@@ -336,7 +345,8 @@ function EditThesisContent() {
           middleInitial: item.author.author_minit || "",
           lastName: item.author.author_lname,
           email: item.author.author_email,
-          memberId: item.author.mem_id
+          memberId: item.author.mem_id,
+          isScholar: item.author.scholar !== undefined ? item.author.scholar : false
         }));
         setAuthors(thesisAuthors);
       }
@@ -352,7 +362,8 @@ function EditThesisContent() {
       middleInitial: "",
       lastName: "",
       email: "",
-      memberId: null
+      memberId: null,
+      isScholar: undefined
     }]);
   };
 
@@ -366,6 +377,14 @@ function EditThesisContent() {
       }));
       setAuthors(reindexedAuthors);
     }
+  };
+
+  const handleScholarResponse = (authorIndex: number, isScholar: boolean) => {
+    const updatedAuthors = [...authors];
+    updatedAuthors[authorIndex].isScholar = isScholar;
+    setAuthors(updatedAuthors);
+    setShowScholarDialog(prev => new Map(prev).set(authorIndex, false));
+    validateForm();
   };
 
   const handleAddNewCategory = async () => {
@@ -394,6 +413,18 @@ function EditThesisContent() {
         return;
       }
 
+      const existingPending = pendingNewCategories.find(
+        c => c.r_category_name.toLowerCase() === newCategoryName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setFormData(prev => ({ ...prev, r_category: existingPending.id }));
+        setShowNewCategory(false);
+        setNewCategoryName("");
+        setCategoryError("");
+        return;
+      }
+
       const { data: existingCategoryInDb } = await supabase
         .from("r_category")
         .select("id, r_category_name")
@@ -409,25 +440,18 @@ function EditThesisContent() {
         return;
       }
 
-      const { data: newCategory, error: categoryError } = await supabase
-        .from("r_category")
-        .insert({ r_category_name: newCategoryName })
-        .select("id, r_category_name")
-        .single();
+      // Temporary category with a temporary ID
+      const tempId = `temp-cat-${Date.now()}`;
+      const tempCategory: Category = {
+        id: tempId,
+        r_category_name: newCategoryName.trim()
+      };
 
-      if (categoryError) {
-        if (categoryError.code === '23505') {
-          setCategoryError("This category already exists in the database");
-        } else if (categoryError.code === '23514') {
-          setCategoryError("Category name is invalid");
-        } else {
-          setCategoryError(`Database error: ${categoryError.message}`);
-        }
-        return;
-      }
+      // Add to list
+      setPendingNewCategories(prev => [...prev, tempCategory]);
+      setAvailableCategories(prev => [...prev, tempCategory]);
+      setFormData(prev => ({ ...prev, r_category: tempId }));
 
-      setAvailableCategories(prev => [...prev, newCategory]);
-      setFormData(prev => ({ ...prev, r_category: newCategory.id }));
       setShowNewCategory(false);
       setNewCategoryName("");
       setCategoryError("");
@@ -463,6 +487,18 @@ function EditThesisContent() {
         return;
       }
 
+      const existingPending = pendingNewSchools.find(
+        s => s.school_name.toLowerCase() === newSchoolName.toLowerCase()
+      );
+
+      if (existingPending) {
+        setFormData(prev => ({ ...prev, school: existingPending.id }));
+        setShowNewSchool(false);
+        setNewSchoolName("");
+        setSchoolError("");
+        return;
+      }
+
       const { data: existingSchoolInDb } = await supabase
         .from("school")
         .select("id, school_name")
@@ -478,34 +514,18 @@ function EditThesisContent() {
         return;
       }
 
-      const { data: defaultProvince } = await supabase
-        .from("province")
-        .select("id")
-        .limit(1)
-        .single();
+      // Temporary school with a temporary ID
+      const tempId = `temp-school-${Date.now()}`;
+      const tempSchool: School = {
+        id: tempId,
+        school_name: newSchoolName.trim()
+      };
 
-      const { data: newSchool, error: schoolError } = await supabase
-        .from("school")
-        .insert({ 
-          school_name: newSchoolName,
-          province: defaultProvince?.id || 1
-        })
-        .select("id, school_name")
-        .single();
+      // Add to list
+      setPendingNewSchools(prev => [...prev, tempSchool]);
+      setAvailableSchools(prev => [...prev, tempSchool]);
+      setFormData(prev => ({ ...prev, school: tempId }));
 
-      if (schoolError) {
-        if (schoolError.code === '23505') {
-          setSchoolError("This school already exists in the database");
-        } else if (schoolError.code === '23514') {
-          setSchoolError("School name is invalid");
-        } else {
-          setSchoolError(`Database error: ${schoolError.message}`);
-        }
-        return;
-      }
-
-      setAvailableSchools(prev => [...prev, newSchool]);
-      setFormData(prev => ({ ...prev, school: newSchool.id }));
       setShowNewSchool(false);
       setNewSchoolName("");
       setSchoolError("");
@@ -525,10 +545,13 @@ function EditThesisContent() {
       return;
     }
 
-    // Validate at least one valid author
+    // Validate at least one valid author with scholar status
     let validAuthors = 0;
     for (let i = 0; i < authors.length; i++) {
-      if (authors[i]?.firstName?.trim() && authors[i]?.lastName?.trim() && authors[i]?.email?.trim()) {
+      if (authors[i]?.firstName?.trim() && 
+          authors[i]?.lastName?.trim() && 
+          authors[i]?.email?.trim() &&
+          authors[i]?.isScholar !== undefined) {
         validAuthors++;
       }
     }
@@ -565,15 +588,75 @@ function EditThesisContent() {
         throw new Error("Abstract must be at least 10 characters");
       }
 
-      if (!formData.r_category) {
-        throw new Error("Please select a category");
-      }
-      const categoryId = formData.r_category;
+      // Get the selected category ID
+      const selectedCategoryId = formData.r_category;
+      
+      // Check if needs to be saved
+      let finalCategoryId = selectedCategoryId;
+      const isTempCategory = selectedCategoryId.startsWith('temp-cat-');
+      
+      if (isTempCategory) {
+        // Find the pending category
+        const pendingCategory = pendingNewCategories.find(c => c.id === selectedCategoryId);
+        if (pendingCategory) {
+          // Save to database
+          const { data: newCategory, error: categoryError } = await supabase
+            .from("r_category")
+            .insert({ r_category_name: pendingCategory.r_category_name })
+            .select("id, r_category_name")
+            .single();
 
-      if (!formData.school) {
-        throw new Error("Please select a school");
+          if (categoryError) {
+            throw new Error(`Failed to save category: ${categoryError.message}`);
+          }
+
+          // Update final category ID
+          finalCategoryId = newCategory.id;
+          
+          // Update pending categories and available categories
+          setPendingNewCategories(prev => prev.filter(c => c.id !== selectedCategoryId));
+          setAvailableCategories(prev => 
+            prev.map(c => c.id === selectedCategoryId ? newCategory : c)
+          );
+        }
       }
-      const schoolId = formData.school;
+
+      // Same logic for school
+      const selectedSchoolId = formData.school;
+      
+      let finalSchoolId = selectedSchoolId;
+      const isTempSchool = selectedSchoolId.startsWith('temp-school-');
+      
+      if (isTempSchool) {
+        const pendingSchool = pendingNewSchools.find(s => s.id === selectedSchoolId);
+        if (pendingSchool) {
+          const { data: defaultProvince } = await supabase
+            .from("province")
+            .select("id")
+            .limit(1)
+            .single();
+
+          const { data: newSchool, error: schoolError } = await supabase
+            .from("school")
+            .insert({ 
+              school_name: pendingSchool.school_name,
+              province: defaultProvince?.id || 1
+            })
+            .select("id, school_name")
+            .single();
+
+          if (schoolError) {
+            throw new Error(`Failed to save school: ${schoolError.message}`);
+          }
+
+          finalSchoolId = newSchool.id;
+          
+          setPendingNewSchools(prev => prev.filter(s => s.id !== selectedSchoolId));
+          setAvailableSchools(prev => 
+            prev.map(s => s.id === selectedSchoolId ? newSchool : s)
+          );
+        }
+      }
 
       // Update thesis
       const { error: thesisError } = await supabase
@@ -585,8 +668,8 @@ function EditThesisContent() {
           thesis_date: pubDateInput.value,
           thesis_phys: physLinkInput?.value || null,
           thesis_digi: digiLinkInput?.value || null,
-          r_category: parseInt(categoryId),
-          school: parseInt(schoolId),
+          r_category: parseInt(finalCategoryId),
+          school: parseInt(finalSchoolId),
         })
         .eq("id", thesis.id);
 
@@ -602,6 +685,7 @@ function EditThesisContent() {
         const lastName = author.lastName?.trim();
         const email = author.email?.trim();
         const rawMinit = author.middleInitial || "";
+        const isScholar = author.isScholar || false;
         
         const cleanMinit = rawMinit
           .replace(/[^a-zA-Z]/g, "") 
@@ -635,7 +719,8 @@ function EditThesisContent() {
               author_fname: firstName,
               author_lname: lastName,
               author_minit: cleanMinit || null,
-              mem_id: memberIdFromState || null
+              mem_id: memberIdFromState || null,
+              scholar: isScholar
             })
             .eq("id", authorId);
           
@@ -649,7 +734,8 @@ function EditThesisContent() {
               author_lname: lastName,
               author_email: email,
               author_minit: cleanMinit || null,
-              mem_id: memberIdFromState || null
+              mem_id: memberIdFromState || null,
+              scholar: isScholar
             })
             .select("id")
             .single();
@@ -753,7 +839,8 @@ function EditThesisContent() {
           lastName: authorData.author_lname || "",
           middleInitial: authorData.author_minit || "",
           email: authorData.author_email || "",
-          memberId: authorData.mem_id || null
+          memberId: authorData.mem_id || null,
+          isScholar: authorData.scholar !== undefined ? authorData.scholar : false
         };
       });
     }
@@ -782,7 +869,8 @@ function EditThesisContent() {
       if ((currentAuthor.firstName?.trim() || "") !== (originalAuthor.firstName?.trim() || "") ||
           (currentAuthor.lastName?.trim() || "") !== (originalAuthor.lastName?.trim() || "") ||
           (currentAuthor.middleInitial?.trim() || "") !== (originalAuthor.middleInitial?.trim() || "") ||
-          (currentAuthor.email?.trim() || "") !== (originalAuthor.email?.trim() || "")) {
+          (currentAuthor.email?.trim() || "") !== (originalAuthor.email?.trim() || "") ||
+          (currentAuthor.isScholar !== undefined ? currentAuthor.isScholar : false) !== (originalAuthor.isScholar || false)) {
         return true;
       }
     }
@@ -1234,6 +1322,33 @@ function EditThesisContent() {
                                   errorSpan.style.display = 'block';
                                 }
                               }
+                              
+                              // If email matches a member and author has no memberId, auto-set memberId
+                              if (author.firstName && author.lastName) {
+                                const { data: matchingMembers } = await supabase
+                                  .from("member")
+                                  .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                                  .ilike("mem_fname", author.firstName)
+                                  .ilike("mem_lname", author.lastName)
+                                  .limit(3);
+                                
+                                if (matchingMembers && matchingMembers.length > 0) {
+                                  const memberWithEmail = matchingMembers.find(m => 
+                                    m.mem_email.toLowerCase() === newValue.toLowerCase()
+                                  );
+                                  
+                                  if (memberWithEmail && !author.memberId) {
+                                    const updatedAuthors = [...authors];
+                                    updatedAuthors[index] = {
+                                      ...updatedAuthors[index],
+                                      memberId: memberWithEmail.id,
+                                      isScholar: true // auto set scholar for members
+                                    };
+                                    setAuthors(updatedAuthors);
+                                  }
+                                }
+                              }
+                              
                               validateForm();
                             }}
                             required
@@ -1338,6 +1453,46 @@ function EditThesisContent() {
                           )}
                         </div>
                       </div>
+                      
+                      {/* Scholar Status for non-members */}
+                      {!author.memberId && author.firstName && author.lastName && author.email && (
+                        <div className="mt-2 pt-2">
+                          <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                            DOST Scholar Status <span className="text-[#eec643]">*</span>
+                          </label>
+                          <div className="flex items-center space-x-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <div className="relative flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={author.isScholar === true}
+                                  onChange={() => handleScholarResponse(index, true)}
+                                  className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                                />
+                                <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                  ♠
+                                </span>
+                              </div>
+                              <span className="text-sm font-ubuntu-mono text-[#475569]">Yes</span>
+                            </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <div className="relative flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={author.isScholar === false}
+                                  onChange={() => handleScholarResponse(index, false)}
+                                  className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
+                                />
+                                <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                                  ♠
+                                </span>
+                              </div>
+                              <span className="text-sm font-ubuntu-mono text-[#475569]">No</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
                       {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                     </div>
                   ))}

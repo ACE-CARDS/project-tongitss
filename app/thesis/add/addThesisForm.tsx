@@ -1815,9 +1815,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     name="digital"
                     maxLength={300}
                     placeholder="Enter digital copy URL"
-                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                      digitalLinkError ? 'border-red-500' : 'border-[#94a3b8]'
-                    }`}
+                    className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                     onChange={async (e) => {
                       const input = e.target;
                       const value = input.value;
