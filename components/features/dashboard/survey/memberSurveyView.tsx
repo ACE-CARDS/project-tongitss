@@ -15,6 +15,7 @@ import { FaRegCalendar } from "react-icons/fa6";
 import { FaRegAddressBook } from "react-icons/fa6";
 import { FaRegFolderClosed } from "react-icons/fa6";
 import { FaSchool } from "react-icons/fa6";
+import Image from "next/image";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {
@@ -458,28 +459,82 @@ function SurveyCard({ survey }: { survey: any }) {
             {processedAuthors.length > 0 ? (
               processedAuthors.map((author: any, index: number) => {
                 const displayInfo = author.displayName;
+                const isAceCards = !!author.mem_id;
 
                 return (
                   <a
                     key={`${survey.id}-${author.id || "no-id"}-${index}`}
                     href={`mailto:${displayInfo.email}`}
-                    className="bg-[#eec643] text-[#011638] px-3 py-1 rounded-full text-sm inline-flex items-center gap-1 font-ubuntu-mono hover:bg-[#d9b237] hover:shadow-md transition-all duration-200 cursor-pointer group"
                     title={`Email: ${displayInfo.email}`}
+                    className="
+                      relative
+                      overflow-hidden
+                      bg-[#eec643]
+                      text-[#011638]
+                      px-3
+                      py-1
+                      rounded-full
+                      text-sm
+                      inline-flex
+                      items-center
+                      gap-2
+                      font-ubuntu-mono
+                      hover:bg-[#d9b237]
+                      hover:shadow-md
+                      transition-all
+                      duration-300
+                      cursor-pointer
+                      group
+                    "
                   >
-                    <svg
-                      className="w-4 h-4 group-hover:scale-110 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    {/* Shine Effect */}
+                    {isAceCards && (
+                      <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                        <span
+                          className="
+                            absolute
+                            top-0
+                            left-[-150%]
+                            h-full
+                            w-8
+                            rotate-12
+                            bg-white/60
+                            blur-sm
+                            transition-all
+                            duration-700
+                            group-hover:left-[150%]
+                          "
+                        />
+                      </span>
+                    )}
+
+                    {isAceCards ? (
+                      <Image
+                        src="/assets/logos/ACE CARDS logo.png"
+                        alt="ACE CARDS"
+                        width={18}
+                        height={18}
+                        className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
                       />
-                    </svg>
-                    {displayInfo.name}
+                      ) : (
+                      <svg
+                        className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    )}
+
+                    <span className="relative z-10">
+                      {displayInfo.name}
+                    </span>
                   </a>
                 );
               })

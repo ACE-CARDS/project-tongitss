@@ -101,7 +101,9 @@ export default function SurveyAdminWrapper() {
               author_fname,
               author_lname,
               author_minit,
-              author_email
+              author_email,
+              mem_id,
+              scholar
             )
           )
         `

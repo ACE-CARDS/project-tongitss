@@ -546,6 +546,12 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
     }
   };
 
+  const updateAuthor = (id: number, field: keyof Author, value: string | boolean | undefined) => {
+    setAuthors(prev => prev.map(auth => 
+      auth.id === id ? { ...auth, [field]: value } : auth
+    ));
+  };
+
   const handleScholarResponse = (authorIndex: number, isScholar: boolean) => {
     const updatedAuthors = [...authors];
     updatedAuthors[authorIndex].isScholar = isScholar;
@@ -1343,15 +1349,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         value={author.email || ""}
                         disabled={index === 0}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${index === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        onChange={(e) => {
-                          if (index === 0) return;
-                          const updatedAuthors = [...authors];
-                          updatedAuthors[index] = {
-                            ...updatedAuthors[index],
-                            email: e.target.value
-                          };
-                          setAuthors(updatedAuthors);
-                        }}
+                        // Key Limits
                         onKeyUp={(e) => {
                           if (index === 0) return;
                           const input = e.target as HTMLInputElement;
@@ -1359,6 +1357,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           const value = input.value;
                           const atCount = (value.match(/@/g) || []).length;
                           
+                          // Prevent second @
                           if (char === '@' && atCount >= 1) {
                             e.preventDefault();
                             return;
@@ -1367,6 +1366,52 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           if (!value.includes('@')) {
                             if (!/[a-zA-Z0-9.]/.test(char) && char !== '@') {
                               e.preventDefault();
+                            }
+                          }
+                        }}
+                        // Search trigger
+                        onFocus={async (e) => {
+                          if (index === 0) return;
+                          const input = e.target as HTMLInputElement;
+                          
+                          // Show suggestions if email is empty
+                          if (!input.value || input.value.length === 0) {
+                            const firstNameInput = document.querySelectorAll('input[name="firstName[]"]')[index] as HTMLInputElement;
+                            const lastNameInput = document.querySelectorAll('input[name="lastName[]"]')[index] as HTMLInputElement;
+                            const middleInitialInput = document.querySelectorAll('input[name="middleInitial[]"]')[index] as HTMLInputElement;
+                            
+                            if (firstNameInput?.value && lastNameInput?.value) {
+                              const normalizedMiddle = middleInitialInput?.value ? middleInitialInput.value.charAt(0).toUpperCase() : '';
+                              
+                              const { data: matchingMembers } = await supabase
+                                .from("member")
+                                .select("id, mem_fname, mem_lname, mem_minit, mem_email")
+                                .ilike("mem_fname", firstNameInput.value)
+                                .ilike("mem_lname", lastNameInput.value)
+                                .limit(3);
+                              
+                              if (matchingMembers && matchingMembers.length > 0) {
+                                const exactMatch = matchingMembers.find(m => {
+                                  const memberMiddle = m.mem_minit ? m.mem_minit.charAt(0).toUpperCase() : '';
+                                  return memberMiddle === normalizedMiddle;
+                                });
+                                
+                                if (exactMatch) {
+                                  setEmailSuggestions(prev => new Map(prev).set(index, [{
+                                    email: exactMatch.mem_email,
+                                    memberId: exactMatch.id,
+                                    fname: exactMatch.mem_fname,
+                                    lname: exactMatch.mem_lname,
+                                    minit: exactMatch.mem_minit
+                                  }]));
+                                } else {
+                                  setEmailSuggestions(prev => new Map(prev).set(index, []));
+                                }
+                              } else {
+                                setEmailSuggestions(prev => new Map(prev).set(index, []));
+                              }
+                            } else {
+                              setEmailSuggestions(prev => new Map(prev).set(index, []));
                             }
                           }
                         }}
@@ -1388,19 +1433,19 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             errorSpan!.textContent = "Email is required.";
                             errorSpan!.style.display = "block";
 
-                            if (firstNameInput?.value && lastNameInput?.value) {
-                              await searchMembersByFullName(
-                                firstNameInput.value,
-                                lastNameInput.value,
-                                middleInitialInput?.value || "",
-                                index
-                              );
-                            }
+                                if (firstNameInput?.value && lastNameInput?.value) {
+                                    await searchMembersByFullName(
+                                    firstNameInput.value,
+                                    lastNameInput.value,
+                                    middleInitialInput?.value || "",
+                                    index
+                                    );
+                                }
 
                             validateForm();
                             return;
-                          }
-
+                            }
+                                                    
                           if (!emailRegex.test(input.value)) {
                             errorSpan!.textContent = 'Please enter a valid email address.';
                             errorSpan!.style.display = 'block';
@@ -1472,10 +1517,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                           
                           // Check existing author
                           const { data: existing } = await supabase
-                            .from("author")
-                            .select("id, author_fname, author_lname, mem_id, scholar")
-                            .eq("author_email", input.value)
-                            .maybeSingle();
+                          .from("author")
+                          .select("id, author_fname, author_lname, mem_id, scholar")
+                          .eq("author_email", input.value)
+                          .maybeSingle();
                           
                           if (existing) {
                             const firstNameMatch = existing.author_fname?.toLowerCase() === firstNameInput?.value?.toLowerCase();
@@ -1505,10 +1550,11 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                             setEmailSuggestions(prev => new Map(prev).set(index, []));
                           }, 200);
                         }}
+                        onChange={(e) => updateAuthor(author.id, 'email', e.target.value)}
                       />
                       <span id={`email-error-${index}`} className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                       
-                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && 
+                      {emailSuggestions.get(index) && emailSuggestions.get(index)!.length > 0 && index !== 0 && 
                       !document.getElementById(`lastname-error-${index}`)?.textContent?.includes("Author with the same name") && (
                         <div className="absolute z-50 mt-1 w-full bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden">
                           <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] sticky top-0 flex justify-between items-center">
@@ -1530,8 +1576,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                               <button
                                 key={idx}
                                 type="button"
-                                onClick={() => selectEmailSuggestion(suggestion, index)}
-                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20"
+                                onClick={() => {
+                                  selectEmailSuggestion(suggestion, index);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-[#e0e7ff] hover:text-[#011638] text-[#475569] font-ubuntu-mono transition-colors border-b last:border-b-0 border-[#011638] border-opacity-20 cursor-pointer"
                               >
                                 <div className="flex flex-col">
                                   <span className="font-medium">{suggestion.email}</span>
@@ -1543,48 +1591,48 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                         </div>
                       )}
                     </div>
-
+                    
                     {/* Scholar Status */}
                     {index !== 0 && author.firstName && author.lastName && author.email && !author.memberId && (
-                      <div className="mt-2 pt-2">
+                    <div className="mt-2 pt-2">
                         <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                          DOST Scholar Status <span className="text-[#eec643]">*</span>
+                        DOST Scholar Status <span className="text-[#eec643]">*</span>
                         </label>
                         <div className="flex items-center space-x-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer">
                             <div className="relative flex items-center justify-center">
-                              <input
+                            <input
                                 type="checkbox"
                                 checked={author.isScholar === true}
                                 onChange={() => handleScholarResponse(index, true)}
                                 className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
-                              />
-                              <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
                                 ♠
-                              </span>
+                            </span>
                             </div>
                             <span className="text-sm font-ubuntu-mono text-[#475569]">Yes</span>
-                          </label>
+                        </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer">
                             <div className="relative flex items-center justify-center">
-                              <input
+                            <input
                                 type="checkbox"
                                 checked={author.isScholar === false}
                                 onChange={() => handleScholarResponse(index, false)}
                                 className="peer appearance-none w-5 h-5 border-2 border-[#011638] rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-[#fbfaf8] cursor-pointer"
-                              />
-                              <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
                                 ♠
-                              </span>
+                            </span>
                             </div>
                             <span className="text-sm font-ubuntu-mono text-[#475569]">No</span>
-                          </label>
+                        </label>
                         </div>
-                      </div>
+                    </div>
                     )}
                   </div>
-                  {index < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
+                  {author.id < authors.length - 1 && <hr className="my-4 border-[#e0e7ff]" />}
                 </div>
               ))}
               
