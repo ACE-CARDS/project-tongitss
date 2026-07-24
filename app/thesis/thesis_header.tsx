@@ -68,7 +68,7 @@ function FilterPopup({
   return (
     <div
       ref={popupRef}
-      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#1e4db7] rounded-lg shadow-xl p-4 z-40"
+      className="absolute top-full mt-2 w-80 bg-[#fbfaf8] border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] shadow-xl p-4 z-40"
     >
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-oswald font-bold text-[#011638]">Filter Theses</h3>
@@ -92,8 +92,8 @@ function FilterPopup({
             id="category"
             value={selectedCategory}
             onChange={onCategoryChange}
-            className="cursor-pointer border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
-          >
+            className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors"
+            >
             <option value="">All Categories</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -114,7 +114,7 @@ function FilterPopup({
             id="school"
             value={selectedSchool}
             onChange={onSchoolChange}
-            className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
+            className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors"
           >
             <option value="">All Universities</option>
             {schools.map((school) => (
@@ -130,7 +130,7 @@ function FilterPopup({
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
             Publication Years
           </label>
-          <div className="border border-[#1e4db7] rounded-lg p-3 max-h-48 overflow-y-auto">
+          <div className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors">
             {years.length > 0 ? (
               <div className="space-y-2">
                 {years.map((year) => (
@@ -252,7 +252,7 @@ function LiveSuggestions({
         </span>
       </div>
 
-      <div className="max-h-60 overflow-y-auto custom-scrollbar-blue">
+      <div className="max-h-60 overflow-y-auto custom-scrollbar">
         {filteredKeywords.map((keyword, index) => (
           <button
             key={index}
@@ -337,7 +337,8 @@ export default function ThesisHeader({
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const isUpdatingRef = useRef(false);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const isInitialRender = useRef(true);
 
   useEffect(() => {
     setIsMounted(true);
@@ -355,61 +356,92 @@ export default function ThesisHeader({
     checkAuth();
   }, []);
 
-  const updateUrl = useCallback(
-    (
-      searchQuery: string,
-      category: string,
-      school: string,
-      years: number[],
-      page: number = 1,
-    ) => {
-      isUpdatingRef.current = true;
+  // Cleanup debounce timer
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
 
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("query", searchQuery);
-      if (category) params.append("category", category);
-      if (school) params.append("school", school);
+  // Update URL with filters
+  const updateFilters = useCallback((filters: {
+    query?: string;
+    category?: string;
+    school?: string;
+    years?: number[];
+  }) => {
+    // Skip router update on initial render
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
 
-      years.forEach((year) => {
+    const params = new URLSearchParams();
+    if (filters.query) params.append("query", filters.query);
+    if (filters.category) params.append("category", filters.category);
+    if (filters.school) params.append("school", filters.school);
+    if (filters.years) {
+      filters.years.forEach(year => {
         params.append("year", year.toString());
       });
+    }
+    params.append("page", "1");
 
-      params.append("page", page.toString());
+    const queryString = params.toString();
+    router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
+  }, [router]);
 
-      const queryString = params.toString();
-      router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
-
-      // Reset the flag after a short delay
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 100);
-    },
-    [router],
-  );
+  // Reset filters
+  const resetFilters = useCallback(() => {
+    setQuery("");
+    setSelectedCategory("");
+    setSelectedSchool("");
+    setSelectedYears([]);
+    setShowFilters(false);
+    
+    // Only call updateFilters if we've passed initial render
+    if (!isInitialRender.current) {
+      updateFilters({
+        query: "",
+        category: "",
+        school: "",
+        years: []
+      });
+    }
+  }, [updateFilters]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
     setShowSuggestions(true);
-    updateUrl(value, selectedCategory, selectedSchool, selectedYears, 1);
+    // Debounce search
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(() => {
+      updateFilters({ query: value });
+    }, 500);
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
-    updateUrl(suggestion, selectedCategory, selectedSchool, selectedYears, 1);
+    updateFilters({ query: suggestion });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedCategory(value);
-    updateUrl(query, value, selectedSchool, selectedYears, 1);
+    updateFilters({ category: value });
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedSchool(value);
-    updateUrl(query, selectedCategory, value, selectedYears, 1);
+    updateFilters({ school: value });
   };
 
   const handleYearToggle = (year: number) => {
@@ -418,25 +450,22 @@ export default function ThesisHeader({
         ? prev.filter((y) => y !== year)
         : [...prev, year].sort((a, b) => b - a);
 
-      updateUrl(query, selectedCategory, selectedSchool, newYears, 1);
+      updateFilters({ years: newYears });
       return newYears;
     });
-  };
-
-  const resetFilters = () => {
-    setQuery("");
-    setSelectedCategory("");
-    setSelectedSchool("");
-    setSelectedYears([]);
-    updateUrl("", "", "", [], 1);
   };
 
   const clearSearch = () => {
     setQuery("");
     setShowSuggestions(false);
-    updateUrl("", selectedCategory, selectedSchool, selectedYears, 1);
+    updateFilters({ query: "" });
     searchInputRef.current?.focus();
   };
+
+  // Calculate total filters count
+  const totalFilters = (selectedCategory ? 1 : 0) + 
+                      (selectedSchool ? 1 : 0) + 
+                      selectedYears.length;
 
   return (
     <div className="mb-8">
@@ -475,13 +504,9 @@ export default function ThesisHeader({
                 />
               </svg>
               Filters
-              {(selectedCategory ||
-                selectedSchool ||
-                selectedYears.length > 0) && (
+              {(totalFilters > 0) && (
                 <span className="bg-[#eec643] text-[#011638] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {(selectedCategory ? 1 : 0) +
-                    (selectedSchool ? 1 : 0) +
-                    selectedYears.length}
+                  {totalFilters}
                 </span>
               )}
             </button>
@@ -529,7 +554,7 @@ export default function ThesisHeader({
               </svg>
 
               {/* clear/X button */}
-              {query && (
+              {(query || showSuggestions) && (
                 <button
                   onClick={clearSearch}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"

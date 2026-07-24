@@ -228,7 +228,7 @@ function LiveSuggestions({
   return (
     <div
       ref={suggestionRef}
-    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl"
+    className="absolute z-50 w-full mt-1 bg-[#fbfaf8] border border-[#011638] rounded-lg shadow-xl overflow-hidden"
   >
     <div className="px-4 py-2 bg-[#1e4db7] bg-opacity-20 border-b border-[#011638] rounded-t-lg sticky top-0">
       <span className="text-xs font-oswald font-semibold text-[#fbfaf8]">
@@ -342,7 +342,7 @@ export default function SurveyHeader({
     };
   }, []);
 
-  // Update URL with filters - using debounce like admin
+  // Update URL with filters
   const updateFilters = useCallback((filters: {
     query?: string;
     category?: string;
@@ -375,7 +375,7 @@ export default function SurveyHeader({
     setQuery(value);
     setShowSuggestions(true);
     
-    // Debounce search like admin
+    // Debounce search
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -435,7 +435,7 @@ export default function SurveyHeader({
     searchInputRef.current?.focus();
   };
 
-  // Calculate total filters count - same as admin
+  // Calculate total filters count
   const totalFilters = (selectedCategory ? 1 : 0) + 
                       (selectedSchool ? 1 : 0) + 
                       selectedYears.length;
@@ -504,7 +504,7 @@ export default function SurveyHeader({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               
-              {/* clear/X button - same as admin */}
+              {/* clear/X button */}
               {(query || showSuggestions) && (
                 <button
                   onClick={clearSearch}

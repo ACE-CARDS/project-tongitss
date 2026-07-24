@@ -62,7 +62,7 @@ export default async function SurveyData({
       )].sort((a, b) => b - a)
     : [];
 
-  // Build the query - same as admin but only show "accepted" surveys
+  // Query
   let query = supabase
     .from("survey")
     .select(
@@ -97,9 +97,9 @@ export default async function SurveyData({
     `
     )
     .eq("survey_status", "accepted")  // Only show accepted surveys
-    .order("created_at", { ascending: false }); // Same as admin - newest first
+    .order("created_at", { ascending: false }); // Newest first
 
-  // Apply filters - same logic as admin
+  // Apply filters
   if (categoryId) {
     query = query.eq("r_category", categoryId);
   }
@@ -111,7 +111,7 @@ export default async function SurveyData({
 
   let filteredSurveys = fetchedSurveys || [];
 
-  // Filter by years - same as admin
+  // Filter by years
   if (selectedYears.length > 0) {
     filteredSurveys = filteredSurveys.filter((s: any) => {
       const surveyDate = new Date(s.survey_start);
@@ -120,7 +120,7 @@ export default async function SurveyData({
     });
   }
 
-  // Search filtering - same as admin
+  // Search filtering
   if (q) {
     const tokens = q
       .split(",")

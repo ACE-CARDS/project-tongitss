@@ -34,13 +34,25 @@ export default async function ThesisData({
     : []; // No year filter
 
   // Fetch thesis dates
-  const { data: yearData, error: yearError } = await supabase
+  // Fetch categories and schools for the header
+  const [categoriesResult, schoolsResult] = await Promise.all([
+    supabase
+      .from("r_category")
+      .select("id, r_category_name")
+      .order("r_category_name", { ascending: true }),
+    supabase
+      .from("school")
+      .select("id, school_name")
+      .order("school_name", { ascending: true })
+  ]);
+
+  const categories = categoriesResult.data || [];
+  const schools = schoolsResult.data || [];
+
+  // Fetch available years
+  const { data: yearData } = await supabase
     .from("thesis") // from thesis table
     .select("thesis_date"); // Cols
-
-  if (yearError) {
-    console.error("Error fetching years:", yearError);
-  }
 
   // Unique years and sort descending
   const availableYears = yearData && yearData.length > 0
@@ -65,20 +77,8 @@ export default async function ThesisData({
     .filter((value, index, self) => self.indexOf(value) === index) // Unique values
     .sort() || []; // Sort
 
-  // Fetch categories
-  const { data: categories } = await supabase
-    .from("r_category")
-    .select("id, r_category_name") // Get ID and name
-    .order("r_category_name"); // Sort alphabetically
-
-  // Fetch schools
-  const { data: schools } = await supabase
-    .from("school")
-    .select("id, school_name") // Get ID and name
-    .order("school_name"); // Sort alphabetically
-
   // Thesis query
-  let baseQuery = supabase
+  let query = supabase
     .from("thesis") // Table
     .select( // Cols
       `
@@ -104,65 +104,30 @@ export default async function ThesisData({
           author_lname,
           author_minit,
           author_email,
-          mem_id
+          mem_id,
+          scholar
         )
       )
     `
     )
-    .eq("thesis_status", "accepted") 
-    .order("thesis_date", { ascending: false }); // Sort
+    .eq("thesis_status", "accepted")  // Only show accepted 
+    .order("created_at", { ascending: false }); // Newest first
 
   // If filter selected
   // Category filter
   if (categoryId) {
-    baseQuery = baseQuery.eq("r_category", categoryId);
+     query = query.eq("r_category", categoryId);
   }
 
   // School filter
   if (schoolId) {
-    baseQuery = baseQuery.eq("school", schoolId); 
+    query = query.eq("school", schoolId);
   }
 
   // Fetch theses
-  const { data: fetchedTheses, error } = await baseQuery;
+  const { data: fetchedTheses, error } = await query;
 
   let filteredTheses = fetchedTheses || [];
-  
-  
-  // Collect all unique mem_ids from authors to fetch member data
-  const memIds = new Set();
-  filteredTheses.forEach((thesis: any) => {
-    if (thesis.thesis_author && Array.isArray(thesis.thesis_author)) {
-      thesis.thesis_author.forEach((ta: any) => {
-        if (ta.author?.mem_id) {
-          memIds.add(ta.author.mem_id);
-        }
-      });
-    }
-  });
-
-  // Fetch member data for all authors with mem_id
-  let membersData: any[] = [];
-  if (memIds.size > 0) {
-    const { data: members, error: membersError } = await supabase
-      .from("member")
-      .select("id, mem_fname, mem_lname, mem_minit, mem_email")
-      .in("id", Array.from(memIds));
-    
-    if (!membersError && members) {
-      membersData = members;
-    } else if (membersError) {
-      console.error("Error fetching member data:", membersError);
-    }
-  }
-
-  // Attach member data to each thesis for easy access
-  const thesesWithMemberData = filteredTheses.map((thesis: any) => ({
-    ...thesis,
-    members_data: membersData
-  }));
-
-  filteredTheses = thesesWithMemberData;
 
   // Year filtering
   if (selectedYears.length > 0) {
@@ -198,13 +163,6 @@ export default async function ThesisData({
       if (t.thesis_author && Array.isArray(t.thesis_author)) {
         t.thesis_author.forEach((ta: any) => {
           const b = ta.author;
-          // Include member data in search if available
-          if (b?.mem_id && t.members_data) {
-            const member = t.members_data.find((m: any) => m.id === b.mem_id);
-            if (member) {
-              hay += " " + (member.mem_fname ?? "") + " " + (member.mem_lname ?? "");
-            }
-          }
           hay += " " + (b?.author_fname ?? "") + " " + (b?.author_lname ?? "");
         });
       }
@@ -229,8 +187,8 @@ export default async function ThesisData({
     <>
       {/* Pass filter data & options to header */}
       <ThesisHeader
-        categories={categories || []}         
-        schools={schools || []}               
+        categories={categories}         
+        schools={schools}               
         years={availableYears}                
         initialQuery={q || ""}                  
         initialCategory={categoryId || ""}     
