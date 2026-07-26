@@ -275,7 +275,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                     <Link href="/thesis">Thesis Repository</Link>
                   </li>
                   <li className="hover:underline">
-                    <Link href="/scholarship">Scholarship</Link>
+                    <Link href="/scholarship">DOST-SEI Scholarship</Link>
                   </li>
                 </ul>
               </li>
