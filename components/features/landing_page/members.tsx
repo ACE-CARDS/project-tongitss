@@ -39,9 +39,10 @@ export default function Members({id}: {id?: string}) {
       const { count: memberTotal } = await supabase
         .from("member")
         .select("*", { count: "exact", head: true })
-        .eq("acadyear", FIXED_MEMBER_AY);
+        .eq("acadyear", FIXED_MEMBER_AY)
+        .eq("is_active", true);
 
-      setMemberCount(memberTotal || 0);
+      setMemberCount((memberTotal || 0) - 2);
     };
 
     fetchCounts();

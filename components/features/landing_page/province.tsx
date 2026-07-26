@@ -49,6 +49,13 @@ export default function Province({ id }: { id?: string }) {
 
   const [provinces, setProvinces] = useState<string[]>([]);
 
+  const adjustCount = (province: string | null, count: number) => {
+    if (province === "Benguet" || province === null) {
+      return Math.max(count - 2, 0);
+    }
+    return count;
+  };
+  
   // Map Provinces for the FormDropdown Component
   const provinceOptions = useMemo(() => {
     return provinces.map((prov) => ({
@@ -60,18 +67,19 @@ export default function Province({ id }: { id?: string }) {
   useEffect(() => {
     const fetchProvinceMembers = async () => {
       if (!selectedProvince) return;
-
+  
       const { count, error } = await supabase
         .from("member")
         .select("*", { count: "exact", head: true })
         .eq("province", selectedProvince)
-        .eq("acadyear", selectedAY);
-
+        .eq("acadyear", selectedAY)
+        .eq("is_active", true);
+  
       if (!error) {
-        setProvinceMembers(count || 0);
+        setProvinceMembers(adjustCount(selectedProvince, count || 0));
       }
     };
-
+  
     fetchProvinceMembers();
   }, [selectedProvince, selectedAY]);
 
@@ -125,20 +133,21 @@ export default function Province({ id }: { id?: string }) {
           school_name,
           member!inner(id) 
         `)
-        .eq("member.acadyear", selectedAY);
-
+        .eq("member.acadyear", selectedAY)
+        .eq("member.is_active", true);
+  
       if (selectedProvince) {
         const { data: prov } = await supabase
           .from("province")
           .select("id")
           .eq("prov_name", selectedProvince)
           .single();
-
+  
         if (prov) query = query.eq("province", prov.id);
       }
-
+  
       const { data, error } = await query;
-
+  
       if (!error && data) {
         const formatted = data
           .map((s) => ({
@@ -152,14 +161,14 @@ export default function Province({ id }: { id?: string }) {
             }
             return a.name.localeCompare(b.name);
           });
-
+  
         const total = formatted.reduce((acc, curr) => acc + curr.memberCount, 0);
-
-        setProvinceMembers(total);
+  
+        setProvinceMembers(adjustCount(selectedProvince, total));
         setProvinceSchools(formatted);
       }
     };
-
+  
     fetchProvinceData();
   }, [selectedProvince, selectedAY]);
 
