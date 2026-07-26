@@ -94,17 +94,25 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
 
           {/* Title */}
-          <Link title="Go back to Home Page?" className={`flex flex-row items-center h-full w-fit gap-2 rounded-full pl-[7px] pr-4 bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 transition-all duration-200 ease-in-out hover:scale-[1.04] ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""} ring-0 shadow-[0_0_15px_rgba(255,255,255,0.3)]`} href="/">
+          <Link title="Go back to Home Page?" 
+            className={`
+              inline-flex flex-none items-center h-full 
+              gap-2 rounded-full pl-[7px] pr-4 
+              bg-[#011638]/70 backdrop-blur-sm hover:bg-[#011638]/80 
+              transition-all duration-200 ease-in-out hover:scale-[1.04] 
+              ${isOverHero ? "ring-[1.5px] ring-white/40 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : ""} ring-0 shadow-[0_0_15px_rgba(255,255,255,0.3)]`} href="/">
             <Image
               src="/assets/logos/ACE CARDS logo.png"
               alt="ACE CARDS Logo"
-              className="w-11 h-11 shrink-0"
+              className="w-11 h-11 flex-none"
               width={100}
               height={100}
             />
-            <div className="flex flex-col justify-center h-full gap-0 whitespace-nowrap md:text-3xl sm:text-2xl text-xl font-bold leading-none font-oswald">
+            <span className={`
+              whitespace-nowrap 
+              md:text-3xl sm:text-2xl text-xl font-bold font-oswald`}>
                 {siteName}
-            </div>
+            </span>
           </Link>
 
           {/* Navigation */}
