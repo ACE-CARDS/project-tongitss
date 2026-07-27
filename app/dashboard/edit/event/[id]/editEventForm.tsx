@@ -72,6 +72,7 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
     const status = formData.get("status") as string;
     const description = (formData.get("description") as string).trim();
     const imageFile = formData.get("image") as File | null;
+    const partnerships = (formData.get("partnerships") as string).trim();
 
     const startDateObj = new Date(start);
     const endDateObj = new Date(end);
@@ -121,6 +122,7 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
         status,
         description,
         image_url: imageUrl,
+        partnerships,
       }).eq("id", eventId);
 
       if (error) throw new Error(error.message);
@@ -265,6 +267,12 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
             <div>
               <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Description <span className="text-[#eec643]">*</span></label>
               <textarea name="description" rows={4} defaultValue={eventData?.description} className={getFieldClass("description")} />
+            </div>
+
+            
+            <div>
+              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Partnerships <span className="text-[#eec643]">*</span></label>
+              <textarea name="partnerships" rows={2} defaultValue={eventData?.partnerships} className={getFieldClass("partnerships")} />
             </div>
 
             <div>

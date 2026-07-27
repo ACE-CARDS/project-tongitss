@@ -27,6 +27,7 @@ export default function AddEventForm() {
       "location-error",
       "status-error",
       "description-error",
+      "partnerships-error",
     ];
     errorIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -47,6 +48,7 @@ export default function AddEventForm() {
     const location = (formData.get("location") as string).trim();
     const status = formData.get("status") as string;
     const description = (formData.get("description") as string).trim();
+    const partnerships = (formData.get("partnerships") as string).trim();
     const imageFile = formData.get("image") as File | null;
 
     const startDateObj = new Date(start);
@@ -135,6 +137,7 @@ export default function AddEventForm() {
         status,
         description,
         image_url: imageUrl,
+        partnerships,
       });
 
       if (error) throw new Error(error.message);
@@ -338,6 +341,18 @@ export default function AddEventForm() {
               <textarea name="description" rows={4} className={inputClass} />
               <span
                 id="description-error"
+                className="text-xs mt-1 block font-ubuntu-mono text-red-600"
+              ></span>
+            </div>
+
+            
+            <div>
+              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                Partnerships
+              </label>
+              <textarea name="partnerships" rows={2} className={inputClass} />
+              <span
+                id="partnerships-error"
                 className="text-xs mt-1 block font-ubuntu-mono text-red-600"
               ></span>
             </div>

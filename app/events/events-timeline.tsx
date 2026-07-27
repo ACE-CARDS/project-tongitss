@@ -396,6 +396,14 @@ export default function EventsTimeline() {
                     </p>
                   </div>
                 </div>
+                {selectedEvent.partnerships && selectedEvent.partnerships.length > 0 && (
+                  <div className="flex flex-col w-full pb-6 border-b border-slate-100 whitespace-pre-line">
+                    <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
+                      Partnered with
+                    </p>
+                    {selectedEvent.partnerships}
+                  </div>
+                )}
                 <div className="w-full min-w-0 pb-4">
                   <p className="text-slate-700 font-ubuntu-mono text-base leading-relaxed whitespace-pre-wrap break-words w-full">
                     {selectedEvent.description}
