@@ -48,7 +48,7 @@ const StaticNode = ({ data }: any) => (
 const nodeTypes = { static: StaticNode };
 
 const Legend = ({ isMobile }: { isMobile: boolean }) => (
-  <div className={`flex ${isMobile ? "flex-col gap-2 items-start" : "flex-row gap-6 items-center"} bg-white/80 p-3 rounded-lg border border-gray-200 shadow-sm`}>
+  <div className={`flex ${isMobile ? "flex-col gap-2 items-start" : "flex-row gap-6 items-center"} bg-white/80 p-3 rounded-lg border border-gray-200 shadow-sm z-0`}>
     <div className="flex items-center gap-2">
       <div className="w-4 h-4 rounded bg-[#ffe599] border-[1px] border-[#f1c232]" />
       <span className="text-xs font-medium text-gray-700">Executive Committee</span>
@@ -103,19 +103,10 @@ function CommitteeContent() {
   const onClose = () => setSelectedNode(null);
 
   const FlowCanvas = () => {
-    const flow = useReactFlow();
 
     const onNodeClick = (_event: React.MouseEvent, node: any) => {
       if (node.id === "bridge") return;
 
-      const nodePos = node.positionAbsolute || node.position;
-      const screenPos = flow.flowToScreenPosition(nodePos);
-
-      // Better modal positioning logic
-      setModalPosition({
-        x: Math.min(screenPos.x + 20, window.innerWidth - 300),
-        y: Math.min(screenPos.y + 20, window.innerHeight - 250),
-      });
       setSelectedNode(node);
     };
 
@@ -223,10 +214,15 @@ function CommitteeContent() {
       >
         <div className="container mx-auto pt-8 px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-4">
           <BackButton />
-          <Legend isMobile={isMobile} />
         </div>
         <AnimatedTitle title="COMMITTEES" />
-        <div className={`w-full ${isMobile ? "h-[700px]" : "h-[600px]"} max-w-5xl`}>
+        <div className="flex flex-col items-center gap-5">
+          <p className="box mx-8">
+            Click any item to view its details.
+          </p>
+          <Legend isMobile={isMobile} />
+        </div>
+        <div className={`w-full ${isMobile ? "h-[1000px]" : "h-[500px]"} max-w-5xl`}>
           <style>{`
             .react-flow__pane{
               cursor: default !important;
@@ -247,11 +243,10 @@ function CommitteeContent() {
           onExit={onExit}
           nodeRef={container}
         >
-          <div ref={container} className="fixed inset-0 z-[10000]">
+          <div ref={container} className="fixed inset-0 z-[10000] flex items-center justify-center">
             <ModalBlur onClose={onClose} />
             <div
-              className="content absolute z-50 w-[90%] max-w-xs bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6 pointer-events-auto"
-              style={{ left: modalPosition.x, top: modalPosition.y }}
+              className="content relative z-50 w-[90%] max-w-xs bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6 pointer-events-auto items-center justify-center"
             >
               <button
                 onClick={onClose}
