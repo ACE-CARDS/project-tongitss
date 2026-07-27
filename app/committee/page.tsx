@@ -128,10 +128,16 @@ function CommitteeContent() {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-        panOnDrag={isMobile}
+        panOnDrag={false}
+        panOnScroll={false}
+        preventScrolling={false}
         zoomOnPinch={false}
         zoomOnScroll={false}
+        zoomOnDoubleClick={false}
+        selectionOnDrag={false}
         onNodeClick={onNodeClick}
+        noDragClassName="cursor-default"
+        style={{ cursor: 'default' }}
         // Removed pointerEvents: none from here
       />
     );
@@ -221,7 +227,13 @@ function CommitteeContent() {
         </div>
         <AnimatedTitle title="COMMITTEES" />
         <div className={`w-full ${isMobile ? "h-[700px]" : "h-[600px]"} max-w-5xl`}>
-          <ReactFlowProvider>
+          <style>{`
+            .react-flow__pane{
+              cursor: default !important;
+            }
+          `}
+          </style>
+          <ReactFlowProvider >
             <FlowCanvas />
           </ReactFlowProvider>
         </div>
