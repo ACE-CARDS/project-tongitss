@@ -22,6 +22,7 @@ interface EventItem {
   location: string;
   status: string;
   year: string;
+  partnerships: string | null;
 }
 
 type SortField = "title" | "start_date" | "location" | "status" | null;
@@ -42,7 +43,7 @@ function EventDescription({ description }: { description: string | null }) {
   if (!description) return null;
   if (description.length <= 100) {
     return (
-      <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">
+      <p className="text-sm text-[#475569] font-ubuntu-mono break-words">
         {description}
       </p>
     );
@@ -56,21 +57,74 @@ function EventDescription({ description }: { description: string | null }) {
           </p>
           <button
             onClick={() => setIsOpen(true)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 flex transition-colors cursor-pointer"
           >
-            Read more →
+            Read more
           </button>
         </div>
       ) : (
         <div>
-          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
+          <div className="text-sm text-[#475569] font-ubuntu-mono h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
             {description}
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 flex transition-colors cursor-pointer"
           >
-            Read less ↑
+            Read less
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function EventPartnerships({ partnerships }: { partnerships: string | null }) {
+  const [isOpen, setIsOpen] = useState(false);
+  if (!partnerships) return null;
+  if (partnerships.length <= 100) {
+    return (
+      <div className="flex flex-col w-full whitespace-pre-line">
+        <p className="text-[10px] font-black tracking-widest uppercase pt-2 text-slate-400 mb-1">
+          Partnered with:
+        </p>
+        <p className="text-sm text-[#475569] font-ubuntu-mono">
+          {partnerships}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="w-[100%]">
+      {!isOpen ? (
+        <div className="flex flex-col w-full whitespace-pre-line">
+          <p className="text-[10px] font-black tracking-widest uppercase pt-2 text-slate-400 mb-1">
+            Partnered with:
+          </p>
+          <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-2 break-words">
+            {partnerships}
+          </p>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="text-[#0d21a1] justify-right ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
+          >
+            Read more
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col w-full whitespace-pre-line">
+          <p className="text-[10px] font-black tracking-widest uppercase pt-2 text-slate-400 mb-1">
+            Partnered with:
+          </p>
+          <div className="text-sm text-[#475569] font-ubuntu-mono h-24 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
+            {partnerships}
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-[#0d21a1] justify-right ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
+          >
+            Read less
           </button>
         </div>
       )}
@@ -430,6 +484,7 @@ export default function EventsAdmin() {
                       </div>
                     )}
                     <EventDescription description={item.description} />
+                    <EventPartnerships partnerships={item.partnerships} />
                   </td>
 
 
