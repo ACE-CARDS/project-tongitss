@@ -44,20 +44,38 @@ export default function AboutLogo() {
               
               <div className="space-y-6 relative z-10 text-slate-600 font-ubuntu-mono text-xs sm:text-sm lg:text-base leading-relaxed">
                 <p>
-                  On the rightmost side, we have the ACE CARDS logo. Its design is inspired by the DOST logo&apos;s color scheme.{" "}
-                  <strong className="text-[#011638] font-bold">Black</strong> represents the unknown,{" "}
-                  <strong className="text-[#011638] font-bold">White</strong> stands for truth and enlightenment, and{" "}
-                  <strong className="text-blue-700 font-bold">Blue</strong> symbolizes progress.{" "}
-                  <strong className="text-[#eec643] font-bold">Yellow </strong> was also added to show that we&apos;re always looking toward the future.
+                  The ACE CARDS logo draws its color scheme from the official DOST logo:
+                </p>
+
+                <ul className="space-y-2 pl-1">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#011638] shrink-0" />
+                    <span><strong className="text-[#011638] font-bold">Black</strong>: Represents the unknown</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-white border border-black shrink-0" />
+                    <span><strong className="text-[#011638] font-bold">White</strong>: Stands for truth and enlightenment</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-700 shrink-0" />
+                    <span><strong className="text-blue-700 font-bold">Blue</strong>: Symbolizes progress</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#eec643] shrink-0" />
+                    <span><strong className="text-[#eec643] font-bold">Yellow</strong>: Shows that we&apos;re always looking toward the future</span>
+                  </li>
+                </ul>
+
+                <p>
+                  At the center is the <strong className="text-[#011638] font-bold">ace of spades</strong>, the highest card in a deck, which represents the values and objectives of DOST scholars, who aim to be citizens of high value.
                 </p>
 
                 <p>
-                  At the center is the ace of spades, the highest card in a deck. This represents the values and objectives of DOST scholars — aiming to be citizens of high value. 
-                  Surrounding it are the six provinces of CAR — Abra, Apayao, Benguet, Ifugao, Kalinga, and Mountain Province — symbolizing unity among scholars across the region.
+                  Surrounding it are the six provinces of CAR (<strong className="text-[#011638] font-bold">Abra, Apayao, Benguet, Ifugao, Kalinga,</strong> and <strong className="text-[#011638] font-bold">Mountain Province</strong>) symbolizing unity among scholars across the region.
                 </p>
 
                 <p>
-                  Finally, the blue and black colors give an illusion of movement, showing continual progress in Science and Technology, just like the official DOST logo.
+                  The blue and black colors together create an illusion of movement, reflecting continual progress in Science and Technology, just like the official DOST logo.
                 </p>
               </div>
             </motion.div>

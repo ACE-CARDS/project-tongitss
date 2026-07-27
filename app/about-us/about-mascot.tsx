@@ -2,6 +2,21 @@
 
 import { motion } from "framer-motion";
 
+const points = [
+  {
+    title: "Spiky hair & bright smile",
+    text: "Kidla's spiky hair represents resilience through academic challenges, while the bright smile and blue eyes reflect optimism, curiosity, and a passion for learning and service.",
+  },
+  {
+    title: "Seated in a beaker",
+    text: "The laboratory beaker symbolizes science, research, and innovation, reflecting how DOST scholars are grounded in knowledge and driven to serve the community.",
+  },
+  {
+    title: "Blue, white, black & gray",
+    text: "Kidla's colors are inspired by the DOST logo, representing excellence, integrity, service, and nation-building.",
+  },
+];
+
 export default function AboutMascot() {
   return (
     <section id="about-mascot" className="relative flex flex-col pt-6 pb-10 lg:pt-10 lg:pb-20 lg:px-20 z-5">
@@ -24,14 +39,26 @@ export default function AboutMascot() {
           >
             The Mascot, Kidla
           </motion.h1>
-          
+
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="bg-white/80 backdrop-blur-md border border-white px-6 py-5 sm:px-8 sm:py-6 rounded-3xl shadow-sm max-w-sm w-full sm:max-w-lg mx-auto lg:mx-0 cursor-default transition-shadow hover:shadow-lg"
+            className="bg-white/80 backdrop-blur-md border border-white px-6 py-5 sm:px-8 sm:py-6 rounded-3xl shadow-sm max-w-sm w-full sm:max-w-lg mx-auto lg:mx-0 cursor-default transition-shadow hover:shadow-lg text-left"
           >
-            <p className="text-sm sm:text-base lg:text-lg text-slate-700 font-medium">
-              Running on caffeine but always delivering excellence—our mascot represents the true spirit of a DOST-SEI scholar in the Cordilleras.
+            <p className="text-sm sm:text-base text-slate-700 mb-4">
+              Kidla embodies the spirit of a DOST scholar: resilient in the face of challenges, driven by knowledge, and dedicated to making a meaningful impact on society.
             </p>
+
+            <ul className="space-y-3">
+              {points.map((point) => (
+                <li key={point.title} className="flex gap-2.5">
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <p className="text-sm sm:text-base text-slate-700">
+                    <span className="font-bold text-slate-900">{point.title}.</span>{" "}
+                    {point.text}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         </motion.div>
 
