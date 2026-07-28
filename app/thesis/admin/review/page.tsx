@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { sendThesisApprovalEmail, sendThesisRejectionEmail } from "@/app/actions/email-actions";
 
 function ReviewContent() {
   const router = useRouter();
@@ -83,6 +84,15 @@ function ReviewContent() {
         .eq("id", thesisId);
 
       if (error) throw error;
+      
+      // Send approval email
+      const emailResult = await sendThesisApprovalEmail(Number(thesisId));
+      if (emailResult.success) {
+        console.log(`Approval email sent for thesis ${thesisId}`);
+      } else {
+        console.warn(`Approval email failed for thesis ${thesisId}:`, emailResult.error);
+      }
+      
       router.push("/thesis/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to approve thesis.");
@@ -110,6 +120,15 @@ function ReviewContent() {
         .eq("id", thesisId);
 
       if (error) throw error;
+      
+      // Send rejection email
+      const emailResult = await sendThesisRejectionEmail(Number(thesisId), rejectionReason.trim());
+      if (emailResult.success) {
+        console.log(`Rejection email sent for thesis ${thesisId}`);
+      } else {
+        console.warn(`Rejection email failed for thesis ${thesisId}:`, emailResult.error);
+      }
+      
       router.push("/thesis/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to reject thesis.");

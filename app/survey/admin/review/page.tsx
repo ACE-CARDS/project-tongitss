@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { sendSurveyApprovalEmail, sendSurveyRejectionEmail } from "@/app/actions/email-actions";
 
 function ReviewContent() {
   const router = useRouter();
@@ -87,6 +88,15 @@ function ReviewContent() {
         .eq("id", surveyId);
 
       if (error) throw error;
+      
+      // Send approval email
+      const emailResult = await sendSurveyApprovalEmail(Number(surveyId));
+      if (emailResult.success) {
+        console.log(`Approval email sent for survey ${surveyId}`);
+      } else {
+        console.warn(`Approval email failed for survey ${surveyId}:`, emailResult.error);
+      }
+      
       router.push("/survey/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to approve survey.");
@@ -114,6 +124,15 @@ function ReviewContent() {
         .eq("id", surveyId);
 
       if (error) throw error;
+      
+      // Send rejection email
+      const emailResult = await sendSurveyRejectionEmail(Number(surveyId), rejectionReason.trim());
+      if (emailResult.success) {
+        console.log(`Rejection email sent for survey ${surveyId}`);
+      } else {
+        console.warn(`Rejection email failed for survey ${surveyId}:`, emailResult.error);
+      }
+      
       router.push("/survey/admin/review/success");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to reject survey.");
