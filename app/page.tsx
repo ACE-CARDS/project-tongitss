@@ -15,6 +15,7 @@ import Events from "@/components/features/landing_page/events";
 import Members from "@/components/features/landing_page/members";
 import Province from "@/components/features/landing_page/province";
 import Acedemics from "@/components/features/landing_page/academics";
+import BackToTop from "@/components/ui/backToTop";
 
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);
@@ -62,14 +63,6 @@ export default function Home() {
   //arrow up&down
   const [isAtTop, setIsAtTop] = useState(true);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsAtTop(window.scrollY < 50); // if near top, show arrow
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -80,33 +73,14 @@ export default function Home() {
 
   //button pataas hi
 
-  const [showBackToHero, setShowBackToHero] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const heroHeight = document.getElementById("hero")?.offsetHeight || 0;
-
-      if (window.scrollY > heroHeight - 50) {
-        setShowBackToHero(true);
-      } else {
-        setShowBackToHero(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   //count animation for members section
   const [isOverHero, setIsOverHero] = useState(true);
 
 
-  useEffect(() => {
+useEffect(() => {
     const handleScroll = () => {
       const heroHeight = document.getElementById("hero")?.offsetHeight || 0;
-
-      setShowBackToHero(window.scrollY > heroHeight - 50);
-
+      setIsAtTop(window.scrollY < 50);
       setIsOverHero(window.scrollY < heroHeight - 80);
     };
 
@@ -117,35 +91,7 @@ export default function Home() {
   return (
     <>
       <div className="text-[#141414] min-h-screen flex flex-col overflow-hidden">
-        {showBackToHero && (
-          <button
-            onClick={() => {
-              document
-                .getElementById("hero")
-                ?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="cursor-pointer border-2 border-yellow-500 fixed bottom-6 left-10 z-[10000] bg-white/80 backdrop-blur-md hover:bg-white shadow-xl px-4 py-3 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
-          >
-            {/* //https://heroicons.com/outline */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="w-5 h-5 text-[#011638]"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
-              />
-            </svg>
-            <span className="text-sm font-semibold text-[#011638] hidden sm:block ">
-              Back to Top
-            </span>
-          </button>
-        )}
+        <BackToTop targetId="hero" />
 
         <NavBar isOverHero={isOverHero} />
         
