@@ -49,13 +49,142 @@ export default function Province({ id }: { id?: string }) {
 
   const [provinces, setProvinces] = useState<string[]>([]);
 
-  const adjustCount = (province: string | null, count: number) => {
-    if (province === "Benguet" || province === null) {
-      return Math.max(count - 2, 0);
-    }
-    return count;
+  const adjustSchools = (schools: School[]): School[] => {
+    return schools.map((school) =>
+      school.name === "University of the Philippines - Baguio"
+        ? { ...school, memberCount: Math.max(school.memberCount - 2, 0) }
+        : school
+    );
   };
-  
+
+  const hardcodedProvinceData: Record<string, Record<string, number>> = {
+    "AY 2022-2023": {
+      Abra: 5,
+      Apayao: 10,
+      Benguet: 100,
+      Ifugao: 5,
+      Kalinga: 5,
+      "Mountain Province": 7,
+    },
+    "AY 2023-2024": {
+      Abra: 0,
+      Apayao: 0,
+      Benguet: 0,
+      Ifugao: 0,
+      Kalinga: 0,
+      "Mountain Province": 0,
+    },
+    "AY 2024-2025": {
+      Abra: 0,
+      Apayao: 0,
+      Benguet: 0,
+      Ifugao: 0,
+      Kalinga: 0,
+      "Mountain Province": 0,
+    },
+  };
+
+  const hardcodedSchoolData: Record<string, School[]> = {
+    "AY 2022-2023": [
+      {
+        id: 1,
+        name: "Saint Louis University",
+        memberCount: 23,
+      },
+      {
+        id: 3,
+        name: "University of the Cordilleras",
+        memberCount: 1,
+      },
+      {
+        id: 4,
+        name: "University of the Philippines - Baguio",
+        memberCount: 23,
+      },
+      {
+        id: 5,
+        name: "Kalinga State University",
+        memberCount: 1,
+      },
+      {
+        id: 11,
+        name: "Benguet State University",
+        memberCount: 3,
+      },
+      {
+        id: 32,
+        name: "University of Abra (Abra State Institute of Science and Technology)",
+        memberCount: 1,
+      },
+    ],
+
+    "AY 2023-2024": [
+      {
+        id: 1,
+        name: "Saint Louis University",
+        memberCount: 17,
+      },
+      {
+        id: 2,
+        name: "University of Baguio",
+        memberCount: 1,
+      },
+      {
+        id: 3,
+        name: "University of the Cordilleras",
+        memberCount: 1,
+      },
+      {
+        id: 4,
+        name: "University of the Philippines - Baguio",
+        memberCount: 26,
+      },
+      {
+        id: 11,
+        name: "Benguet State University",
+        memberCount: 1,
+      },
+      {
+        id: 33,
+        name: "Ifugao State University",
+        memberCount: 1,
+      },
+    ],
+
+    "AY 2024-2025": [
+      {
+        id: 1,
+        name: "Saint Louis University",
+        memberCount: 40,
+      },
+      {
+        id: 2,
+        name: "University of Baguio",
+        memberCount: 9,
+      },
+      {
+        id: 3,
+        name: "University of the Cordilleras",
+        memberCount: 11,
+      },
+      {
+        id: 4,
+        name: "University of the Philippines - Baguio",
+        memberCount: 62,
+      },
+      {
+        id: 5,
+        name: "Kalinga State University",
+        memberCount: 2,
+      },
+      {
+        id: 11,
+        name: "Benguet State University",
+        memberCount: 14,
+      },
+    ],
+  };
+
   // Map Provinces for the FormDropdown Component
   const provinceOptions = useMemo(() => {
     return provinces.map((prov) => ({
@@ -63,25 +192,6 @@ export default function Province({ id }: { id?: string }) {
       value: prov,
     }));
   }, [provinces]);
-
-  useEffect(() => {
-    const fetchProvinceMembers = async () => {
-      if (!selectedProvince) return;
-  
-      const { count, error } = await supabase
-        .from("member")
-        .select("*", { count: "exact", head: true })
-        .eq("province", selectedProvince)
-        .eq("acadyear", selectedAY)
-        .eq("is_active", true);
-  
-      if (!error) {
-        setProvinceMembers(adjustCount(selectedProvince, count || 0));
-      }
-    };
-  
-    fetchProvinceMembers();
-  }, [selectedProvince, selectedAY]);
 
   const [provinceStatus, setProvinceStatus] = useState<Record<string, boolean>>({});
 
@@ -126,6 +236,42 @@ export default function Province({ id }: { id?: string }) {
 
   useEffect(() => {
     const fetchProvinceData = async () => {
+
+      if (hardcodedProvinceData[selectedAY]) {
+        let schools = hardcodedSchoolData[selectedAY] || [];
+
+        if (selectedProvince) {
+
+          const provinceSchoolMap: Record<string, string[]> = {
+            Benguet: [
+              "Saint Louis University",
+              "University of Baguio",
+              "University of the Cordilleras",
+              "University of the Philippines - Baguio",
+            ],
+            Kalinga: [
+              "Kalinga State University",
+            ],
+          };
+
+          schools = schools.filter((school) =>
+            provinceSchoolMap[selectedProvince]?.includes(school.name)
+          );
+        }
+
+        const adjustedSchools = adjustSchools(schools);
+        setProvinceSchools(adjustedSchools);
+
+        const total = adjustedSchools.reduce(
+          (acc, curr) => acc + curr.memberCount,
+          0
+        );
+
+        setProvinceMembers(total);
+
+        return;
+      }
+
       let query = supabase
         .from("school")
         .select(`
@@ -135,19 +281,19 @@ export default function Province({ id }: { id?: string }) {
         `)
         .eq("member.acadyear", selectedAY)
         .eq("member.is_active", true);
-  
+
       if (selectedProvince) {
         const { data: prov } = await supabase
           .from("province")
           .select("id")
           .eq("prov_name", selectedProvince)
           .single();
-  
+
         if (prov) query = query.eq("province", prov.id);
       }
-  
+
       const { data, error } = await query;
-  
+
       if (!error && data) {
         const formatted = data
           .map((s) => ({
@@ -161,14 +307,19 @@ export default function Province({ id }: { id?: string }) {
             }
             return a.name.localeCompare(b.name);
           });
-  
-        const total = formatted.reduce((acc, curr) => acc + curr.memberCount, 0);
-  
-        setProvinceMembers(adjustCount(selectedProvince, total));
-        setProvinceSchools(formatted);
+
+        const adjustedFormatted = adjustSchools(formatted);
+
+        const total = adjustedFormatted.reduce(
+          (acc, curr) => acc + curr.memberCount,
+          0
+        );
+
+        setProvinceMembers(total);
+        setProvinceSchools(adjustedFormatted);
       }
     };
-  
+
     fetchProvinceData();
   }, [selectedProvince, selectedAY]);
 
