@@ -50,11 +50,11 @@ const nodeTypes = { static: StaticNode };
 const Legend = ({ isMobile }: { isMobile: boolean }) => (
   <div className={`flex ${isMobile ? "flex-col gap-2 items-start" : "flex-row gap-6 items-center"} bg-white/80 p-3 rounded-lg border border-gray-200 shadow-sm z-0`}>
     <div className="flex items-center gap-2">
-      <div className="w-4 h-4 rounded bg-[#ffe599] border-[1px] border-[#f1c232]" />
+      <div className="w-4 h-4 rounded bg-[#eec643] border-[1px] border-[#eec643]" />
       <span className="text-xs font-medium text-gray-700">Executive Committee</span>
     </div>
     <div className="flex items-center gap-2">
-      <div className="w-4 h-4 rounded bg-[#a4c2f4] border border-transparent" />
+      <div className="w-4 h-4 rounded bg-[#0d21a1] border border-[#0d21a1]" />
       <span className="text-xs font-medium text-gray-700">Committees</span>
     </div>
     <div className="flex items-center gap-2">
@@ -146,8 +146,8 @@ function CommitteeContent() {
     };
 
     return {
-      yellow: { ...base, background: "#ffe599", border: "1px solid #f1c232" },
-      blue: { ...base, background: "#a4c2f4", borderRadius: "10px", border: "none" },
+      yellow: { ...base, background: "#eec643", borderRadius: "10px", border: "1px solid #eec643" },
+      blue: { ...base, background: "#0d21a1", borderRadius: "10px", border: "none" , color: "#fff"},
       white: { ...base, borderRadius: "10px", border: "1px solid #333", background: "#fff" },
       secret: { ...base, border: "none", background: "#b1b1b7", width: "1.2px", height: "8px", padding: "0" },
     };
