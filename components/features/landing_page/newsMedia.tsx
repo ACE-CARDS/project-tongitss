@@ -1,7 +1,7 @@
 //https://www.letsbuildui.dev/articles/how-to-build-a-card-flip-animation/
 "use client";
 
-import { useState, useEffect, useRef } from "react"; 
+import { useState, useEffect, useRef, useCallback } from "react"; 
 import Link from "next/link"; 
 import { createClient } from '@/utils/supabase/client';
 import { BsSuitSpadeFill } from "react-icons/bs";
@@ -270,8 +270,12 @@ export default function NewsMedia() {
   const checkScrollPosition = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+
+      const hasOverflow = scrollWidth > clientWidth;
       const newCanScrollLeft = scrollLeft > 5;
-      const newCanScrollRight = scrollLeft + clientWidth < scrollWidth - 5;
+
+      const remainingScroll = scrollWidth - (scrollLeft + clientWidth);
+      const newCanScrollRight = hasOverflow && remainingScroll > 5;
       
       setCanScrollLeft(newCanScrollLeft);
       setCanScrollRight(newCanScrollRight);
@@ -280,21 +284,38 @@ export default function NewsMedia() {
 
   // Update button states on mount and resize
   useEffect(() => {
-    if (!scrollRef.current || !showSecondRow || carouselPosts.length === 0) return;
-    
-    const timer = setTimeout(() => {
+    if (!showSecondRow || carouselPosts.length === 0) return;
+
+    const setup = () => {
+      const container = scrollRef.current;
+
+      if (!container) {
+        requestAnimationFrame(setup);
+        return;
+      }
+
+      console.log("Attached!");
+
       checkScrollPosition();
-    }, 150);
-    
-    const handleResize = () => {
-      checkScrollPosition();
+
+      const resizeObserver = new ResizeObserver(checkScrollPosition);
+      resizeObserver.observe(container);
+
+      const cards = container.querySelectorAll(".carousel-card");
+      cards.forEach(card => resizeObserver.observe(card));
+
+      window.addEventListener("resize", checkScrollPosition);
+
+      return () => {
+        resizeObserver.disconnect();
+        window.removeEventListener("resize", checkScrollPosition);
+      };
     };
-    
-    window.addEventListener('resize', handleResize);
-    
+
+    const cleanup = setup();
+
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
+      if (cleanup) cleanup();
     };
   }, [showSecondRow, carouselPosts.length]);
 
@@ -376,7 +397,7 @@ export default function NewsMedia() {
 
   // Horizontal scrolling for carousel
   const scroll = (dir: 'left' | 'right') => {
-    if (scrollRef.current && isCarouselVisible) { 
+    if (scrollRef.current) { 
       const container = scrollRef.current;
       const cards = container.querySelectorAll('.carousel-card');
       
@@ -628,7 +649,7 @@ export default function NewsMedia() {
                 >
                   <FlippableNewsCard 
                     post={post} 
-                    isFlipped={flippedCarouselCards.includes(idx)}
+                    isFlipped={true}
                     index={idx + latestPosts.length}
                     isCarouselCard={true}
                   />
