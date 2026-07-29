@@ -26,7 +26,7 @@ export default function AddSuccessPage() {
 
   // Redirect if no valid type is provided
   useEffect(() => {
-    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events")) {
+    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events" && type !== "resource")) {
       router.push("/dashboard");
     }
   }, [type, router]);
@@ -36,8 +36,8 @@ export default function AddSuccessPage() {
     if (type === "announcement") {
       return {
         title: "Announcement Posted!",
-        message: "Your announcement has been successfully saved to the database and is now live based on your scheduled dates.",
-        buttonText: "Create Another Announcement",
+        message: "Your announcement has been successfully saved.",
+        buttonText: "Add Another",
         buttonLink: "/dashboard/add/announcement",
         buttonBack: "/dashboard?tab=manage&section=announcements"
       };
@@ -59,7 +59,17 @@ export default function AddSuccessPage() {
         message: "Your event has been successfully saved.",
         buttonText: "Add Another",
         buttonLink: "/dashboard/add/events",
-        buttonBack: "dashboard?tab=manage&section=events"
+        buttonBack: "/dashboard?tab=manage&section=events"
+      };
+    }
+
+    if (type === "resource") {
+      return {
+        title: "Resource Added!",
+        message: "Your resource has been successfully saved.",
+        buttonText: "Add Another",
+        buttonLink: "/dashboard/add/resource",
+        buttonBack: "/dashboard?tab=manage&section=resources"
       };
     }
     return null;

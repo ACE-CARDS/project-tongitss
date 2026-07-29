@@ -26,7 +26,7 @@ export default function EditSuccessPage() {
 
   // Redirect if no valid type is provided
   useEffect(() => {
-    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events")) {
+    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events" && type !== "resource")) {
       router.push("/dashboard");
     }
   }, [type, router]);
@@ -36,8 +36,8 @@ export default function EditSuccessPage() {
     if (type === "announcement") {
       return {
         title: "Announcement Updated!",
-        message: "Your announcement has been successfully updated in the database.",
-        buttonText: "Edit Another Announcement",
+        message: "Your announcement has been successfully updated.",
+        buttonText: "Edit Another",
         buttonLink: "/dashboard/edit/announcement",
         buttonBack: "/dashboard?tab=manage&section=announcements"
       };
@@ -59,7 +59,17 @@ export default function EditSuccessPage() {
         message: "Your event has been successfully updated.",
         buttonText: "Edit Another",
         buttonLink: "/dashboard/edit/events",
-        buttonBack: "dashboard?tab=manage&section=events"
+        buttonBack: "/dashboard?tab=manage&section=events"
+      };
+    }
+
+    if (type === "resource") {
+      return {
+        title: "Resource Updated!",
+        message: "Your resource has been successfully updated.",
+        buttonText: "Edit Another",
+        buttonLink: "/dashboard/edit/resource",
+        buttonBack: "/dashboard?tab=manage&section=resources"
       };
     }
     return null;
