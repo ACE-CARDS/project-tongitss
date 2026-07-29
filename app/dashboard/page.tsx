@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -43,13 +43,26 @@ function DashboardContent() {
   } | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true); // Track loading state
   const [isTabLoading, setIsTabLoading] = useState(false);
+  
+  // Refs for preventing URL update loops
+  const isUpdatingFromUrl = useRef(false);
+  const isUpdatingFromTab = useRef(false);
 
   const handleTabChange = async (tabKey: string) => {
+    if (tabKey === activeTab) return; // Don't reload if same tab
+    
     setIsTabLoading(true);
     setActiveTab(tabKey);
-
+    isUpdatingFromTab.current = true;
+    
+    // Update URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabKey);
+    window.history.replaceState({}, '', url.toString());
+    
     setTimeout(() => {
       setIsTabLoading(false);
+      isUpdatingFromTab.current = false;
     }, 1500);
   };
 
@@ -143,6 +156,27 @@ function DashboardContent() {
     }
   }, [user]);
 
+  // Handle URL changes from browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const urlTab = new URLSearchParams(window.location.search).get("tab");
+      if (urlTab && isValidTab(urlTab) && urlTab !== activeTab) {
+        isUpdatingFromUrl.current = true;
+        setActiveTab(urlTab);
+        // Save tab
+        if (user?.email) {
+          localStorage.setItem(`dashboard_tab_${user.email}`, urlTab);
+        }
+        setTimeout(() => {
+          isUpdatingFromUrl.current = false;
+        }, 100);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeTab, user]);
+
   // Check for URL parameters first, then fall back to session storage
   useEffect(() => {
     if (user === undefined) return;
@@ -151,8 +185,11 @@ function DashboardContent() {
     const initialTab = getInitialTab();
     setActiveTab(initialTab);
 
-    if (!searchParams.get("tab")) {
-      router.push(`/dashboard?tab=${initialTab}`, { scroll: false });
+    const urlTab = searchParams.get("tab");
+    if (!urlTab) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', initialTab);
+      window.history.replaceState({}, '', url.toString());
     }
   }, [user?.email, searchParams, isDataLoading]);
 
@@ -160,14 +197,8 @@ function DashboardContent() {
   useEffect(() => {
     if (user?.email && activeTab && !isDataLoading) {
       saveTab(activeTab);
-
-      // Update URL
-      const currentUrlTab = searchParams.get("tab");
-      if (currentUrlTab !== activeTab) {
-        router.push(`/dashboard?tab=${activeTab}`, { scroll: false });
-      }
     }
-  }, [activeTab, user?.email, searchParams, isDataLoading]);
+  }, [activeTab, user?.email, isDataLoading]);
 
   // Show loading state while fetching
   if (isDataLoading || activeTab === null) {
