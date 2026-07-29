@@ -163,7 +163,7 @@ export default function EventsTimeline() {
             />
         </div>
 
-        <div id="top" className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto shrink-0">
+        <div id="top" className="target-section flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto shrink-0">
           <div className="w-full sm:w-auto z-5">
             <FilterDropdown value={activeFilter} options={statusOptions} onChange={setActiveFilter} />
           </div>

@@ -269,6 +269,10 @@ select {
   @apply custom-scrollbar-blue;
 }
 
+.target-section {
+  scroll-margin-top: 56px; /* Adjust this value based on your fixed header height */
+}
+
 /* DONT MIND THIS*/
 #kidla {
   z-index: 40;
