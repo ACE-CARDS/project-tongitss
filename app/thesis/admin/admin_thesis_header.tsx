@@ -356,6 +356,9 @@ interface AdminThesisHeaderProps {
   initialStatuses?: string[];
   availableKeywords?: string[];
   pendingCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+  archivedCount: number;
   onFilterChange: (filters: {
     query?: string;
     category?: string;
@@ -376,6 +379,9 @@ export default function AdminThesisHeader({
   initialStatuses = [],
   availableKeywords = [],
   pendingCount = 0,
+  acceptedCount = 0,
+  rejectedCount = 0,
+  archivedCount = 0,
   onFilterChange,
 }: AdminThesisHeaderProps) {
   const [query, setQuery] = useState(initialQuery);
@@ -455,16 +461,14 @@ export default function AdminThesisHeader({
     });
   };
 
-  const handlePendingClick = () => {
-    if (selectedStatuses.includes("pending") && selectedStatuses.length === 1) {
-      // Remove all filters
-      setSelectedStatuses([]);
-      onFilterChange({ statuses: [] });
-    } else {
-      // Set only pending
-      setSelectedStatuses(["pending"]);
-      onFilterChange({ statuses: ["pending"] });
-    }
+  // Handle status card filter
+  const handleStatusCardClick = (status: string) => {
+    const newStatuses = selectedStatuses.includes(status)
+      ? selectedStatuses.filter((s) => s !== status) // Remove if already selected
+      : [...selectedStatuses, status]; // Add if not selected
+    
+    setSelectedStatuses(newStatuses);
+    onFilterChange({ statuses: newStatuses });
   };
 
   const totalFilters =
@@ -472,6 +476,10 @@ export default function AdminThesisHeader({
     (selectedSchool ? 1 : 0) +
     selectedYears.length +
     selectedStatuses.length;
+
+  const isStatusActive = (status: string) => {
+    return selectedStatuses.includes(status);
+  };
 
   return (
     <div className="mb-8">
@@ -484,23 +492,81 @@ export default function AdminThesisHeader({
             Manage and moderate all thesis submissions
           </p>
         </div>
+      </div>
 
-        {pendingCount > 0 && (
-          <button
-            onClick={handlePendingClick}
-            className={`bg-yellow-100 text-yellow-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-ubuntu-mono font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
-              selectedStatuses.includes("pending")
-                ? "ring-2 ring-yellow-400 bg-yellow-200"
-                : ""
-            }`}
-          >
-            <span className="relative flex size-1.5 sm:size-2 items-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
-              <span className="relative inline-flex size-1.5 sm:size-2 rounded-full bg-yellow-500"></span>
-            </span>
-            {pendingCount} PENDING {pendingCount === 1 ? "WORK" : "WORKS"}
-          </button>
-        )}
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        {/* Pending Card */}
+        <div
+          onClick={() => handleStatusCardClick("pending")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Pending</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{pendingCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-yellow-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Accepted Card */}
+        <div
+          onClick={() => handleStatusCardClick("accepted")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Accepted</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{acceptedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-green-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Rejected Card */}
+        <div
+          onClick={() => handleStatusCardClick("rejected")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Rejected</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{rejectedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-red-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Archived Card */}
+        <div
+          onClick={() => handleStatusCardClick("archived")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Archived</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{archivedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-gray-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

@@ -21,6 +21,7 @@ export default function SurveyAdminWrapper() {
   const supabase = createClient(); // supa client
 
   const [surveys, setSurveys] = useState<any[]>([]); // to store fetched surveys
+  const [allSurveys, setAllSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true); // loading state
 
   // filter dropdown options
@@ -28,8 +29,11 @@ export default function SurveyAdminWrapper() {
   const [schools, setSchools] = useState<School[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
 
-  // count of pending surveys
+  // Counts for all statuses
   const [pendingCount, setPendingCount] = useState(0);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [archivedCount, setArchivedCount] = useState(0);
   
   // Filter states
   const [currentPage, setCurrentPage] = useState(1); 
@@ -46,6 +50,7 @@ export default function SurveyAdminWrapper() {
         supabase.from("r_category").select("id, r_category_name").order("r_category_name"),
         supabase.from("school").select("id, school_name").order("school_name"),
         supabase.from("survey").select("survey_start"),
+        supabase.from("survey").select("survey_title, survey_desc"),
       ]);
 
       // set for dropdown
@@ -68,9 +73,9 @@ export default function SurveyAdminWrapper() {
     fetchInitialData();
   }, [supabase]);
 
-  // fetch surveys based on filters
+  // fetch all surveys for counting
   useEffect(() => {
-    const fetchSurveys = async () => {
+    const fetchAllSurveys = async () => {
       setLoading(true);
 
       let query = supabase
@@ -110,72 +115,134 @@ export default function SurveyAdminWrapper() {
         )
         .order("created_at", { ascending: false });
 
-      if (selectedCategory) {
-        query = query.eq("r_category", selectedCategory);
-      }
-      if (selectedSchool) {
-        query = query.eq("school", selectedSchool);
-      }
-      if (selectedStatuses.length > 0) {
-        query = query.in("survey_status", selectedStatuses);
-      }
-
       const { data: fetchedSurveys, error } = await query;
 
       if (error) {
         console.error("Error fetching surveys:", error);
+        setAllSurveys([]);
+        setSurveys([]);
       } else {
-        let filteredSurveys = fetchedSurveys || [];
-
-        if (selectedYears.length > 0) {
-          filteredSurveys = filteredSurveys.filter((s: any) => {
-            const surveyDate = new Date(s.survey_start);
-            const surveyYear = surveyDate.getFullYear();
-            return !isNaN(surveyYear) && selectedYears.includes(surveyYear);
-          });
-        }
-
-        if (searchQuery) {
-          const tokens = searchQuery
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .map((s) => s.toLowerCase());
-
-          filteredSurveys = filteredSurveys.filter((s: any) => {
-            let hay = "";
-            hay += s.survey_title ?? "";
-            hay += " " + (s.survey_desc ?? "");
-            hay += " " + (s.r_category?.r_category_name ?? "");
-            hay += " " + (s.school?.school_name ?? "");
-            hay += " " + (s.survey_respondents ?? "");
-            if (s.survey_author && Array.isArray(s.survey_author)) {
-              s.survey_author.forEach((sa: any) => {
-                const a = sa.author;
-                hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
-              });
-            }
-            const hayLower = hay.toLowerCase();
-            return tokens.some((token) => hayLower.includes(token));
-          });
-        }
-
-        setSurveys(filteredSurveys);
-        
-        const pending = fetchedSurveys?.filter((s: any) => s.survey_status === "pending").length || 0;
-        setPendingCount(pending);
+        setAllSurveys(fetchedSurveys || []);
+        setSurveys(fetchedSurveys || []);
+        calculateCounts(fetchedSurveys || []);
       }
       
       setLoading(false);
     };
 
-    fetchSurveys();
-  }, [supabase, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
+    fetchAllSurveys();
+  }, [supabase]);
 
-  // update count
-  const handlePendingCountChange = (newCount: number) => {
-    setPendingCount(newCount);
+  // Calculate counts
+  const calculateCounts = (data: any[]) => {
+    if (!data || data.length === 0) {
+      setPendingCount(0);
+      setAcceptedCount(0);
+      setRejectedCount(0);
+      setArchivedCount(0);
+      return;
+    }
+
+    let baseSurveys = [...data];
+    
+    if (selectedCategory) {
+      baseSurveys = baseSurveys.filter((s: any) => s.r_category?.id === selectedCategory);
+    }
+    if (selectedSchool) {
+      baseSurveys = baseSurveys.filter((s: any) => s.school?.id === selectedSchool);
+    }
+    if (selectedYears.length > 0) {
+      baseSurveys = baseSurveys.filter((s: any) => {
+        const surveyDate = new Date(s.survey_start);
+        const surveyYear = surveyDate.getFullYear();
+        return !isNaN(surveyYear) && selectedYears.includes(surveyYear);
+      });
+    }
+    if (searchQuery) {
+      const tokens = searchQuery
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s.toLowerCase());
+
+      baseSurveys = baseSurveys.filter((s: any) => {
+        let hay = "";
+        hay += s.survey_title ?? "";
+        hay += " " + (s.survey_desc ?? "");
+        hay += " " + (s.r_category?.r_category_name ?? "");
+        hay += " " + (s.school?.school_name ?? "");
+        hay += " " + (s.survey_respondents ?? "");
+        if (s.survey_author && Array.isArray(s.survey_author)) {
+          s.survey_author.forEach((sa: any) => {
+            const a = sa.author;
+            hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
+          });
+        }
+        const hayLower = hay.toLowerCase();
+        return tokens.some((token) => hayLower.includes(token));
+      });
+    }
+    
+    setPendingCount(baseSurveys.filter((s: any) => s.survey_status === "pending").length);
+    setAcceptedCount(baseSurveys.filter((s: any) => s.survey_status === "accepted").length);
+    setRejectedCount(baseSurveys.filter((s: any) => s.survey_status === "rejected").length);
+    setArchivedCount(baseSurveys.filter((s: any) => s.survey_status === "archived").length);
   };
+
+  // Apply filters
+  useEffect(() => {
+    if (!allSurveys.length) return;
+
+    // Filter surveys with status filter
+    let filteredSurveys = [...allSurveys];
+
+    if (selectedCategory) {
+      filteredSurveys = filteredSurveys.filter((s: any) => s.r_category?.id === selectedCategory);
+    }
+    if (selectedSchool) {
+      filteredSurveys = filteredSurveys.filter((s: any) => s.school?.id === selectedSchool);
+    }
+    if (selectedStatuses.length > 0) {
+      filteredSurveys = filteredSurveys.filter((s: any) => 
+        selectedStatuses.includes(s.survey_status)
+      );
+    }
+    if (selectedYears.length > 0) {
+      filteredSurveys = filteredSurveys.filter((s: any) => {
+        const surveyDate = new Date(s.survey_start);
+        const surveyYear = surveyDate.getFullYear();
+        return !isNaN(surveyYear) && selectedYears.includes(surveyYear);
+      });
+    }
+    if (searchQuery) {
+      const tokens = searchQuery
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s.toLowerCase());
+
+      filteredSurveys = filteredSurveys.filter((s: any) => {
+        let hay = "";
+        hay += s.survey_title ?? "";
+        hay += " " + (s.survey_desc ?? "");
+        hay += " " + (s.r_category?.r_category_name ?? "");
+        hay += " " + (s.school?.school_name ?? "");
+        hay += " " + (s.survey_respondents ?? "");
+        if (s.survey_author && Array.isArray(s.survey_author)) {
+          s.survey_author.forEach((sa: any) => {
+            const a = sa.author;
+            hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
+          });
+        }
+        const hayLower = hay.toLowerCase();
+        return tokens.some((token) => hayLower.includes(token));
+      });
+    }
+
+    setSurveys(filteredSurveys);
+    
+    calculateCounts(allSurveys);
+  }, [allSurveys, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
 
   // reset filters on change
   const handleFilterChange = (filters: {
@@ -206,6 +273,9 @@ export default function SurveyAdminWrapper() {
         initialYears={selectedYears}
         initialStatuses={selectedStatuses}
         pendingCount={pendingCount}
+        acceptedCount={acceptedCount}
+        rejectedCount={rejectedCount}
+        archivedCount={archivedCount}
         onFilterChange={handleFilterChange}
       />
 
@@ -214,7 +284,6 @@ export default function SurveyAdminWrapper() {
         allSurveys={surveys}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        onPendingCountChange={handlePendingCountChange}
       />
     </div>
   );

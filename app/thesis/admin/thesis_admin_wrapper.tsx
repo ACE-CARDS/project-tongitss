@@ -19,6 +19,7 @@ export default function ThesisAdminWrapper() {
   const supabase = createClient();
 
   const [theses, setTheses] = useState<any[]>([]);
+  const [allTheses, setAllTheses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -27,6 +28,9 @@ export default function ThesisAdminWrapper() {
   const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
 
   const [pendingCount, setPendingCount] = useState(0);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [archivedCount, setArchivedCount] = useState(0);
   
   const [currentPage, setCurrentPage] = useState(1); 
   const [searchQuery, setSearchQuery] = useState(""); 
@@ -74,7 +78,7 @@ export default function ThesisAdminWrapper() {
   }, [supabase]);
 
   useEffect(() => {
-    const fetchTheses = async () => {
+    const fetchAllTheses = async () => {
       setLoading(true);
 
       let query = supabase
@@ -113,72 +117,137 @@ export default function ThesisAdminWrapper() {
         )
         .order("created_at", { ascending: false });
 
-      if (selectedCategory) {
-        query = query.eq("r_category", selectedCategory);
-      }
-      if (selectedSchool) {
-        query = query.eq("school", selectedSchool);
-      }
-      if (selectedStatuses.length > 0) {
-        query = query.in("thesis_status", selectedStatuses);
-      }
-
       const { data: fetchedTheses, error } = await query;
 
       if (error) {
         console.error("Error fetching theses:", error);
+        setAllTheses([]);
+        setTheses([]);
       } else {
-        let filteredTheses = fetchedTheses || [];
-
-        if (selectedYears.length > 0) {
-          filteredTheses = filteredTheses.filter((t: any) => {
-            const thesisDate = new Date(t.thesis_date);
-            const thesisYear = thesisDate.getFullYear();
-            return !isNaN(thesisYear) && selectedYears.includes(thesisYear);
-          });
-        }
-
-        if (searchQuery) {
-          const tokens = searchQuery
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .map((s) => s.toLowerCase());
-
-          filteredTheses = filteredTheses.filter((t: any) => {
-            let hay = "";
-            hay += t.thesis_title ?? "";
-            hay += " " + (t.thesis_abstract ?? "");
-            hay += " " + (t.thesis_keyword ?? "");
-            hay += " " + (t.thesis_phys ?? "");
-            hay += " " + (t.r_category?.r_category_name ?? "");
-            hay += " " + (t.school?.school_name ?? "");
-            if (t.thesis_author && Array.isArray(t.thesis_author)) {
-              t.thesis_author.forEach((ta: any) => {
-                const a = ta.author;
-                hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
-              });
-            }
-            const hayLower = hay.toLowerCase();
-            return tokens.some((token) => hayLower.includes(token));
-          });
-        }
-
-        setTheses(filteredTheses);
-        
-        const pending = fetchedTheses?.filter((t: any) => t.thesis_status === "pending").length || 0;
-        setPendingCount(pending);
+        setAllTheses(fetchedTheses || []);
+        setTheses(fetchedTheses || []);
+        calculateCounts(fetchedTheses || []);
       }
       
       setLoading(false);
     };
 
-    fetchTheses();
-  }, [supabase, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
+    fetchAllTheses();
+  }, [supabase]);
 
-  const handlePendingCountChange = (newCount: number) => {
-    setPendingCount(newCount);
+  // Calculate counts 
+    const calculateCounts = (data: any[]) => {
+    if (!data || data.length === 0) {
+      setPendingCount(0);
+      setAcceptedCount(0);
+      setRejectedCount(0);
+      setArchivedCount(0);
+      return;
+    }
+
+    let baseTheses = [...data];
+    
+    if (selectedCategory) {
+      baseTheses = baseTheses.filter((t: any) => t.r_category?.id === selectedCategory);
+    }
+    if (selectedSchool) {
+      baseTheses = baseTheses.filter((t: any) => t.school?.id === selectedSchool);
+    }
+    if (selectedYears.length > 0) {
+      baseTheses = baseTheses.filter((t: any) => {
+        const thesisDate = new Date(t.thesis_date);
+        const thesisYear = thesisDate.getFullYear();
+        return !isNaN(thesisYear) && selectedYears.includes(thesisYear);
+      });
+    }
+    if (searchQuery) {
+      const tokens = searchQuery
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s.toLowerCase());
+
+      baseTheses = baseTheses.filter((t: any) => {
+        let hay = "";
+        hay += t.thesis_title ?? "";
+        hay += " " + (t.thesis_abstract ?? "");
+        hay += " " + (t.thesis_keyword ?? "");
+        hay += " " + (t.thesis_phys ?? "");
+        hay += " " + (t.r_category?.r_category_name ?? "");
+        hay += " " + (t.school?.school_name ?? "");
+        if (t.thesis_author && Array.isArray(t.thesis_author)) {
+          t.thesis_author.forEach((ta: any) => {
+            const a = ta.author;
+            hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
+          });
+        }
+        const hayLower = hay.toLowerCase();
+        return tokens.some((token) => hayLower.includes(token));
+      });
+    }
+    
+    setPendingCount(baseTheses.filter((t: any) => t.thesis_status === "pending").length);
+    setAcceptedCount(baseTheses.filter((t: any) => t.thesis_status === "accepted").length);
+    setRejectedCount(baseTheses.filter((t: any) => t.thesis_status === "rejected").length);
+    setArchivedCount(baseTheses.filter((t: any) => t.thesis_status === "archived").length);
   };
+
+  // Apply filters
+  useEffect(() => {
+    if (!allTheses.length) return;
+
+    // Filter theses with status filter
+    let filteredTheses = [...allTheses];
+
+    if (selectedCategory) {
+      filteredTheses = filteredTheses.filter((t: any) => t.r_category?.id === selectedCategory);
+    }
+    if (selectedSchool) {
+      filteredTheses = filteredTheses.filter((t: any) => t.school?.id === selectedSchool);
+    }
+    if (selectedStatuses.length > 0) {
+      filteredTheses = filteredTheses.filter((t: any) => 
+        selectedStatuses.includes(t.thesis_status)
+      );
+    }
+    if (selectedYears.length > 0) {
+      filteredTheses = filteredTheses.filter((t: any) => {
+        const thesisDate = new Date(t.thesis_date);
+        const thesisYear = thesisDate.getFullYear();
+        return !isNaN(thesisYear) && selectedYears.includes(thesisYear);
+      });
+    }
+    if (searchQuery) {
+      const tokens = searchQuery
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s.toLowerCase());
+
+      filteredTheses = filteredTheses.filter((t: any) => {
+        let hay = "";
+        hay += t.thesis_title ?? "";
+        hay += " " + (t.thesis_abstract ?? "");
+        hay += " " + (t.thesis_keyword ?? "");
+        hay += " " + (t.thesis_phys ?? "");
+        hay += " " + (t.r_category?.r_category_name ?? "");
+        hay += " " + (t.school?.school_name ?? "");
+        if (t.thesis_author && Array.isArray(t.thesis_author)) {
+          t.thesis_author.forEach((ta: any) => {
+            const a = ta.author;
+            hay += " " + (a?.author_fname ?? "") + " " + (a?.author_lname ?? "");
+          });
+        }
+        const hayLower = hay.toLowerCase();
+        return tokens.some((token) => hayLower.includes(token));
+      });
+    }
+
+    setTheses(filteredTheses);
+    
+    // Calculate counts
+    calculateCounts(allTheses);
+  }, [allTheses, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
 
   const handleFilterChange = (filters: {
     query?: string;
@@ -208,6 +277,9 @@ export default function ThesisAdminWrapper() {
         initialStatuses={selectedStatuses}
         availableKeywords={availableKeywords}
         pendingCount={pendingCount}
+        acceptedCount={acceptedCount}
+        rejectedCount={rejectedCount}
+        archivedCount={archivedCount}
         onFilterChange={handleFilterChange}
       />
 
@@ -215,7 +287,6 @@ export default function ThesisAdminWrapper() {
         allTheses={theses}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        onPendingCountChange={handlePendingCountChange}
       />
     </div>
   );

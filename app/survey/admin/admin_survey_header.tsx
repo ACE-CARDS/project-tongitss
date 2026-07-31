@@ -337,6 +337,9 @@ interface AdminSurveyHeaderProps {
   initialStatuses?: string[];
   availableKeywords?: string[];
   pendingCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+  archivedCount: number;
   onFilterChange: (filters: {
     query?: string;
     category?: string;
@@ -357,6 +360,9 @@ export default function AdminSurveyHeader({
   initialStatuses = [],
   availableKeywords = [],
   pendingCount = 0,
+  acceptedCount = 0,
+  rejectedCount = 0,
+  archivedCount = 0,
   onFilterChange,
 }: AdminSurveyHeaderProps) {
   const [query, setQuery] = useState(initialQuery);
@@ -371,20 +377,18 @@ export default function AdminSurveyHeader({
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setQuery(value);
-  setShowSuggestions(true);
-  
-  // clear prev timer
-  if (debounceTimer.current) {
-    clearTimeout(debounceTimer.current);
-  }
-  
-  // set new timer
-  debounceTimer.current = setTimeout(() => {
-    onFilterChange({ query: value });
-  }, 500);
-};
+    const value = e.target.value;
+    setQuery(value);
+    setShowSuggestions(true);
+    
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(() => {
+      onFilterChange({ query: value });
+    }, 500);
+  };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
@@ -435,16 +439,14 @@ export default function AdminSurveyHeader({
     });
   };
 
-  const handlePendingClick = () => {
-    if (selectedStatuses.includes('pending') && selectedStatuses.length === 1) {
-      // Remove all filters
-      setSelectedStatuses([]);
-      onFilterChange({ statuses: [] });
-    } else {
-      // Set only pending
-      setSelectedStatuses(['pending']);
-      onFilterChange({ statuses: ['pending'] });
-    }
+  // Same status card filter logic as thesis
+  const handleStatusCardClick = (status: string) => {
+    const newStatuses = selectedStatuses.includes(status)
+      ? selectedStatuses.filter((s) => s !== status) // Remove if already selected
+      : [...selectedStatuses, status]; // Add if not selected
+    
+    setSelectedStatuses(newStatuses);
+    onFilterChange({ statuses: newStatuses });
   };
 
   useEffect(() => {
@@ -460,6 +462,10 @@ export default function AdminSurveyHeader({
                       selectedYears.length + 
                       selectedStatuses.length;
 
+  const isStatusActive = (status: string) => {
+    return selectedStatuses.includes(status);
+  };
+
   // final header contents
   return (
     <div className="mb-8">
@@ -472,143 +478,202 @@ export default function AdminSurveyHeader({
             Manage and moderate all survey submissions
           </p>
         </div>
+      </div>
 
-        {/* pending works "button" */}
-        {pendingCount > 0 && (
-        <button
-          onClick={handlePendingClick}
-          className={`bg-yellow-100 text-yellow-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-ubuntu-mono font-bold hover:bg-[#f0d060] transition-colors cursor-pointer shadow-md flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
-            selectedStatuses.includes('pending') ? 'ring-2 ring-yellow-400 bg-yellow-200' : ''
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        {/* Pending Card */}
+        <div
+          onClick={() => handleStatusCardClick("pending")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
           }`}
         >
-          <span className="relative flex size-1.5 sm:size-2 items-center">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
-            <span className="relative inline-flex size-1.5 sm:size-2 rounded-full bg-yellow-500"></span>
-          </span>
-          {pendingCount} PENDING {pendingCount === 1 ? "WORK" : "WORKS"}
-        </button>
-      )}
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Pending</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{pendingCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-yellow-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Accepted Card */}
+        <div
+          onClick={() => handleStatusCardClick("accepted")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Accepted</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{acceptedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-green-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Rejected Card */}
+        <div
+          onClick={() => handleStatusCardClick("rejected")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Rejected</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{rejectedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-red-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Archived Card */}
+        <div
+          onClick={() => handleStatusCardClick("archived")}
+          className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
+          }`}
+        >
+          <div className="relative z-10">
+            <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Archived</p>
+            <p className="text-2xl font-oswald font-bold text-[#011638]">{archivedCount}</p>
+          </div>
+          <div className="absolute -right-8 -bottom-8 opacity-20 text-gray-500 pointer-events-none">
+            <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* filter and search bar*/}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="relative" ref={filterButtonRef}>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 ${
-                showFilters ? "bg-[#011638]" : "bg-[#011638]"
-              } text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                />
-              </svg>
-              Filters
-              {totalFilters > 0 && (
-                <span className="bg-[#eec643] text-[#011638] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {totalFilters}
-                </span>
-              )}
-            </button>
-
-            <FilterPopup
-              isOpen={showFilters}
-              onClose={() => setShowFilters(false)}
-              buttonRef={filterButtonRef}
-              categories={categories}
-              schools={schools}
-              years={years}
-              selectedCategory={selectedCategory}
-              selectedSchool={selectedSchool}
-              selectedYears={selectedYears}
-              selectedStatuses={selectedStatuses}
-              onCategoryChange={handleCategoryChange}
-              onSchoolChange={handleSchoolChange}
-              onYearToggle={handleYearToggle}
-              onStatusToggle={handleStatusToggle}
-              onReset={resetFilters}
-            />
-          </div>
-
-          <div className="flex-1 relative">
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search..."
-                onChange={handleChange}
-                onFocus={() => setShowSuggestions(true)}
-                value={query}
-                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
-              />
-              <svg
-                className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-
-              {/* clear/X button */}
-              {(query || showSuggestions) && (
-                <button
-                  onClick={() => {
-                    setQuery("");
-                    setShowSuggestions(false);
-                    onFilterChange({ query: "" });
-                    searchInputRef.current?.focus();
-                  }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
-                  aria-label="Clear search"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              )}
-            </div>
-            
-            {/* LiveSuggestions */}
-            <LiveSuggestions
-              query={query}
-              onSelect={handleSuggestionSelect}
-              isOpen={showSuggestions}
-              onClose={() => setShowSuggestions(false)}
-              allKeywords={availableKeywords}
-            />
-          </div>
-
-          {/* Add button */}
-          <Link
-            href="/survey/add?returnTo=/dashboard"
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div className="relative" ref={filterButtonRef}>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 ${
+              showFilters ? "bg-[#011638]" : "bg-[#011638]"
+            } text-[#eff0f2] hover:bg-[#1e4db7] active:bg-[#0d21a1]`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
             </svg>
-            Add Survey
-          </Link>
+            Filters
+            {totalFilters > 0 && (
+              <span className="bg-[#eec643] text-[#011638] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                {totalFilters}
+              </span>
+            )}
+          </button>
+
+          <FilterPopup
+            isOpen={showFilters}
+            onClose={() => setShowFilters(false)}
+            buttonRef={filterButtonRef}
+            categories={categories}
+            schools={schools}
+            years={years}
+            selectedCategory={selectedCategory}
+            selectedSchool={selectedSchool}
+            selectedYears={selectedYears}
+            selectedStatuses={selectedStatuses}
+            onCategoryChange={handleCategoryChange}
+            onSchoolChange={handleSchoolChange}
+            onYearToggle={handleYearToggle}
+            onStatusToggle={handleStatusToggle}
+            onReset={resetFilters}
+          />
         </div>
+
+        <div className="flex-1 relative">
+          <div className="relative">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search..."
+              onChange={handleChange}
+              onFocus={() => setShowSuggestions(true)}
+              value={query}
+              className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
+            />
+            <svg
+              className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+
+            {/* clear/X button */}
+            {query.trim() && (
+              <button
+                onClick={() => {
+                  setQuery("");
+                  setShowSuggestions(false);
+                  onFilterChange({ query: "" });
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
+                aria-label="Clear search"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {/* LiveSuggestions */}
+          <LiveSuggestions
+            query={query}
+            onSelect={handleSuggestionSelect}
+            isOpen={showSuggestions}
+            onClose={() => setShowSuggestions(false)}
+            allKeywords={availableKeywords}
+          />
+        </div>
+
+        {/* Add button */}
+        <Link
+          href="/survey/add?returnTo=/dashboard"
+          className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Survey
+        </Link>
       </div>
+    </div>
   );
-  }
+}
