@@ -942,7 +942,7 @@ export default function MemberThesisView() {
 
   if (loading) {
     return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen">
       <div>
         <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
         <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
@@ -996,7 +996,7 @@ export default function MemberThesisView() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-6 min-h-screen">
         <div>
           <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
           <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
@@ -1009,7 +1009,7 @@ export default function MemberThesisView() {
           {/* Pending Card */}
           <div
             onClick={() => handleStatusCardClick("pending")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1027,7 +1027,7 @@ export default function MemberThesisView() {
           {/* Accepted Card */}
           <div
             onClick={() => handleStatusCardClick("accepted")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1045,7 +1045,7 @@ export default function MemberThesisView() {
           {/* Rejected Card */}
           <div
             onClick={() => handleStatusCardClick("rejected")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1063,7 +1063,7 @@ export default function MemberThesisView() {
           {/* Archived Card */}
           <div
             onClick={() => handleStatusCardClick("archived")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
