@@ -32,27 +32,15 @@ export default function Academics({id}: {id?: string}) {
   //count animation for thesis
   const [displayThesesCount, setDisplayThesesCount] = useState(0);
   const thesesSectionRef = useRef(null);
+  const [hasEnteredTheses, setHasEnteredTheses] = useState(false);
+  const thesesAnimatedRef = useRef(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          let start = 0;
-          const target = thesesCount;
-          const duration = 500;
-          const increment = target / (duration / 16);
-
-          const interval = setInterval(() => {
-            start += increment;
-            if (start >= target) {
-              setDisplayThesesCount(target);
-              clearInterval(interval);
-            } else {
-              setDisplayThesesCount(Math.floor(start));
-            }
-          }, 16);
-        } else {
-          setDisplayThesesCount(0);
+          setHasEnteredTheses(true);
+          observer.disconnect();
         }
       },
       { threshold: 0.5 },
@@ -61,32 +49,43 @@ export default function Academics({id}: {id?: string}) {
     if (thesesSectionRef.current) observer.observe(thesesSectionRef.current);
 
     return () => observer.disconnect();
-  }, [thesesCount]);
+  }, []);
+
+  useEffect(() => {
+    if (!hasEnteredTheses || thesesAnimatedRef.current) return;
+
+    thesesAnimatedRef.current = true;
+
+    let start = 0;
+    const target = thesesCount;
+    const duration = 500;
+    const increment = target / (duration / 16);
+
+    const interval = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setDisplayThesesCount(target);
+        clearInterval(interval);
+      } else {
+        setDisplayThesesCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [hasEnteredTheses, thesesCount]);
 
   //count animation for survey
   const [displaySurveyCount, setDisplaySurveyCount] = useState(0);
   const surveySectionRef = useRef(null);
+  const [hasEnteredSurvey, setHasEnteredSurvey] = useState(false);
+  const surveyAnimatedRef = useRef(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          let start = 0;
-          const target = surveyCount;
-          const duration = 500;
-          const increment = target / (duration / 16);
-
-          const interval = setInterval(() => {
-            start += increment;
-            if (start >= target) {
-              setDisplaySurveyCount(target);
-              clearInterval(interval);
-            } else {
-              setDisplaySurveyCount(Math.floor(start));
-            }
-          }, 16);
-        } else {
-          setDisplaySurveyCount(0);
+          setHasEnteredSurvey(true);
+          observer.disconnect();
         }
       },
       { threshold: 0.5 },
@@ -95,7 +94,30 @@ export default function Academics({id}: {id?: string}) {
     if (surveySectionRef.current) observer.observe(surveySectionRef.current);
 
     return () => observer.disconnect();
-  }, [surveyCount]);
+  }, []);
+
+  useEffect(() => {
+    if (!hasEnteredSurvey || surveyAnimatedRef.current) return;
+
+    surveyAnimatedRef.current = true;
+
+    let start = 0;
+    const target = surveyCount;
+    const duration = 500;
+    const increment = target / (duration / 16);
+
+    const interval = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setDisplaySurveyCount(target);
+        clearInterval(interval);
+      } else {
+        setDisplaySurveyCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [hasEnteredSurvey, surveyCount]);
 
   return (
     <section
