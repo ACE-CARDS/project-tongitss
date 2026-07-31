@@ -13,7 +13,8 @@ import Link from "next/link";
 import BackButton from "@/components/ui/backButton";
 import ResearchDataAdmin from "@/components/features/dashboard/manage/category/researchDataAdmin";
 import AuditLogAdmin from "@/components/features/dashboard/manage/auditLog/auditLogAdmin";
-import ResourcesAdmin from "@/components/features/dashboard/manage/resources/resourcesAdmin"; 
+import ResourcesAdmin from "@/components/features/dashboard/manage/resources/resourcesAdmin";
+import ScholarshipAdmin from "@/components/features/dashboard/manage/scholarship/scholarshipAdmin";
 
 export default function ManagePage() {
   const { user } = useUser();
@@ -98,18 +99,29 @@ export default function ManagePage() {
       key: "memapp",
       description: "Manage instructions, deadlines, and videos for applicants",
       icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
+      <svg
+        className="w-8 h-8"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+        />
+      </svg>
+      ),
+      color: "from-[#011638] to-[#011638]",
+    },
+    {
+      label: "Scholarship",
+      key: "scholarship",
+      description: "Manage accredited schools, courses, and FAQs",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
         </svg>
       ),
       color: "from-[#011638] to-[#011638]",
@@ -217,6 +229,8 @@ export default function ManagePage() {
         return <ResearchDataAdmin />;
       case "audit":
         return <AuditLogAdmin />;
+      case "scholarship":
+        return <ScholarshipAdmin />;
       default:
         return null;
     }
