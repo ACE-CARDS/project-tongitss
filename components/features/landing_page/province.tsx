@@ -517,33 +517,7 @@ const [hoveredOrg, setHoveredOrg] = useState<{ name: string; top: number; left: 
                           className="justify-between group border border-white/10 rounded-2xl py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center bg-white/5 backdrop-blur-sm transition-all duration-300"
                         >
                           <div className="flex items-center gap-3 flex-1 pr-4 text-left">
-                            {org && (
-                              <a
-                                href={org.fb}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="shrink-0 hover:scale-110 transition-transform duration-200"
-                                onMouseEnter={(e) => {
-                                  const container = listContainerRef.current;
-                                  if (!container) return;
-                                  const containerRect = container.getBoundingClientRect();
-                                  const logoRect = e.currentTarget.getBoundingClientRect();
-
-                                  setHoveredOrg({
-                                    name: org.name,
-                                    top: logoRect.top - containerRect.top,
-                                    left: logoRect.left - containerRect.left + logoRect.width / 2,
-                                  });
-                                }}
-                                onMouseLeave={() => setHoveredOrg(null)}
-                              >
-                                <img
-                                  src={org.logo}
-                                  alt={org.name}
-                                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain cursor-pointer"
-                                />
-                              </a>
-                            )}
+        
                             <span className="font-semibold text-base sm:text-lg text-white transition-colors leading-snug break-words whitespace-normal">
                               {school.name}
                             </span>

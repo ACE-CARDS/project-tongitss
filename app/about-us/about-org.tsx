@@ -3,6 +3,14 @@
 import AnimatedTitle from "@/components/ui/animatedTitle";
 import { motion } from "framer-motion";
 
+const schoolOrgs = [
+  { name: "UB TALAS", school: "University of Baguio", province: "Benguet", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
+  { name: "UC CATS", school: "University of the Cordilleras", province: "Benguet", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
+  { name: "UP SIKAT", school: "University of the Philippines - Baguio", province: "Benguet", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
+  { name: "KAINDS", school: "Kalinga State University", province: "Kalinga", logo: "/assets/logos/KAINDS.png", fb: "https://www.facebook.com/KalingaDOSTscholars" },
+  { name: "BAGGS", school: "Saint Louis University", province: "Benguet", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE", note: "Not DOST-exclusive" },
+];
+
 export default function AboutOrg() {
   return (
     <section id="about-org" className="relative flex flex-col pt-6 pb-10 lg:pt-10 lg:pb-20 lg:px-20 z-5">
@@ -84,6 +92,62 @@ export default function AboutOrg() {
               </div>
             </div>
             
+          </div>
+        </motion.div>
+
+        {/* MEMBER ORGANIZATIONS */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+          className="w-full max-w-5xl mt-10 lg:mt-14"
+        >
+          <div className="text-center mb-8">
+            <h3 className="text-[#011638] font-extrabold uppercase tracking-widest text-xs sm:text-sm lg:text-base mb-1">
+              School Associactions
+            </h3>
+            <p className="text-slate-500 text-sm sm:text-base">
+              The university-based DOST scholar organizations.
+            </p>
+          </div>
+
+          <div className="flex justify-center items-start gap-2 sm:gap-8 w-full">
+            {schoolOrgs.map((org, i) => (
+              <motion.a
+                key={org.name}
+                href={org.fb}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 * i }}
+                className="group flex flex-col items-center text-center flex-1 min-w-0 max-w-[7rem]"
+              >
+                <div className="size-10 xs:size-12 sm:size-16 rounded-full bg-[#011638]/5 border border-[#011638]/10 overflow-hidden flex items-center justify-center group-hover:border-[#FACC15]/60 group-hover:scale-105 transition-all duration-300">
+                  <img
+                    src={org.logo}
+                    alt={`${org.name} logo`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="hidden sm:block font-bold text-[#011638] text-xs sm:text-sm mt-2">
+                  {org.name}
+                </span>
+                <span className="hidden sm:block text-slate-500 text-[11px] sm:text-xs mt-0.5 leading-snug">
+                  {org.school}
+                </span>
+                <span className="hidden sm:block text-slate-400 text-[10px] sm:text-[11px] mt-0.5">
+                  {org.province}
+                </span>
+                {org.note && (
+                  <span className="hidden sm:block mt-1.5 text-[6px] sm:text-[11px] text-[#011638] bg-[#FACC15]/20 border border-[#FACC15]/40 rounded-full px-2 py-0.5 leading-snug">
+                    {org.note}
+                  </span>
+                )}
+              </motion.a>
+            ))}
           </div>
         </motion.div>
       </div>
