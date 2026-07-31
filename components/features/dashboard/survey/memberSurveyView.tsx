@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -63,9 +63,11 @@ function FilterPopup({
   selectedCategory,
   selectedSchool,
   selectedYears,
+  selectedStatuses,
   onCategoryChange,
   onSchoolChange,
   onYearToggle,
+  onStatusToggle,
   onReset,
   buttonRef,
 }: {
@@ -77,9 +79,11 @@ function FilterPopup({
   selectedCategory: string;
   selectedSchool: string;
   selectedYears: number[];
+  selectedStatuses: string[];
   onCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onSchoolChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onYearToggle: (year: number) => void;
+  onStatusToggle: (status: string) => void;
   onReset: () => void;
   buttonRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -110,6 +114,25 @@ function FilterPopup({
     };
   }, [isOpen, onClose, buttonRef]);
 
+  const statuses = [
+    {
+      value: "accepted",
+      label: "ACCEPTED",
+      color: "bg-green-100 text-green-800",
+    },
+    {
+      value: "pending",
+      label: "PENDING",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    { value: "rejected", label: "REJECTED", color: "bg-red-100 text-red-800" },
+    {
+      value: "archived",
+      label: "ARCHIVED",
+      color: "bg-gray-100 text-gray-800",
+    },
+  ];
+
   if (!isOpen) return null;
 
   return (
@@ -128,6 +151,43 @@ function FilterPopup({
       </div>
 
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
+            Status
+          </label>
+          <div className="grid grid-cols-2 gap-1">
+            {statuses.map((status) => (
+              <label
+                key={status.value}
+                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+              >
+                <div className="relative flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedStatuses.includes(status.value)}
+                    onChange={() => onStatusToggle(status.value)}
+                    className="peer appearance-none w-4 h-4 border-2 border-black rounded-sm checked:border-[#eec643] focus:ring-0 focus:outline-none bg-transparent"
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center text-[#eec643] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none text-sm">
+                    ♠
+                  </span>
+                </div>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-bold ${status.color}`}
+                >
+                  {status.label}
+                </span>
+              </label>
+            ))}
+          </div>
+          {selectedStatuses.length > 0 && (
+            <p className="text-xs text-[#475569] font-ubuntu-mono mt-1">
+              {selectedStatuses.length} status
+              {selectedStatuses.length > 1 ? "es" : ""} selected
+            </p>
+          )}
+        </div>
+
         <div>
           <label
             htmlFor="category"
@@ -172,7 +232,6 @@ function FilterPopup({
           </select>
         </div>
 
-        {/* Year Filter */}
         <div>
           <label className="block text-sm font-oswald font-medium text-[#011638] mb-2">
             Survey Years
@@ -575,12 +634,19 @@ export default function MemberSurveyView() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSchool, setSelectedSchool] = useState<string>("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [mounted, setMounted] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
+
+  // KPI counts
+  const [pendingCount, setPendingCount] = useState(0);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [archivedCount, setArchivedCount] = useState(0);
 
   // Data for filters
   const [categories, setCategories] = useState<Category[]>([]);
@@ -653,6 +719,27 @@ export default function MemberSurveyView() {
     }
   }, [user]);
 
+  // Calculate KPI counts
+  const calculateCounts = useCallback((dataArray: any[]) => {
+    setPendingCount(dataArray.filter((s: any) => s.survey_status === "pending").length);
+    setAcceptedCount(dataArray.filter((s: any) => s.survey_status === "accepted").length);
+    setRejectedCount(dataArray.filter((s: any) => s.survey_status === "rejected").length);
+    setArchivedCount(dataArray.filter((s: any) => s.survey_status === "archived").length);
+  }, []);
+
+  // Status card click
+  const handleStatusCardClick = (status: string) => {
+    setSelectedStatuses(prev => 
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const isStatusActive = (status: string) => {
+    return selectedStatuses.includes(status);
+  };
+
   // Filter and sort effect
   useEffect(() => {
     if (initialLoad) return;
@@ -708,17 +795,82 @@ export default function MemberSurveyView() {
       });
     }
 
+    // Apply status filter from card click
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((survey) => 
+        selectedStatuses.includes(survey.survey_status)
+      );
+    }
+
     // Sort the filtered results
     const sortedFiltered = sortSurveys(filtered);
     setFilteredSurveys(sortedFiltered);
+    
+    // Calculate counts
+    let baseForCounts = [...surveys];
+    
+    // Apply search filter
+    if (searchQuery.trim() !== "") {
+      baseForCounts = baseForCounts.filter(
+        (survey) =>
+          survey.survey_title
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.survey_desc
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.r_category?.r_category_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          survey.school?.school_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+      );
+    }
+    
+    // Apply category filter
+    if (selectedCategory) {
+      const categoryNum = Number(selectedCategory);
+      baseForCounts = baseForCounts.filter((survey) => {
+        const surveyCategoryId = survey.r_category?.id
+          ? Number(survey.r_category.id)
+          : null;
+        return surveyCategoryId === categoryNum;
+      });
+    }
+    
+    // Apply school filter
+    if (selectedSchool) {
+      const schoolNum = Number(selectedSchool);
+      baseForCounts = baseForCounts.filter((survey) => {
+        const surveySchoolId = survey.school?.id
+          ? Number(survey.school.id)
+          : null;
+        return surveySchoolId === schoolNum;
+      });
+    }
+    
+    // Apply year filter
+    if (selectedYears.length > 0) {
+      baseForCounts = baseForCounts.filter((survey) => {
+        const surveyYear = new Date(survey.survey_start).getFullYear();
+        return selectedYears.includes(surveyYear);
+      });
+    }
+    
+    // Calculate counts
+    calculateCounts(baseForCounts);
+    
     setCurrentPage(1);
   }, [
     searchQuery,
     selectedCategory,
     selectedSchool,
     selectedYears,
+    selectedStatuses,
     surveys,
     initialLoad,
+    calculateCounts,
   ]);
 
   const fetchUserSurveys = async () => {
@@ -763,9 +915,11 @@ export default function MemberSurveyView() {
           const sortedSurveys = sortSurveys(fetchedSurveys);
           setSurveys(sortedSurveys);
           setFilteredSurveys(sortedSurveys);
+          calculateCounts(sortedSurveys);
         } else {
           setSurveys([]);
           setFilteredSurveys([]);
+          calculateCounts([]);
         }
       }
     } catch (error) {
@@ -815,11 +969,20 @@ export default function MemberSurveyView() {
     );
   };
 
+  const handleStatusToggle = (status: string) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
     setSelectedSchool("");
     setSelectedYears([]);
+    setSelectedStatuses([]);
   };
 
   const clearSearch = () => {
@@ -829,7 +992,8 @@ export default function MemberSurveyView() {
   const activeFilterCount =
     (selectedCategory ? 1 : 0) +
     (selectedSchool ? 1 : 0) +
-    selectedYears.length;
+    selectedYears.length +
+    selectedStatuses.length;
 
   if (loading) {
     return (
@@ -872,7 +1036,7 @@ export default function MemberSurveyView() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by title, description, category or school..."
+                  placeholder="Search..."
                   disabled
                   className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
                 />
@@ -929,6 +1093,81 @@ export default function MemberSurveyView() {
           </p>
         </div>
 
+        {/* KPI Summary Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          {/* Pending Card */}
+          <div
+            onClick={() => handleStatusCardClick("pending")}
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+              isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
+            }`}
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Pending</p>
+              <p className="text-2xl font-oswald font-bold text-[#011638]">{pendingCount}</p>
+            </div>
+            <div className="absolute -right-8 -bottom-8 opacity-20 text-yellow-500 pointer-events-none">
+              <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Accepted Card */}
+          <div
+            onClick={() => handleStatusCardClick("accepted")}
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+              isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
+            }`}
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Accepted</p>
+              <p className="text-2xl font-oswald font-bold text-[#011638]">{acceptedCount}</p>
+            </div>
+            <div className="absolute -right-8 -bottom-8 opacity-20 text-green-500 pointer-events-none">
+              <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Rejected Card */}
+          <div
+            onClick={() => handleStatusCardClick("rejected")}
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+              isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
+            }`}
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Rejected</p>
+              <p className="text-2xl font-oswald font-bold text-[#011638]">{rejectedCount}</p>
+            </div>
+            <div className="absolute -right-8 -bottom-8 opacity-20 text-red-500 pointer-events-none">
+              <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Archived Card */}
+          <div
+            onClick={() => handleStatusCardClick("archived")}
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+              isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
+            }`}
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-ubuntu-mono text-[#475569] uppercase tracking-wider font-semibold">Archived</p>
+              <p className="text-2xl font-oswald font-bold text-[#011638]">{archivedCount}</p>
+            </div>
+            <div className="absolute -right-8 -bottom-8 opacity-20 text-gray-500 pointer-events-none">
+              <svg className="w-28 h-28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         {!isAuthenticated && (
           <MemberFeatureBanner feature="Survey submission is available exclusively to ACE CARDS members." />
         )}
@@ -971,9 +1210,11 @@ export default function MemberSurveyView() {
                 selectedCategory={selectedCategory}
                 selectedSchool={selectedSchool}
                 selectedYears={selectedYears}
+                selectedStatuses={selectedStatuses}
                 onCategoryChange={handleCategoryChange}
                 onSchoolChange={handleSchoolChange}
                 onYearToggle={handleYearToggle}
+                onStatusToggle={handleStatusToggle}
                 onReset={resetFilters}
               />
             </div>
@@ -982,7 +1223,7 @@ export default function MemberSurveyView() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by title, description, category or school..."
+                  placeholder="Search..."
                   onChange={(e) => setSearchQuery(e.target.value)}
                   value={searchQuery}
                   className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] bg-[#fbfaf8] text-[#475569] font-ubuntu-mono"
@@ -1059,14 +1300,16 @@ export default function MemberSurveyView() {
               {searchQuery ||
               selectedCategory ||
               selectedSchool ||
-              selectedYears.length > 0
+              selectedYears.length > 0 ||
+              selectedStatuses.length > 0
                 ? "No surveys found."
                 : "You haven't submitted any surveys yet."}
             </p>
             {!searchQuery &&
               !selectedCategory &&
               !selectedSchool &&
-              selectedYears.length === 0 && (
+              selectedYears.length === 0 &&
+              selectedStatuses.length === 0 && (
                 <Link
                   href="/survey/add"
                   className="inline-block mt-4 text-[#1e4db7] hover:text-[#011638] font-oswald"
