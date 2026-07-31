@@ -389,7 +389,7 @@ function AddScholarshipContent() {
                                                     handleInput();
                                                 }}
                                                 rows={4}
-                                                maxLength={500}
+                                                maxLength={1000}
                                                 placeholder={`Enter courses with their program coverage in parenthesis e.g., BS Computer Science (JLSS) or BS Engineering (UGE). Note that if (UGE) is included, JLSS is already covered. Therefore, (UGE) indicates eligibility for both programs.`}
                                                 className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] resize-y custom-scrollbar-blue"
                                                 onInput={(e) => {

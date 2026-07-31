@@ -509,7 +509,7 @@ function EditScholarshipContent() {
                                                     handleInput();
                                                 }}
                                                 rows={4}
-                                                maxLength={500}
+                                                maxLength={1000}
                                                 placeholder="e.g., BS Computer Science, BS Engineering, BS Mathematics"
                                                 className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] resize-y custom-scrollbar-blue"
                                                 onInput={(e) => {
