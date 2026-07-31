@@ -120,7 +120,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
             ref={navigationRef}
             className={`
               shadow-[0_0_15px_rgba(255,255,255,0.3)]
-              fixed text-lg lg:right-[30px] right-[10px] top-[80px]
+              fixed text-[17px] lg:right-[30px] right-[10px] top-[80px]
               flex xl:flex-row text-right
               xl:px-[4px] xl:items-end xl:h-full xl:static xl:w-full
               justify-end
