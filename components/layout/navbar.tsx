@@ -229,7 +229,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               <li
                 ref={academicsRef}
                 onClick={toggleDropdown}
-                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[1rem] duration-200 transition-all xl:mb-0 mb-3
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 cursor-pointer rounded-[1rem] duration-200 transition-all xl:mb-0
                   ${isActive("/thesis") || isActive("/survey")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
@@ -282,7 +282,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
 
               {/* Resources */}
               <Link href="/resources">
-                <li className={`px-[10px] py-[2px] rounded-full duration-200 transition-all
+                <li className={`px-[10px] py-[2px] rounded-full duration-200 transition-all  mb-3
                   ${isActive("/resources")
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
