@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { sendThesisMoveEmail } from "@/app/actions/email-actions";
 
 function MoveThesisContent() {
   const router = useRouter();
@@ -109,6 +110,7 @@ function MoveThesisContent() {
       setSubmitError(null);
       
       try {
+        const oldStatus = thesis.thesis_status;
         const updateData: any = { thesis_status: selectedStatus };
         
         if (selectedStatus === "rejected") {
@@ -123,6 +125,19 @@ function MoveThesisContent() {
           .eq("id", thesis.id);
           
         if (error) throw error;
+        
+        // Send move notif email
+        const emailResult = await sendThesisMoveEmail(
+          Number(thesisId), 
+          oldStatus, 
+          selectedStatus,
+          selectedStatus === "rejected" ? rejectionReason.trim() : undefined
+        );
+        if (emailResult.success) {
+          console.log(`Move email sent for thesis ${thesisId} from ${oldStatus} to ${selectedStatus}`);
+        } else {
+          console.warn(`Move email failed for thesis ${thesisId}:`, emailResult.error);
+        }
         
         router.push("/thesis/admin/move/success");
       } catch (err: any) {

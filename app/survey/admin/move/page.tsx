@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { sendSurveyMoveEmail } from "@/app/actions/email-actions";
 
 function MoveSurveyContent() {
   const router = useRouter();
@@ -161,6 +162,7 @@ function MoveSurveyContent() {
       setSubmitError(null);
       
       try {
+        const oldStatus = survey.survey_status;
         const updateData: any = { survey_status: selectedStatus };
         
         if (selectedStatus === "rejected") {
@@ -175,6 +177,19 @@ function MoveSurveyContent() {
           .eq("id", survey.id);
           
         if (error) throw error;
+        
+        // Send move notif email
+        const emailResult = await sendSurveyMoveEmail(
+          Number(surveyId), 
+          oldStatus, 
+          selectedStatus,
+          selectedStatus === "rejected" ? rejectionReason.trim() : undefined
+        );
+        if (emailResult.success) {
+          console.log(`Move email sent for survey ${surveyId} from ${oldStatus} to ${selectedStatus}`);
+        } else {
+          console.warn(`Move email failed for survey ${surveyId}:`, emailResult.error);
+        }
         
         router.push("/survey/admin/move/success");
       } catch (err: any) {
