@@ -1,7 +1,7 @@
 // for dashboard tab
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import AdminSurveyHeader from "./admin_survey_header";
 import AdminClientPagination from "./admin_client_pagination";
@@ -245,7 +245,8 @@ export default function SurveyAdminWrapper() {
   }, [allSurveys, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
 
   // reset filters on change
-  const handleFilterChange = (filters: {
+  const handleFilterChange = useCallback(
+  (filters: {
     query?: string;
     category?: string;
     school?: string;
@@ -257,8 +258,11 @@ export default function SurveyAdminWrapper() {
     if (filters.school !== undefined) setSelectedSchool(filters.school);
     if (filters.years !== undefined) setSelectedYears(filters.years);
     if (filters.statuses !== undefined) setSelectedStatuses(filters.statuses);
-    setCurrentPage(1); // back to first page
-  };
+
+    setCurrentPage(1);
+  },
+  []
+);
 
   return (
     <div className="w-full">

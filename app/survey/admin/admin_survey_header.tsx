@@ -391,7 +391,7 @@ export default function AdminSurveyHeader({
     if (selectedCategory) filters.category = selectedCategory;
     if (selectedSchool) filters.school = selectedSchool;
     if (selectedYears.length > 0) filters.years = selectedYears;
-    if (selectedStatuses.length > 0) filters.statuses = selectedStatuses;
+    filters.statuses = selectedStatuses;
 
     return filters;
   }, [query, selectedCategory, selectedSchool, selectedYears, selectedStatuses]);
