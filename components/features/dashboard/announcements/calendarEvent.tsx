@@ -55,7 +55,7 @@ const CalendarEvent: FC<Props & { eventDetail?: any }> = ({
           <ModalBlur onClose={onClose}/>
 
           <div
-            className="content relative z-10 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl 
+            className="content relative z-101 w-full max-w-2xl max-h-[70vh] bg-[#011638] rounded-xl p-8 text-white shadow-2xl 
           border border-white/10 flex flex-col overflow-hidden"
           >
             {onBack && (
