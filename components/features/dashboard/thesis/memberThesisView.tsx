@@ -10,6 +10,7 @@ import PaginationNav from "@/components/ui/pagination";
 import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
 import ThesisAbstract from '@/app/thesis/thesis_abstract';
 import Image from "next/image";
+import ModalBlur from "@/components/ui/modalBlur";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {
@@ -297,32 +298,26 @@ const getProcessedAuthors = (thesis: any) => {
 // Sort function
 const sortTheses = (thesesArray: any[]) => {
   const statusOrder: Record<string, number> = {
-    'pending': 0,
-    'accepted': 1,
-    'archived': 2,
-    'rejected': 3
+    'pending': 1,
+    'accepted': 2,
+    'archived': 3,
+    'rejected': 4
   };
   
   return [...thesesArray].sort((a, b) => {
-    const statusA = a.thesis_status?.toLowerCase() || '';
-    const statusB = b.thesis_status?.toLowerCase() || '';
+    const statusDiff = (statusOrder[a.thesis_status as keyof typeof statusOrder] || 5) - 
+                      (statusOrder[b.thesis_status as keyof typeof statusOrder] || 5);
     
-    const orderA = statusOrder[statusA] ?? 4;
-    const orderB = statusOrder[statusB] ?? 4;
+    if (statusDiff !== 0) return statusDiff;
     
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    
-    // Same status, sort by thesis_date (most recent first)
     const dateA = new Date(a.thesis_date).getTime();
     const dateB = new Date(b.thesis_date).getTime();
+    
     return dateB - dateA;
   });
 };
 
-// Card Component for Thesis
-function ThesisCard({ thesis }: { thesis: any }) {
+function ThesisCard({ thesis, onCardClick }: { thesis: any; onCardClick: (thesis: any) => void }) {
   const processedAuthors = getProcessedAuthors(thesis);
 
   const getStatusColor = (status: string) => {
@@ -356,261 +351,259 @@ function ThesisCard({ thesis }: { thesis: any }) {
   };
 
   return (
-    <SpotlightCard
-      className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
-      spotlightColor="rgba(239, 240, 242, 0.16)"
-    >
-      {/* Card Header */}
-      <div className="bg-[#011638] px-6 py-4 min-h-[110px] flex items-center">
-        <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden">
-          {thesis.thesis_title}
-        </h2>
-      </div>
-
-      {/* Content */}
-      <div className="px-6 py-4 flex flex-col flex-1">
-        
-        {/* STATUS Section */}
-        <div className="mb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            STATUS
-          </h3>
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} inline-flex items-center gap-2 shadow-sm`}>
-            <span className="relative flex size-2">
-              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(thesis.thesis_status)} opacity-75`}></span>
-              <span className={`relative inline-flex size-2 rounded-full ${getPingColor(thesis.thesis_status)}`}></span>
-            </span>
-            {thesis.thesis_status?.toUpperCase()}
+    <div onClick={() => onCardClick(thesis)} className="cursor-pointer">
+      <SpotlightCard
+        className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm"
+        spotlightColor="rgba(239, 240, 242, 0.16)"
+      >
+        {/* Card Header with Status */}
+        <div className="bg-[#011638] px-6 py-4 min-h-[110px] flex items-center relative">
+          <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden pr-24">
+            {thesis.thesis_title}
+          </h2>
+          <div className="absolute top-4 right-4 z-10">
+            <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} flex items-center gap-2 shadow-sm`}>
+              <span className="relative flex size-2">
+                <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(thesis.thesis_status)} opacity-75`}></span>
+                <span className={`relative inline-flex size-2 rounded-full ${getPingColor(thesis.thesis_status)}`}></span>
+              </span>
+              {thesis.thesis_status?.toUpperCase()}
+            </div>
           </div>
         </div>
 
-        {/* REJECTION REASON Section */}
-        {thesis.thesis_status === 'rejected' && thesis.rejection_reason && (
+        {/* Content */}
+        <div className="px-6 py-4 flex flex-col flex-1">
+          
+          {/* REJECTION REASON Section */}
+          {thesis.thesis_status === 'rejected' && thesis.rejection_reason && (
+            <div className="mb-4">
+              <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                REJECTION REASON
+              </h3>
+              <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                {thesis.rejection_reason}
+              </p>
+            </div>
+          )}
+
+          {/* Authors */}
+          <div className="mb-4 min-h-[60px]">
+            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+              Author(s)
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {processedAuthors.length > 0 ? (
+                processedAuthors.map((author: any, index: number) => {
+                  const displayInfo = author.displayName;
+                  const isAceCards = !!author.mem_id;
+                  
+                  return (
+                    <a
+                      key={`${thesis.id}-${author.id || "no-id"}-${index}`}
+                      href={`mailto:${displayInfo.email}`}
+                      title={`Email: ${displayInfo.email}`}
+                      className="
+                        relative
+                        overflow-hidden
+                        bg-[#eec643]
+                        text-[#011638]
+                        px-3
+                        py-1
+                        rounded-full
+                        text-sm
+                        inline-flex
+                        items-center
+                        gap-2
+                        font-ubuntu-mono
+                        hover:bg-[#d9b237]
+                        hover:shadow-md
+                        transition-all
+                        duration-300
+                        cursor-pointer
+                        group
+                      "
+                    >
+                      {/* Shine Effect */}
+                      {isAceCards && (
+                        <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                          <span
+                            className="
+                              absolute
+                              top-0
+                              left-[-150%]
+                              h-full
+                              w-8
+                              rotate-12
+                              bg-white/60
+                              blur-sm
+                              transition-all
+                              duration-700
+                              group-hover:left-[150%]
+                            "
+                          />
+                        </span>
+                      )}
+
+                      {isAceCards ? (
+                        <Image
+                          src="/assets/logos/ACE CARDS logo.png"
+                          alt="ACE CARDS"
+                          width={18}
+                          height={18}
+                          className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                        />
+                      ) : (
+                        <svg
+                          className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      )}
+
+                      <span className="relative z-10">
+                        {displayInfo.name}
+                      </span>
+                    </a>
+                  );
+                })
+              ) : (
+                <span className="text-[#475569] opacity-50 text-sm">
+                  No authors listed
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Abstract */}
+          <div className="mb-4 flex-1">
+            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+              Abstract
+            </h3>
+            <div>
+              <ThesisAbstract abstract={thesis.thesis_abstract} />
+            </div>
+          </div>
+
+          {/* Keywords */}
+          <div className="mb-4 min-h-[70px]">
+            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+              Keywords
+            </h3>
+            <div className="flex flex-wrap gap-1">
+              {thesis.thesis_keyword
+                ?.split(",")
+                .map((keyword: string, index: number) => (
+                  <span
+                    key={index}
+                    className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
+                  >
+                    {keyword.trim()}
+                  </span>
+                ))}
+            </div>
+          </div>
+
+          {/* Details */}
           <div className="mb-4">
             <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-              REJECTION REASON
+              Details
             </h3>
-            <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
-              {thesis.rejection_reason}
-            </p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              
+              <div>
+                <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
+                <span className="font-ubuntu-mono text-[#011638]">
+                  {new Date(thesis.thesis_date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[#475569] block font-ubuntu-mono">Research Thematic Area:</span>
+                <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
+                  {thesis.r_category?.r_category_name || "Uncategorized"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[#475569] block font-ubuntu-mono">School:</span>
+                <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
+                  {thesis.school?.school_name || "No School"}
+                </span>
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* Authors */}
-        <div className="mb-4 min-h-[60px]">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            Author(s)
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {processedAuthors.length > 0 ? (
-              processedAuthors.map((author: any, index: number) => {
-                const displayInfo = author.displayName;
-                const isAceCards = !!author.mem_id;
-                
-                return (
-                   <a
-                    key={`${thesis.id}-${author.id || "no-id"}-${index}`}
-                    href={`mailto:${displayInfo.email}`}
-                    title={`Email: ${displayInfo.email}`}
-                    className="
-                      relative
-                      overflow-hidden
-                      bg-[#eec643]
-                      text-[#011638]
-                      px-3
-                      py-1
-                      rounded-full
-                      text-sm
-                      inline-flex
-                      items-center
-                      gap-2
-                      font-ubuntu-mono
-                      hover:bg-[#d9b237]
-                      hover:shadow-md
-                      transition-all
-                      duration-300
-                      cursor-pointer
-                      group
-                    "
-                  >
-                    {/* Shine Effect */}
-                    {isAceCards && (
-                      <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
-                        <span
-                          className="
-                            absolute
-                            top-0
-                            left-[-150%]
-                            h-full
-                            w-8
-                            rotate-12
-                            bg-white/60
-                            blur-sm
-                            transition-all
-                            duration-700
-                            group-hover:left-[150%]
-                          "
-                        />
-                      </span>
-                    )}
-
-                    {isAceCards ? (
-                      <Image
-                        src="/assets/logos/ACE CARDS logo.png"
-                        alt="ACE CARDS"
-                        width={18}
-                        height={18}
-                        className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
-                      />
-                    ) : (
-                      <svg
-                        className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    )}
-
-                    <span className="relative z-10">
-                      {displayInfo.name}
+          {/* Available Copies section */}
+          <div className="mt-auto">
+            <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+              Available Copies
+            </h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              
+              <div>
+                <span className="text-[#475569] block font-ubuntu-mono">Physical Copy:</span>
+                {thesis.thesis_phys ? (
+                  <div className="text-[#475569] font-ubuntu-mono">
+                    <span className="text-[#011638] break-words max-w-full whitespace-normal">
+                      {thesis.thesis_phys}
                     </span>
-                  </a>
-                );
-              })
-            ) : (
-              <span className="text-[#475569] opacity-50 text-sm">
-                No authors listed
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Abstract */}
-        <div className="mb-4 flex-1">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            Abstract
-          </h3>
-          <div>
-            <ThesisAbstract abstract={thesis.thesis_abstract} />
-          </div>
-        </div>
-
-        {/* Keywords */}
-        <div className="mb-4 min-h-[70px]">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            Keywords
-          </h3>
-          <div className="flex flex-wrap gap-1">
-            {thesis.thesis_keyword
-              ?.split(",")
-              .map((keyword: string, index: number) => (
-                <span
-                  key={index}
-                  className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
-                >
-                  {keyword.trim()}
-                </span>
-              ))}
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="mb-4">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            Details
-          </h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
-              <span className="font-ubuntu-mono text-[#011638]">
-                {new Date(thesis.thesis_date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono">Research Thematic Area:</span>
-              <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                {thesis.r_category?.r_category_name || "Uncategorized"}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-              <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                {thesis.school?.school_name || "No School"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Available Copies section */}
-        <div className="mt-auto">
-          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-            Available Copies
-          </h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono">Physical Copy:</span>
-              {thesis.thesis_phys ? (
-                <div className="text-[#475569] font-ubuntu-mono">
-                  <span className="text-[#011638] break-words max-w-full whitespace-normal">
-                    {thesis.thesis_phys}
+                  </div>
+                ) : (
+                  <span className="text-[#475569] opacity-50 font-ubuntu-mono">
+                    Not Available
                   </span>
-                </div>
-              ) : (
-                <span className="text-[#475569] opacity-50 font-ubuntu-mono">
-                  Not Available
-                </span>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div>
-              <span className="text-[#475569] block font-ubuntu-mono">Digital Copy:</span>
-              {thesis.thesis_digi ? (
-                <a
-                  href={thesis.thesis_digi}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono break-words max-w-full whitespace-normal"
-                >
-                  View Digital Copy
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <div>
+                <span className="text-[#475569] block font-ubuntu-mono">Digital Copy:</span>
+                {thesis.thesis_digi ? (
+                  <a
+                    href={thesis.thesis_digi}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0d21a1] hover:text-[#011638] underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono break-words max-w-full whitespace-normal"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              ) : (
-                <span className="text-[#475569] opacity-50 font-ubuntu-mono">
-                  Not Available
-                </span>
-              )}
+                    View Digital Copy
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                ) : (
+                  <span className="text-[#475569] opacity-50 font-ubuntu-mono">
+                    Not Available
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </SpotlightCard>
+      </SpotlightCard>
+    </div>
   );
 }
 
@@ -633,6 +626,9 @@ export default function MemberThesisView() {
   const [showFilters, setShowFilters] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
+  
+  // Modal state
+  const [selectedThesis, setSelectedThesis] = useState<any | null>(null);
   
   // KPI counts
   const [pendingCount, setPendingCount] = useState(0);
@@ -846,7 +842,6 @@ export default function MemberThesisView() {
         
         if (thesisLinks && thesisLinks.length > 0) {
           const fetchedTheses = thesisLinks.map(link => link.thesis);
-          // Sort immediately during fetch
           const sortedTheses = sortTheses(fetchedTheses);
           setTheses(sortedTheses);
           setFilteredTheses(sortedTheses);
@@ -924,56 +919,85 @@ export default function MemberThesisView() {
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length + selectedStatuses.length;
 
+  // Modal handlers
+  const handleCardClick = (thesis: any) => {
+    setSelectedThesis(thesis);
+  };
+
+  // Get processed authors for modal
+  const getProcessedAuthorsForModal = (thesis: any) => {
+    if (!thesis.thesis_author || thesis.thesis_author.length === 0) {
+      return [];
+    }
+
+    const authorsWithData = thesis.thesis_author.map((sa: any) => {
+      const author = sa.author;
+      if (!author) return null;
+      
+      return {
+        ...author,
+        displayName: getAuthorDisplayName(author)
+      };
+    }).filter((a: any) => a !== null);
+
+    // Sort alphabetically by last name
+    authorsWithData.sort((a: any, b: any) => {
+      return a.author_lname.localeCompare(b.author_lname);
+    });
+
+    return authorsWithData;
+  };
+
   if (loading) {
     return (
-    <div className="space-y-6 min-h-screen">
-      <div>
-        <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
-        <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-          View and manage your submitted theses
-        </p>
-      </div>
+      <div className="space-y-6 min-h-screen">
+        <div>
+          <h1 className="text-3xl font-oswald font-bold text-[#011638]">My Theses</h1>
+          <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
+            View and manage your submitted theses
+          </p>
+        </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="relative">
+        {/* Filter and Search Bar */}
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative">
+              <button
+                disabled
+                className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filters
+              </button>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  disabled
+                  className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
+                />
+                <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
             <button
               disabled
-              className="w-full sm:w-auto px-4 py-2 rounded-lg font-oswald transition-all flex items-center justify-center gap-1 bg-[#011638] text-[#eff0f2] opacity-70 cursor-not-allowed"
+              className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Filters
+              Add Thesis
             </button>
           </div>
-
-          <div className="flex-1 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                disabled
-                className="w-full px-4 py-2 pl-10 pr-10 border border-[#011638] rounded-lg bg-[#fbfaf8] text-[#475569] font-ubuntu-mono opacity-70 cursor-not-allowed"
-              />
-              <svg className="w-5 h-5 text-[#011638] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          <button
-            disabled
-            className="w-full sm:w-auto bg-[#eec643] text-[#011638] px-6 py-2 rounded-lg hover:bg-[#d9b237] transition-colors flex items-center justify-center gap-2 font-oswald whitespace-nowrap opacity-70 cursor-not-allowed"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Thesis
-          </button>
         </div>
-      </div>
       </div>
     );
   }
@@ -993,7 +1017,7 @@ export default function MemberThesisView() {
           {/* Pending Card */}
           <div
             onClick={() => handleStatusCardClick("pending")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
               isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1011,7 +1035,7 @@ export default function MemberThesisView() {
           {/* Accepted Card */}
           <div
             onClick={() => handleStatusCardClick("accepted")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
               isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1029,7 +1053,7 @@ export default function MemberThesisView() {
           {/* Rejected Card */}
           <div
             onClick={() => handleStatusCardClick("rejected")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
               isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1047,7 +1071,7 @@ export default function MemberThesisView() {
           {/* Archived Card */}
           <div
             onClick={() => handleStatusCardClick("archived")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
               isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1169,7 +1193,7 @@ export default function MemberThesisView() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {paginatedTheses.map((thesis) => (
-                <ThesisCard key={thesis.id} thesis={thesis} />
+                <ThesisCard key={thesis.id} thesis={thesis} onCardClick={handleCardClick} />
               ))}
             </div>
 
@@ -1183,6 +1207,239 @@ export default function MemberThesisView() {
           </>
         )}
       </div>
+
+      {/* Modal Popup */}
+      {selectedThesis && (
+        <>
+          <ModalBlur onClose={() => setSelectedThesis(null)} />
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-20 sm:pt-24"
+            onClick={() => setSelectedThesis(null)}
+          >
+            <div
+              className="pointer-events-auto bg-[#fbfaf8] border border-[#011638] rounded-3xl w-full max-w-3xl max-h-[70vh] 
+              shadow-2xl flex flex-col animate-in fade-in 
+              zoom-in-95 duration-200 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 z-50 w-full shrink-0 bg-[#011638] rounded-t-3xl">
+                <button
+                  onClick={() => setSelectedThesis(null)}
+                  className="cursor-pointer absolute top-3 right-3 z-[60] w-8 h-8 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors font-bold text-lg"
+                >
+                  ✕
+                </button>
+                
+                <div className="px-6 py-5 sm:px-8 sm:py-6">
+                  <h2 className="text-xl sm:text-2xl font-oswald font-bold text-[#fbfaf8] leading-tight break-words">
+                    {selectedThesis.thesis_title}
+                  </h2>
+                </div>
+              </div>
+              
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar-blue">
+                <div className="p-5 sm:p-6 flex flex-col gap-4 w-full">
+                  {/* Authors */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-2">
+                      Author(s)
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {getProcessedAuthorsForModal(selectedThesis).map((author: any, index: number) => {
+                        const displayInfo = author.displayName;
+                        const isAceCards = author.mem_id;
+                        
+                        return (
+                          <a
+                            key={`modal-${selectedThesis.id}-${author.id || "no-id"}-${index}`}
+                            href={`mailto:${displayInfo.email}`}
+                            title={`Email: ${displayInfo.email}`}
+                            className="
+                              relative
+                              overflow-hidden
+                              bg-[#eec643]
+                              text-[#011638]
+                              px-3
+                              py-1
+                              rounded-full
+                              text-sm
+                              inline-flex
+                              items-center
+                              gap-2
+                              font-ubuntu-mono
+                              hover:bg-[#d9b237]
+                              hover:shadow-md
+                              transition-all
+                              duration-300
+                              cursor-pointer
+                              group
+                            "
+                          >
+                            {isAceCards && (
+                              <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                                <span
+                                  className="
+                                    absolute
+                                    top-0
+                                    left-[-150%]
+                                    h-full
+                                    w-8
+                                    rotate-12
+                                    bg-white/60
+                                    blur-sm
+                                    transition-all
+                                    duration-700
+                                    group-hover:left-[150%]
+                                  "
+                                />
+                              </span>
+                            )}
+
+                            {isAceCards ? (
+                              <Image
+                                src="/assets/logos/ACE CARDS logo.png"
+                                alt="ACE CARDS"
+                                width={16}
+                                height={16}
+                                className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                              />
+                            ) : (
+                              <svg
+                                className="relative z-10 w-3.5 h-3.5 group-hover:scale-110 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                            )}
+
+                            <span className="relative z-10">
+                              {displayInfo.name}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Abstract */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-1.5">
+                      Abstract
+                    </p>
+                    <p className="text-slate-700 font-ubuntu-mono text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {selectedThesis.thesis_abstract || "No abstract available."}
+                    </p>
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-1.5">
+                      Keywords
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedThesis.thesis_keyword
+                        ?.split(",")
+                        .map((keyword: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-0.5 rounded text-xs font-ubuntu-mono break-words"
+                          >
+                            {keyword.trim()}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="grid grid-cols-2 gap-3 w-full pb-4 border-b border-slate-200">
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        Publication Date
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm">
+                        {new Date(selectedThesis.thesis_date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        Research Thematic Area
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                        {selectedThesis.r_category?.r_category_name || "Uncategorized"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        School
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                        {selectedThesis.school?.school_name || "No School"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Available Copies */}
+                  <div className="flex flex-col w-full gap-2">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                      Available Copies
+                    </p>
+                    
+                    {/* Physical Copy */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#475569] font-ubuntu-mono text-sm whitespace-nowrap">Physical Copy:</span>
+                      {selectedThesis.thesis_phys ? (
+                        <span className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                          {selectedThesis.thesis_phys}
+                        </span>
+                      ) : (
+                        <span className="text-[#475569] opacity-50 font-ubuntu-mono text-sm">
+                          Not Available
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Digital Copy */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#475569] font-ubuntu-mono text-sm whitespace-nowrap">Digital Copy:</span>
+                      {selectedThesis.thesis_digi ? (
+                        <a
+                          href={selectedThesis.thesis_digi}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0d21a1] hover:text-[#011638] underline font-ubuntu-mono text-sm break-words"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {selectedThesis.thesis_digi}
+                        </a>
+                      ) : (
+                        <span className="text-[#475569] opacity-50 font-ubuntu-mono text-sm">
+                          Not Available
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
