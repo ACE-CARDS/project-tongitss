@@ -725,21 +725,22 @@ export default function MemberThesisView() {
     return selectedStatuses.includes(status);
   };
 
-  // Filter and sort effect 
-  useEffect(() => {
-    if (initialLoad) return;
-    
+  // Apply all filters with AND logic
+  const applyFilters = useCallback(() => {
+    if (!theses.length) return;
+
     let filtered = [...theses];
     
     // Apply search filter
     if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(thesis =>
-        thesis.thesis_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_abstract?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_keyword?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.r_category?.r_category_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.school?.school_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_phys?.toLowerCase().includes(searchQuery.toLowerCase()) 
+        thesis.thesis_title?.toLowerCase().includes(query) ||
+        thesis.thesis_abstract?.toLowerCase().includes(query) ||
+        thesis.thesis_keyword?.toLowerCase().includes(query) ||
+        thesis.r_category?.r_category_name?.toLowerCase().includes(query) ||
+        thesis.school?.school_name?.toLowerCase().includes(query) ||
+        thesis.thesis_phys?.toLowerCase().includes(query) 
       );
     }
     
@@ -780,51 +781,34 @@ export default function MemberThesisView() {
     const sortedFiltered = sortTheses(filtered);
     setFilteredTheses(sortedFiltered);
     
-    let baseForCounts = [...theses];
+    // Calculate KPI counts on the filtered data
+    calculateCounts(sortedFiltered);
     
-    // Apply search filter
-    if (searchQuery.trim() !== "") {
-      baseForCounts = baseForCounts.filter(thesis =>
-        thesis.thesis_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_abstract?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_keyword?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.r_category?.r_category_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.school?.school_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        thesis.thesis_phys?.toLowerCase().includes(searchQuery.toLowerCase()) 
-      );
-    }
-    
-    // Apply category filter
-    if (selectedCategory) {
-      const categoryNum = Number(selectedCategory);
-      baseForCounts = baseForCounts.filter(thesis => {
-        const thesisCategoryId = thesis.r_category?.id ? Number(thesis.r_category.id) : null;
-        return thesisCategoryId === categoryNum;
-      });
-    }
-    
-    // Apply school filter
-    if (selectedSchool) {
-      const schoolNum = Number(selectedSchool);
-      baseForCounts = baseForCounts.filter(thesis => {
-        const thesisSchoolId = thesis.school?.id ? Number(thesis.school.id) : null;
-        return thesisSchoolId === schoolNum;
-      });
-    }
-    
-    // Apply year filter
-    if (selectedYears.length > 0) {
-      baseForCounts = baseForCounts.filter(thesis => {
-        const thesisYear = new Date(thesis.thesis_date).getFullYear();
-        return selectedYears.includes(thesisYear);
-      });
-    }
-    
-    // Calculate counts
-    calculateCounts(baseForCounts);
-    
+    // Reset to page 1 when filters change
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedSchool, selectedYears, selectedStatuses, theses, initialLoad, calculateCounts]);
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedSchool,
+    selectedYears,
+    selectedStatuses,
+    theses,
+    calculateCounts,
+  ]);
+
+  // Apply filters whenever any filter state changes
+  useEffect(() => {
+    if (initialLoad) return;
+    applyFilters();
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedSchool,
+    selectedYears,
+    selectedStatuses,
+    applyFilters,
+    initialLoad,
+  ]);
 
   const fetchUserTheses = async () => {
     try {

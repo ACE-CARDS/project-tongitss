@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 function FilterPopup({
   isOpen,
@@ -142,7 +142,7 @@ function FilterPopup({
             htmlFor="category"
             className="block text-sm font-oswald font-medium text-[#011638] mb-2"
           >
-            Category
+            Research Thematic Area
           </label>
           <select
             id="category"
@@ -395,6 +395,38 @@ export default function AdminThesisHeader({
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const isInitialRender = useRef(true);
+
+  // AND logic
+  const buildFilterParams = useCallback(() => {
+    const filters: {
+      query?: string;
+      category?: string;
+      school?: string;
+      years?: number[];
+      statuses?: string[];
+    } = {};
+
+    if (query) filters.query = query;
+    if (selectedCategory) filters.category = selectedCategory;
+    if (selectedSchool) filters.school = selectedSchool;
+    if (selectedYears.length > 0) filters.years = selectedYears;
+    if (selectedStatuses.length > 0) filters.statuses = selectedStatuses;
+
+    return filters;
+  }, [query, selectedCategory, selectedSchool, selectedYears, selectedStatuses]);
+
+  // Apply filters when any filter changes
+  useEffect(() => {
+    // Skip on initial render
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    const filters = buildFilterParams();
+    onFilterChange(filters);
+  }, [query, selectedCategory, selectedSchool, selectedYears, selectedStatuses, onFilterChange, buildFilterParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -408,26 +440,22 @@ export default function AdminThesisHeader({
 
     // set new timer
     debounceTimer.current = setTimeout(() => {
-      onFilterChange({ query: value });
     }, 500);
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
-    onFilterChange({ query: suggestion });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedCategory(value);
-    onFilterChange({ category: value });
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedSchool(value);
-    onFilterChange({ school: value });
   };
 
   const handleStatusToggle = (status: string) => {
@@ -435,7 +463,6 @@ export default function AdminThesisHeader({
       ? selectedStatuses.filter((s) => s !== status)
       : [...selectedStatuses, status];
     setSelectedStatuses(newStatuses);
-    onFilterChange({ statuses: newStatuses });
   };
 
   const handleYearToggle = (year: number) => {
@@ -443,7 +470,6 @@ export default function AdminThesisHeader({
       ? selectedYears.filter((y) => y !== year)
       : [...selectedYears, year].sort((a, b) => b - a);
     setSelectedYears(newYears);
-    onFilterChange({ years: newYears });
   };
 
   const resetFilters = () => {
@@ -452,13 +478,6 @@ export default function AdminThesisHeader({
     setSelectedSchool("");
     setSelectedYears([]);
     setSelectedStatuses([]);
-    onFilterChange({
-      query: "",
-      category: "",
-      school: "",
-      years: [],
-      statuses: [],
-    });
   };
 
   // Handle status card filter
@@ -468,7 +487,6 @@ export default function AdminThesisHeader({
       : [...selectedStatuses, status]; // Add if not selected
     
     setSelectedStatuses(newStatuses);
-    onFilterChange({ statuses: newStatuses });
   };
 
   const totalFilters =
@@ -479,6 +497,13 @@ export default function AdminThesisHeader({
 
   const isStatusActive = (status: string) => {
     return selectedStatuses.includes(status);
+  };
+
+  // Clear search handler
+  const clearSearch = () => {
+    setQuery("");
+    setShowSuggestions(false);
+    searchInputRef.current?.focus();
   };
 
   return (
@@ -645,12 +670,7 @@ export default function AdminThesisHeader({
             {/* clear/X button */}
             {(query || showSuggestions) && (
               <button
-                onClick={() => {
-                  setQuery("");
-                  setShowSuggestions(false);
-                  onFilterChange({ query: "" });
-                  searchInputRef.current?.focus();
-                }}
+                onClick={clearSearch}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
                 aria-label="Clear search"
               >
