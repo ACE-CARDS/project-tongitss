@@ -17,6 +17,8 @@ interface DownloadItem {
   link: string;
   created_at: string;
   type?: string;
+  description?: string;
+  image_url?: string;
 }
 
 // Filter Popup Component
@@ -377,9 +379,8 @@ export default function ResourcesPage() {
 
   // Format resource type
   const formatResourceType = (type?: string): string => {
-    if (!type) return 'Type: Document';
-    const formatted = type.charAt(0).toUpperCase() + type.slice(1);
-    return `Type: ${formatted}`;
+    if (!type) return 'Document';
+    return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
   // Get available types for filter
@@ -570,8 +571,7 @@ export default function ResourcesPage() {
               <>
                 <div id="downloads-list" className="space-y-4 mt-8">
                   {displayItems.map((item) => {
-                    const resourceType = item.type || 'document';
-                    const displayType = formatResourceType(resourceType);
+                    const resourceType = formatResourceType(item.type);
                     
                     return (
                       <a
@@ -582,7 +582,7 @@ export default function ResourcesPage() {
                         className="
                           group block
                           w-full
-                          rounded-lg
+                          rounded-xl
                           border border-[#011638]
                           bg-[#fbfaf8]/90 backdrop-blur-sm
                           px-5 py-4
@@ -594,56 +594,68 @@ export default function ResourcesPage() {
                           active:scale-[0.99]
                         "
                       >
-                        <div className="flex items-center justify-between min-h-[72px] gap-5">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            {/* Document Icon */}
-                            <div className="
-                              flex-shrink-0
-                              h-11
-                              w-11
-                              rounded-lg
-                              border border-[#011638]
-                              bg-[#011638]
-                              flex items-center justify-center
-                              text-[#fbfaf8]
-                              group-hover:bg-[#1e4db7]
-                              group-hover:text-[#fbfaf8]
-                              group-hover:border-[#1e4db7]
-                              transition-all duration-300
-                            ">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17h4" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 9h6" />
-                              </svg>
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex flex-col gap-1">
-                                <span className="
-                                  font-oswald
-                                  font-semibold
-                                  text-lg
-                                  text-[#011638]
-                                  break-words
-                                ">
-                                  {item.title}
-                                </span>
-                                <span className="
-                                  inline-flex
-                                  w-fit
-                                  rounded-full
-                                  border border-[#011638]
-                                  px-2 py-0.5
-                                  text-[11px]
-                                  font-ubuntu-mono
-                                  text-[#011638]
-                                ">
-                                  {displayType}
-                                </span>
+                        <div className="flex items-center gap-4 min-h-[72px]">
+                          {/* Image */}
+                          <div className="flex-shrink-0 self-center">
+                            {item.image_url ? (
+                              <div className="h-50 w-35 rounded-xl overflow-hidden border border-[#011638]/20">
+                                <img
+                                  src={item.image_url}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
-                              <p className="mt-2 text-xs text-[#64748b] font-ubuntu-mono">
+                            ) : (
+                              <div className="
+                                h-50 w-35
+                                rounded-xl
+                                border border-[#011638]
+                                bg-[#011638]
+                                flex items-center justify-center
+                                text-[#fbfaf8]
+                                group-hover:bg-[#1e4db7]
+                                group-hover:border-[#1e4db7]
+                                transition-all duration-300
+                              ">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17h4" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 9h6" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col gap-1">
+                              <span className="
+                                font-oswald
+                                font-semibold
+                                text-lg
+                                text-[#011638]
+                                break-words
+                              ">
+                                {item.title}
+                              </span>
+                              <span className="
+                                inline-flex
+                                w-fit
+                                rounded-full
+                                border border-[#011638]
+                                px-2 py-0.5
+                                text-[11px]
+                                font-ubuntu-mono
+                                text-[#011638]
+                              ">
+                                Type: {resourceType}
+                              </span>
+                              {item.description && (
+                                <p className="text-sm text-[#475569] font-ubuntu-mono mt-1 break-words whitespace-pre-wrap">
+                                  {item.description}
+                                </p>
+                              )}
+                              <p className="text-xs text-[#64748b] font-ubuntu-mono mt-1">
                                 {new Date(item.created_at).toLocaleDateString("en-US", {
                                   year: "numeric",
                                   month: "short",
@@ -655,8 +667,10 @@ export default function ResourcesPage() {
 
                           {/* External link icon */}
                           <div className="
+                            flex-shrink-0
                             flex items-center gap-2
                             transition-all duration-300
+                            self-center
                           ">
                             <span className="hidden sm:block text-sm font-oswald text-[#011638] group-hover:text-[#1e4db7] transition-colors">
                               Open

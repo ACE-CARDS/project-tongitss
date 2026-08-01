@@ -17,22 +17,116 @@ interface ResourceItem {
   title: string;
   link: string;
   type: string | null;
+  description: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
 export type SortField = "title" | "type" | "created_at" | null;
 export type SortOrder = "asc" | "desc" | null;
 
-function ResourceLink({ link }: { link: string }) {
+// Expandable Description
+function ResourceDescription({ description }: { description: string | null }) {
+  const [isOpen, setIsOpen] = useState(false);
+  if (!description) return null;
+  if (description.length <= 100) {
+    return (
+      <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed break-words">
+        {description}
+      </p>
+    );
+  }
   return (
-    <a
-      href={link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-sm text-[#0d21a1] font-ubuntu-mono hover:underline break-all"
-    >
-      {link}
-    </a>
+    <div className="w-full">
+      {!isOpen ? (
+        <div className="flex flex-end flex-col">
+          <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-2 break-words">
+            {description}
+          </p>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+          >
+            Read more
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-end flex-col">
+          <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-32 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
+            {description}
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+          >
+            Read less
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResourceLink({ link }: { link: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // If link has more than 2 lines
+  const lineLength = 40; // Average chars per line
+  const maxLines = 2;
+  const maxChars = maxLines * lineLength;
+  const shouldTruncate = link.length > maxChars;
+
+  return (
+    <div className="flex flex-col items-start gap-1 w-full">
+      <div 
+        className={`text-sm text-[#0d21a1] font-ubuntu-mono break-all text-left w-full ${
+          !isExpanded && shouldTruncate ? 'line-clamp-2' : ''
+        }`}
+      >
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          {link}
+        </a>
+      </div>
+      {shouldTruncate && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="text-xs font-oswald text-[#1e4db7] hover:text-[#011638] transition-colors cursor-pointer self-end"
+        >
+          {isExpanded ? "Show Less" : "Read More"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ResourceImage({ imageUrl, title }: { imageUrl: string | null; title: string }) {
+  if (!imageUrl) {
+    return (
+      <div className="w-20 h-28 flex-shrink-0 border border-[#011638]/20 bg-[#011638] flex items-center justify-center mx-auto">
+        <svg className="w-8 h-8 text-[#fbfaf8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-20 h-28 rounded-lg flex-shrink-0 border border-[#011638]/20 overflow-hidden mx-auto">
+      <img
+        src={imageUrl}
+        alt={title}
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 }
 
@@ -60,7 +154,8 @@ function DeleteConfirmPopup({
     >
       <span className="form_error">{"\u200b"}</span>
       <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
-        Are you sure you want to delete the resource "<span className="font-bold text-[#011638]">{title}</span>?" This action cannot be undone.
+        Are you sure you want to delete the resource
+        <span className="font-bold text-[#011638] py-2 break-words">"{title}"?</span> This action cannot be undone.
       </p>
       <FormActions
         onCancelClick={onClose}
@@ -182,7 +277,8 @@ export default function ResourcesAdmin() {
     let filtered = resources.filter((item) =>
       (item.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.link || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (item.link || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.description || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (sortField && sortOrder) {
@@ -299,22 +395,24 @@ export default function ResourcesAdmin() {
       </div>
 
       {/* Table */}
-      <div className="manage_table_div">
-        <table className="manage_table">
+      <div className="manage_table_div overflow-x-auto">
+        <table className="manage_table min-w-full table-fixed">
           <thead className="manage_thead">
             <tr>
+              <th className="w-[120px]">Image</th>
+              
               <th
                 className={`w-[300px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
                 onClick={() => handleSort("title")}
               >
                 <div>
-                  Title
+                  Title & Description
                   <SortIcon field="title" sortField={sortField} sortOrder={sortOrder} />
                 </div>
               </th>
 
               <th
-                className={`w-[200px] th-sortable ${sortField === "type" ? "is-active" : ""}`}
+                className={`w-[130px] th-sortable ${sortField === "type" ? "is-active" : ""}`}
                 onClick={() => handleSort("type")}
               >
                 <div>
@@ -323,12 +421,10 @@ export default function ResourcesAdmin() {
                 </div>
               </th>
 
-              <th className="w-[300px]">
-                Link
-              </th>
+              <th className="w-[180px] text-left">Link</th>
 
               <th
-                className={`w-[150px] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
+                className={`w-[130px] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
                 onClick={() => handleSort("created_at")}
               >
                 <div>
@@ -344,20 +440,26 @@ export default function ResourcesAdmin() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="status">Loading resources...</td>
+                <td colSpan={6} className="status">Loading resources...</td>
               </tr>
             ) : filteredResources.length === 0 ? (
               <tr>
-                <td colSpan={5} className="status">No resources found.</td>
+                <td colSpan={6} className="status">No resources found.</td>
               </tr>
             ) : (
               paginatedItems.map((item) => (
                 <tr key={item.id} className="hover:bg-blue-50/50 transition-colors">
-                  {/* Title */}
-                  <td className="align-middle break-words max-w-full whitespace-normal text-center">
-                    <span className="text-sm font-oswald font-semibold text-[#011638] block break-words">
+                  {/* Image */}
+                  <td className="align-middle text-center">
+                    <ResourceImage imageUrl={item.image_url} title={item.title} />
+                  </td>
+
+                  {/* Title & Description */}
+                  <td className="align-top break-words max-w-full whitespace-normal">
+                    <span className="text-sm font-oswald font-semibold text-[#011638] block mb-1 break-words">
                       {item.title}
                     </span>
+                    <ResourceDescription description={item.description} />
                   </td>
 
                   {/* Type */}
@@ -368,7 +470,7 @@ export default function ResourcesAdmin() {
                   </td>
 
                   {/* Link */}
-                  <td className="align-top break-words max-w-full whitespace-normal">
+                  <td className="align-middle">
                     <ResourceLink link={item.link} />
                   </td>
 

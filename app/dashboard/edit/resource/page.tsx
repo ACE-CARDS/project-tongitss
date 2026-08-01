@@ -15,6 +15,8 @@ interface ResourceItem {
   title: string;
   link: string;
   type: string | null;
+  description: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -32,17 +34,26 @@ function EditResourceContent() {
   const [submitError, setSubmitError] = useState<string>("");
   const [resourceTypes, setResourceTypes] = useState<string[]>([]);
 
+  // Image states
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState("");
+
   // Form States
   const [formData, setFormData] = useState({
     title: "",
     link: "",
     type: "",
+    description: "",
   });
 
   const [initialFormData, setInitialFormData] = useState({
     title: "",
     link: "",
     type: "",
+    description: "",
   });
 
   // Error states
@@ -55,8 +66,10 @@ function EditResourceContent() {
 
   // Check if any changes were made
   const isUnchanged = useMemo(() => {
-    return JSON.stringify(formData) === JSON.stringify(initialFormData);
-  }, [formData, initialFormData]);
+    const textIsSame = JSON.stringify(formData) === JSON.stringify(initialFormData);
+    const imageIsSame = imagePreview === (initialImageUrl || "");
+    return textIsSame && imageIsSame && !imageFile;
+  }, [formData, initialFormData, imagePreview, initialImageUrl, imageFile]);
 
   // Fetch resource types from enum
   useEffect(() => {
@@ -128,6 +141,14 @@ function EditResourceContent() {
     }
   }, [resourceId]);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const loadCurrentUser = async (email: string) => {
     const { data } = await supabase
       .from("member")
@@ -159,10 +180,17 @@ function EditResourceContent() {
           title: data.title || "",
           link: data.link || "",
           type: data.type || "document",
+          description: data.description || "",
         };
 
         setFormData(fetchedFields);
         setInitialFormData(fetchedFields);
+
+        if (data.image_url) {
+          setCurrentImageUrl(data.image_url);
+          setInitialImageUrl(data.image_url);
+          setImagePreview(data.image_url);
+        }
       } else {
         setError("Resource not found.");
       }
@@ -175,7 +203,7 @@ function EditResourceContent() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -228,60 +256,121 @@ function EditResourceContent() {
     return true;
   };
 
-  const getChangesString = () => {
-    const changes: string[] = [];
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${fileName}`;
 
-    if (initialFormData.title !== formData.title) {
-      changes.push(`title to "${formData.title}"`);
-    }
-    if (initialFormData.link !== formData.link) {
-      changes.push(`link to "${formData.link}"`);
-    }
-    if (initialFormData.type !== formData.type) {
-      changes.push(`type to "${formData.type}"`);
+    const { error: uploadError } = await supabase.storage
+      .from("resource-image")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return null;
     }
 
-    return changes.length > 0 ? changes.join(", ") : "No changes";
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("resource-image").getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const deleteOldImage = async (oldImageUrl: string) => {
+    const fileName = oldImageUrl.split("/").pop();
+    if (fileName) {
+      await supabase.storage.from("resource-image").remove([fileName]);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // File size limit: 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError("File size must be less than 5MB");
+        return;
+      }
+
+      // File types
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/heic", "image/heif"];
+      if (!allowedTypes.includes(file.type)) {
+        setImageError("Only JPEG, JPG, PNG, HEIC, and HEIF images are allowed");
+        return;
+      }
+
+      setImageError("");
+      
+      // Clean old preview
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+
+  const removeImage = () => {
+    if (imagePreview && imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview("");
+    setImageFile(null);
+    setCurrentImageUrl(null);
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const logEditAudit = async (recordId: string) => {
-  const whoDidItName = currentUserName || user?.email || "Unknown User";
-  const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
-  
-  let changes = [];
-  
-  if (initialFormData.title !== formData.title) {
-    changes.push(`Title changed from "${initialFormData.title}" to "${formData.title}"`);
-  }
-  if (initialFormData.link !== formData.link) {
-    changes.push(`Link changed from "${initialFormData.link}" to "${formData.link}"`);
-  }
-  if (initialFormData.type !== formData.type) {
-    changes.push(`Type changed from "${initialFormData.type}" to "${formData.type}"`);
-  }
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
+    
+    let changes = [];
+    
+    if (initialFormData.title !== formData.title) {
+      changes.push(`Title changed from "${initialFormData.title}" to "${formData.title}"`);
+    }
+    if (initialFormData.link !== formData.link) {
+      changes.push(`Link changed from "${initialFormData.link}" to "${formData.link}"`);
+    }
+    if (initialFormData.type !== formData.type) {
+      changes.push(`Type changed from "${initialFormData.type}" to "${formData.type}"`);
+    }
+    if (initialFormData.description !== formData.description) {
+      changes.push(`Description changed from "${initialFormData.description}" to "${formData.description}"`);
+    }
+    
+    const imageIsSame = imagePreview === (initialImageUrl || "");
+    if (!imageIsSame) {
+      changes.push(`Image changed`);
+    }
 
-  const changesString = changes.join(", ");
-  const detailedMessage = `Updated resource "${formData.title}": ${changesString}`;
+    const changesString = changes.join(", ");
+    const detailedMessage = `Updated resource "${formData.title}": ${changesString}`;
 
-  const logEntry = {
-    action: "Update",
-    details: detailedMessage,
-    user: whoDidItName,
-    user_email: whoDidItEmail,
-    table_name: "downloads",
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "downloads",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
   };
-
-  const { error } = await supabase.from("audit_log").insert([logEntry]);
-  if (error) {
-    console.error("Failed to write audit log:", error);
-  }
-};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
     setLinkError("");
     setTitleError("");
+    setImageError("");
 
     // Validate title
     if (!validateTitle()) {
@@ -309,12 +398,32 @@ function EditResourceContent() {
         return;
       }
 
+      // Handle image
+      let imageUrl = currentImageUrl;
+
+      // If we have a new file
+      if (imageFile) {
+        if (initialImageUrl) {
+          await deleteOldImage(initialImageUrl);
+        }
+        const newImageUrl = await uploadImage(imageFile);
+        if (!newImageUrl) throw new Error("Failed to upload image.");
+        imageUrl = newImageUrl;
+      }
+      // If image was removed
+      else if (!imagePreview && initialImageUrl) {
+        await deleteOldImage(initialImageUrl);
+        imageUrl = null;
+      }
+
       const { error } = await supabase
         .from("downloads")
         .update({
           title: formData.title,
           link: formData.link,
           type: formData.type,
+          description: formData.description || null,
+          image_url: imageUrl,
         })
         .eq("id", resourceId);
 
@@ -442,6 +551,109 @@ function EditResourceContent() {
                             </option>
                           ))}
                         </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          name="description"
+                          value={formData.description}
+                          onChange={handleChange}
+                          rows={3}
+                          maxLength={1500}
+                          placeholder="Enter resource description (optional)"
+                          className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
+                        />
+                      </div>
+
+                      {/* Image Upload */}
+                      <div>
+                        <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                          Image
+                        </label>
+                        <div
+                          className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
+                          onClick={() => {
+                            const fileInput = document.getElementById(
+                              "image-upload",
+                            ) as HTMLInputElement;
+                            if (fileInput) fileInput.click();
+                          }}
+                        >
+                          <div className="space-y-1 text-center">
+                            {imagePreview ? (
+                              <div className="relative">
+                                <img
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  className="mx-auto h-48 w-auto object-cover rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeImage();
+                                  }}
+                                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <svg
+                                  className="mx-auto h-12 w-12 text-[#475569]"
+                                  stroke="currentColor"
+                                  fill="none"
+                                  viewBox="0 0 48 48"
+                                >
+                                  <path
+                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                    strokeWidth={2}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                                <div className="flex text-sm text-[#475569]">
+                                  <span className="rounded-md font-medium text-[#011638] hover:text-[#1a2a4f]">
+                                    Click to upload
+                                  </span>
+                                  <p className="pl-1">or drag and drop</p>
+                                </div>
+                                <p className="text-xs text-[#475569]">
+                                  JPEG, JPG, PNG, HEIC, HEIF up to 2MB
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <input
+                          id="image-upload"
+                          name="image"
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
+                          onChange={handleImageChange}
+                        />
+                        {imageError && (
+                          <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
+                            {imageError}
+                          </span>
+                        )}
                       </div>
 
                       <div>
