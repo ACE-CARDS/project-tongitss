@@ -740,28 +740,21 @@ export default function MemberSurveyView() {
     return selectedStatuses.includes(status);
   };
 
-  // Filter and sort effect
-  useEffect(() => {
-    if (initialLoad) return;
+  // Apply all filters with AND logic
+  const applyFilters = useCallback(() => {
+    if (!surveys.length) return;
 
     let filtered = [...surveys];
 
     // Apply search filter
     if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(
         (survey) =>
-          survey.survey_title
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.survey_desc
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.r_category?.r_category_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.school?.school_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()),
+          survey.survey_title?.toLowerCase().includes(query) ||
+          survey.survey_desc?.toLowerCase().includes(query) ||
+          survey.r_category?.r_category_name?.toLowerCase().includes(query) ||
+          survey.school?.school_name?.toLowerCase().includes(query)
       );
     }
 
@@ -806,61 +799,10 @@ export default function MemberSurveyView() {
     const sortedFiltered = sortSurveys(filtered);
     setFilteredSurveys(sortedFiltered);
     
-    // Calculate counts
-    let baseForCounts = [...surveys];
+    // Calculate KPI counts on the filtered data
+    calculateCounts(sortedFiltered);
     
-    // Apply search filter
-    if (searchQuery.trim() !== "") {
-      baseForCounts = baseForCounts.filter(
-        (survey) =>
-          survey.survey_title
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.survey_desc
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.r_category?.r_category_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          survey.school?.school_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-      );
-    }
-    
-    // Apply category filter
-    if (selectedCategory) {
-      const categoryNum = Number(selectedCategory);
-      baseForCounts = baseForCounts.filter((survey) => {
-        const surveyCategoryId = survey.r_category?.id
-          ? Number(survey.r_category.id)
-          : null;
-        return surveyCategoryId === categoryNum;
-      });
-    }
-    
-    // Apply school filter
-    if (selectedSchool) {
-      const schoolNum = Number(selectedSchool);
-      baseForCounts = baseForCounts.filter((survey) => {
-        const surveySchoolId = survey.school?.id
-          ? Number(survey.school.id)
-          : null;
-        return surveySchoolId === schoolNum;
-      });
-    }
-    
-    // Apply year filter
-    if (selectedYears.length > 0) {
-      baseForCounts = baseForCounts.filter((survey) => {
-        const surveyYear = new Date(survey.survey_start).getFullYear();
-        return selectedYears.includes(surveyYear);
-      });
-    }
-    
-    // Calculate counts
-    calculateCounts(baseForCounts);
-    
+    // Reset to page 1 when filters change
     setCurrentPage(1);
   }, [
     searchQuery,
@@ -869,8 +811,21 @@ export default function MemberSurveyView() {
     selectedYears,
     selectedStatuses,
     surveys,
-    initialLoad,
     calculateCounts,
+  ]);
+
+  // Apply filters whenever any filter state changes
+  useEffect(() => {
+    if (initialLoad) return;
+    applyFilters();
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedSchool,
+    selectedYears,
+    selectedStatuses,
+    applyFilters,
+    initialLoad,
   ]);
 
   const fetchUserSurveys = async () => {

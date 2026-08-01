@@ -342,33 +342,34 @@ export default function SurveyHeader({
     };
   }, []);
 
+  // AND logic
+  const buildFilterParams = useCallback(() => {
+    const params = new URLSearchParams();
+    
+    if (query) params.append("query", query);
+    if (selectedCategory) params.append("category", selectedCategory);
+    if (selectedSchool) params.append("school", selectedSchool);
+    if (selectedYears.length > 0) {
+      selectedYears.forEach(year => {
+        params.append("year", year.toString());
+      });
+    }
+    params.append("page", "1");
+
+    return params.toString();
+  }, [query, selectedCategory, selectedSchool, selectedYears]);
+
   // Update URL with filters
-  const updateFilters = useCallback((filters: {
-    query?: string;
-    category?: string;
-    school?: string;
-    years?: number[];
-  }) => {
+  useEffect(() => {
     // Skip router update on initial render
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
     }
 
-    const params = new URLSearchParams();
-    if (filters.query) params.append("query", filters.query);
-    if (filters.category) params.append("category", filters.category);
-    if (filters.school) params.append("school", filters.school);
-    if (filters.years) {
-      filters.years.forEach(year => {
-        params.append("year", year.toString());
-      });
-    }
-    params.append("page", "1");
-
-    const queryString = params.toString();
+    const queryString = buildFilterParams();
     router.replace(`/survey${queryString ? `?${queryString}` : ""}`);
-  }, [router]);
+  }, [query, selectedCategory, selectedSchool, selectedYears, router, buildFilterParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -381,36 +382,29 @@ export default function SurveyHeader({
     }
     
     debounceTimer.current = setTimeout(() => {
-      updateFilters({ query: value });
     }, 500);
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
-    updateFilters({ query: suggestion });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedCategory(value);
-    updateFilters({ category: value });
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedSchool(value);
-    updateFilters({ school: value });
   };
 
   const handleYearToggle = (year: number) => {
     setSelectedYears(prev => {
-      const newYears = prev.includes(year)
+      return prev.includes(year)
         ? prev.filter(y => y !== year)
         : [...prev, year].sort((a, b) => b - a);
-      
-      updateFilters({ years: newYears });
-      return newYears;
     });
   };
 
@@ -420,18 +414,11 @@ export default function SurveyHeader({
     setSelectedSchool("");
     setSelectedYears([]);
     setShowFilters(false);
-    updateFilters({
-      query: "",
-      category: "",
-      school: "",
-      years: []
-    });
   };
 
   const clearSearch = () => {
     setQuery("");
     setShowSuggestions(false);
-    updateFilters({ query: "" });
     searchInputRef.current?.focus();
   };
 

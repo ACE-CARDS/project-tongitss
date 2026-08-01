@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 function FilterPopup({
   isOpen,
@@ -375,6 +375,47 @@ export default function AdminSurveyHeader({
   const filterButtonRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const isInitialRender = useRef(true);
+
+  // AND logic
+  const buildFilterParams = useCallback(() => {
+    const filters: {
+      query?: string;
+      category?: string;
+      school?: string;
+      years?: number[];
+      statuses?: string[];
+    } = {};
+
+    if (query) filters.query = query;
+    if (selectedCategory) filters.category = selectedCategory;
+    if (selectedSchool) filters.school = selectedSchool;
+    if (selectedYears.length > 0) filters.years = selectedYears;
+    if (selectedStatuses.length > 0) filters.statuses = selectedStatuses;
+
+    return filters;
+  }, [query, selectedCategory, selectedSchool, selectedYears, selectedStatuses]);
+
+  // Apply filters when any filter changes
+  useEffect(() => {
+    // Skip on initial render
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    const filters = buildFilterParams();
+    onFilterChange(filters);
+  }, [query, selectedCategory, selectedSchool, selectedYears, selectedStatuses, onFilterChange, buildFilterParams]);
+
+  // Cleanup debounce timer
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -386,26 +427,22 @@ export default function AdminSurveyHeader({
     }
     
     debounceTimer.current = setTimeout(() => {
-      onFilterChange({ query: value });
     }, 500);
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
-    onFilterChange({ query: suggestion });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedCategory(value);
-    onFilterChange({ category: value });
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedSchool(value);
-    onFilterChange({ school: value });
   };
 
   const handleStatusToggle = (status: string) => {
@@ -413,7 +450,6 @@ export default function AdminSurveyHeader({
       ? selectedStatuses.filter((s) => s !== status)
       : [...selectedStatuses, status];
     setSelectedStatuses(newStatuses);
-    onFilterChange({ statuses: newStatuses });
   };
 
   const handleYearToggle = (year: number) => {
@@ -421,7 +457,6 @@ export default function AdminSurveyHeader({
       ? selectedYears.filter((y) => y !== year)
       : [...selectedYears, year].sort((a, b) => b - a);
     setSelectedYears(newYears);
-    onFilterChange({ years: newYears });
   };
 
   const resetFilters = () => {
@@ -430,13 +465,7 @@ export default function AdminSurveyHeader({
     setSelectedSchool("");
     setSelectedYears([]);
     setSelectedStatuses([]);
-    onFilterChange({
-      query: "",
-      category: "",
-      school: "",
-      years: [],
-      statuses: [],
-    });
+    setShowFilters(false);
   };
 
   // Same status card filter logic as thesis
@@ -446,16 +475,13 @@ export default function AdminSurveyHeader({
       : [...selectedStatuses, status]; // Add if not selected
     
     setSelectedStatuses(newStatuses);
-    onFilterChange({ statuses: newStatuses });
   };
 
-  useEffect(() => {
-  return () => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
+  const clearSearch = () => {
+    setQuery("");
+    setShowSuggestions(false);
+    searchInputRef.current?.focus();
   };
-}, []);
 
   const totalFilters = (selectedCategory ? 1 : 0) + 
                       (selectedSchool ? 1 : 0) + 
@@ -627,12 +653,7 @@ export default function AdminSurveyHeader({
             {/* clear/X button */}
             {query.trim() && (
               <button
-                onClick={() => {
-                  setQuery("");
-                  setShowSuggestions(false);
-                  onFilterChange({ query: "" });
-                  searchInputRef.current?.focus();
-                }}
+                onClick={clearSearch}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#475569] hover:text-[#011638] transition-colors z-20"
                 aria-label="Clear search"
               >
