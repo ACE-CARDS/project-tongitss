@@ -7,6 +7,7 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import { createClient } from "@/utils/supabase/client";
 import Pagination from "@/components/ui/pagination";
 import Image from "next/image";
+import ModalBlur from "@/components/ui/modalBlur";
 
 interface ClientPaginationProps {
   allTheses: any[];
@@ -33,6 +34,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
   const [movingThesis, setMovingThesis] = useState<any>(null);
   const [theses, setTheses] = useState(allTheses);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedThesis, setSelectedThesis] = useState<any | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -227,6 +229,30 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
     return authorsWithData;
   };
 
+  // Get authors
+  const getProcessedAuthors = (thesis: any) => {
+    if (!thesis.thesis_author || thesis.thesis_author.length === 0) {
+      return [];
+    }
+
+    const authorsWithData = thesis.thesis_author.map((sa: any) => {
+      const author = sa.author;
+      if (!author) return null;
+      
+      return {
+        ...author,
+        displayName: getAuthorDisplayName(author)
+      };
+    }).filter((a: any) => a !== null);
+
+    // Sort alphabetically by last name
+    authorsWithData.sort((a: any, b: any) => {
+      return a.author_lname.localeCompare(b.author_lname);
+    });
+
+    return authorsWithData;
+  };
+
   return (
     <>
       {isLoading ? (
@@ -239,321 +265,327 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {paginatedTheses.map((thesis: any) => (
-              <SpotlightCard
+              <div
                 key={thesis.id}
-                className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
-                spotlightColor="rgba(239, 240, 242, 0.16)"
+                onClick={() => setSelectedThesis(thesis)}
+                className="cursor-pointer"
               >
-                <div className="flex flex-col h-full">
-                  <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} flex items-center gap-2 shadow-sm`}>
-                      <span className="relative flex size-2">
-                        <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(thesis.thesis_status)} opacity-75`}></span>
-                        <span className={`relative inline-flex size-2 rounded-full ${getPingColor(thesis.thesis_status)}`}></span>
-                      </span>
-                      {thesis.thesis_status?.toUpperCase()}
-                    </div>
+                <SpotlightCard
+                  className="border border-[#011638] rounded-xl overflow-hidden transition-all duration-300 bg-[#fbfaf8] flex flex-col h-full hover:shadow-xl hover:scale-[1.02] hover:z-10 shadow-sm relative"
+                  spotlightColor="rgba(239, 240, 242, 0.16)"
+                >
+                  <div className="flex flex-col h-full">
+                    <div className="absolute top-4 left-0 right-0 flex justify-between items-center z-10 px-6">
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(thesis.thesis_status)} flex items-center gap-2 shadow-sm`}>
+                        <span className="relative flex size-2">
+                          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${getPingColor(thesis.thesis_status)} opacity-75`}></span>
+                          <span className={`relative inline-flex size-2 rounded-full ${getPingColor(thesis.thesis_status)}`}></span>
+                        </span>
+                        {thesis.thesis_status?.toUpperCase()}
+                      </div>
 
-                    <div className="flex gap-2 -mr-1" onClick={(e) => e.stopPropagation()}>
-                      {thesis.thesis_status === "pending" ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/thesis/admin/review?id=${thesis.id}`); 
-                          }}
-                          className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
-                          title="Review"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.25 2.25 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
-                          </svg>
-                        </button>
-                      ) : (
-                        <>
+                      <div className="flex gap-2 -mr-1" onClick={(e) => e.stopPropagation()}>
+                        {thesis.thesis_status === "pending" ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/thesis/admin/edit?id=${thesis.id}`); 
+                              router.push(`/thesis/admin/review?id=${thesis.id}`); 
                             }}
                             className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
-                            title="Edit"
+                            title="Review"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.25 2.25 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
                             </svg>
                           </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/thesis/admin/move?id=${thesis.id}`); 
-                            }}
-                            className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
-                            title="Move"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-                            </svg>
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-[#011638] pt-12 pb-4 px-6 flex items-center h-[150px]">
-                    <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden pr-12">
-                      {thesis.thesis_title}
-                    </h2>
-                  </div>
-
-                  <div className="px-6 py-4 flex flex-col flex-1">
-                    <div className="mb-4 min-h-[60px]">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Author(s)
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const sortedAuthors = getSortedAuthors(thesis);
-                          return sortedAuthors.length > 0 ? (
-                            sortedAuthors.map((author: any, index: number) => {
-                              const displayInfo = author.displayName;
-                              const isScholar = author.scholar;
-                              const isAceCards = !!author.mem_id;
-                              return (
-                                <a
-                                  key={`${thesis.id}-${author.id || "no-id"}-${index}`}
-                                  href={`mailto:${displayInfo.email}`}
-                                  title={`Email: ${displayInfo.email}`}
-                                  className="
-                                    relative
-                                    overflow-hidden
-                                    bg-[#eec643]
-                                    text-[#011638]
-                                    px-3
-                                    py-1
-                                    rounded-full
-                                    text-sm
-                                    inline-flex
-                                    items-center
-                                    gap-2
-                                    font-ubuntu-mono
-                                    hover:bg-[#d9b237]
-                                    hover:shadow-md
-                                    transition-all
-                                    duration-300
-                                    cursor-pointer
-                                    group
-                                  "
-                                >
-                                  {/* Shine Effect */}
-                                  {isAceCards && (
-                                    <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
-                                      <span
-                                        className="
-                                          absolute
-                                          top-0
-                                          left-[-150%]
-                                          h-full
-                                          w-8
-                                          rotate-12
-                                          bg-white/60
-                                          blur-sm
-                                          transition-all
-                                          duration-700
-                                          group-hover:left-[150%]
-                                        "
-                                      />
-                                    </span>
-                                  )}
-
-                                 {isAceCards ? (
-                                    <Image
-                                      src="/assets/logos/ACE CARDS logo.png"
-                                      alt="ACE CARDS"
-                                      width={18}
-                                      height={18}
-                                      className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
-                                    />
-                                  ) : isScholar ? (
-                                    <Image
-                                      src="/assets/logos/DOST-SEI.png"
-                                      alt="DOST Scholar"
-                                      width={18}
-                                      height={18}
-                                      className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110"
-                                    />
-                                  ) : (
-                                    <svg
-                                      className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                      />
-                                    </svg>
-                                  )}
-
-                                  {/* Author Name */}
-                                  <div className="relative z-10 flex flex-col leading-tight">
-                                  <span className="relative z-10">{displayInfo.name}</span>
-
-                                    {(isScholar && !isAceCards) && (
-                                      <span className="text-[10px] font-medium text-[#011638]/65">
-                                        {"DOST Scholar"}
-                                      </span>
-                                    )}
-                                  </div>
-                                </a>
-                              );
-                            })
-                          ) : (
-                            <span className="text-[#475569] opacity-50 text-sm">No authors listed</span>
-                          );
-                        })()}
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/thesis/admin/edit?id=${thesis.id}`); 
+                              }}
+                              className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
+                              title="Edit"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/thesis/admin/move?id=${thesis.id}`); 
+                              }}
+                              className="text-[#fbfaf8] hover:text-[#eec643] transition-all duration-200 hover:scale-110"
+                              title="Move"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+                              </svg>
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                     
-                    {/* REJECTION REASON Section */}
-                    {thesis.thesis_status === "rejected" && thesis.rejection_reason && (
-                      <div className="pb-4">
+                    <div className="bg-[#011638] pt-12 pb-4 px-6 flex items-center h-[150px]">
+                      <h2 className="text-xl font-oswald font-bold text-[#fbfaf8] line-clamp-3 break-words overflow-hidden pr-12">
+                        {thesis.thesis_title}
+                      </h2>
+                    </div>
+
+                    <div className="px-6 py-4 flex flex-col flex-1">
+                      <div className="mb-4 min-h-[60px]">
                         <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                          REJECTION REASON
+                          Author(s)
                         </h3>
-                        <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
-                          {thesis.rejection_reason}
-                        </p>
-                      </div>
-                    )}
+                        <div className="flex flex-wrap gap-2">
+                          {(() => {
+                            const sortedAuthors = getSortedAuthors(thesis);
+                            return sortedAuthors.length > 0 ? (
+                              sortedAuthors.map((author: any, index: number) => {
+                                const displayInfo = author.displayName;
+                                const isScholar = author.scholar;
+                                const isAceCards = !!author.mem_id;
+                                return (
+                                  <a
+                                    key={`${thesis.id}-${author.id || "no-id"}-${index}`}
+                                    href={`mailto:${displayInfo.email}`}
+                                    title={`Email: ${displayInfo.email}`}
+                                    className="
+                                      relative
+                                      overflow-hidden
+                                      bg-[#eec643]
+                                      text-[#011638]
+                                      px-3
+                                      py-1
+                                      rounded-full
+                                      text-sm
+                                      inline-flex
+                                      items-center
+                                      gap-2
+                                      font-ubuntu-mono
+                                      hover:bg-[#d9b237]
+                                      hover:shadow-md
+                                      transition-all
+                                      duration-300
+                                      cursor-pointer
+                                      group
+                                    "
+                                  >
+                                    {/* Shine Effect */}
+                                    {isAceCards && (
+                                      <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                                        <span
+                                          className="
+                                            absolute
+                                            top-0
+                                            left-[-150%]
+                                            h-full
+                                            w-8
+                                            rotate-12
+                                            bg-white/60
+                                            blur-sm
+                                            transition-all
+                                            duration-700
+                                            group-hover:left-[150%]
+                                          "
+                                        />
+                                      </span>
+                                    )}
 
-                    <div className="mb-4 flex-1">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Abstract
-                      </h3>
-                      <div>
-                        <ThesisAbstract abstract={thesis.thesis_abstract} />
-                      </div>
-                    </div>
+                                   {isAceCards ? (
+                                      <Image
+                                        src="/assets/logos/ACE CARDS logo.png"
+                                        alt="ACE CARDS"
+                                        width={18}
+                                        height={18}
+                                        className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                                      />
+                                    ) : isScholar ? (
+                                      <Image
+                                        src="/assets/logos/DOST-SEI.png"
+                                        alt="DOST Scholar"
+                                        width={18}
+                                        height={18}
+                                        className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110"
+                                      />
+                                    ) : (
+                                      <svg
+                                        className="relative z-10 w-4 h-4 group-hover:scale-110 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
+                                      </svg>
+                                    )}
 
-                    <div className="mb-4 min-h-[70px]">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Keywords
-                      </h3>
-                      <div className="flex flex-wrap gap-1">
-                        {thesis.thesis_keyword
-                          ?.split(",")
-                          .map((keyword: string, index: number) => (
-                            <span
-                              key={index}
-                              className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
-                            >
-                              {keyword.trim()}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
+                                    {/* Author */}
+                                    <div className="relative z-10 flex flex-col leading-tight">
+                                    <span className="relative z-10">{displayInfo.name}</span>
 
-                    <div className="mb-4">
-                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                        Details
-                      </h3>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
-                          <span className="font-ubuntu-mono text-[#011638]">
-                            {new Date(thesis.thesis_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )}
-                          </span>
+                                      {(isScholar && !isAceCards) && (
+                                        <span className="text-[10px] font-medium text-[#011638]/65">
+                                          {"DOST Scholar"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </a>
+                                );
+                              })
+                            ) : (
+                              <span className="text-[#475569] opacity-50 text-sm">No authors listed</span>
+                            );
+                          })()}
                         </div>
-
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
-                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                            {thesis.r_category?.r_category_name || "Uncategorized"}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="text-[#475569] block font-ubuntu-mono">School:</span>
-                          <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                            {thesis.school?.school_name || "No School"}
-                          </span>
-                        </div>
                       </div>
-                    </div>
+                      
+                      {/* REJECTION REASON Section */}
+                      {thesis.thesis_status === "rejected" && thesis.rejection_reason && (
+                        <div className="pb-4">
+                          <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                            REJECTION REASON
+                          </h3>
+                          <p className="text-red-600 font-ubuntu-mono text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                            {thesis.rejection_reason}
+                          </p>
+                        </div>
+                      )}
 
-                    <div className="mt-auto">
-                    <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
-                      Files
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Physical Copy */}
-                      <div>
-                        <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
-                          Physical Copy:
-                        </h4>
+                      <div className="mb-4 flex-1">
+                        <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                          Abstract
+                        </h3>
                         <div>
-                          {thesis.thesis_phys ? (
-                            <span className="text-[#011638] text-sm font-ubuntu-mono break-words max-w-full whitespace-normal">
-                              {thesis.thesis_phys}
-                            </span>
-                          ) : (
-                            <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                              Not Available
-                            </span>
-                          )}
+                          <ThesisAbstract abstract={thesis.thesis_abstract} />
                         </div>
                       </div>
 
-                      {/* Digital Copy */}
-                      <div>
-                        <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
-                          Digital Copy:
-                        </h4>
-                        <div>
-                          {thesis.thesis_digi ? (
-                            <a
-                              href={thesis.thesis_digi}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
-                            >
-                              View Digital Copy
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                      <div className="mb-4 min-h-[70px]">
+                        <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                          Keywords
+                        </h3>
+                        <div className="flex flex-wrap gap-1">
+                          {thesis.thesis_keyword
+                            ?.split(",")
+                            .map((keyword: string, index: number) => (
+                              <span
+                                key={index}
+                                className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-1 rounded text-xs font-ubuntu-mono break-words max-w-full whitespace-normal"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
-                            </a>
-                          ) : (
-                            <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
-                              Not Available
+                                {keyword.trim()}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                          Details
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
+                            <span className="font-ubuntu-mono text-[#011638]">
+                              {new Date(thesis.thesis_date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </span>
-                          )}
+                          </div>
+
+                          <div>
+                            <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
+                            <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
+                              {thesis.r_category?.r_category_name || "Uncategorized"}
+                            </span>
+                          </div>
+
+                          <div>
+                            <span className="text-[#475569] block font-ubuntu-mono">School:</span>
+                            <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
+                              {thesis.school?.school_name || "No School"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto">
+                      <h3 className="text-xs font-oswald font-semibold text-[#011638] uppercase tracking-wide mb-2">
+                        Files
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Physical Copy */}
+                        <div>
+                          <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
+                            Physical Copy:
+                          </h4>
+                          <div>
+                            {thesis.thesis_phys ? (
+                              <span className="text-[#011638] text-sm font-ubuntu-mono break-words max-w-full whitespace-normal">
+                                {thesis.thesis_phys}
+                              </span>
+                            ) : (
+                              <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
+                                Not Available
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Digital Copy */}
+                        <div>
+                          <h4 className="text-sm text-[#475569] block font-ubuntu-mono">
+                            Digital Copy:
+                          </h4>
+                          <div>
+                            {thesis.thesis_digi ? (
+                              <a
+                                href={thesis.thesis_digi}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#0d21a1] hover:text-[#011638] text-sm underline inline-flex items-center gap-1 transition-colors font-ubuntu-mono"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                View Digital Copy
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              </a>
+                            ) : (
+                              <span className="text-[#475569] text-sm opacity-50 font-ubuntu-mono">
+                                Not Available
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
+                    </div>
                   </div>
-                  </div>
-                </div>
-              </SpotlightCard>
+                </SpotlightCard>
+              </div>
             ))}
           </div>
           
@@ -564,6 +596,239 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
             itemsPerPage={itemsPerPage}
             onPageChange={handlePageChange}
           />
+        </>
+      )}
+
+      {/* Modal Popup */}
+      {selectedThesis && (
+        <>
+          <ModalBlur onClose={() => setSelectedThesis(null)} />
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-20 sm:pt-24"
+            onClick={() => setSelectedThesis(null)}
+          >
+            <div
+              className="pointer-events-auto bg-[#fbfaf8] border border-[#011638] rounded-3xl w-full max-w-3xl max-h-[70vh] 
+              shadow-2xl flex flex-col animate-in fade-in 
+              zoom-in-95 duration-200 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 z-50 w-full shrink-0 bg-[#011638] rounded-t-3xl">
+                <button
+                  onClick={() => setSelectedThesis(null)}
+                  className="cursor-pointer absolute top-3 right-3 z-[60] w-8 h-8 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors font-bold text-lg"
+                >
+                  ✕
+                </button>
+                
+                <div className="px-6 py-5 sm:px-8 sm:py-6">
+                  <h2 className="text-xl sm:text-2xl font-oswald font-bold text-[#fbfaf8] leading-tight break-words">
+                    {selectedThesis.thesis_title}
+                  </h2>
+                </div>
+              </div>
+              
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar-blue">
+                <div className="p-5 sm:p-6 flex flex-col gap-4 w-full">
+                  {/* Authors */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-2">
+                      Author(s)
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {getProcessedAuthors(selectedThesis).map((author: any, index: number) => {
+                        const displayInfo = author.displayName;
+                        const isAceCards = author.mem_id;
+                        
+                        return (
+                          <a
+                            key={`modal-${selectedThesis.id}-${author.id || "no-id"}-${index}`}
+                            href={`mailto:${displayInfo.email}`}
+                            title={`Email: ${displayInfo.email}`}
+                            className="
+                              relative
+                              overflow-hidden
+                              bg-[#eec643]
+                              text-[#011638]
+                              px-3
+                              py-1
+                              rounded-full
+                              text-sm
+                              inline-flex
+                              items-center
+                              gap-2
+                              font-ubuntu-mono
+                              hover:bg-[#d9b237]
+                              hover:shadow-md
+                              transition-all
+                              duration-300
+                              cursor-pointer
+                              group
+                            "
+                          >
+                            {isAceCards && (
+                              <span className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
+                                <span
+                                  className="
+                                    absolute
+                                    top-0
+                                    left-[-150%]
+                                    h-full
+                                    w-8
+                                    rotate-12
+                                    bg-white/60
+                                    blur-sm
+                                    transition-all
+                                    duration-700
+                                    group-hover:left-[150%]
+                                  "
+                                />
+                              </span>
+                            )}
+
+                            {isAceCards ? (
+                              <Image
+                                src="/assets/logos/ACE CARDS logo.png"
+                                alt="ACE CARDS"
+                                width={16}
+                                height={16}
+                                className="relative z-10 object-contain shrink-0 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+                              />
+                            ) : (
+                              <svg
+                                className="relative z-10 w-3.5 h-3.5 group-hover:scale-110 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                            )}
+
+                            <span className="relative z-10">
+                              {displayInfo.name}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Abstract */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-1.5">
+                      Abstract
+                    </p>
+                    <p className="text-slate-700 font-ubuntu-mono text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {selectedThesis.thesis_abstract || "No abstract available."}
+                    </p>
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="flex flex-col w-full pb-4 border-b border-slate-200">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-1.5">
+                      Keywords
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedThesis.thesis_keyword
+                        ?.split(",")
+                        .map((keyword: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-[#1e4db7] text-[#fbfaf8] px-2 py-0.5 rounded text-xs font-ubuntu-mono break-words"
+                          >
+                            {keyword.trim()}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="grid grid-cols-2 gap-3 w-full pb-4 border-b border-slate-200">
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        Publication Date
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm">
+                        {new Date(selectedThesis.thesis_date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        Research Thematic Area
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                        {selectedThesis.r_category?.r_category_name || "Uncategorized"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                        School
+                      </p>
+                      <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                        {selectedThesis.school?.school_name || "No School"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Available Copies */}
+                  <div className="flex flex-col w-full gap-2">
+                    <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
+                      Available Copies
+                    </p>
+                    
+                    {/* Physical Copy */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#475569] font-ubuntu-mono text-sm whitespace-nowrap">Physical Copy:</span>
+                      {selectedThesis.thesis_phys ? (
+                        <span className="font-ubuntu-mono text-[#011638] text-sm break-words">
+                          {selectedThesis.thesis_phys}
+                        </span>
+                      ) : (
+                        <span className="text-[#475569] opacity-50 font-ubuntu-mono text-sm">
+                          Not Available
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Digital Copy */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#475569] font-ubuntu-mono text-sm whitespace-nowrap">Digital Copy:</span>
+                      {selectedThesis.thesis_digi ? (
+                        <a
+                          href={selectedThesis.thesis_digi}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0d21a1] hover:text-[#011638] underline font-ubuntu-mono text-sm break-words"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {selectedThesis.thesis_digi}
+                        </a>
+                      ) : (
+                        <span className="text-[#475569] opacity-50 font-ubuntu-mono text-sm">
+                          Not Available
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </>
       )}
     </>
