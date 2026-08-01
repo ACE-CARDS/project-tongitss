@@ -98,7 +98,7 @@ function EventPartnerships({ partnerships }: { partnerships: string | null }) {
   return (
     <div className="w-[100%]">
       {!isOpen ? (
-        <div className="flex flex-col w-full whitespace-pre-line">
+        <div className="flex flex-col flex-end w-full whitespace-pre-line">
           <p className="text-[10px] font-black tracking-widest uppercase pt-2 text-slate-400 mb-1">
             Partnered with:
           </p>
@@ -107,13 +107,13 @@ function EventPartnerships({ partnerships }: { partnerships: string | null }) {
           </p>
           <button
             onClick={() => setIsOpen(true)}
-            className="text-[#0d21a1] justify-right ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
           >
             Read more
           </button>
         </div>
       ) : (
-        <div className="flex flex-col w-full whitespace-pre-line">
+        <div className="flex flex-col flex-end w-full whitespace-pre-line">
           <p className="text-[10px] font-black tracking-widest uppercase pt-2 text-slate-400 mb-1">
             Partnered with:
           </p>
@@ -122,7 +122,7 @@ function EventPartnerships({ partnerships }: { partnerships: string | null }) {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-[#0d21a1] justify-right ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 transition-colors cursor-pointer"
           >
             Read less
           </button>

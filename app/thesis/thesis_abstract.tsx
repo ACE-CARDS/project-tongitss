@@ -24,12 +24,12 @@ export default function ThesisAbstract({ abstract }: { abstract: string | null }
   // CASE 3: Long Abstract -> Read More option
   return (
     <div>
-        <div>
+        <div className="flex flex-end flex-col">
           <p className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed line-clamp-3 break-words overflow-wrap-anywhere"> {/* Display first 3 lines */}
             {abstract}
           </p>
-          <span className="text-[#0d21a1] text-xs font-ubuntu-mono mt-1 inline-block">
-            Read more →
+          <span className="text-[#0d21a1] text-xs font-ubuntu-mono mt-1 ml-auto">
+            Read more
           </span>
         </div>
     </div>

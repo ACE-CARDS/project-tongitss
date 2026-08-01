@@ -39,27 +39,27 @@ function NewsDescription({ description }: { description: string | null }) {
   return (
     <div className="w-full">
       {!isOpen ? (
-        <div>
+        <div className="flex flex-end flex-col">
           <p className="text-sm text-[#475569] font-ubuntu-mono line-clamp-2 break-words">
             {description}
           </p>
           <button
             onClick={() => setIsOpen(true)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
           >
-            Read more →
+            Read more
           </button>
         </div>
       ) : (
-        <div>
+        <div className="flex flex-end flex-col">
           <div className="text-sm text-[#475569] font-ubuntu-mono leading-relaxed max-h-32 overflow-y-auto pr-2 break-words custom-scrollbar-blue">
             {description}
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-[#0d21a1] text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
+            className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
           >
-            Read less ↑
+            Read less
           </button>
         </div>
       )}
@@ -281,7 +281,7 @@ export default function NewsAdmin() {
               <th className="w-[200px]">Image</th>
               
               <th
-                className={`w-[500px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
+                className={`w-[300px] th-sortable ${sortField === "title" ? "is-active" : ""}`}
                 onClick={() => handleSort("title")}
               >
                 <div>

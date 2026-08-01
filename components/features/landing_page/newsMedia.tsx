@@ -1007,7 +1007,7 @@ function FlippableNewsCard({
                 )}
 
                 {/* Read more link */}
-                <div className="mt-auto flex items-center text-[#eec643] font-medium text-xs sm:text-sm group pt-2">
+                <div className="mt-auto ml-auto flex items-center text-[#0d21a1] font-medium text-xs sm:text-sm group pt-2">
                   <span>Read more</span>
                   <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
