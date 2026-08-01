@@ -12,7 +12,7 @@ const ModalBlur: FC<ModalBlurProps> = ({ onClose }) => {
   return (
     <div
       ref={container}
-      className="fixed inset-0 z-[8] flex transition-all ease-in-out duration-200"
+      className="fixed inset-0 z-[100] flex transition-all ease-in-out duration-200"
     >
       <div
         className="backdrop absolute inset-0 bg-black/40 backdrop-blur-[3px]"
