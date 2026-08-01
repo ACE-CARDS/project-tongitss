@@ -136,7 +136,7 @@ function CommitteeContent() {
 
   const nodeStyles = useMemo(() => {
     const base = {
-      fontSize: isMobile ? "9px" : "11px",
+      fontSize: isMobile ? "10px" : "13px",
       width: isMobile ? 90 : 140,
       padding: isMobile ? "4px" : "8px",
       textAlign: "center" as const,
@@ -146,8 +146,12 @@ function CommitteeContent() {
     };
 
     return {
-      yellow: { ...base, background: "#eec643", borderRadius: "10px", border: "1px solid #eec643" },
-      blue: { ...base, background: "#0d21a1", borderRadius: "10px", border: "none" , color: "#fff"},
+      yellow: { ...base, background: "#eec643", borderRadius: "10px", border: "1px solid #eec643",
+        boxShadow: "0 4px 10px #eec64380"
+      },
+      blue: { ...base, background: "#0d21a1", borderRadius: "10px", border: "none" , color: "#fff",
+        boxShadow: "0 3px 13px #0d21a180"
+      },
       white: { ...base, borderRadius: "10px", border: "1px solid #333", background: "#fff" },
       secret: { ...base, border: "none", background: "#b1b1b7", width: "1.2px", height: "8px", padding: "0" },
     };
@@ -227,6 +231,9 @@ function CommitteeContent() {
             .react-flow__pane{
               cursor: default !important;
             }
+            .node-scale-hover:hover {
+              transform: scale(1.2);
+            }
           `}
           </style>
           <ReactFlowProvider >
@@ -246,7 +253,7 @@ function CommitteeContent() {
           <div ref={container} className="fixed inset-0 z-[10000] flex items-center justify-center">
             <ModalBlur onClose={onClose} />
             <div
-              className="content relative z-50 w-[90%] max-w-xs bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6 pointer-events-auto items-center justify-center"
+              className="content relative z-101 w-[90%] max-w-xs bg-white border-2 border-gray-200 shadow-2xl rounded-xl p-6 pointer-events-auto items-center justify-center"
             >
               <button
                 onClick={onClose}
@@ -256,10 +263,10 @@ function CommitteeContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h3 className="text-md font-bold text-gray-900 mb-2 pr-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2 pr-6">
                 {selectedNode?.data.label}
               </h3>
-              <p className="text-gray-600 text-xs leading-relaxed">
+              <p className="text-gray-600 text-md leading-relaxed">
                 {selectedNode ? (nodeDescriptions[selectedNode.id] || "Description coming soon.") : ""}
               </p>
             </div>
