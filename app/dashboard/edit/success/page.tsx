@@ -14,6 +14,7 @@ export default function EditSuccessPage() {
   const router = useRouter();
   const type = searchParams.get("type"); // Content type from query parameters
   const from = searchParams.get("from");
+  const subtype = searchParams.get("subtype");
 
   // If not admin or superadmin, show unauthorized message
   if (user?.role !== "admin" && user?.role !== "superadmin"){
@@ -26,7 +27,7 @@ export default function EditSuccessPage() {
 
   // Redirect if no valid type is provided
   useEffect(() => {
-    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events" && type !== "resource")) {
+    if (!type || (type !== "announcement" && type !== "news-media" && type !== "events" && type !== "resource" && type !== "scholarship")) {
       router.push("/dashboard");
     }
   }, [type, router]);
@@ -72,6 +73,26 @@ export default function EditSuccessPage() {
         buttonBack: "/dashboard?tab=manage&section=resources"
       };
     }
+
+    if (type === "scholarship") {
+      if (subtype === "faq") {
+        return {
+          title: "FAQ Updated!",
+          message: "Your frequently asked question has been successfully updated.",
+          buttonText: "Edit Another",
+          buttonLink: "/dashboard/edit/scholarship?type=faq",
+          buttonBack: "/dashboard?tab=manage&section=scholarship"
+        };
+      }
+       return {
+         title: "School and Course Updated!",
+         message: "Your school and course has been successfully updated.",
+         buttonText: "Edit Another",
+         buttonLink: "/dashboard/edit/scholarship?type=school",
+         buttonBack: "/dashboard?tab=manage&section=scholarship"
+       };
+     }
+
     return null;
 
   };
