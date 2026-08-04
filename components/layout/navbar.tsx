@@ -17,11 +17,13 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
-  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   
   const academicsRef = useRef<HTMLLIElement>(null);
   const membersRef = useRef<HTMLLIElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
+  const resourcesRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
   const isActive = (path: string) => {
@@ -38,12 +40,20 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
   const toggleDropdown = () => {
     setAcademicsOpen(!academicsOpen);
     setMembersOpen(false);
+    setResourcesOpen(false);
   };
 
   const toggleMembers = () => {
     setMembersOpen(!membersOpen);
     setAcademicsOpen(false);
+    setResourcesOpen(false);
   }
+
+  const toggleResources = () => {
+    setResourcesOpen(!resourcesOpen);
+    setAcademicsOpen(false);
+    setMembersOpen(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -274,22 +284,56 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                   <li className="hover:underline">
                     <Link href="/thesis">Thesis Repository</Link>
                   </li>
-                  <li className="hover:underline">
-                    <Link href="/scholarship">DOST-SEI Scholarship</Link>
-                  </li>
                 </ul>
               </li>
 
               {/* Resources */}
-              <Link href="/resources">
-                <li className={`px-[10px] py-[2px] rounded-full duration-200 transition-all xl:mb-0 mb-3
-                  ${isActive("/resources")
-                    ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
+              <li
+                ref={resourcesRef}
+                onClick={toggleResources}
+                className={`z-20 group relative flex flex-col xl:flex-row gap-1 px-[10px] py-[2px] cursor-pointer rounded-[1rem] duration-200 transition-all
+                  ${isActive("/resources") || isActive("/scholarship")
+                    ? "hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
-                  }`}>
+                  }
+                  ${resourcesOpen ? "bg-[#a6a6a6]/30 scale-[1.04]" : ""}
+                `}
+              >
+                <div className="flex flex-row items-center gap-1 whitespace-nowrap justify-end xl:justify-start">
                   Resources
-                </li>
-              </Link>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`size-4 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+
+                <ul
+                  className={`
+                    ${resourcesOpen ? "flex" : "hidden"}
+                    flex-col gap-1 xl:gap-3 text-left
+                    whitespace-normal xl:whitespace-nowrap
+                    xl:absolute xl:shadow-[0_5px_15px_rgba(255,255,255,0.3)]
+                    xl:bg-[#011638]/90 xl:backdrop-blur-sm
+                    p-1 xl:p-4 xl:rounded-[2rem]
+                    xl:-left-10 xl:top-8 xl:w-50 xl:text-center
+                  `}
+                >
+                  <li className="hover:underline">
+                    <Link href="/resources">Resources</Link>
+                  </li>
+                  <li className="hover:underline ">
+                    <Link href="/scholarship">DOST-SEI Scholarship</Link>
+                  </li>
+                </ul>
+              </li>
 
               {/* 1. If NO user is found, show Login and Join buttons */}
               {!user ? (
