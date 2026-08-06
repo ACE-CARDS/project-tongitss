@@ -198,14 +198,14 @@ export default function Academics({id}: {id?: string}) {
                     {displayThesesCount}
                   </div>
                   <div className="text-[#141414]/60 sm:font-bold text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
-                    Research Thesis
+                    Research Abstract Collection
                   </div>
                 </div>
               </div>
             </div>
 
             <p className="box mt-8">
-              Supporting research and thesis initiatives of members.
+              Supporting research initiatives of scholars.
               <span className="block mt-2 font-bold text-[#011638]">
                 Promoting academic growth and collaboration.
               </span>
@@ -236,7 +236,7 @@ export default function Academics({id}: {id?: string}) {
                 }
                 className="btn-blue"
               >
-                View Thesis→
+                View Research→
               </Link>
             </div>
           </div>

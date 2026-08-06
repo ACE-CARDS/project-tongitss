@@ -130,7 +130,7 @@ export default function Members({id}: {id?: string}) {
             <GradientLine start />
 
             <p className="mt-8 text-[#141414]/80 text-lg leading-relaxed backdrop-blur-sm bg-white/70 px-8 py-6 rounded-2xl shadow-xl">
-              A growing network of DOST CAR scholars committed to academic <br />
+              A growing network of DOST-SEI scholars in CAR committed to academic <br />
               excellence and servant leadership.
             </p>
 
