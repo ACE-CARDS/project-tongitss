@@ -204,7 +204,7 @@ export default function ScholarshipPage() {
                     {/* Search */}
                     <section className="mb-10">
                         <h2 className="text-2xl sm:text-3xl font-bold text-[#011638] mb-2">
-                            Accredited Schools &amp; Courses
+                            Accredited Schools &amp; Courses in CAR
                         </h2>
                         <p className="text-slate-600 mb-4 text-sm sm:text-base">
                             This presents the list of accredited schools with their corresponding degree programs offered under the DOST-SEI Scholarship.
@@ -343,6 +343,13 @@ export default function ScholarshipPage() {
                                 className="text-[#eec643] hover:underline font-medium"
                             >
                                 dostcarscholarshipunit@gmail.com
+                            </a>
+                            . To view the full list of DOST-SEI Priority S&T Courses, visit the {" "}
+                            <a
+                                href="https://science-scholarships.ph/"
+                                className="text-[#eec643] hover:underline font-medium"
+                            >
+                                Official Page of DOST-SEI
                             </a>
                             .
                         </p>
