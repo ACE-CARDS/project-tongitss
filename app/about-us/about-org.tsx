@@ -4,11 +4,12 @@ import AnimatedTitle from "@/components/ui/animatedTitle";
 import { motion } from "framer-motion";
 
 const schoolOrgs = [
-  { name: "UB TALAS", school: "University of Baguio", province: "Benguet", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
-  { name: "UC CATS", school: "University of the Cordilleras", province: "Benguet", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
-  { name: "UP SIKAT", school: "University of the Philippines - Baguio", province: "Benguet", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
+  { name: "D-SALENG", school: "Benguet State University", province: "Benguet", logo: "/assets/logos/DSALENG.png", fb: "https://www.facebook.com/profile.php?id=61592526025538" },
+  { name: "UB TALAS", school: "University of Baguio", province: "Baguio City", logo: "/assets/logos/TALAS.png", fb: "https://www.facebook.com/profile.php?id=61586830391225" },
+  { name: "UC CATS", school: "University of the Cordilleras", province: "Baguio City", logo: "/assets/logos/CATS.png", fb: "https://www.facebook.com/uccats.dost" },
+  { name: "UP SIKAT", school: "University of the Philippines - Baguio", province: "Baguio CIty", logo: "/assets/logos/SIKAT.png", fb: "https://www.facebook.com/sikat.upb" },
   { name: "KAINDS", school: "Kalinga State University", province: "Kalinga", logo: "/assets/logos/KAINDS.png", fb: "https://www.facebook.com/KalingaDOSTscholars" },
-  { name: "BAGGS", school: "Saint Louis University", province: "Benguet", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE", note: "Not DOST-exclusive" },
+  { name: "BAGGS", school: "Saint Louis University", province: "Baguio City", logo: "/assets/logos/BAGGS.png", fb: "https://www.facebook.com/BAGGSSLUPAGE", note: "Not DOST-exclusive" },
 ];
 
 export default function AboutOrg() {
@@ -105,7 +106,7 @@ export default function AboutOrg() {
         >
           <div className="text-center mb-8">
             <h3 className="text-[#011638] font-extrabold uppercase tracking-widest text-xs sm:text-sm lg:text-base mb-1">
-              School Associactions
+              School Associations
             </h3>
             <p className="text-slate-500 text-sm sm:text-base">
               The university-based DOST scholar organizations.
