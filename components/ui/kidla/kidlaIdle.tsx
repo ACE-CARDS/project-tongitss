@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const dialogue = [
   "Hey there!",
@@ -39,7 +39,7 @@ export default function KidlaTalk({ isParentOpen }: { isParentOpen: boolean }) {
 
   return (
     <div
-      className={`mb-[2px] px-3 py-1 z-40 bg-[#fbfaf8] text-[10px] lg:text-xs md:text-xs font-ubuntu-mono rounded-lg shadow-lg border border-gray-200 transition-all duration-500
+      className={`mb-[2px] px-3 py-1 z-101 bg-[#fbfaf8] text-[10px] lg:text-xs md:text-xs font-ubuntu-mono rounded-lg shadow-lg border border-gray-200 transition-all duration-500
         ${isVisible ? "opacity-100 translate-y-0 scale-100 bubble-float" : "opacity-0 translate-y-2 scale-90 pointer-events-none"}`}
     >
       {text}

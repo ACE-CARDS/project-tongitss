@@ -16,7 +16,7 @@ export default function Kidla({
   return (
     <div>
       <div
-        className={`fixed right-9 absolute z-45 flex flex-col items-end group transition-opacity duration-300 bottom-[-3] md:bottom-[-6] md:right-8 
+        className={`fixed right-9 absolute z-101 flex flex-col items-end group transition-opacity duration-300 bottom-[-3] md:bottom-[-6] md:right-8 
         ${isOpen ? "hidden" : "block"} `}
       >
         <Image

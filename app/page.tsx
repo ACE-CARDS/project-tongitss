@@ -95,7 +95,7 @@ useEffect(() => {
 
         <NavBar isOverHero={isOverHero} />
         
-        <div className="relative z-[10003]">
+        <div className="relative">
           <Popup
             isShowing={isModalShowing}
             onClose={() => setIsModalShowing(false)}

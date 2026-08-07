@@ -1,11 +1,11 @@
+import AnnounceCard from "@/components/features/landing_page/announcements/announceCard";
+import ModalBlur from "@/components/ui/modalBlur";
+import { createClient } from "@/utils/supabase/client";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { type FC, useRef, useEffect, useState } from "react";
-import { Transition } from "react-transition-group";
-import { createClient } from "@/utils/supabase/client";
-import AnnounceCard from "@/components/features/landing_page/announcements/announceCard";
+import { type FC, useEffect, useRef, useState } from "react";
 import { BsSuitSpadeFill } from "react-icons/bs";
-import ModalBlur from "@/components/ui/modalBlur";
+import { Transition } from "react-transition-group";
 
 type Props = {
   isShowing: boolean;
@@ -96,14 +96,14 @@ const AnnouncementPopup: FC<Props> = ({ isShowing, onClose }) => {
         <div
           ref={container}
           id="popUpAnnouncement"
-          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
+          className="fixed inset-0 z-101 flex items-center justify-center p-2 sm:p-4"
         >
           <ModalBlur onClose={onClose}/>
 
           <div
             className="
               content
-              relative z-10 flex flex-col
+              relative z-101 flex flex-col
               w-[80%] sm:w-[85%] md:w-full
               max-w-xs sm:max-w-md md:max-w-4xl lg:max-w-6xl
               h-[65dvh] sm:h-[72dvh] md:h-[80vh] lg:h-[85vh]

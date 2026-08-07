@@ -87,7 +87,7 @@ const KidlaDialogue: FC<Props> = ({
           <ModalBlur onClose={onClose}/>
 
           <div
-            className="z-40 content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
+            className="z-101 content relative w-full max-w-[90%] md:max-w-[70%] lg:w-[50%] lg:max-w-4xl min-h-[30vh] md:min-h-[30vh] rounded-xl md:rounded-[80rem] lg:rounded-[80rem] 
           border border-white/10 bg-[#fbfaf8] p-6 md:p-12 text-white shadow-2xl flex flex-col justify-center items-center"
           >
             {showTriangle && (
