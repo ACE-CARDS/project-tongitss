@@ -357,7 +357,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
               ) : (
                 /* 2. If user IS found, show Dashboard and Logout */
                 <div className="flex xl:flex-row flex-col xl:items-center xl:justify-center justify-end gap-2 text-right p-[4px] pl-[6px] mr-0.5 rounded-[50px] bg-white/0 xl:bg-white/80 duration-200 transition-all ease-in-out text-center xl:text-black text-white xl:backdrop-blur-xs xl:hover:bg-white/100 xl:hover:scale-[1.04]">
-                  <Link href="/dashboard">
+                  <Link href="/dashboard?tab=announcements">
                     <li
                       className={`px-[13px] py-[6px] xl:py-[4px] rounded-[50px] duration-200 transition-all xl:text-black text-black text-center backdrop-blur-xs
                         ${isActive("/dashboard")
