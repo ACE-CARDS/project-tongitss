@@ -169,7 +169,7 @@ export default function CommitteeDirectory() {
                     className="group relative rounded-3xl p-5 bg-white/70 backdrop-blur-xl border border-[#011638] shadow-md
                       transition-all duration-300 ease-out
                       hover:-translate-y-3 hover:shadow-2xl hover:border-[#eec643] hover:bg-white
-                      w-[42%] md:w-[28%] lg:w-[20%] min-h-[180px] sm:min-h-[240px] flex flex-col"
+                      w-[42%] md:w-[28%] lg:w-[20%] min-h-[180px] sm:min-h-[240px] min-w-[180px] flex flex-col"
                   >
                     <div className="absolute inset-0 opacity-20 overflow-hidden">
                       <BsSuitSpadeFill className="size-6 md:size-8 text-[#011638] absolute top-5 left-5" />
@@ -195,11 +195,11 @@ export default function CommitteeDirectory() {
                     </div>
 
                     <div className="flex-grow flex flex-col items-center justify-start overflow-hidden">
-                      <h2 className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words">
+                      <h2 className="mt-2 sm:mt-4 text-center font-bold text-sm sm:text-xl text-[#011638] leading-tight min-h-[2rem] sm:min-h-[3rem] flex items-center justify-center break-words">
                         {normalizeName(person.mem_fname)} {normalizeName(person.mem_lname)}
                       </h2>
                       <div className="flex justify-center mt-1 min-h-[2.5rem] sm:min-h-[3.5rem] items-center">
-                        <span className="text-[10px] sm:text-sm text-[#0d21a1] px-2 sm:px-3 py-1 sm:py-2 rounded-lg md:rounded-full bg-[#0d21a1]/10 font-semibold text-center line-clamp-2">
+                        <span className="text-[10px] sm:text-sm text-[#0d21a1] px-2 sm:px-3 py-1 sm:py-2 rounded-lg md:rounded-full bg-[#0d21a1]/10 font-semibold text-center">
                           {person.committee?.comm_name}
                         </span>
                       </div>
