@@ -143,7 +143,7 @@ export default function AboutOrg() {
                   {org.province}
                 </span>
                 {org.note && (
-                  <span className="hidden sm:block mt-1.5 text-[6px] sm:text-[11px] text-[#011638] bg-[#FACC15]/20 border border-[#FACC15]/40 rounded-full px-2 py-0.5 leading-snug">
+                  <span className="hidden sm:block mt-1.5 text-[6px] sm:text-[9px] text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-1.5 py-0.5 leading-snug">
                     {org.note}
                   </span>
                 )}
