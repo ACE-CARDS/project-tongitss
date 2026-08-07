@@ -335,80 +335,84 @@ export default function EventsTimeline() {
             onClick={() => setSelectedEvent(null)}
           >
             <div
-              className="pointer-events-auto bg-white border border-[#011638] rounded-3xl w-full max-w-3xl max-h-[85vh] 
-              overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col animate-in fade-in 
-              zoom-in-95 duration-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className=" bg-white border border-[#011638] rounded-3xl w-full max-w-3xl max-h-[65vh]
+              pointer-events-auto shadow-2xl flex flex-col animate-in fade-in absolute
+              zoom-in-95 duration-200 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative w-full shrink-0 overflow-hidden bg-[#011638]">
-                <button
-                  onClick={() => setSelectedEvent(null)}
-                  className="cursor-pointer absolute top-4 right-4 z-[100] w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors font-bold text-xl"
-                >
-                  ✕
-                </button>
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="cursor-pointer absolute top-4 right-4 z-[100] w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 shadow-sm transition-colors font-bold text-xl"
+              >
+                ✕
+              </button>
+
+              <div className="overflow-x-hidden overflow-y-auto custom-scrollbar-blue">
+
+                <div className="relative w-full shrink-0 overflow-hidden bg-[#011638]">
+                  
+                  <div className="w-full h-64 sm:h-80 bg-slate-100 relative flex items-center justify-center overflow-hidden">
+                    <img
+                      src={selectedEvent.image_url || DEFAULT_IMAGE}
+                      alt={selectedEvent.title}
+                      onError={(e: any) => {
+                        e.currentTarget.src = DEFAULT_IMAGE;
+                        e.currentTarget.className = "w-full h-full object-contain p-12 opacity-30";
+                      }}
+                      className={`w-full h-full ${!selectedEvent.image_url ? 'object-contain p-12 opacity-30' : 'object-cover'}`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6 w-[calc(100%-3rem)]">
+                      <span className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] shadow-sm">
+                        {selectedEvent.short_title || "ACE CARDS"}
+                      </span>
+                      <h2 className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight drop-shadow-md break-words">
+                        {selectedEvent.title}
+                      </h2>
+                    </div>
+                  </div>
+                </div>
                 
-                <div className="w-full h-64 sm:h-80 bg-slate-100 relative flex items-center justify-center overflow-hidden">
-                  <img
-                    src={selectedEvent.image_url || DEFAULT_IMAGE}
-                    alt={selectedEvent.title}
-                    onError={(e: any) => {
-                      e.currentTarget.src = DEFAULT_IMAGE;
-                      e.currentTarget.className = "w-full h-full object-contain p-12 opacity-30";
-                    }}
-                    className={`w-full h-full ${!selectedEvent.image_url ? 'object-contain p-12 opacity-30' : 'object-cover'}`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-6 left-6 right-6 w-[calc(100%-3rem)]">
-                    <span className="inline-block px-3 py-1 mb-3 rounded-md font-black text-[10px] tracking-widest uppercase bg-[#eec643] text-[#011638] shadow-sm">
-                      {selectedEvent.short_title || "ACE CARDS"}
-                    </span>
-                    <h2 className="text-3xl sm:text-4xl font-black text-white font-oswald uppercase leading-tight drop-shadow-md break-words">
-                      {selectedEvent.title}
-                    </h2>
+                <div className="p-6 sm:p-10 flex flex-col gap-6 w-full">
+                  <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 pb-6 border-b border-slate-100 w-full items-start">
+                    <div className="w-full sm:w-1/3 min-w-0">
+                      <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
+                        Date
+                      </p>
+                      <p className="font-bold text-[#0d21a1] text-lg font-ubuntu-mono break-words">
+                        {formatEventDateRange(selectedEvent.start_date, selectedEvent.end_date)}
+                      </p>
+                    </div>
+                    <div className="w-full sm:w-1/3 min-w-0">
+                      <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
+                        Location
+                      </p>
+                      <p className="font-bold text-slate-700 text-lg font-ubuntu-mono line-clamp-2 break-words" title={selectedEvent.location}>
+                        {selectedEvent.location || "TBA"}
+                      </p>
+                    </div>
+                    <div className="w-full sm:w-1/3 min-w-0">
+                      <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
+                        Status
+                      </p>
+                      <p className="font-bold text-slate-700 text-lg font-ubuntu-mono uppercase break-words">
+                        {isEventCompleted(selectedEvent) ? "COMPLETED" : (selectedEvent.status || "UPCOMING")}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="p-6 sm:p-10 flex flex-col gap-6 w-full">
-                <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 pb-6 border-b border-slate-100 w-full items-start">
-                  <div className="w-full sm:w-1/3 min-w-0">
-                    <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
-                      Date
-                    </p>
-                    <p className="font-bold text-[#0d21a1] text-lg font-ubuntu-mono break-words">
-                      {formatEventDateRange(selectedEvent.start_date, selectedEvent.end_date)}
-                    </p>
-                  </div>
-                  <div className="w-full sm:w-1/3 min-w-0">
-                    <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
-                      Location
-                    </p>
-                    <p className="font-bold text-slate-700 text-lg font-ubuntu-mono line-clamp-2 break-words" title={selectedEvent.location}>
-                      {selectedEvent.location || "TBA"}
-                    </p>
-                  </div>
-                  <div className="w-full sm:w-1/3 min-w-0">
-                    <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
-                      Status
-                    </p>
-                    <p className="font-bold text-slate-700 text-lg font-ubuntu-mono uppercase break-words">
-                      {isEventCompleted(selectedEvent) ? "COMPLETED" : (selectedEvent.status || "UPCOMING")}
+                  {selectedEvent.partnerships && selectedEvent.partnerships.length > 0 && (
+                    <div className="flex flex-col w-full pb-6 border-b border-slate-100 whitespace-pre-line">
+                      <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
+                        Partnered with
+                      </p>
+                      {selectedEvent.partnerships}
+                    </div>
+                  )}
+                  <div className="w-full min-w-0">
+                    <p className="text-slate-700 font-ubuntu-mono text-base leading-relaxed whitespace-pre-wrap break-words w-full">
+                      {selectedEvent.description}
                     </p>
                   </div>
-                </div>
-                {selectedEvent.partnerships && selectedEvent.partnerships.length > 0 && (
-                  <div className="flex flex-col w-full pb-6 border-b border-slate-100 whitespace-pre-line">
-                    <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 mb-1">
-                      Partnered with
-                    </p>
-                    {selectedEvent.partnerships}
-                  </div>
-                )}
-                <div className="w-full min-w-0 pb-4">
-                  <p className="text-slate-700 font-ubuntu-mono text-base leading-relaxed whitespace-pre-wrap break-words w-full">
-                    {selectedEvent.description}
-                  </p>
                 </div>
               </div>
             </div>
