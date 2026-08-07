@@ -454,10 +454,10 @@ export default function ThesisHeader({
   return (
     <div className="mb-8">
       <h1 className="text-3xl font-oswald font-bold text-[#011638]">
-        Scholar Theses Collection
+        Scholar Research Abstract Collection
       </h1>
       <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">
-        Browse all available theses
+      Discover the work. Explore the abstracts of completed undergraduate theses by DOST-SEI scholars.
       </p>
 
       {/* Member feature banner */}
@@ -594,6 +594,14 @@ export default function ThesisHeader({
           )}
         </div>
       </div>
+
+      {/* Disclaimer */}
+      <div className="w-full mt-6 px-4 py-3 bg-[#011638]/5 border border-[#011638]/20 rounded-lg">
+          <p className="text-sm text-[#475569] font-ubuntu-mono text-left">
+            Disclaimer: Authors and their institutions retain full ownership of the research work. Where a study has been submitted for journal publication, the abstract posted here serves only as a preprint and may differ from the final published version. Therefore, ACE CARDS claims no ownership and shares the work only to promote its visibility.
+          </p>
+      </div>
+      
     </div>
   );
 }

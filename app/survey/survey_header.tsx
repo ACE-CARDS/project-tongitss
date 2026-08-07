@@ -432,7 +432,7 @@ export default function SurveyHeader({
       <h1 className="text-3xl font-oswald font-bold text-[#011638]">
         Scholar Survey Collection
       </h1>
-      <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">Browse all available surveys</p>
+      <p className="text-[#475569] font-ubuntu-mono mt-2 mb-4">Contribute to Filipino science. Browse eligible studies and help DOST-SEI scholars by answering their open research surveys.</p>
 
     {/* Member feature banner */}
     {!isAuthenticated && (
@@ -538,6 +538,14 @@ export default function SurveyHeader({
         )}
         </div>
       </div>
+
+      {/* Disclaimer */}
+      <div className="w-full mt-6 px-4 py-3 bg-[#011638]/5 border border-[#011638]/20 rounded-lg">
+          <p className="text-sm text-[#475569] font-ubuntu-mono text-left">
+            Ethics & Data Privacy Notice: All surveys posted here are conducted by verified DOST-SEI scholars for academic purposes only. Researchers are required to uphold informed consent and comply with the Data Privacy Act of 2012 (RA 10173). Participation is strictly voluntary. You may withdraw from any survey at any time without consequence. If you have concerns about a posted survey, please contact us.
+          </p>
+      </div>
+
     </div>
   );
 }
