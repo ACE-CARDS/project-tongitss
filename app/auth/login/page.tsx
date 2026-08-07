@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <>
     <div className="max-w-[1920px] mx-auto relative overflow-hidden">
-      <div className="flex md:flex-row flex-col w-full min-h-screen max-h-fit bg-white text-slate-600 py-15 items-center justify-center"
+      <div className="flex md:flex-row flex-col w-full min-h-dvh md:min-h-screen bg-white text-slate-600 py-15 items-center justify-center"
         style={{
           backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
           backgroundSize: "20px 20px",
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
             <section className="md:w-[400px] relative w-full flex flex-col 
             items-center text-center md:items-start md:text-left
-            bg-[#011638]/80 h-full md:p-10 p-8">
+            bg-[#011638]/80 h-full md:p-10 p-5 sm:p-8 md:p-10">
               <BackButton href="/" className="absolute top-4 right-4"/>
               <Image
                 src="/assets/logos/ACE CARDS logo.png"
@@ -55,12 +55,12 @@ export default function LoginPage() {
                 <span className="text-[#d9b237] text-6xl">ACE CARDS</span> <br/>
                 <span className="text-4xl md:text-5xl">Login Area</span>
               </h1>
-              <p className="mt-6 text-white text-lg max-w-sm mx-auto w-full md:mx-0 text-[18px] xl:text-md">
+              <p className="mt-6 text-white max-w-sm mx-auto w-full md:mx-0 text-sm sm:text-[18px] xl:text-md">
                 Access your personalized dashboard, manage your submissions, and stay connected with the organization.
               </p>
             </section>
 
-            <section className="md:w-[300px] relative bg-[#eff0f2] w-full md:p-10 p-8 flex flex-col items-center justify-center md:items-start md:text-left">
+            <section className="md:w-[300px] relative bg-[#eff0f2] w-full md:p-10 p-5 sm:p-8 md:p-10 flex flex-col items-center justify-center md:items-start md:text-left">
               
               <span className="md:text-2xl text-xl font-medium">
                 <span className="md:text-3xl text-2xl font-bold text-slate-900">
@@ -72,7 +72,7 @@ export default function LoginPage() {
               <form action={signinWithGoogle}>
                 <button 
                   type="submit" 
-                  className="w-full mt-10 cursor-pointer flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                  className="w-full mt-4 sm:mt-6 md:mt-10 cursor-pointer flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 48 48">
                     <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
