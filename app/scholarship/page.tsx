@@ -349,7 +349,7 @@ export default function ScholarshipPage() {
                                 href="https://science-scholarships.ph/"
                                 className="text-[#eec643] hover:underline font-medium"
                             >
-                                Official Page of DOST-SEI
+                                Official Scholarship Page of DOST-SEI
                             </a>
                             .
                         </p>
