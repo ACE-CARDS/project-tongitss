@@ -51,19 +51,13 @@ export default async function ThesisData({
 
   // Fetch available years
   const { data: yearData } = await supabase
-    .from("thesis") // from thesis table
-    .select("thesis_date"); // Cols
+  .from("thesis")
+  .select("thesis_date")
+  .eq("thesis_status", "accepted");
 
-  // Unique years and sort descending
   const availableYears = yearData && yearData.length > 0
-    ? [...new Set(yearData // 'Set' to remove duplicates
-        .map(t => {
-          const date = new Date(t.thesis_date);
-          return !isNaN(date.getFullYear()) ? date.getFullYear() : null; // Get year
-        })
-        .filter(year => year !== null) // Remove invalid dates
-      )].sort((a, b) => b - a) // Sort
-    : []; // Empty if no data
+    ? [...new Set(yearData.map(t => t.thesis_date))].sort((a, b) => b - a)
+    : [];
 
   // Fetch thesis keywords for search suggestions
   const { data: keywordsData } = await supabase
@@ -132,9 +126,7 @@ export default async function ThesisData({
   // Year filtering
   if (selectedYears.length > 0) {
     filteredTheses = filteredTheses.filter((t: any) => {
-      const thesisDate = new Date(t.thesis_date);
-      const thesisYear = thesisDate.getFullYear();
-      return !isNaN(thesisYear) && selectedYears.includes(thesisYear); 
+      return selectedYears.includes(t.thesis_date);
     });
   }
   

@@ -492,16 +492,9 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                         </h3>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <span className="text-[#475569] block font-ubuntu-mono">Publication Date:</span>
+                            <span className="text-[#475569] block font-ubuntu-mono">Publication Year:</span>
                             <span className="font-ubuntu-mono text-[#011638]">
-                              {new Date(thesis.thesis_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
+                              {thesis.thesis_date}
                             </span>
                           </div>
 
@@ -754,17 +747,10 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                   <div className="grid grid-cols-2 gap-3 w-full pb-4 border-b border-slate-200">
                     <div>
                       <p className="text-xs font-oswald font-bold tracking-widest uppercase text-slate-400 mb-0.5">
-                        Publication Date
+                        Publication Year
                       </p>
                       <p className="font-ubuntu-mono text-[#011638] text-sm">
-                        {new Date(selectedThesis.thesis_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
+                        {selectedThesis.thesis_date}
                       </p>
                     </div>
                     <div>

@@ -237,8 +237,8 @@ function ReviewContent() {
             </div>
             <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
                 <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Publication Date</label>
-                <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">{new Date(thesis.thesis_date).toLocaleDateString()}</div>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Publication Year</label>
+                  <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">{thesis.thesis_date}</div>
                 </div>
                 <div>
                 <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Physical Copy</label>

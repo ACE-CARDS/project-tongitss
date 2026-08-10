@@ -335,7 +335,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
     const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
     const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
-    const dateValid = !!dateInput?.value;
+    const yearValue = parseInt(dateInput?.value);
+    const dateValid = !!dateInput?.value && !isNaN(yearValue) && 
+                      yearValue >= 2022 && yearValue <= new Date().getFullYear();
     const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
     const categoryValid = !!categorySelect?.value && !categoryError;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
@@ -989,7 +991,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
           thesis_title: titleInput.value,
           thesis_abstract: abstractInput.value,
           thesis_keyword: keywordsInput.value,
-          thesis_date: dateInput.value,
+          thesis_date: parseInt(dateInput.value),
           thesis_phys: physicalInput?.value || null,
           thesis_digi: digitalInput?.value || null,
           r_category: parseInt(finalCategoryId),
@@ -1725,28 +1727,30 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
               <div className="space-y-4">
                 <div>
                   <label htmlFor="date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Publication Date <span className="text-[#eec643]">*</span>
+                    Publication Year <span className="text-[#eec643]">*</span>
                   </label>
                   <input
-                    type="date"
+                    type="number"
                     id="date"
                     name="date"
                     required
-                    min="2022-01-01"
-                    max={(() => {
-                      const now = new Date();
-                      const phTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-                      const year = phTime.getFullYear();
-                      const month = String(phTime.getMonth() + 1).padStart(2, '0');
-                      const day = String(phTime.getDate()).padStart(2, '0');
-                      return `${year}-${month}-${day}`;
-                    })()}
+                    min="2022"
+                    max={new Date().getFullYear()}
+                    placeholder="Enter publication year"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     onInput={(e) => {
                       const input = e.target as HTMLInputElement;
+                      const yearValue = parseInt(input.value);
                       const errorSpan = document.getElementById('date-error');
+                      
                       if (!input.value) {
-                        errorSpan!.textContent = 'Date is required.';
+                        errorSpan!.textContent = 'Publication year is required.';
+                        errorSpan!.style.display = 'block';
+                      } else if (yearValue < 2022) {
+                        errorSpan!.textContent = 'Year must be 2022 or later.';
+                        errorSpan!.style.display = 'block';
+                      } else if (yearValue > new Date().getFullYear()) {
+                        errorSpan!.textContent = `Year cannot be in the future.`;
                         errorSpan!.style.display = 'block';
                       } else {
                         errorSpan!.style.display = 'none';

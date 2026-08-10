@@ -561,7 +561,7 @@ export default function ResourcesPage() {
             ) : displayItems.length === 0 ? (
               <div className="text-center py-12 mt-8">
                 <p className="text-slate-700 font-medium text-lg">
-                  No matching downloads found.
+                  No matching resources found.
                 </p>
                 <p className="text-slate-500 text-sm mt-1 font-ubuntu-mono">
                   Try adjusting your search or filters.

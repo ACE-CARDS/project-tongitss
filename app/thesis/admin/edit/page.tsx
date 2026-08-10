@@ -52,7 +52,7 @@ function EditThesisContent() {
   const [showSearchDropdown, setShowSearchDropdown] = useState<Map<number, boolean>>(new Map());
   const [emailSuggestions, setEmailSuggestions] = useState<Map<number, Array<{email: string, memberId: number, fname: string, lname: string, minit: string | null}>>>(new Map());
   const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
-  const [pubDate, setPubDate] = useState("");
+  const [pubYear, setPubYear] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
   const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
   const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
@@ -225,7 +225,8 @@ function EditThesisContent() {
     const categoryValid = !!categorySelect?.value;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
     const schoolValid = !!schoolSelect?.value;
-    const pubDateValid = !!pubDate;
+    const yearValue = parseInt(pubYear);
+    const pubYearValid = !!pubYear && !isNaN(yearValue) && yearValue >= 2022 && yearValue <= new Date().getFullYear();
     
     // Check authors
     let hasValidAuthor = false;
@@ -242,7 +243,7 @@ function EditThesisContent() {
     
     const duplicateError = checkDuplicateAuthors();
     const hasErrors = !titleValid || !abstractValid || !keywordsValid || !categoryValid || 
-                      !schoolValid || !pubDateValid || !hasValidAuthor || 
+                      !schoolValid || !pubYearValid || !hasValidAuthor || 
                       !!categoryError || !!schoolError || !!duplicateError;
     
     // Check if there are actual changes
@@ -255,7 +256,7 @@ function EditThesisContent() {
 
   useEffect(() => {
     validateForm();
-  }, [pubDate, categoryError, schoolError, authors]);
+  }, [pubYear, categoryError, schoolError, authors]);
 
   useEffect(() => {
     async function fetchThesis() {
@@ -287,13 +288,13 @@ function EditThesisContent() {
         setSubmitError("Failed to load thesis data.");
       } else {
         setThesis(data);
-        const date = data.thesis_date.split("T")[0];
-        setPubDate(date);
+        const year = data.thesis_date;
+        setPubYear(year.toString());
         setFormData({
           thesis_title: data.thesis_title,
           thesis_abstract: data.thesis_abstract,
           thesis_keyword: data.thesis_keyword,
-          thesis_date: date,
+          thesis_date: year.toString(),
           thesis_phys: data.thesis_phys || "",
           thesis_digi: data.thesis_digi || "",
           r_category: data.r_category?.id.toString() || "",
@@ -571,12 +572,12 @@ function EditThesisContent() {
       const titleInput = form.elements.namedItem("title") as HTMLInputElement;
       const abstractInput = form.elements.namedItem("abstract") as HTMLTextAreaElement;
       const keywordsInput = form.elements.namedItem("keywords") as HTMLInputElement;
-      const pubDateInput = form.elements.namedItem("pub_date") as HTMLInputElement;
+      const pubYearInput = form.elements.namedItem("pub_year") as HTMLInputElement;
       const physLinkInput = form.elements.namedItem("phys_link") as HTMLInputElement;
       const digiLinkInput = form.elements.namedItem("digi_link") as HTMLInputElement;
 
       // validation
-      if (!titleInput?.value || !abstractInput?.value || !keywordsInput?.value || !pubDateInput?.value) {
+      if (!titleInput?.value || !abstractInput?.value || !keywordsInput?.value || !pubYearInput?.value) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -665,7 +666,7 @@ function EditThesisContent() {
           thesis_title: titleInput.value,
           thesis_abstract: abstractInput.value,
           thesis_keyword: keywordsInput.value,
-          thesis_date: pubDateInput.value,
+          thesis_date: parseInt(pubYear),
           thesis_phys: physLinkInput?.value || null,
           thesis_digi: digiLinkInput?.value || null,
           r_category: parseInt(finalCategoryId),
@@ -810,7 +811,7 @@ function EditThesisContent() {
     const currentTitle = titleInput?.value || "";
     const currentAbstract = abstractInput?.value || "";
     const currentKeywords = keywordsInput?.value || "";
-    const currentPubDate = pubDate;
+    const currentPubYear = pubYear;
     const currentPhys = physLinkInput?.value || "";
     const currentDigi = digiLinkInput?.value || "";
     const currentCategory = categorySelect?.value || "";
@@ -821,7 +822,7 @@ function EditThesisContent() {
       currentTitle !== (thesis.thesis_title || "") ||
       currentAbstract !== (thesis.thesis_abstract || "") ||
       currentKeywords !== (thesis.thesis_keyword || "") ||
-      currentPubDate !== (thesis.thesis_date?.split("T")[0] || "") ||
+      currentPubYear !== (thesis.thesis_date?.toString() || "") ||
       currentPhys !== (thesis.thesis_phys || "") ||
       currentDigi !== (thesis.thesis_digi || "") ||
       currentCategory !== (thesis.r_category?.id?.toString() || "") ||
@@ -886,7 +887,7 @@ function EditThesisContent() {
   useEffect(() => {
     const changesExist = checkForChanges();
     setHasChanges(changesExist);
-  }, [formData, pubDate, authors, thesis]);
+  }, [formData, pubYear, authors, thesis]);
 
   if (loading) return (
     <div className="w-full min-h-screen bg-[#fbfaf8]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: "20px 20px" }}>
@@ -1515,26 +1516,35 @@ function EditThesisContent() {
                 <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4">
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="pub_date" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Publication Date <span className="text-[#eec643]">*</span>
+                      <label htmlFor="pub_year" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                        Publication Year <span className="text-[#eec643]">*</span>
                       </label>
                       <input
-                        type="date"
-                        id="pub_date"
-                        name="pub_date"
+                        type="number"
+                        id="pub_year"
+                        name="pub_year"
                         required
-                        min="2022-01-01"
-                        max={new Date().toISOString().split('T')[0]}
+                        min="2022"
+                        max={new Date().getFullYear()}
+                        placeholder="Enter publication year (e.g., 2024)"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        value={pubDate}
+                        value={pubYear}
                         onChange={(e) => {
-                          const newPubDate = e.target.value;
-                          setPubDate(newPubDate);
-                          setFormData(prev => ({ ...prev, thesis_date: newPubDate }));
+                          const newYear = e.target.value;
+                          setPubYear(newYear);
+                          setFormData(prev => ({ ...prev, thesis_date: newYear }));
                           
-                          const errorSpan = document.getElementById('pubdate-error');
-                          if (!newPubDate) {
-                            errorSpan!.textContent = 'Publication date is required.';
+                          const errorSpan = document.getElementById('pubyear-error');
+                          const yearValue = parseInt(newYear);
+                          
+                          if (!newYear) {
+                            errorSpan!.textContent = 'Publication year is required.';
+                            errorSpan!.style.display = 'block';
+                          } else if (yearValue < 2022) {
+                            errorSpan!.textContent = 'Year must be 2022 or later.';
+                            errorSpan!.style.display = 'block';
+                          } else if (yearValue > new Date().getFullYear()) {
+                            errorSpan!.textContent = `Year cannot be in the future.`;
                             errorSpan!.style.display = 'block';
                           } else {
                             errorSpan!.style.display = 'none';
@@ -1542,7 +1552,7 @@ function EditThesisContent() {
                           validateForm();
                         }}
                       />
-                      <span id="pubdate-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
+                      <span id="pubyear-error" className="text-xs mt-1 block font-ubuntu-mono text-red-600"></span>
                     </div>
 
                     <div>

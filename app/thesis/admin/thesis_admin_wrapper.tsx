@@ -52,14 +52,7 @@ export default function ThesisAdminWrapper() {
       if (schoolsRes.data) setSchools(schoolsRes.data);
 
       if (yearsRes.data && yearsRes.data.length > 0) {
-        const years = [...new Set(
-          yearsRes.data
-            .map((s: any) => {
-              const date = new Date(s.thesis_date);
-              return !isNaN(date.getFullYear()) ? date.getFullYear() : null;
-            })
-            .filter((year: number | null) => year !== null)
-        )].sort((a, b) => b - a);
+        const years = [...new Set(yearsRes.data.map((s: any) => s.thesis_date))].sort((a, b) => b - a);
         setAvailableYears(years);
       }
 
@@ -155,9 +148,7 @@ export default function ThesisAdminWrapper() {
     }
     if (selectedYears.length > 0) {
       baseTheses = baseTheses.filter((t: any) => {
-        const thesisDate = new Date(t.thesis_date);
-        const thesisYear = thesisDate.getFullYear();
-        return !isNaN(thesisYear) && selectedYears.includes(thesisYear);
+        return selectedYears.includes(t.thesis_date);
       });
     }
     if (searchQuery) {
@@ -212,9 +203,7 @@ export default function ThesisAdminWrapper() {
     }
     if (selectedYears.length > 0) {
       filteredTheses = filteredTheses.filter((t: any) => {
-        const thesisDate = new Date(t.thesis_date);
-        const thesisYear = thesisDate.getFullYear();
-        return !isNaN(thesisYear) && selectedYears.includes(thesisYear);
+        return selectedYears.includes(t.thesis_date);
       });
     }
     if (searchQuery) {
