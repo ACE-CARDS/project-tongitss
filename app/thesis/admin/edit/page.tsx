@@ -975,7 +975,7 @@ function EditThesisContent() {
                         value={formData.thesis_abstract}
                         required
                         rows={4}
-                        maxLength={1500}
+                        maxLength={3000}
                         placeholder="Enter thesis abstract"
                         className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                         onChange={(e) => {
