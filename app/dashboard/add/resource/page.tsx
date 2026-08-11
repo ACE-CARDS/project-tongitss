@@ -16,30 +16,34 @@ function AddResourceContent() {
   const from = searchParams.get("from");
   const supabase = createClient();
   const { user } = useUser();
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [resourceTypes, setResourceTypes] = useState<string[]>([]);
-  
+
+  // Form Field States
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState("");
+  const [link, setLink] = useState("");
+  const [description, setDescription] = useState("");
+
   // Image states
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  
-  // Form refs
-  const titleRef = useRef<HTMLInputElement>(null);
-  const linkRef = useRef<HTMLInputElement>(null);
-  const typeRef = useRef<HTMLSelectElement>(null);
-  const descriptionRef = useRef<HTMLTextAreaElement>(null);
-  
+
   // Error states
-  const [linkError, setLinkError] = useState("");
   const [titleError, setTitleError] = useState("");
+  const [typeError, setTypeError] = useState("");
+  const [linkError, setLinkError] = useState("");
   const [imageError, setImageError] = useState("");
-  
+  const [descriptionError, setDescriptionError] = useState("");
+
   // User audit state
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,56 +57,81 @@ function AddResourceContent() {
   useEffect(() => {
     const fetchResourceTypes = async () => {
       try {
-        const { data, error } = await supabase
-          .rpc('get_resources_types');
-        
+        const { data, error } = await supabase.rpc("get_resources_types");
+
         if (error) {
           console.error("RPC Error:", error);
           const { data: typeData, error: typeError } = await supabase
             .from("downloads")
             .select("type")
             .not("type", "is", null);
-          
+
           if (typeError) throw typeError;
-          
+
           const types = new Set<string>();
-          typeData.forEach(item => {
+          typeData.forEach((item) => {
             if (item.type) {
               types.add(item.type);
             }
           });
-          
+
           if (types.size === 0) {
-            setResourceTypes(['document', 'form', 'guide', 'merch', 'module', 'publication', 'report', 'other']);
+            setResourceTypes([
+              "document",
+              "form",
+              "guide",
+              "merch",
+              "module",
+              "publication",
+              "report",
+              "other",
+            ]);
           } else {
             const sortedTypes = Array.from(types).sort();
-            const otherIndex = sortedTypes.indexOf('other');
+            const otherIndex = sortedTypes.indexOf("other");
             if (otherIndex !== -1) {
               sortedTypes.splice(otherIndex, 1);
-              sortedTypes.push('other');
+              sortedTypes.push("other");
             }
             setResourceTypes(sortedTypes);
           }
         } else if (data && data.length > 0) {
-          const sortedData = data.sort();
-          const otherIndex = sortedData.indexOf('other');
+          const sortedData = (data as string[]).sort();
+          const otherIndex = sortedData.indexOf("other");
           if (otherIndex !== -1) {
             sortedData.splice(otherIndex, 1);
-            sortedData.push('other');
+            sortedData.push("other");
           }
           setResourceTypes(sortedData);
         } else {
-          // Fallbacks
-          setResourceTypes(['document', 'form', 'guide', 'merch', 'module', 'publication', 'report', 'other']);
+          setResourceTypes([
+            "document",
+            "form",
+            "guide",
+            "merch",
+            "module",
+            "publication",
+            "report",
+            "other",
+          ]);
         }
       } catch (err) {
         console.error("Error fetching resource types:", err);
-        setResourceTypes(['document', 'form', 'guide', 'merch', 'module', 'publication', 'report', 'other']);
+        setResourceTypes([
+          "document",
+          "form",
+          "guide",
+          "merch",
+          "module",
+          "publication",
+          "report",
+          "other",
+        ]);
       }
     };
-    
+
     fetchResourceTypes();
-  }, []);
+  }, [supabase]);
 
   // Load current user for audit
   useEffect(() => {
@@ -111,35 +140,27 @@ function AddResourceContent() {
     }
   }, [user?.email]);
 
-  // Load draft
+  // Load draft from SessionStorage
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("resourceDraft");
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
-        if (titleRef.current) titleRef.current.value = draft.title || "";
-        if (linkRef.current) linkRef.current.value = draft.link || "";
-        if (descriptionRef.current) descriptionRef.current.value = draft.description || "";
-        if (typeRef.current && draft.type) {
-          const options = Array.from(typeRef.current.options);
-          const hasType = options.some(opt => opt.value === draft.type);
-          if (hasType) {
-            typeRef.current.value = draft.type;
-          }
-        }
-        if (draft.imagePreview) {
-          setImagePreview(draft.imagePreview);
-        }
+        if (draft.title) setTitle(draft.title);
+        if (draft.link) setLink(draft.link);
+        if (draft.description) setDescription(draft.description);
+        if (draft.type) setType(draft.type);
+        if (draft.imagePreview) setImagePreview(draft.imagePreview);
       } catch (err) {
         console.error("Error loading draft:", err);
       }
     }
-  }, [resourceTypes]);
+  }, []);
 
-  // Preview URL
+  // Cleanup Preview URL
   useEffect(() => {
     return () => {
-      if (imagePreview && imagePreview.startsWith('blob:')) {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
     };
@@ -159,39 +180,43 @@ function AddResourceContent() {
     setCurrentUserEmail(data?.mem_email || email);
   };
 
-  const saveDraft = () => {
+  const saveDraft = (overrides?: {
+    title?: string;
+    link?: string;
+    type?: string;
+    description?: string;
+    imagePreview?: string;
+  }) => {
     const draft = {
-      title: titleRef.current?.value || "",
-      link: linkRef.current?.value || "",
-      type: typeRef.current?.value || "",
-      description: descriptionRef.current?.value || "",
-      imagePreview: imagePreview || "",
+      title: overrides?.title ?? title,
+      link: overrides?.link ?? link,
+      type: overrides?.type ?? type,
+      description: overrides?.description ?? description,
+      imagePreview: overrides?.imagePreview ?? imagePreview,
     };
     sessionStorage.setItem("resourceDraft", JSON.stringify(draft));
   };
 
-  const validateUrl = (url: string): boolean => {
+  const validateUrl = (urlStr: string): boolean => {
     try {
-      new URL(url);
+      new URL(urlStr);
       return true;
     } catch {
       return false;
     }
   };
 
-  const checkDuplicateLink = async (url: string): Promise<boolean> => {
-    if (!url) return false;
+  const checkDuplicateLink = async (urlStr: string): Promise<boolean> => {
+    if (!urlStr) return false;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("downloads")
       .select("id")
-      .eq("link", url)
+      .eq("link", urlStr)
       .maybeSingle();
 
     if (data) {
-      setLinkError(
-        "This link is already in use. Please provide a unique link.",
-      );
+      setLinkError("This link is already in use. Please provide a unique link.");
       return true;
     } else {
       setLinkError("");
@@ -199,9 +224,9 @@ function AddResourceContent() {
     }
   };
 
-  const validateTitle = (): boolean => {
-    const title = titleRef.current?.value?.trim() || "";
-    if (!title) {
+  const validateTitle = (value: string): boolean => {
+    const trimmed = value.trim();
+    if (!trimmed) {
       setTitleError("Title is required.");
       return false;
     } else {
@@ -236,41 +261,46 @@ function AddResourceContent() {
     if (file) {
       // File size limit: 5MB
       if (file.size > 5 * 1024 * 1024) {
-        setImageError("File size must be less than 5MB");
+        setImageError("File size must be less than 5MB.");
         return;
       }
 
       // File types
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/heic", "image/heif"];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/heic",
+        "image/heif",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        setImageError("Only JPEG, JPG, PNG, HEIC, and HEIF images are allowed");
+        setImageError("Only JPEG, JPG, PNG, HEIC, and HEIF images are allowed.");
         return;
       }
 
       setImageError("");
-      
-      // Preview
-      if (imagePreview && imagePreview.startsWith('blob:')) {
+
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
 
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      saveDraft();
+      saveDraft({ imagePreview: previewUrl });
     }
   };
 
   const removeImage = () => {
-    if (imagePreview && imagePreview.startsWith('blob:')) {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
     setImageFile(null);
     setImagePreview("");
     setImageError("");
-    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-    saveDraft();
+    const fileInput = document.getElementById("image-upload") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
+    saveDraft({ imagePreview: "" });
   };
 
   const logCreateAudit = async (itemTitle: string) => {
@@ -299,44 +329,46 @@ function AddResourceContent() {
     setSubmitError("");
     setLinkError("");
     setTitleError("");
+    setTypeError("");
+    setDescriptionError("");
 
-    // Validate title
-    if (!validateTitle()) {
-      return;
+    let validationFailed = false;
+
+    // Validate Title
+    if (!validateTitle(title)) {
+      validationFailed = true;
     }
 
-    // Validate type
-    if (!typeRef.current?.value) {
-      setSubmitError("Please select a resource type.");
+    // Validate Type
+    if (!type) {
+      setTypeError("Please select a resource type.");
+      validationFailed = true;
+    }
+
+    // Validate Link
+    const trimmedLink = link.trim();
+    if (!trimmedLink) {
+      setLinkError("Resource link is required.");
+      validationFailed = true;
+    } else if (!validateUrl(trimmedLink)) {
+      setLinkError("Please enter a valid URL.");
+      validationFailed = true;
+    }
+
+    if (validationFailed) {
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const title = titleRef.current?.value?.trim() || "";
-      const link = linkRef.current?.value?.trim();
-      const type = typeRef.current?.value;
-      const description = descriptionRef.current?.value?.trim() || "";
-
-      // Validate link
-      if (!link) {
-        throw new Error("Resource link is required.");
-      }
-
-      // Validate URL format
-      if (!validateUrl(link)) {
-        throw new Error(
-          "Please enter a valid URL.",
-        );
-      }
-
-      // Check duplicate link
-      const isDuplicate = await checkDuplicateLink(link);
+      const isDuplicate = await checkDuplicateLink(trimmedLink);
       if (isDuplicate) {
-        throw new Error(
-          "This link is already in use. Please provide a unique link.",
-        );
+        throw new Error("This link is already in use. Please provide a unique link.");
       }
 
       // Upload image
@@ -348,11 +380,14 @@ function AddResourceContent() {
         }
       }
 
+      const trimmedTitle = title.trim();
+      const trimmedDescription = description.trim();
+
       const payload = {
-        title: title,
-        link: link,
+        title: trimmedTitle,
+        link: trimmedLink,
         type: type,
-        description: description || null,
+        description: trimmedDescription || null,
         image_url: imageUrl,
         created_at: new Date().toISOString(),
       };
@@ -366,22 +401,24 @@ function AddResourceContent() {
         throw new Error(insertError.message);
       }
 
-      await logCreateAudit(title);
+      await logCreateAudit(trimmedTitle);
 
       // Clear draft on success
       sessionStorage.removeItem("resourceDraft");
-      if (imagePreview && imagePreview.startsWith('blob:')) {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
 
-      // Redirect
       router.push("/dashboard/add/success?type=resource");
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+        err instanceof Error ? err.message : "An unexpected error occurred.";
       setSubmitError(errorMessage);
-      console.error("Submission error:", err);
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -413,7 +450,7 @@ function AddResourceContent() {
         }}
       >
         <main className="container mx-auto py-8 px-4 max-w-3xl">
-          <div className="flex flex-col mb-6 gap-4">
+          <div ref={formTopRef} className="flex flex-col mb-6 gap-4">
             <BackButton
               href={
                 from === "admin"
@@ -428,247 +465,224 @@ function AddResourceContent() {
           </div>
 
           <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
-            <form
-              onSubmit={handleSubmit}
-              onChange={saveDraft}
-              className="space-y-6"
-            >
-              {/* Submit error display */}
-              {submitError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-                  <p className="font-ubuntu-mono text-sm">{submitError}</p>
+            {submitError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                <p className="font-ubuntu-mono text-sm font-bold">{submitError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
+                <h2 className="text-lg font-oswald font-semibold">
+                  Resource Information
+                </h2>
+              </div>
+
+              <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4 space-y-4">
+                {/* Title */}
+                <div>
+                  <label htmlFor="title" className="form_label">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    maxLength={200}
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      validateTitle(e.target.value);
+                      saveDraft({ title: e.target.value });
+                    }}
+                    placeholder="Enter resource title"
+                    data-error={!!titleError}
+                    className="form_input"
+                  />
+                  <span className="form_error">{titleError || "\u200b"}</span>
                 </div>
-              )}
 
-              <div>
-                <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-xl">
-                  <h2 className="text-lg font-oswald font-semibold">
-                    Resource Information
-                  </h2>
+                {/* Type */}
+                <div>
+                  <label htmlFor="type" className="form_label">
+                    Type
+                  </label>
+                  <select
+                    id="type"
+                    value={type}
+                    onChange={(e) => {
+                      setType(e.target.value);
+                      if (e.target.value) setTypeError("");
+                      saveDraft({ type: e.target.value });
+                    }}
+                    data-error={!!typeError}
+                    className="form_input"
+                  >
+                    <option value="" disabled className="text-[#94a3b8]">
+                      Select Resource Type
+                    </option>
+                    {resourceTypes.map((t) => (
+                      <option key={t} value={t}>
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="form_error">{typeError || "\u200b"}</span>
                 </div>
-                <div className="border-2 border-t-2 border-[#011638] rounded-b-xl p-4">
-                  <div className="space-y-4">
-                    {/* Title */}
-                    <div>
-                      <label
-                        htmlFor="title"
-                        className="block text-sm font-oswald font-medium text-[#011638] mb-1"
-                      >
-                        Title <span className="text-[#eec643]">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="title"
-                        ref={titleRef}
-                        maxLength={200}
-                        placeholder="Enter resource title"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onInput={() => validateTitle()}
-                      />
-                      {titleError && (
-                        <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                          {titleError}
-                        </span>
-                      )}
-                    </div>
 
-                    {/* Type */}
-                    <div>
-                      <label
-                        htmlFor="type"
-                        className="block text-sm font-oswald font-medium text-[#011638] mb-1"
-                      >
-                        Type <span className="text-[#eec643]">*</span>
-                      </label>
-                      <select
-                        id="type"
-                        ref={typeRef}
-                        defaultValue=""
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                      >
-                        <option value="" disabled className="text-[#94a3b8]">
-                          Select Resource Type
-                        </option>
-                        {resourceTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                {/* Description */}
+                <div>
+                  <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                    <label htmlFor="description" className="form_label not_required">
+                      Description
+                    </label>
+                    <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                      {1500 - description.length} characters remaining
+                    </span>
+                  </div>
+                  <textarea
+                    id="description"
+                    rows={3}
+                    maxLength={1500}
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      saveDraft({ description: e.target.value });
+                    }}
+                    placeholder="Enter resource description"
+                    data-error={!!descriptionError}
+                    className="form_input_area custom-scrollbar-blue"
+                  />
+                  <span className="form_error">
+                    {descriptionError || "\u200b"}
+                  </span>
+                </div>
 
-                    {/* Description */}
-                    <div>
-                      <label
-                        htmlFor="description"
-                        className="block text-sm font-oswald font-medium text-[#011638] mb-1"
-                      >
-                        Description
-                      </label>
-                      <textarea
-                        id="description"
-                        ref={descriptionRef}
-                        rows={3}
-                        maxLength={1500}
-                        placeholder="Enter resource description"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
-                      />
-                    </div>
-
-                    {/* Image Upload */}
-                    <div>
-                      <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Image
-                      </label>
-                      <div
-                        className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
-                        onClick={() => {
-                          const fileInput = document.getElementById(
-                            "image-upload",
-                          ) as HTMLInputElement;
-                          if (fileInput) fileInput.click();
-                        }}
-                      >
-                        <div className="space-y-1 text-center">
-                          {imagePreview ? (
-                            <div className="relative">
-                              <img
-                                src={imagePreview}
-                                alt="Preview"
-                                className="mx-auto h-48 w-auto object-cover rounded-lg"
+                {/* Image Upload */}
+                <div>
+                  <label className="form_label not_required">Image</label>
+                  <div
+                    className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#94a3b8] border-dashed rounded-lg hover:border-[#011638] transition-colors cursor-pointer"
+                    onClick={() => {
+                      const fileInput = document.getElementById(
+                        "image-upload"
+                      ) as HTMLInputElement;
+                      if (fileInput) fileInput.click();
+                    }}
+                  >
+                    <div className="space-y-1 text-center">
+                      {imagePreview ? (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="mx-auto h-48 w-auto object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImage();
+                            }}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
                               />
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeImage();
-                                }}
-                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <svg
-                                className="mx-auto h-12 w-12 text-[#475569]"
-                                stroke="currentColor"
-                                fill="none"
-                                viewBox="0 0 48 48"
-                              >
-                                <path
-                                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                  strokeWidth={2}
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                              <div className="flex text-sm text-[#475569]">
-                                <span className="rounded-md font-medium text-[#011638] hover:text-[#1a2a4f]">
-                                  Click to upload
-                                </span>
-                                <p className="pl-1">or drag and drop</p>
-                              </div>
-                              <p className="text-xs text-[#475569]">
-                                JPEG, JPG, PNG, HEIC, HEIF up to 2MB
-                              </p>
-                            </>
-                          )}
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                      <input
-                        id="image-upload"
-                        name="image"
-                        type="file"
-                        className="hidden"
-                        accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
-                        onChange={handleImageChange}
-                      />
-                      {imageError && (
-                        <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                          {imageError}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Link */}
-                    <div>
-                      <label
-                        htmlFor="link"
-                        className="block text-sm font-oswald font-medium text-[#011638] mb-1"
-                      >
-                        Link <span className="text-[#eec643]">*</span>
-                      </label>
-                      <input
-                        type="url"
-                        id="link"
-                        ref={linkRef}
-                        required
-                        maxLength={500}
-                        placeholder="Enter resource URL"
-                        className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
-                        onInput={async (e) => {
-                          const input = e.target as HTMLInputElement;
-                          const errorSpan = document.getElementById("link-error");
-
-                          if (input.value.length === 0) {
-                            if (errorSpan) {
-                              errorSpan.textContent = "Link is required.";
-                              errorSpan.style.display = "block";
-                            }
-                            setLinkError("");
-                          } else if (!validateUrl(input.value)) {
-                            if (errorSpan) {
-                              errorSpan.textContent = "Please enter a valid URL.";
-                              errorSpan.style.display = "block";
-                            }
-                            setLinkError("");
-                          } else {
-                            if (errorSpan) {
-                              errorSpan.style.display = "none";
-                            }
-                            await checkDuplicateLink(input.value);
-                          }
-                        }}
-                      />
-                      <span
-                        id="link-error"
-                        className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-                      ></span>
-                      {linkError && (
-                        <span className="text-xs mt-1 block font-ubuntu-mono text-red-600">
-                          {linkError}
-                        </span>
+                      ) : (
+                        <>
+                          <svg
+                            className="mx-auto h-12 w-12 text-[#475569]"
+                            stroke="currentColor"
+                            fill="none"
+                            viewBox="0 0 48 48"
+                          >
+                            <path
+                              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                              strokeWidth={2}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <div className="flex text-sm text-[#475569]">
+                            <span className="rounded-md font-medium text-[#011638] hover:text-[#1a2a4f]">
+                              Click to upload
+                            </span>
+                            <p className="pl-1">or drag and drop</p>
+                          </div>
+                          <p className="text-xs text-[#475569]">
+                            JPEG, JPG, PNG, HEIC, HEIF up to 5MB
+                          </p>
+                        </>
                       )}
                     </div>
                   </div>
+                  <input
+                    id="image-upload"
+                    name="image"
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
+                    onChange={handleImageChange}
+                  />
+                  <span className="form_error">{imageError || "\u200b"}</span>
+                </div>
+
+                {/* Link */}
+                <div>
+                  <label htmlFor="link" className="form_label">
+                    Link
+                  </label>
+                  <input
+                    type="url"
+                    id="link"
+                    maxLength={500}
+                    value={link}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setLink(val);
+                      saveDraft({ link: val });
+
+                      if (!val.trim()) {
+                        setLinkError("Link is required.");
+                      } else if (!validateUrl(val)) {
+                        setLinkError("Please enter a valid URL.");
+                      } else {
+                        setLinkError("");
+                        checkDuplicateLink(val);
+                      }
+                    }}
+                    placeholder="Enter resource URL"
+                    data-error={!!linkError}
+                    className="form_input"
+                  />
+                  <span className="form_error">{linkError || "\u200b"}</span>
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e7ff]">
+              {/* Form Actions */}
+              <div className="flex items-center justify-end gap-3 mt-4">
                 <Link
                   href={
                     from === "admin"
                       ? "/dashboard?tab=manage&section=resources"
                       : "/dashboard"
                   }
-                  className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
+                  className="from_btn-cancel"
                   onClick={() => {
                     sessionStorage.removeItem("resourceDraft");
-                    if (imagePreview && imagePreview.startsWith('blob:')) {
+                    if (imagePreview && imagePreview.startsWith("blob:")) {
                       URL.revokeObjectURL(imagePreview);
                     }
                   }}
@@ -679,7 +693,7 @@ function AddResourceContent() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-[#fbfaf8] bg-[#1e4db7] border border-[#1e4db7] rounded-lg hover:bg-[#1a2a4f] transition-colors font-oswald disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="form_btn-blue"
                 >
                   {isSubmitting ? "Adding..." : "Add Resource"}
                 </button>
@@ -687,8 +701,8 @@ function AddResourceContent() {
             </form>
           </div>
         </main>
-        <Footer />
       </div>
+      <Footer />
     </>
   );
 }

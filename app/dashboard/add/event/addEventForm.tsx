@@ -10,98 +10,229 @@ import BackButton from "@/components/ui/backButton";
 export default function AddEventForm() {
   const router = useRouter();
   const supabase = createClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const formTopRef = useRef<HTMLDivElement>(null);
 
+  // Form Fields State
+  const [title, setTitle] = useState("");
+  const [shortTitle, setShortTitle] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [status, setStatus] = useState("Select");
+  const [description, setDescription] = useState("");
+  const [partnerships, setPartnerships] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Error States
+  const [titleError, setTitleError] = useState("");
+  const [shortTitleError, setShortTitleError] = useState("");
+  const [dateError, setDateError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [statusError, setStatusError] = useState("");
+  const [descError, setDescError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  const inputClass =
-    "text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]";
+  // User & Audit Log State
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
-  const clearInlineErrors = () => {
-    const errorIds = [
-      "title-error",
-      "short-title-error",
-      "date-error",
-      "location-error",
-      "status-error",
-      "description-error",
-      "partnerships-error",
-    ];
-    errorIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = "";
-    });
+  const noChange =
+    title.trim() === "" &&
+    shortTitle.trim() === "" &&
+    startDate === "" &&
+    endDate === "" &&
+    location.trim() === "" &&
+    description.trim() === "" &&
+    partnerships.trim() === "" &&
+    !imageFile;
+
+  // Change Handlers with Dynamic Validation
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setTitle(val);
+    if (val.trim().length < 2 && val.trim().length > 0) {
+      setTitleError("Title is too short.");
+      setHasError(true);
+    } else {
+      setTitleError("");
+      setHasError(false);
+    }
+  };
+
+  const handleShortTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setShortTitle(val);
+    if (val.trim().length < 2 && val.trim().length > 0) {
+      setShortTitleError("Short title is too short.");
+      setHasError(true);
+    } else {
+      setShortTitleError("");
+      setHasError(false);
+    }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocation(val);
+    if (val.trim()) setLocationError("");
+  };
+
+  const handleDescChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setDescription(val);
+    if (val.trim().length < 10 && val.trim().length > 0) {
+      setDescError("Description is too short.");
+      setHasError(true);
+    } else {
+      setDescError("");
+      setHasError(false);
+    }
+  };
+
+  const handleDateOrStatusChange = (
+    sDate: string,
+    eDate: string,
+    currStatus: string
+  ) => {
+    if (sDate && eDate) {
+      const startObj = new Date(sDate);
+      const endObj = new Date(eDate);
+      const today = new Date();
+      startObj.setHours(0, 0, 0, 0);
+      endObj.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      if (endObj < startObj) {
+        setDateError("End date cannot be earlier than start date.");
+      } else {
+        setDateError("");
+      }
+
+      if (currStatus === "Completed" && endObj >= today) {
+        setStatusError("End date must be in the past for 'Completed'.");
+      } else if (currStatus === "Upcoming" && startObj <= today) {
+        setStatusError("Start date must be in the future for 'Upcoming'.");
+      } else if (
+        currStatus === "Ongoing" &&
+        (startObj > today || endObj < today)
+      ) {
+        setStatusError("Today must be within the event range for 'Ongoing'.");
+      } else {
+        setStatusError("");
+      }
+    }
+  };
+
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setStartDate(val);
+    handleDateOrStatusChange(val, endDate, status);
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setEndDate(val);
+    handleDateOrStatusChange(startDate, val, status);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setStatus(val);
+    handleDateOrStatusChange(startDate, endDate, val);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setErrorMsg(null);
-    clearInlineErrors();
+    setTitleError("");
+    setShortTitleError("");
+    setDateError("");
+    setLocationError("");
+    setStatusError("");
+    setDescError("");
+    setSubmitError("");
 
-    const formData = new FormData(e.currentTarget);
-    const title = (formData.get("title") as string).trim();
-    const shortTitle = (formData.get("short_title") as string).trim();
-    const start = formData.get("start_date") as string;
-    const end = formData.get("end_date") as string;
-    const location = (formData.get("location") as string).trim();
-    const status = formData.get("status") as string;
-    const description = (formData.get("description") as string).trim();
-    const partnerships = (formData.get("partnerships") as string).trim();
-    const imageFile = formData.get("image") as File | null;
+    let validationFailed = false;
 
-    const startDateObj = new Date(start);
-    const endDateObj = new Date(end);
-    const today = new Date();
-    startDateObj.setHours(0, 0, 0, 0);
-    endDateObj.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
+    const trimmedTitle = title.trim();
+    const trimmedShortTitle = shortTitle.trim();
+    const trimmedLocation = location.trim();
+    const trimmedDesc = description.trim();
+    const trimmedPartnerships = partnerships.trim();
 
-    let hasError = false;
-
-    if (!title) {
-      document.getElementById("title-error")!.textContent =
-        "Full title is required.";
-      hasError = true;
-    }
-    if (!shortTitle) {
-      document.getElementById("short-title-error")!.textContent =
-        "Short title is required.";
-      hasError = true;
-    }
-    if (!location) {
-      document.getElementById("location-error")!.textContent =
-        "Location is required.";
-      hasError = true;
-    }
-    if (!description) {
-      document.getElementById("description-error")!.textContent =
-        "Description is required.";
-      hasError = true;
-    }
-    if (endDateObj < startDateObj) {
-      document.getElementById("date-error")!.textContent =
-        "End date cannot be earlier than start date.";
-      hasError = true;
-    }
-    if (status === "Completed" && endDateObj >= today) {
-      document.getElementById("status-error")!.textContent =
-        "End date must be in the past for 'Completed'.";
-      hasError = true;
-    }
-    if (status === "Upcoming" && startDateObj <= today) {
-      document.getElementById("status-error")!.textContent =
-        "Start date must be in the future for 'Upcoming'.";
-      hasError = true;
-    }
-    if (status === "Ongoing" && (startDateObj > today || endDateObj < today)) {
-      document.getElementById("status-error")!.textContent =
-        "Today must be within the event range for 'Ongoing'.";
-      hasError = true;
+    if (status === "Select") {
+      setStatusError("Event status is required.");
+      validationFailed = true;
     }
 
-    if (hasError) {
+    if (!trimmedTitle) {
+      setTitleError("Full title is required.");
+      validationFailed = true;
+    } else if (trimmedTitle.length < 2) {
+      setTitleError("Title is too short.");
+      validationFailed = true;
+    }
+
+    if (!trimmedShortTitle) {
+      setShortTitleError("Short title is required.");
+      validationFailed = true;
+    } else if (trimmedShortTitle.length < 2) {
+      setShortTitleError("Short title is too short.");
+      validationFailed = true;
+    }
+
+    if (!trimmedLocation) {
+      setLocationError("Location is required.");
+      validationFailed = true;
+    }
+
+    if (!trimmedDesc) {
+      setDescError("Description is required.");
+      validationFailed = true;
+    } else if (trimmedDesc.length < 10) {
+      setDescError("Description is too short.");
+      validationFailed = true;
+    }
+
+    if (!startDate || !endDate) {
+      setDateError("Both start and end dates are required.");
+      validationFailed = true;
+    } else {
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+      const today = new Date();
+      startDateObj.setHours(0, 0, 0, 0);
+      endDateObj.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      if (endDateObj < startDateObj) {
+        setDateError("End date cannot be earlier than start date.");
+        validationFailed = true;
+      }
+
+      if (status === "Completed" && endDateObj >= today) {
+        setStatusError("End date must be in the past for 'Completed'.");
+        validationFailed = true;
+      }
+      if (status === "Upcoming" && startDateObj <= today) {
+        setStatusError("Start date must be in the future for 'Upcoming'.");
+        validationFailed = true;
+      }
+      if (
+        status === "Ongoing" &&
+        (startDateObj > today || endDateObj < today)
+      ) {
+        setStatusError("Today must be within the event range for 'Ongoing'.");
+        validationFailed = true;
+      }
+    }
+
+    if (validationFailed) {
+      setHasError(true);
       formTopRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -109,6 +240,7 @@ export default function AddEventForm() {
       return;
     }
 
+    setHasError(false);
     setIsSubmitting(true);
 
     try {
@@ -121,40 +253,39 @@ export default function AddEventForm() {
           .upload(fileName, imageFile);
         if (uploadError)
           throw new Error(`Upload failed: ${uploadError.message}`);
+
         const {
           data: { publicUrl },
         } = supabase.storage.from("events").getPublicUrl(fileName);
         imageUrl = publicUrl;
       }
 
+      const startDateObj = new Date(startDate);
+
       const { error } = await supabase.from("events").insert({
-        title,
-        short_title: shortTitle,
+        title: trimmedTitle,
+        short_title: trimmedShortTitle,
         year: startDateObj.getFullYear().toString(),
-        start_date: start,
-        end_date: end,
-        location,
+        start_date: startDate,
+        end_date: endDate,
+        location: trimmedLocation,
         status,
-        description,
+        description: trimmedDesc,
         image_url: imageUrl,
-        partnerships,
+        partnerships: trimmedPartnerships,
       });
 
       if (error) throw new Error(error.message);
-      await logCreateAudit(shortTitle);
+      await logCreateAudit(trimmedShortTitle);
 
       setIsSuccess(true);
       router.refresh();
     } catch (error: any) {
-      setErrorMsg(error.message);
+      setSubmitError(error.message || "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const { user } = useUser();
-  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
   const loadCurrentUser = async (email: string) => {
     const { data } = await supabase
@@ -222,13 +353,24 @@ export default function AddEventForm() {
           <div className="flex gap-4 justify-center mt-6">
             <button
               onClick={() => router.push("/dashboard?tab=manage")}
-              className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg font-oswald"
+              className="px-6 py-2 text-[#fbfaf8] bg-[#1e4db7] rounded-lg font-oswald cursor-pointer"
             >
               Dashboard
             </button>
             <button
-              onClick={() => setIsSuccess(false)}
-              className="px-6 py-2 text-[#011638] bg-white border border-[#011638] rounded-lg font-oswald"
+              onClick={() => {
+                setIsSuccess(false);
+                setTitle("");
+                setShortTitle("");
+                setStartDate("");
+                setEndDate("");
+                setLocation("");
+                setStatus("Select");
+                setDescription("");
+                setPartnerships("");
+                setImageFile(null);
+              }}
+              className="px-6 py-2 text-[#011638] bg-white border border-[#011638] rounded-lg font-oswald cursor-pointer"
             >
               Add Another
             </button>
@@ -251,123 +393,161 @@ export default function AddEventForm() {
       </div>
 
       <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 mb-8">
-        {errorMsg && (
+        {submitError && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            <p className="font-ubuntu-mono text-sm font-bold">{errorMsg}</p>
+            <p className="font-ubuntu-mono text-sm font-bold">{submitError}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="">
+        <form onSubmit={handleSubmit}>
           <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
-            <h2 className="text-lg font-oswald font-semibold">Event Details</h2>
+            <h2 className="text-lg font-oswald font-semibold">
+              Event Details
+            </h2>
           </div>
 
           <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+            {/* Titles Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Full Title <span className="text-[#eec643]">*</span>
-                </label>
-                <input type="text" name="title" className={inputClass} />
-                <span
-                  id="title-error"
-                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-                ></span>
+                <label className="form_label">Full Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={title}
+                  onChange={handleTitleChange}
+                  data-error={!!titleError}
+                  placeholder="Full event title..."
+                  className="form_input"
+                />
+                <span className="form_error">{titleError || "\u200b"}</span>
               </div>
               <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Short Title <span className="text-[#eec643]">*</span>
-                </label>
-                <input type="text" name="short_title" className={inputClass} />
-                <span
-                  id="short-title-error"
-                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-                ></span>
+                <label className="form_label">Short Title</label>
+                <input
+                  type="text"
+                  name="short_title"
+                  value={shortTitle}
+                  onChange={handleShortTitleChange}
+                  data-error={!!shortTitleError}
+                  placeholder="Short acronym or name..."
+                  className="form_input"
+                />
+                <span className="form_error">
+                  {shortTitleError || "\u200b"}
+                </span>
               </div>
             </div>
 
+            {/* Dates Grid */}
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Start Date <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input type="date" name="start_date" className={inputClass} />
+                  <label className="form_label">Start Date</label>
+                  <input
+                    type="date"
+                    name="start_date"
+                    value={startDate}
+                    min="2022-01-01"
+                    max={endDate}
+                    onChange={handleStartDateChange}
+                    data-error={!!dateError}
+                    className="form_input"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    End Date <span className="text-[#eec643]">*</span>
-                  </label>
-                  <input type="date" name="end_date" className={inputClass} />
+                  <label className="form_label">End Date</label>
+                  <input
+                    type="date"
+                    name="end_date"
+                    value={endDate}
+                    min={startDate}
+                    onChange={handleEndDateChange}
+                    data-error={!!dateError}
+                    className="form_input"
+                  />
                 </div>
               </div>
-              <span
-                id="date-error"
-                className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-              ></span>
+              <span className="form_error">{dateError || "\u200b"}</span>
             </div>
 
+            {/* Location & Status Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Location <span className="text-[#eec643]">*</span>
-                </label>
-                <input type="text" name="location" className={inputClass} />
-                <span
-                  id="location-error"
-                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-                ></span>
+                <label className="form_label">Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={location}
+                  onChange={handleLocationChange}
+                  data-error={!!locationError}
+                  placeholder="Event location..."
+                  className="form_input"
+                />
+                <span className="form_error">{locationError || "\u200b"}</span>
               </div>
               <div>
-                <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                  Event Status <span className="text-[#eec643]">*</span>
-                </label>
-                <select name="status" className={inputClass}>
+                <label className="form_label">Event Status</label>
+                <select
+                  name="status"
+                  value={status}
+                  onChange={handleStatusChange}
+                  data-error={!!statusError}
+                  className="form_input"
+                >
+                  <option value="Select" disabled>Select Status</option>
                   <option value="Upcoming">Upcoming</option>
                   <option value="Ongoing">Ongoing</option>
                   <option value="Completed">Completed</option>
                 </select>
-                <span
-                  id="status-error"
-                  className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-                ></span>
+                <span className="form_error">{statusError || "\u200b"}</span>
               </div>
             </div>
 
+            {/* Description */}
             <div>
-              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                Description <span className="text-[#eec643]">*</span>
-              </label>
-              <textarea name="description" rows={4} className={inputClass} />
-              <span
-                id="description-error"
-                className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-              ></span>
+              <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                <label className="form_label">Description</label>
+                <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                  {500 - description.length} characters remaining
+                </span>
+              </div>
+              <textarea
+                name="description"
+                value={description}
+                onChange={handleDescChange}
+                maxLength={500}
+                data-error={!!descError}
+                placeholder="Write event description..."
+                className="form_input_area"
+              />
+              <span className="form_error">{descError || "\u200b"}</span>
             </div>
 
-            
+            {/* Partnerships (Optional) */}
             <div>
-              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                Partnerships
-              </label>
-              <textarea name="partnerships" rows={2} className={inputClass} />
-              <span
-                id="partnerships-error"
-                className="text-xs mt-1 block font-ubuntu-mono text-red-600"
-              ></span>
+              <label className="form_label not_required">Partnerships</label>
+              <textarea
+                name="partnerships"
+                value={partnerships}
+                onChange={(e) => setPartnerships(e.target.value)}
+                placeholder="Partner organizations (optional)..."
+                className="form_input"
+                rows={2}
+              />
+              <span className="form_error">{"\u200b"}</span>
             </div>
 
+            {/* Cover Image (Optional) */}
             <div>
-              <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                Cover Image (Optional)
-              </label>
-
+              <label className="form_label not_required">Cover Image</label>
               <input
                 type="file"
                 name="image"
                 accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                 className={`
-                  ${inputClass}
+                  form_input
 
                   file:mr-4
                   file:px-6
@@ -389,9 +569,11 @@ export default function AddEventForm() {
                   cursor-pointer
                 `}
               />
+              <span className="form_error">{"\u200b"}</span>
             </div>
           </div>
 
+          {/* Form Actions */}
           <div className="flex justify-end mt-4 items-center gap-3">
             <Link
               href="/dashboard?tab=manage&section=events"
@@ -401,9 +583,8 @@ export default function AddEventForm() {
             </Link>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="form_btn-blue
-              "
+              disabled={isSubmitting || noChange}
+              className="form_btn-blue"
             >
               {isSubmitting ? "Posting..." : "Post Event"}
             </button>

@@ -28,6 +28,10 @@ export default function AddNewsMediaForm() {
   const fbPostDateRef = useRef<HTMLInputElement>(null);
   const titleContentErrorRef = useRef<HTMLDivElement>(null);
 
+  const [content, setContent] = useState("");
+
+  const [titContError, setTitContError] = useState("");
+
   // Load draft from session storage (same as Announcement Form)
   useEffect(() => {
     const savedDraft = sessionStorage.getItem("newsMediaDraft");
@@ -42,8 +46,8 @@ export default function AddNewsMediaForm() {
           fbPostDateRef.current.value = draft.fb_post_date || "";
 
         // Trigger validation
+        validateTitleContent();
         if (titleRef.current || contentRef.current) {
-          validateTitleContent();
         }
       } catch (err) {
         console.error("Error loading draft:", err);
@@ -109,6 +113,11 @@ export default function AddNewsMediaForm() {
       setTitleContentError("");
       return true;
     }
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setContent(value);
   };
 
   // Validate URL format
@@ -346,7 +355,7 @@ export default function AddNewsMediaForm() {
                 <div>
                   <label
                     htmlFor="title"
-                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                    className="form_label not_required"
                   >
                     Title
                   </label>
@@ -355,27 +364,36 @@ export default function AddNewsMediaForm() {
                     id="title"
                     ref={titleRef}
                     maxLength={100}
+                    data-error={!!titleContentError}
                     placeholder="Enter news title"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
+                    className="form_input"
                     onInput={() => validateTitleContent()}
                   />
                 </div>
 
                 {/* Content */}
                 <div>
-                  <label
-                    htmlFor="content"
-                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
-                  >
-                    Description
-                  </label>
+                  <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                    <label
+                      htmlFor="content"
+                      className="form_label not_required"
+                    >
+                      Description
+                    </label>  
+                    <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                      {1500 - content.length || 0} characters remaining
+                    </span>
+                  </div>
                   <textarea
                     id="content"
                     ref={contentRef}
+                    value={content}
+                    onChange={handleContentChange}
                     rows={5}
                     maxLength={1500}
+                    data-error={!!titleContentError}
                     placeholder="Enter news content"
-                    className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
+                    className="form_input_area"
                     onInput={() => validateTitleContent()}
                   />
                   <div ref={titleContentErrorRef}>
@@ -389,7 +407,7 @@ export default function AddNewsMediaForm() {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                  <label className="form_label not_required">
                     Image
                   </label>
                   <div
@@ -495,9 +513,9 @@ export default function AddNewsMediaForm() {
                 <div>
                   <label
                     htmlFor="post_url"
-                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                    className="form_label"
                   >
-                    Post URL <span className="text-[#eec643]">*</span>
+                    Post URL
                   </label>
                   <input
                     type="url"
@@ -547,15 +565,16 @@ export default function AddNewsMediaForm() {
                 <div>
                   <label
                     htmlFor="fb_post_date"
-                    className="block text-sm font-oswald font-medium text-[#011638] mb-1"
+                    className="form_label"
                   >
-                    Post Date <span className="text-[#eec643]">*</span>
+                    Post Date
                   </label>
                   <input
                     type="date"
                     id="fb_post_date"
                     ref={fbPostDateRef}
                     required
+                    min="2022-01-01"
                     max={new Date().toISOString().split("T")[0]}
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]"
                     onInput={(e) => {

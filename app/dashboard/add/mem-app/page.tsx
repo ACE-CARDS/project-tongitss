@@ -29,15 +29,18 @@ export default function AddMemApp() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [instructionCount, setInstructionCount] = useState(0);
 
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [invalidFields, setInvalidFields] = useState<string[]>([]);
-  const formTopRef = useRef<HTMLDivElement>(null);
+  // Form Field States
+  const [type, setType] = useState("instruction");
+  const [orderIndex, setOrderIndex] = useState<string | number>("");
+  const [description, setDescription] = useState("");
 
-  const [formData, setFormData] = useState({
-    type: "instruction",
-    description: "",
-    order_index: "" as string | number,
-  });
+  // Error States
+  const [typeError, setTypeError] = useState("");
+  const [orderIndexError, setOrderIndexError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMax = async () => {
@@ -50,60 +53,81 @@ export default function AddMemApp() {
     fetchMax();
   }, [supabase]);
 
-  const getFieldClass = (fieldName: string, extraClasses: string = "") => {
-    const baseClass = `w-full px-4 py-2 border rounded-lg focus:outline-none bg-[#fbfaf8] text-[#475569] font-ubuntu-mono ${extraClasses}`;
-    const borderClass = invalidFields.includes(fieldName)
-      ? "border-red-500 ring-1 ring-red-500"
-      : "border-[#011638] focus:ring-[#011638]";
-    return `${baseClass} ${borderClass}`;
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setType(e.target.value);
+    setTypeError("");
+    setOrderIndexError("");
+    setDescriptionError("");
+  };
+
+  const handleOrderIndexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setOrderIndex(val);
+    if (val) setOrderIndexError("");
+  };
+
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const val = e.target.value;
+    setDescription(val);
+    if (val.trim()) setDescriptionError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setErrorMsg(null);
-    setInvalidFields([]);
+    setTypeError("");
+    setOrderIndexError("");
+    setDescriptionError("");
+    setSubmitError("");
+
+    let validationFailed = false;
 
     let finalSequence = 0;
-    if (formData.type === "video") finalSequence = 1;
-    else if (formData.type === "instruction") {
-      finalSequence = parseInt(String(formData.order_index), 10);
+    if (type === "video") {
+      finalSequence = 1;
+    } else if (type === "instruction") {
+      finalSequence = parseInt(String(orderIndex), 10);
 
       if (
         isNaN(finalSequence) ||
         finalSequence < 1 ||
         finalSequence > instructionCount + 1
       ) {
-        setErrorMsg(
-          `Please enter a valid sequence number (1 to ${instructionCount + 1}).`,
+        setOrderIndexError(
+          `Sequence must be between 1 and ${instructionCount + 1}.`
         );
-        setInvalidFields(["order_index"]);
-        formTopRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-        setLoading(false);
-        return;
+        validationFailed = true;
       }
     }
 
-    if (formData.type === "video" && !getEmbedUrl(formData.description)) {
-      setErrorMsg("Please enter a valid YouTube URL.");
-      setInvalidFields(["description"]);
+    const trimmedDesc = description.trim();
+    if (!trimmedDesc) {
+      setDescriptionError(
+        type === "video" ? "YouTube URL is required." : "Description is required."
+      );
+      validationFailed = true;
+    } else if (type === "video" && !getEmbedUrl(trimmedDesc)) {
+      setDescriptionError("Please enter a valid YouTube URL.");
+      validationFailed = true;
+    }
+
+    if (validationFailed) {
       formTopRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
-      setLoading(false);
       return;
     }
 
+    setLoading(true);
+
     try {
-      if (formData.type === "instruction") {
+      if (type === "instruction") {
         const { data: otherItems } = await supabase
           .from("announce_memapp")
           .select("*")
-          .eq("type", formData.type)
+          .eq("type", type)
           .order("order_index", { ascending: true });
 
         let itemsList = otherItems || [];
@@ -112,7 +136,7 @@ export default function AddMemApp() {
 
         itemsList.splice(finalSequence - 1, 0, {
           id: "current",
-          type: formData.type,
+          type,
           description: "",
           order_index: 0,
           created_at: "",
@@ -132,7 +156,7 @@ export default function AddMemApp() {
         }
       }
 
-      if (formData.type === "video") {
+      if (type === "video") {
         await supabase
           .from("announce_memapp")
           .update({ order_index: 0 })
@@ -140,8 +164,8 @@ export default function AddMemApp() {
       }
 
       const submitData = {
-        type: formData.type,
-        description: formData.description.trim(),
+        type,
+        description: trimmedDesc,
         order_index: finalSequence,
       };
 
@@ -150,16 +174,12 @@ export default function AddMemApp() {
         .insert([submitData]);
 
       if (error) throw error;
-      await logCreateAudit(
-        formData.type,
-        formData.description.trim(),
-        finalSequence,
-      );
+      await logCreateAudit(type, trimmedDesc, finalSequence);
 
       router.refresh();
       setIsSuccess(true);
     } catch (err: any) {
-      setErrorMsg("Error saving item: " + err.message);
+      setSubmitError("Error saving item: " + err.message);
       formTopRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -170,16 +190,19 @@ export default function AddMemApp() {
   };
 
   const resetForm = () => {
-    setFormData({ type: "instruction", description: "", order_index: "" });
+    setType("instruction");
+    setDescription("");
+    setOrderIndex("");
     setIsSuccess(false);
-    setErrorMsg(null);
-    setInvalidFields([]);
+    setSubmitError(null);
+    setTypeError("");
+    setOrderIndexError("");
+    setDescriptionError("");
   };
 
-  const embedUrl =
-    formData.type === "video" ? getEmbedUrl(formData.description) : null;
+  const embedUrl = type === "video" ? getEmbedUrl(description) : null;
 
-  //audit log
+  // Audit Log Integration
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -207,7 +230,7 @@ export default function AddMemApp() {
   const logCreateAudit = async (
     contentType: string,
     text: string,
-    orderIndex: number,
+    orderIdx: number
   ) => {
     const whoDidItName = currentUserName || user?.email || "Unknown User";
     const whoDidItEmail =
@@ -215,7 +238,7 @@ export default function AddMemApp() {
 
     let detailedMessage = "";
     if (contentType === "instruction") {
-      detailedMessage = `Created new instruction step at sequence #${orderIndex}: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
+      detailedMessage = `Created new instruction step at sequence #${orderIdx}: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
     } else if (contentType === "video") {
       detailedMessage = `Added new video link: "${text}"`;
     } else {
@@ -294,160 +317,140 @@ export default function AddMemApp() {
             </div>
           ) : (
             <div className="w-full flex-1">
-            <div ref={formTopRef} className="flex flex-col gap-4 mb-6">
-              <BackButton
-                href="/dashboard?tab=manage&section=memapp"
-                className="!mb-0"
-              />
-              <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638]">
-                Edit Content
-              </h1>
-            </div>
+              <div ref={formTopRef} className="flex flex-col gap-4 mb-6">
+                <BackButton
+                  href="/dashboard?tab=manage&section=memapp"
+                  className="!mb-0"
+                />
+                <h1 className="text-2xl sm:text-3xl font-oswald font-bold text-[#011638]">
+                  Create New Content
+                </h1>
+              </div>
 
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+              <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] p-6 mb-8">
+                {submitError && (
+                  <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <p className="font-ubuntu-mono text-sm font-bold">
+                      {submitError}
+                    </p>
+                  </div>
+                )}
 
-                <form
-                  onSubmit={handleSubmit}
-                  className="px-6 py-6 flex flex-col gap-6"
-                >
-                  {errorMsg && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
-                      <div className="flex items-center">
-                        <svg
-                          className="h-5 w-5 text-red-500 mr-3"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                <form onSubmit={handleSubmit}>
+                  <div className="bg-[#011638] text-[#fbfaf8] p-3 rounded-t-md">
+                    <h2 className="text-lg font-oswald font-semibold">
+                      MemApp Details
+                    </h2>
+                  </div>
+
+                  <div className="border-2 border-t-2 border-[#011638] rounded-b-md p-4 space-y-4">
+                    {/* Content Type & Sequence Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div
+                        className={
+                          type === "video" || type === "reminder"
+                            ? "sm:col-span-2"
+                            : ""
+                        }
+                      >
+                        <label className="form_label">Content Type</label>
+                        <select
+                          value={type}
+                          onChange={handleTypeChange}
+                          data-error={!!typeError}
+                          className="form_input"
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clipRule="evenodd"
+                          <option value="instruction">Instruction</option>
+                          <option value="reminder">Reminder</option>
+                          <option value="video">Video URL</option>
+                        </select>
+                        <span className="form_error">
+                          {typeError || "\u200b"}
+                        </span>
+                      </div>
+
+                      {type === "instruction" && (
+                        <div>
+                          <label className="form_label">
+                            Sequence Order (1 to {instructionCount + 1})
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max={instructionCount + 1}
+                            value={orderIndex}
+                            onChange={handleOrderIndexChange}
+                            data-error={!!orderIndexError}
+                            className="form_input"
                           />
-                        </svg>
-                        <p className="text-sm text-red-700 font-ubuntu-mono font-bold">
-                          {errorMsg}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
-                    <div
-                      className={
-                        formData.type === "video" ||
-                        formData.type === "reminder"
-                          ? "sm:col-span-2 min-w-0"
-                          : "min-w-0"
-                      }
-                    >
-                      <label className="form_label">
-                        Content Type
-                      </label>
-                      <select
-                        value={formData.type}
-                        onChange={(e) => {
-                          setFormData({ ...formData, type: e.target.value });
-                          setInvalidFields((prev) =>
-                            prev.filter((f) => f !== "type"),
-                          );
-                        }}
-                        className={getFieldClass("type","form_input")}
-                      >
-                        <option value="instruction">Instruction</option>
-                        <option value="reminder">Reminder</option>
-                        <option value="video">Video URL</option>
-                      </select>
-                    </div>
-
-                    {formData.type === "instruction" && (
-                      <div className="min-w-0">
-                        <label className="form_label">
-                          Sequence Order (1 to {instructionCount + 1})
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          max={instructionCount + 1}
-                          value={formData.order_index}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              order_index: e.target.value,
-                            });
-                            setInvalidFields((prev) =>
-                              prev.filter((f) => f !== "order_index"),
-                            );
-                          }}
-                          className={getFieldClass("order_index","form_input")}
-                          required
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 relative">
-                    <label className="form_label">
-                      {formData.type === "video"
-                        ? "YouTube URL"
-                        : "Description"}
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => {
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        });
-                        setInvalidFields((prev) =>
-                          prev.filter((f) => f !== "description"),
-                        );
-                      }}
-                      rows={formData.type === "video" ? 2 : 5}
-                      maxLength={formData.type !== "video" ? 500 : undefined}
-                      placeholder={
-                        formData.type === "video"
-                          ? "https://youtube.com/..."
-                          : "Enter text here..."
-                      }
-                      className={getFieldClass(
-                        "description",
-                        "resize-y break-all whitespace-pre-wrap pb-8 form_input_area",
-                      ) }
-                      required
-                    />
-                    {formData.type !== "video" && (
-                      <span
-                        className={`absolute bottom-3 right-4 text-xs font-ubuntu-mono font-bold ${formData.description.length >= 500 ? "text-red-500" : "text-slate-400"}`}
-                      >
-                        {formData.description.length}/500
-                      </span>
-                    )}
-                  </div>
-
-                  {formData.type === "video" && formData.description && (
-                    <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">
-                        Preview
-                      </h3>
-                      {embedUrl ? (
-                        <iframe
-                          src={embedUrl}
-                          className="w-full aspect-video rounded-lg shadow-sm border-0"
-                          allowFullScreen
-                        ></iframe>
-                      ) : (
-                        <p className="text-sm text-red-500 font-ubuntu-mono font-bold">
-                          Invalid YouTube URL
-                        </p>
+                          <span className="form_error">
+                            {orderIndexError || "\u200b"}
+                          </span>
+                        </div>
                       )}
                     </div>
-                  )}
 
-                  <div className="mt-4 flex justify-end gap-3">
+                    {/* Description / YouTube URL Input */}
+                    <div>
+                      <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                        <label className="form_label">
+                          {type === "video" ? "YouTube URL" : "Description"}
+                        </label>
+                        {type !== "video" && (
+                          <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                            {500 - description.length} characters remaining
+                          </span>
+                        )}
+                      </div>
+                      <textarea
+                        value={description}
+                        onChange={handleDescriptionChange}
+                        rows={type === "video" ? 2 : 5}
+                        maxLength={type !== "video" ? 500 : undefined}
+                        data-error={!!descriptionError}
+                        placeholder={
+                          type === "video"
+                            ? "https://youtube.com/..."
+                            : "Enter text here..."
+                        }
+                        className={
+                          type === "video"
+                            ? "form_input"
+                            : "form_input_area"
+                        }
+                      />
+                      <span className="form_error">
+                        {descriptionError || "\u200b"}
+                      </span>
+                    </div>
+
+                    {/* YouTube Video Preview */}
+                    {type === "video" && description && (
+                      <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-oswald font-bold text-[#011638] uppercase tracking-widest mb-3">
+                          Preview
+                        </h3>
+                        {embedUrl ? (
+                          <iframe
+                            src={embedUrl}
+                            className="w-full aspect-video rounded-lg shadow-sm border-0"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <p className="text-sm text-red-500 font-ubuntu-mono font-bold">
+                            Invalid YouTube URL
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Form Actions */}
+                  <div className="flex justify-end mt-4 items-center gap-3">
                     <button
                       type="button"
                       onClick={() => router.back()}
-                      className="form_btn-cancel"
+                      className="from_btn-cancel"
                     >
                       Cancel
                     </button>
