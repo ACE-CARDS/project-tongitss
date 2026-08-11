@@ -508,7 +508,7 @@ function EditScholarshipContent() {
                                                 }}
                                                 rows={4}
                                                 maxLength={1000}
-                                                placeholder="e.g., BS Computer Science, BS Engineering, BS Mathematics"
+                                                placeholder={`Enter courses with their program coverage in parenthesis e.g., BS Computer Science (JLSS) or BS Engineering (UGE). Note that if (UGE) is included, JLSS is already covered. Therefore, (UGE) indicates eligibility for both programs.`}
                                                 className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] resize-y custom-scrollbar-blue"
                                                 onInput={(e) => {
                                                     const input = e.target as HTMLInputElement;
@@ -661,7 +661,16 @@ export default function EditScholarshipPage() {
     return (
         <Suspense fallback={<LoadingState />}>
             <NavBar />
-            <EditScholarshipContent />
+            <div
+                className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
+                style={{
+                    backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+                    backgroundSize: "20px 20px",
+                    backgroundAttachment: "fixed",
+                }}
+            >
+                <EditScholarshipContent />
+            </div>
             <Footer />
         </Suspense>
     );
