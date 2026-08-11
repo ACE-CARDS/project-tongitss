@@ -106,6 +106,7 @@ export default function EditSuccessPage() {
 
   return (
     <SuccessPageWrapper>
+      <NavBar />
     <div
       className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen flex flex-col"
       style={{
@@ -113,7 +114,6 @@ export default function EditSuccessPage() {
         backgroundSize: "20px 20px",
       }}
     >
-      <NavBar />
 
       <main className="flex-1 container mx-auto py-16 px-4 max-w-2xl text-center">
         <div className="bg-[#fbfaf8] rounded-lg shadow-xl border border-[#e0e7ff] overflow-hidden">
@@ -157,8 +157,8 @@ export default function EditSuccessPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
+      <Footer />
     </SuccessPageWrapper>
   );
 }
