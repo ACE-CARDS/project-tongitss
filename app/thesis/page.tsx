@@ -13,7 +13,7 @@ export default async function ThesisPage({
   searchParams: Promise<{ 
     page?: string;    
     query?: string;   
-    category?: string; 
+    thematicArea?: string; 
     school?: string;  
     year?: string | string[]; // Year filter that can accept mult values
   }>;
@@ -22,13 +22,13 @@ export default async function ThesisPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  // Fetch categories and schools
-  const [{ data: categories }, { data: schools }] = await Promise.all([
-    // Categories
+  // Fetch thematic areas and schools
+  const [{ data: thematicAreas }, { data: schools }] = await Promise.all([
+    // Thematic Areas
     supabase
-      .from("r_category")           // From 'r_categories' table
-      .select("id, r_category_name") // Cols
-      .order("r_category_name", { ascending: true }), // Sort 
+      .from("r_thematic_area")           // From 'r_thematic_area' table
+      .select("id, r_thematic_name") // Cols
+      .order("r_thematic_name", { ascending: true }), // Sort 
     
     // Schools
     supabase

@@ -8,11 +8,11 @@ export default async function AddThesisPage({ searchParams, }: { searchParams: P
   const supabase = await createClient();
   const { returnTo } = await searchParams; // Get returnTo from URL
   
-  // Fetch categories
-  const { data: categories } = await supabase
-    .from("r_category")                    // From 'r_category' table
-    .select("id, r_category_name")         // Cols
-    .order("r_category_name");              // Sort 
+  // Fetch thematic areas
+  const { data: thematic } = await supabase
+    .from("r_thematic_area")                    // From 'r_thematic_area' table
+    .select("id, r_thematic_name")         // Cols
+    .order("r_thematic_name");              // Sort 
 
   // Fetch schools
   const { data: schools } = await supabase
@@ -33,7 +33,7 @@ export default async function AddThesisPage({ searchParams, }: { searchParams: P
           <main className="flex-grow w-full">
             {/* Pass returnTo component */}
             <AddThesisForm 
-              categories={categories || []} 
+              thematicAreas={thematic || []} 
               schools={schools || []} 
               returnTo={returnTo}
             />

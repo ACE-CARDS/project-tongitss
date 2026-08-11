@@ -9,7 +9,7 @@ export default async function ThesisData({
   searchParams: {
     page?: string;      
     query?: string;     
-    category?: string; 
+    thematicArea?: string; 
     school?: string;    
     year?: string | string[]; 
   };
@@ -22,7 +22,7 @@ export default async function ThesisData({
   
   // Filter values
   const q = searchParams?.query?.trim();
-  const categoryId = searchParams?.category?.trim(); 
+  const thematicAreaId = searchParams?.thematicArea?.trim(); 
   const schoolId = searchParams?.school?.trim(); 
   const yearParams = searchParams?.year;
 
@@ -34,19 +34,19 @@ export default async function ThesisData({
     : []; // No year filter
 
   // Fetch thesis dates
-  // Fetch categories and schools for the header
-  const [categoriesResult, schoolsResult] = await Promise.all([
+  // Fetch thematic areas and schools for the header
+  const [thematicAreasResult, schoolsResult] = await Promise.all([
     supabase
-      .from("r_category")
-      .select("id, r_category_name")
-      .order("r_category_name", { ascending: true }),
+      .from("r_thematic_area")
+      .select("id, r_thematic_name")
+      .order("r_thematic_name", { ascending: true }),
     supabase
       .from("school")
       .select("id, school_name")
       .order("school_name", { ascending: true })
   ]);
 
-  const categories = categoriesResult.data || [];
+  const thematicAreas = thematicAreasResult.data || [];
   const schools = schoolsResult.data || [];
 
   // Fetch available years
@@ -83,9 +83,9 @@ export default async function ThesisData({
       thesis_date,          
       thesis_phys,      
       thesis_digi,         
-      r_category (         
+      r_thematic_area (         
         id,
-        r_category_name
+        r_thematic_name
       ),
       school (                 
         id,
@@ -108,9 +108,9 @@ export default async function ThesisData({
     .order("created_at", { ascending: false }); // Newest first
 
   // If filter selected
-  // Category filter
-  if (categoryId) {
-     query = query.eq("r_category", categoryId);
+  // Thematic Area filter
+  if (thematicAreaId) {
+     query = query.eq("r_thematic_area", thematicAreaId);
   }
 
   // School filter
@@ -148,7 +148,7 @@ export default async function ThesisData({
       hay += " " + (t.thesis_abstract ?? "");         // Abstract
       hay += " " + (t.thesis_keyword ?? "");          // Keywords
       hay += " " + (t.thesis_phys ?? "");               // Physical copy
-      hay += " " + (t.r_category?.r_category_name ?? ""); // Category name
+      hay += " " + (t.r_thematic_area?.r_thematic_name ?? ""); // Thematic Area name
       hay += " " + (t.school?.school_name ?? "");     // School name
       
       // Author
@@ -179,11 +179,11 @@ export default async function ThesisData({
     <>
       {/* Pass filter data & options to header */}
       <ThesisHeader
-        categories={categories}         
+        thematicAreas={thematicAreas}         
         schools={schools}               
         years={availableYears}                
         initialQuery={q || ""}                  
-        initialCategory={categoryId || ""}     
+        initialThematicArea={thematicAreaId || ""}     
         initialSchool={schoolId || ""}          
         initialYears={selectedYears}             
         availableKeywords={allKeywords}       

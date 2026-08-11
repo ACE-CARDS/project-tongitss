@@ -170,9 +170,9 @@ export default function ManagePage() {
   // Others
   const othersOptions = [
     {
-      label: "Categories & Schools",
+      label: "Categories, Schools, & Thematic Areas",
       key: "researchData",
-      description: "Manage categories and schools for surveys and theses",
+      description: "Manage categories, schools, and thematic areas for surveys and theses",
       icon: (
         <svg
           className="w-8 h-8"

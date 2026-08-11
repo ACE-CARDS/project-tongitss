@@ -1,0 +1,677 @@
+"use client";
+
+import { useState, useEffect, useRef, useMemo, use } from "react";
+import { createClient } from "@/utils/supabase/client";
+import Pagination from "@/components/ui/pagination";
+import { useUser } from "@/components/context/userContext";
+import SortIcon from "@/components/ui/sortIcon";
+import TableActions from "@/components/ui/tableActions";
+import SearchBar from "@/components/ui/searchBar";
+import AddButton from "@/components/ui/addButton";
+import Popup from "@/components/ui/popup";
+import FormActions from "@/components/ui/FormActions";
+
+interface ThematicArea {
+  id: number;
+  r_thematic_name: string;
+  created_at: string;
+}
+
+type SortOrder = "asc" | "desc" | null;
+type ThematicAreaSortField = "name" | "created_at" | null;
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// --- Sub-Component: Delete Confirmation ---
+function DeleteConfirmPopup({
+  isOpen,
+  onClose,
+  onConfirm,
+  name,
+  usageCount,
+  isDeleting,
+  isCheckingUsage,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  name: string;
+  usageCount: { surveys: number; theses: number };
+  isDeleting: boolean;
+  isCheckingUsage: boolean;
+}) {
+  if (!isOpen) return null;
+  const hasUsage = usageCount.surveys > 0 || usageCount.theses > 0;
+
+  if (isCheckingUsage) {
+    return (
+      <Popup isOpen={isOpen} title="Confirm Delete" onClose={onClose} maxWidth="md">
+        <span className="form_error">{"\u200b"}</span>
+        <div className="form_label text-center">Loading...</div>
+      </Popup>
+    );
+  }
+
+  return (
+    <Popup isOpen={isOpen} title="Confirm Delete" onClose={onClose} maxWidth="md">
+      <span className="form_error">{"\u200b"}</span>
+
+      {hasUsage ? (
+        <>
+          <p className="text-sm text-[#475569] font-ubuntu-mono mb-4">
+            Cannot delete thematic area because it is currently in use:
+          </p>
+          <ul className="list-disc list-inside mb-6 text-sm text-[#475569] font-ubuntu-mono space-y-1 pl-2">
+            {usageCount.surveys > 0 && (
+              <li>
+                {usageCount.surveys} {usageCount.surveys === 1 ? "survey" : "surveys"}
+              </li>
+            )}
+            {usageCount.theses > 0 && (
+              <li>
+                {usageCount.theses} {usageCount.theses === 1 ? "thesis" : "theses"}
+              </li>
+            )}
+          </ul>
+          <div className="flex justify-end">
+            <button
+              onClick={onClose}
+              className="form_btn-blue"
+            >
+              OK
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-[#475569] font-ubuntu-mono mb-6">
+            Are you sure you want to delete the thematic area
+            <span className="font-bold text-[#011638] block py-2 break-words">"{name}"?</span>
+            This action cannot be undone.
+          </p>
+          <FormActions
+            onCancelClick={onClose}
+            onSubmitClick={onConfirm}
+            isStatus={isDeleting}
+            variant="red"
+            showBorder={false}
+            submitLabel="Delete"
+            submittingLabel="Deleting..."
+          />
+        </>
+      )}
+    </Popup>
+  );
+}
+
+// --- Sub-Component: Edit Popup ---
+function EditPopup({
+  isOpen,
+  onClose,
+  onSave,
+  thematicArea,
+  thematicAreas,
+  isSaving,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => Promise<string | null>;
+  thematicArea: ThematicArea;
+  thematicAreas: ThematicArea[];
+  isSaving: boolean;
+}) {
+  const [name, setName] = useState(thematicArea.r_thematic_name);
+  const [nameError, setNameError] = useState("");
+  const [error, setError] = useState("");
+
+  const [hasError, setHasError] = useState(false);
+
+  const noChange = name.trim() === thematicArea.r_thematic_name;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+
+    const trimmedValue = value.trim();
+
+    if (value === "") {
+      setNameError("");
+      setHasError(false);
+      return;
+    }
+
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+      setHasError(true);
+    } else {
+      setNameError("");
+      setHasError(false);
+    }
+  };
+
+
+  const handleEdit = async () => {
+    setNameError("");
+    setError("");
+    setHasError(false);
+
+    if (!name.trim()) {
+      setNameError("Thematic area name is required");
+      setHasError(true);
+      return;
+    }
+    if (
+      thematicAreas.some(
+        (c) =>
+          c.r_thematic_name.toLowerCase() === name.trim().toLowerCase() &&
+          c.id !== thematicArea.id
+      )
+    ) {
+      setNameError("This thematic area name already exists");
+      setHasError(true);
+      return;
+    }
+
+    const dbError = await onSave(name.trim());
+    if (dbError) {
+      setError(dbError);
+    }
+  };
+
+  if (!isOpen || !thematicArea) return null;
+
+  return (
+    <Popup isOpen={isOpen} title="Edit Thematic Area" onClose={onClose} maxWidth="md">
+      <span className="form_error">{error || "\u200b"}</span>
+
+      <label className="form_label">Thematic Area Name</label>
+      <input
+        type="text"
+        value={name}
+        onChange={handleInputChange}
+        placeholder="e.g. Artificial Intelligence"
+        maxLength={50}
+        data-error={!!nameError}
+        className="form_input"
+      />
+      <span className="form_error">
+        {nameError || "\u200b"}
+      </span>
+
+      <FormActions
+        onCancelClick={onClose}
+        onSubmitClick={handleEdit}
+        isStatus={isSaving}
+        noChange={noChange}
+        hasError={hasError}
+        variant="blue"
+        showBorder={false}
+        submitLabel="Save Changes"
+        submittingLabel="Saving..."
+      />
+    </Popup>
+  );
+}
+
+// --- Sub-Component: Add Popup ---
+function AddPopup({
+  isOpen,
+  onClose,
+  onAdd,
+  thematicAreas,
+  isAdding,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (name: string) => Promise<string | null>;
+  thematicAreas: ThematicArea[];
+  isAdding: boolean;
+}) {
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [error, setError] = useState("");
+
+  const [hasError, setHasError] = useState(false);
+
+  const noChange = name.trim() === "";
+
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+      setNameError("");
+      setError("");
+      setHasError(false);
+    }
+  }, [isOpen]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+
+    const trimmedValue = value.trim();
+
+    if (value === "") {
+      setNameError("");
+      setHasError(false);
+      return;
+    }
+
+    if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+      setNameError("Name too short");
+      setHasError(true);
+    } else {
+      setNameError("");
+      setHasError(false);
+    }
+  };
+
+  const handleAdd = async () => {
+    setNameError("");
+    setError("");
+    setHasError(false);
+
+    const trimmedName = name.trim();
+
+    // Final sweep validation on Submit
+    if (!trimmedName) {
+      setNameError("Thematic area name is required");
+      setHasError(true);
+      return;
+    }
+
+    if (thematicAreas.some((c) => c.r_thematic_name.toLowerCase() === trimmedName.toLowerCase())) {
+      setNameError("This thematic area name already exists");
+      setHasError(true);
+      return;
+    }
+
+    const dbError = await onAdd(trimmedName);
+    if (dbError) {
+      setError(dbError);
+    }
+  };
+  if (!isOpen) return null;
+
+  return (
+    <Popup isOpen={isOpen} title="Add Thematic Area" onClose={onClose} maxWidth="md">
+      <span className="form_error">{error || "\u200b"}</span>
+
+      <label className="form_label">Thematic Area Name</label>
+      <input
+        type="text"
+        value={name}
+        onChange={handleInputChange}
+        placeholder="e.g. Data Structures"
+        maxLength={50}
+        data-error={!!nameError}
+        className="form_input"
+      />
+      <span className="form_error">
+        {nameError || "\u200b"}
+      </span>
+      
+      <FormActions
+        onCancelClick={onClose}
+        onSubmitClick={handleAdd}
+        isStatus={isAdding}
+        noChange={noChange}
+        hasError={hasError}
+        variant="blue"
+        showBorder={false}
+        submitLabel="Add Thematic Area"
+        submittingLabel="Adding..."
+      />
+    </Popup>
+  );
+}
+
+// --- MAIN COMPONENT ---
+export default function ThematicAdmin() {
+  const [thematicAreas, setThematicAreas] = useState<ThematicArea[]>([]);
+  const [filteredThematicAreas, setFilteredThematicAreas] = useState<ThematicArea[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // State for Sorting
+  const [sortField, setSortField] = useState<ThematicAreaSortField>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+
+  // Popups & Processing States
+  const [popups, setPopups] = useState({ add: false, edit: false, del: false });
+  const [selectedThematicArea, setSelectedThematicArea] = useState<ThematicArea | null>(null);
+  const [usageCount, setUsageCount] = useState({ surveys: 0, theses: 0 });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCheckingUsage, setIsCheckingUsage] = useState(false);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchThematicAreas();
+  }, []);
+
+  const fetchThematicAreas = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("r_thematic_area")
+      .select("*")
+      .order("r_thematic_name");
+    if (error) console.error(error);
+    else setThematicAreas(data || []);
+    setLoading(false);
+  };
+
+  const handleSort = (field: Exclude<ThematicAreaSortField, null>) => {
+    if (sortField !== field) {
+      setSortField(field);
+      setSortOrder("asc");
+    } else {
+      if (sortOrder === "asc") setSortOrder("desc");
+      else {
+        setSortField(null);
+        setSortOrder(null);
+      }
+    }
+  };
+
+  useEffect(() => {
+    let filtered = thematicAreas.filter((item) =>
+      item.r_thematic_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(formatDate(item.created_at || "")).toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+
+    if (sortField && sortOrder) {
+      filtered = [...filtered].sort((a, b) => {
+        let comparison = 0;
+        if (sortField === "name") {
+          comparison = a.r_thematic_name.localeCompare(b.r_thematic_name);
+        } else if (sortField === "created_at") {
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
+        return sortOrder === "asc" ? comparison : -comparison;
+      });
+    }
+
+    setFilteredThematicAreas(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, thematicAreas, sortField, sortOrder]);
+
+  const checkUsage = async (id: number) => {
+    const [s, t] = await Promise.all([
+      supabase.from("survey").select("id", { count: "exact", head: true }).eq("r_thematic_area", id),
+      supabase.from("thesis").select("id", { count: "exact", head: true }).eq("r_thematic_area", id),
+    ]);
+    return {
+      surveys: s.count || 0,
+      theses: t.count || 0,
+    };
+  };
+
+  const handleAdd = async (name: string): Promise<string | null> => {
+    setIsProcessing(true);
+    const { data, error } = await supabase
+      .from("r_thematic_area")
+      .insert({ r_thematic_name: name })
+      .select()
+      .single();
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    } else {
+      await logCreateAudit(name);
+      setThematicAreas((prev) =>
+        [...prev, data].sort((a, b) => a.r_thematic_name.localeCompare(b.r_thematic_name)),
+      );
+      setPopups((p) => ({ ...p, add: false }));
+      setIsProcessing(false);
+      return null;
+    }
+  };
+
+  const handleEdit = async (newName: string): Promise<string | null> => {
+    if (!selectedThematicArea) return "No thematic area selected";
+    setIsProcessing(true);
+
+    const { error } = await supabase
+      .from("r_thematic_area")
+      .update({ r_thematic_name: newName })
+      .eq("id", selectedThematicArea.id);
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    } else {
+      await logEditAudit(selectedThematicArea, newName);
+      setThematicAreas((prev) =>
+        prev
+          .map((c) => (c.id === selectedThematicArea.id ? { ...c, r_thematic_name: newName } : c))
+          .sort((a, b) => a.r_thematic_name.localeCompare(b.r_thematic_name)),
+      );
+      setPopups((p) => ({ ...p, edit: false }));
+      setIsProcessing(false);
+      return null;
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedThematicArea) return;
+    setIsProcessing(true);
+
+    const { error } = await supabase.from("r_thematic_area").delete().eq("id", selectedThematicArea.id);
+
+    if (error) {
+      setIsProcessing(false);
+      return error.message;
+    } else {
+      await logDeleteAudit(selectedThematicArea.id, selectedThematicArea.r_thematic_name);
+      setThematicAreas((prev) => prev.filter((c) => c.id !== selectedThematicArea.id));
+      setPopups((p) => ({ ...p, del: false }));
+      setIsProcessing(false);
+      return null;
+    }
+  };
+
+  // User Audit Context
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim() : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) loadCurrentUser(user.email);
+  }, [user?.email]);
+
+  const logCreateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
+    const logEntry = {
+      action: "Create",
+      details: `Created a new thematic area: "${itemTitle}"`,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "r_thematic_area",
+    };
+    await supabase.from("audit_log").insert([logEntry]);
+  };
+
+  const logEditAudit = async (old: ThematicArea, newName: string) => {
+    if (old.r_thematic_name === newName) return;
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
+    const logEntry = {
+      action: "Update",
+      details: `Updated thematic area "${newName}" (ID: ${old.id}). Changes: [thematic area changed from "${old.r_thematic_name}" to "${newName}"]`,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "r_thematic_area",
+    };
+    await supabase.from("audit_log").insert([logEntry]);
+  };
+
+  const logDeleteAudit = async (recordId?: number, itemTitle?: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
+    const logEntry = {
+      action: "Delete",
+      details: `Deleted thematic area "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "r_thematic_area",
+    };
+    await supabase.from("audit_log").insert([logEntry]);
+  };
+
+  const itemsPerPage = 5;
+  const totalItems = filteredThematicAreas.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedItems = filteredThematicAreas.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  return (
+    <div className="py-4">
+      <div className="mb-6 flex flex-col md:flex-row gap-4 items-center">
+        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <AddButton
+          onClick={() => {
+            setSelectedThematicArea(null);
+            setIsProcessing(false);
+            setPopups((p) => ({ ...p, add: true }));
+          }}
+          label="Add Thematic Area"
+        />
+      </div>
+
+      <div className="manage_table_div">
+        <table className="manage_table">
+          <thead className="manage_thead">
+            <tr>
+              <th
+                className={`w-[400px] th-sortable ${sortField === "name" ? "is-active" : ""}`}
+                onClick={() => handleSort("name")}
+              >
+                <div>
+                  Name
+                  <SortIcon field="name" sortField={sortField} sortOrder={sortOrder} />
+                </div>
+              </th>
+
+              <th
+                className={`w-[200px] th-sortable ${sortField === "created_at" ? "is-active" : ""}`}
+                onClick={() => handleSort("created_at")}
+              >
+                <div>
+                  Date Added
+                  <SortIcon field="created_at" sortField={sortField} sortOrder={sortOrder} />
+                </div>
+              </th>
+
+              <th className="w-[200px]">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={3} className="status">Loading records...</td>
+              </tr>
+            ) : paginatedItems.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="status">No thematic areas found.</td>
+              </tr>
+            ) : (
+              paginatedItems.map((item) => (
+                <tr key={item.id} className="hover:bg-blue-50/50 transition-colors">
+                  <td className="title">{item.r_thematic_name}</td>
+                  <td className="date_col">{formatDate(item.created_at)}</td>
+                  <td className="text-center">
+                    <TableActions
+                      item={item}
+                      onEditClick={(thematicArea) => {
+                        setSelectedThematicArea(thematicArea);
+                        setPopups((p) => ({ ...p, edit: true }));
+                      }}
+                      onDeleteClick={async (thematicArea) => {
+                        setSelectedThematicArea(thematicArea);
+                        setPopups((p) => ({ ...p, del: true }));
+                        setIsCheckingUsage(true);
+                        try {
+                          const usage = await checkUsage(thematicArea.id);
+                          setUsageCount(usage);
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsCheckingUsage(false);
+                        }
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
+
+      <AddPopup
+        isOpen={popups.add}
+        onClose={() => setPopups((p) => ({ ...p, add: false }))}
+        onAdd={handleAdd}
+        thematicAreas={thematicAreas}
+        isAdding={isProcessing}
+      />
+
+      {selectedThematicArea && (
+        <>
+          <EditPopup
+            key={`edit-${selectedThematicArea.id}`}
+            isOpen={popups.edit}
+            onClose={() => setPopups((p) => ({ ...p, edit: false }))}
+            onSave={handleEdit}
+            thematicArea={selectedThematicArea}
+            thematicAreas={thematicAreas}
+            isSaving={isProcessing}
+          />
+          <DeleteConfirmPopup
+            key={`del-${selectedThematicArea.id}`}
+            isOpen={popups.del}
+            onClose={() => setPopups((p) => ({ ...p, del: false }))}
+            onConfirm={handleDelete}
+            name={selectedThematicArea.r_thematic_name}
+            usageCount={usageCount}
+            isDeleting={isProcessing}
+            isCheckingUsage={isCheckingUsage}
+          />
+        </>
+      )}
+    </div>
+  );
+}

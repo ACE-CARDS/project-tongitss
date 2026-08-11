@@ -499,9 +499,9 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                           </div>
 
                           <div>
-                            <span className="text-[#475569] block font-ubuntu-mono">Category:</span>
+                            <span className="text-[#475569] block font-ubuntu-mono">Thematic Area:</span>
                             <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                              {thesis.r_category?.r_category_name || "Uncategorized"}
+                              {thesis.r_thematic_area?.r_thematic_name || "Uncategorized"}
                             </span>
                           </div>
 
@@ -758,7 +758,7 @@ export default function AdminClientPagination({ allTheses, currentPage, onPageCh
                         Research Thematic Area
                       </p>
                       <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
-                        {selectedThesis.r_category?.r_category_name || "Uncategorized"}
+                        {selectedThesis.r_thematic_area?.r_thematic_name || "Uncategorized"}
                       </p>
                     </div>
                     <div>

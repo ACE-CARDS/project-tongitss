@@ -31,7 +31,7 @@ function ReviewContent() {
         .from("thesis")
         .select(`
           *,
-          r_category (r_category_name),
+          r_thematic_area (r_thematic_name),
           school (school_name),
           thesis_author (
             author (
@@ -200,8 +200,8 @@ function ReviewContent() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Research Category</label>
-                  <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">{thesis.r_category?.r_category_name || "Not specified"}</div>
+                  <label className="block text-sm font-oswald font-medium text-[#011638] mb-1">Research Thematic Area</label>
+                  <div className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded bg-gray-50">{thesis.r_thematic_area?.r_thematic_name || "Not specified"}</div>
                 </div>
               </div>
             </div>

@@ -10,13 +10,13 @@ import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
 function FilterPopup({
   isOpen,
   onClose,
-  categories,
+  thematicAreas,
   schools,
   years,
-  selectedCategory,
+  selectedThematicArea,
   selectedSchool,
   selectedYears,
-  onCategoryChange,
+  onThematicAreaChange,
   onSchoolChange,
   onYearToggle,
   onReset,
@@ -24,13 +24,13 @@ function FilterPopup({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  categories: Category[];
+  thematicAreas: ThematicArea[];
   schools: School[];
   years: number[];
-  selectedCategory: string;
+  selectedThematicArea: string;
   selectedSchool: string;
   selectedYears: number[];
-  onCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onThematicAreaChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onSchoolChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onYearToggle: (year: number) => void;
   onReset: () => void;
@@ -83,21 +83,21 @@ function FilterPopup({
       <div className="space-y-4">
         <div>
           <label
-            htmlFor="category"
+            htmlFor="thematicArea"
             className="block text-sm font-oswald font-medium text-[#011638] mb-2"
           >
             Research Thematic Area
           </label>
           <select
-            id="category"
-            value={selectedCategory}
-            onChange={onCategoryChange}
+            id="thematicArea"
+            value={selectedThematicArea}
+            onChange={onThematicAreaChange}
             className="border border-[#011638] rounded-lg focus:outline-none focus:ring-[#011638] text-[#011638] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono transition-colors"
             >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.r_category_name}
+            <option value="">All Thematic Areas</option>
+            {thematicAreas.map((area) => (
+              <option key={area.id} value={area.id}>
+                {area.r_thematic_name}
               </option>
             ))}
           </select>
@@ -290,9 +290,9 @@ function LiveSuggestions({
   );
 }
 
-interface Category {
+interface ThematicArea {
   id: string;
-  r_category_name: string;
+  r_thematic_name: string;
 }
 
 interface School {
@@ -302,10 +302,10 @@ interface School {
 
 interface ThesisHeaderProps {
   initialQuery?: string;
-  categories: Category[];
+  thematicAreas: ThematicArea[];
   schools: School[];
   years: number[];
-  initialCategory?: string;
+  initialThematicArea?: string;
   initialSchool?: string;
   initialYears?: number[];
   availableKeywords?: string[];
@@ -313,16 +313,16 @@ interface ThesisHeaderProps {
 
 export default function ThesisHeader({
   initialQuery = "",
-  categories = [],
+  thematicAreas = [],
   schools = [],
   years = [],
-  initialCategory = "",
+  initialThematicArea = "",
   initialSchool = "",
   initialYears = [],
   availableKeywords = [],
 }: ThesisHeaderProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedThematicArea, setSelectedThematicArea] = useState(initialThematicArea);
   const [selectedSchool, setSelectedSchool] = useState(initialSchool);
   const [selectedYears, setSelectedYears] = useState<number[]>(initialYears);
   const [showFilters, setShowFilters] = useState(false);
@@ -370,7 +370,7 @@ export default function ThesisHeader({
     const params = new URLSearchParams();
     
     if (query) params.append("query", query);
-    if (selectedCategory) params.append("category", selectedCategory);
+    if (selectedThematicArea) params.append("thematicArea", selectedThematicArea);
     if (selectedSchool) params.append("school", selectedSchool);
     if (selectedYears.length > 0) {
       selectedYears.forEach(year => {
@@ -380,7 +380,7 @@ export default function ThesisHeader({
     params.append("page", "1");
 
     return params.toString();
-  }, [query, selectedCategory, selectedSchool, selectedYears]);
+  }, [query, selectedThematicArea, selectedSchool, selectedYears]);
 
   // Update URL with filters
   useEffect(() => {
@@ -392,12 +392,12 @@ export default function ThesisHeader({
 
     const queryString = buildFilterParams();
     router.replace(`/thesis${queryString ? `?${queryString}` : ""}`);
-  }, [query, selectedCategory, selectedSchool, selectedYears, router, buildFilterParams]);
+  }, [query, selectedThematicArea, selectedSchool, selectedYears, router, buildFilterParams]);
 
   // Reset filters
   const resetFilters = useCallback(() => {
     setQuery("");
-    setSelectedCategory("");
+    setSelectedThematicArea("");
     setSelectedSchool("");
     setSelectedYears([]);
     setShowFilters(false);
@@ -421,9 +421,9 @@ export default function ThesisHeader({
     setShowSuggestions(false);
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleThematicAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setSelectedCategory(value);
+    setSelectedThematicArea(value);
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -447,7 +447,7 @@ export default function ThesisHeader({
   };
 
   // Calculate total filters count
-  const totalFilters = (selectedCategory ? 1 : 0) + 
+  const totalFilters = (selectedThematicArea ? 1 : 0) + 
                       (selectedSchool ? 1 : 0) + 
                       selectedYears.length;
 
@@ -499,13 +499,13 @@ export default function ThesisHeader({
               isOpen={showFilters}
               onClose={() => setShowFilters(false)}
               buttonRef={filterButtonRef}
-              categories={categories}
+              thematicAreas={thematicAreas}
               schools={schools}
               years={years}
-              selectedCategory={selectedCategory}
+              selectedThematicArea={selectedThematicArea}
               selectedSchool={selectedSchool}
               selectedYears={selectedYears}
-              onCategoryChange={handleCategoryChange}
+              onThematicAreaChange={handleThematicAreaChange}
               onSchoolChange={handleSchoolChange}
               onYearToggle={handleYearToggle}
               onReset={resetFilters}

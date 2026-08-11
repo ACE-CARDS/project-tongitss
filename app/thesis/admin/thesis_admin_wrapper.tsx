@@ -5,9 +5,9 @@ import { createClient } from "@/utils/supabase/client";
 import AdminThesisHeader from "./admin_thesis_header";
 import AdminClientPagination from "./admin_client_pagination";
 
-interface Category {
+interface ThematicArea {
   id: string;
-  r_category_name: string;
+  r_thematic_name: string;
 }
 
 interface School {
@@ -22,7 +22,7 @@ export default function ThesisAdminWrapper() {
   const [allTheses, setAllTheses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [thematicAreas, setThematicAreas] = useState<ThematicArea[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
@@ -34,21 +34,21 @@ export default function ThesisAdminWrapper() {
   
   const [currentPage, setCurrentPage] = useState(1); 
   const [searchQuery, setSearchQuery] = useState(""); 
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedThematicArea, setSelectedThematicArea] = useState("");
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      const [categoriesRes, schoolsRes, yearsRes, keywordsRes] = await Promise.all([
-        supabase.from("r_category").select("id, r_category_name").order("r_category_name"),
+      const [thematicAreasRes, schoolsRes, yearsRes, keywordsRes] = await Promise.all([
+        supabase.from("r_thematic_area").select("id, r_thematic_name").order("r_thematic_name"),
         supabase.from("school").select("id, school_name").order("school_name"),
         supabase.from("thesis").select("thesis_date"),
         supabase.from("thesis").select("thesis_keyword"),
       ]);
 
-      if (categoriesRes.data) setCategories(categoriesRes.data);
+      if (thematicAreasRes.data) setThematicAreas(thematicAreasRes.data);
       if (schoolsRes.data) setSchools(schoolsRes.data);
 
       if (yearsRes.data && yearsRes.data.length > 0) {
@@ -87,9 +87,9 @@ export default function ThesisAdminWrapper() {
           thesis_digi,
           thesis_status,
           rejection_reason,
-          r_category (
+          r_thematic_area (
             id,
-            r_category_name
+            r_thematic_name
           ),
           school (
             id,
@@ -140,8 +140,8 @@ export default function ThesisAdminWrapper() {
 
     let baseTheses = [...data];
     
-    if (selectedCategory) {
-      baseTheses = baseTheses.filter((t: any) => t.r_category?.id === selectedCategory);
+    if (selectedThematicArea) {
+      baseTheses = baseTheses.filter((t: any) => t.r_thematic_area?.id === selectedThematicArea);
     }
     if (selectedSchool) {
       baseTheses = baseTheses.filter((t: any) => t.school?.id === selectedSchool);
@@ -164,7 +164,7 @@ export default function ThesisAdminWrapper() {
         hay += " " + (t.thesis_abstract ?? "");
         hay += " " + (t.thesis_keyword ?? "");
         hay += " " + (t.thesis_phys ?? "");
-        hay += " " + (t.r_category?.r_category_name ?? "");
+        hay += " " + (t.r_thematic_area?.r_thematic_name ?? "");
         hay += " " + (t.school?.school_name ?? "");
         if (t.thesis_author && Array.isArray(t.thesis_author)) {
           t.thesis_author.forEach((ta: any) => {
@@ -190,8 +190,8 @@ export default function ThesisAdminWrapper() {
     // Filter theses with status filter
     let filteredTheses = [...allTheses];
 
-    if (selectedCategory) {
-      filteredTheses = filteredTheses.filter((t: any) => t.r_category?.id === selectedCategory);
+    if (selectedThematicArea) {
+      filteredTheses = filteredTheses.filter((t: any) => t.r_thematic_area?.id === selectedThematicArea);
     }
     if (selectedSchool) {
       filteredTheses = filteredTheses.filter((t: any) => t.school?.id === selectedSchool);
@@ -219,7 +219,7 @@ export default function ThesisAdminWrapper() {
         hay += " " + (t.thesis_abstract ?? "");
         hay += " " + (t.thesis_keyword ?? "");
         hay += " " + (t.thesis_phys ?? "");
-        hay += " " + (t.r_category?.r_category_name ?? "");
+        hay += " " + (t.r_thematic_area?.r_thematic_name ?? "");
         hay += " " + (t.school?.school_name ?? "");
         if (t.thesis_author && Array.isArray(t.thesis_author)) {
           t.thesis_author.forEach((ta: any) => {
@@ -236,18 +236,18 @@ export default function ThesisAdminWrapper() {
     
     // Calculate counts
     calculateCounts(allTheses);
-  }, [allTheses, selectedCategory, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
+  }, [allTheses, selectedThematicArea, selectedSchool, selectedStatuses, selectedYears, searchQuery]);
 
   const handleFilterChange = useCallback(
   (filters: {
     query?: string;
-    category?: string;
+    thematicArea?: string;
     school?: string;
     years?: number[];
     statuses?: string[];
   }) => {
     if (filters.query !== undefined) setSearchQuery(filters.query);
-    if (filters.category !== undefined) setSelectedCategory(filters.category);
+    if (filters.thematicArea !== undefined) setSelectedThematicArea(filters.thematicArea);
     if (filters.school !== undefined) setSelectedSchool(filters.school);
     if (filters.years !== undefined) setSelectedYears(filters.years);
     if (filters.statuses !== undefined) setSelectedStatuses(filters.statuses);
@@ -260,11 +260,11 @@ export default function ThesisAdminWrapper() {
   return (
     <div className="w-full">
       <AdminThesisHeader
-        categories={categories}
+        thematicAreas={thematicAreas}
         schools={schools}
         years={availableYears}
         initialQuery={searchQuery}
-        initialCategory={selectedCategory}
+        initialThematicArea={selectedThematicArea}
         initialSchool={selectedSchool}
         initialYears={selectedYears}
         initialStatuses={selectedStatuses}

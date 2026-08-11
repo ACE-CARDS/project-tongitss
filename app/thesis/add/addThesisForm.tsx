@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/ui/backButton";
 
-interface Category {
+interface ThematicArea {
   id: string;
-  r_category_name: string;
+  r_thematic_name: string;
 }
 
 interface School {
@@ -26,12 +26,12 @@ interface Author {
 }
 
 interface AddThesisFormProps {
-  categories: Category[];
+  thematicAreas: ThematicArea[];
   schools: School[];
   returnTo?: string;
 }
 
-export default function AddThesisForm({ categories, schools, returnTo }: AddThesisFormProps) {
+export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddThesisFormProps) {
   const router = useRouter();
   const supabase = createClient();
   const [authors, setAuthors] = useState<Author[]>([{ id: Date.now() }]);
@@ -44,25 +44,25 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
 
   const [returnUrl, setReturnUrl] = useState<string>("/thesis");
-  const [availableCategories, setAvailableCategories] = useState<Category[]>(categories);
+  const [availableThematicAreas, setAvailableThematicAreas] = useState<ThematicArea[]>(thematicAreas);
   const [availableSchools, setAvailableSchools] = useState<School[]>(schools);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedThematicArea, setSelectedThematicArea] = useState("");
   const [selectedSchool, setSelectedSchool] = useState("");
   
-  const [showNewCategory, setShowNewCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showNewThematicArea, setShowNewThematicArea] = useState(false);
+  const [newThematicAreaName, setNewThematicAreaName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
 
-  const [categoryError, setCategoryError] = useState("");
+  const [thematicAreaError, setThematicAreaError] = useState("");
   const [schoolError, setSchoolError] = useState("");
-  const [isCategoryTouched, setIsCategoryTouched] = useState(false);
+  const [isThematicAreaTouched, setIsThematicAreaTouched] = useState(false);
   const [isSchoolTouched, setIsSchoolTouched] = useState(false);
   const [physicalError, setPhysicalError] = useState("");
   const [digitalLinkError, setDigitalLinkError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
+  const [pendingNewThematicAreas, setPendingNewThematicAreas] = useState<ThematicArea[]>([]);
   const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
   const formSubmittedRef = useRef(false);
 
@@ -338,8 +338,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     const yearValue = parseInt(dateInput?.value);
     const dateValid = !!dateInput?.value && !isNaN(yearValue) && 
                       yearValue >= 2022 && yearValue <= new Date().getFullYear();
-    const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-    const categoryValid = !!categorySelect?.value && !categoryError;
+    const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+    const thematicAreaValid = !!thematicAreaSelect?.value && !thematicAreaError;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
     const schoolValid = !!schoolSelect?.value && !schoolError;
     const physicalValid = !physicalError;
@@ -396,8 +396,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
       }
     }
     
-    const hasErrors = !titleValid || !abstractValid || !keywordsValid || !dateValid || !categoryValid || 
-                      !schoolValid || !physicalValid || !digitalLinkValid || !hasValidAuthor || !!categoryError || 
+    const hasErrors = !titleValid || !abstractValid || !keywordsValid || !dateValid || !thematicAreaValid || 
+                      !schoolValid || !physicalValid || !digitalLinkValid || !hasValidAuthor || !!thematicAreaError || 
                       !!schoolError || hasDuplicateAuthor || !privacyValid || !hasScholarStatusSelected;
     
     setIsFormValid(!hasErrors);
@@ -423,21 +423,21 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         if (physicalInput) physicalInput.value = draft.physical || "";
         if (digitalInput) digitalInput.value = draft.digital || "";
 
-        if (draft.category) {
-          const categoryExists = availableCategories.some(c => c.id === draft.category);
-          if (!categoryExists && draft.categoryName) {
-            const tempCategory = {
-              id: draft.category,
-              r_category_name: draft.categoryName
+        if (draft.thematicArea) {
+          const thematicAreaExists = availableThematicAreas.some(t => t.id === draft.thematicArea);
+          if (!thematicAreaExists && draft.thematicAreaName) {
+            const tempThematicArea = {
+              id: draft.thematicArea,
+              r_thematic_name: draft.thematicAreaName
             };
-            setAvailableCategories(prev => [...prev, tempCategory]);
+            setAvailableThematicAreas(prev => [...prev, tempThematicArea]);
           }
           
           setTimeout(() => {
-            const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement | null;
-            if (categorySelect) categorySelect.value = draft.category;
-            setIsCategoryTouched(true);
-            setCategoryError("");
+            const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement | null;
+            if (thematicAreaSelect) thematicAreaSelect.value = draft.thematicArea;
+            setIsThematicAreaTouched(true);
+            setThematicAreaError("");
             validateForm();
           }, 100);
         }
@@ -495,7 +495,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         console.error("Error loading draft:", err);
       }
     }
-  }, [availableCategories, availableSchools]);
+  }, [availableThematicAreas, availableSchools]);
 
   useEffect(() => {
     if (returnTo) {
@@ -555,105 +555,106 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
   // 2. Form Validation Effect
   useEffect(() => {
     validateForm();
-  }, [categoryError, schoolError, digitalLinkError, authors]);
+  }, [thematicAreaError, schoolError, digitalLinkError, authors]);
 
-  const handleAddNewCategory = async () => {
-    setCategoryError("");
+  const handleAddNewThematicArea = async () => {
+    setThematicAreaError("");
 
-    if (!newCategoryName.trim()) {
-      setCategoryError("Please enter a category name");
+    if (!newThematicAreaName.trim()) {
+      setThematicAreaError("Please enter a thematic area name");
       return;
     }
 
-    if (newCategoryName.trim().length < 2) {
-      setCategoryError("Category name must be at least 2 characters");
+    if (newThematicAreaName.trim().length < 2) {
+      setThematicAreaError("Thematic area name must be at least 2 characters");
       return;
     }
 
     try {
-      const existingCategory = availableCategories.find(
-        c => c.r_category_name.toLowerCase() === newCategoryName.toLowerCase()
+      const existingThematicArea = availableThematicAreas.find(
+        t => t.r_thematic_name.toLowerCase() === newThematicAreaName.toLowerCase()
       );
 
-      if (existingCategory) {
-        setSelectedCategory(existingCategory.id);
-        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-        if (categorySelect) {
-          categorySelect.value = existingCategory.id;
+      if (existingThematicArea) {
+        setSelectedThematicArea(existingThematicArea.id);
+        const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+        if (thematicAreaSelect) {
+          thematicAreaSelect.value = existingThematicArea.id;
         }
-        setShowNewCategory(false);
-        setNewCategoryName("");
-        setCategoryError("");
-        setIsCategoryTouched(true);
+        setShowNewThematicArea(false);
+        setNewThematicAreaName("");
+        setThematicAreaError("");
+        setIsThematicAreaTouched(true);
         validateForm();
         return;
       }
 
-      const existingPending = pendingNewCategories.find(
-        c => c.r_category_name.toLowerCase() === newCategoryName.toLowerCase()
+      const existingPending = pendingNewThematicAreas.find(
+        t => t.r_thematic_name.toLowerCase() === newThematicAreaName.toLowerCase()
       );
 
       if (existingPending) {
-        setSelectedCategory(existingPending.id);
-        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-        if (categorySelect) {
-          categorySelect.value = existingPending.id;
+        setSelectedThematicArea(existingPending.id);
+        const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+        if (thematicAreaSelect) {
+          thematicAreaSelect.value = existingPending.id;
         }
-        setShowNewCategory(false);
-        setNewCategoryName("");
-        setCategoryError("");
-        setIsCategoryTouched(true);
+        setShowNewThematicArea(false);
+        setNewThematicAreaName("");
+        setThematicAreaError("");
+        setIsThematicAreaTouched(true);
         validateForm();
         return;
       }
 
-      const { data: existingCategoryInDb } = await supabase
-        .from("r_category")
-        .select("id, r_category_name")
-        .ilike("r_category_name", newCategoryName)
+      const { data: existingThematicAreaInDb } = await supabase
+        .from("r_thematic_area")
+        .select("id, r_thematic_name")
+        .ilike("r_thematic_name", newThematicAreaName)
         .maybeSingle();
 
-      if (existingCategoryInDb) {
-        setAvailableCategories(prev => [...prev, existingCategoryInDb]);
-        setSelectedCategory(existingCategoryInDb.id);
-        const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-        if (categorySelect) {
-          categorySelect.value = existingCategoryInDb.id;
+      if (existingThematicAreaInDb) {
+        console.log("Existing thematic area found in DB:", existingThematicAreaInDb);
+        setAvailableThematicAreas(prev => [...prev, existingThematicAreaInDb]);
+        setSelectedThematicArea(existingThematicAreaInDb.id);
+        const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+        if (thematicAreaSelect) {
+          thematicAreaSelect.value = existingThematicAreaInDb.id;
         }
-        setShowNewCategory(false);
-        setNewCategoryName("");
-        setCategoryError("");
-        setIsCategoryTouched(true);
+        setShowNewThematicArea(false);
+        setNewThematicAreaName("");
+        setThematicAreaError("");
+        setIsThematicAreaTouched(true);
         validateForm();
         return;
       }
 
-      // Temporary category with a temporary ID
-      const tempId = `temp-cat-${Date.now()}`;
-      const tempCategory: Category = {
+      // Temporary thematic area with a temporary ID
+      const tempId = `temp-thematic-${Date.now()}`;
+      const tempThematicArea: ThematicArea = {
         id: tempId,
-        r_category_name: newCategoryName.trim()
+        r_thematic_name: newThematicAreaName.trim()
       };
 
       // Add to list
-      setPendingNewCategories(prev => [...prev, tempCategory]);
-      setAvailableCategories(prev => [...prev, tempCategory]);
-      setSelectedCategory(tempId);
-      
+      setPendingNewThematicAreas(prev => [...prev, tempThematicArea]);
+      setAvailableThematicAreas(prev => [...prev, tempThematicArea]);
+      setSelectedThematicArea(tempId);
+
       // Update select element
-      const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
-      if (categorySelect) {
-        categorySelect.value = tempId;
+      const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+      if (thematicAreaSelect) {
+        thematicAreaSelect.value = tempId;
       }
 
-      setShowNewCategory(false);
-      setNewCategoryName("");
-      setCategoryError("");
-      setIsCategoryTouched(true);
+      setShowNewThematicArea(false);
+      setNewThematicAreaName("");
+      setThematicAreaError("");
+      setIsThematicAreaTouched(true);
       validateForm();
     } catch (error) {
-      console.error("Error adding category:", error);
-      setCategoryError("An unexpected error occurred. Please try again.");
+      console.error("Error adding thematic area:", error);
+      setThematicAreaError("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -788,14 +789,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     e.preventDefault();
 
     // 2. Validate category and school before submission
-    const categorySelect = e.currentTarget.elements.namedItem("category") as HTMLSelectElement;
+    const thematicAreaSelect = e.currentTarget.elements.namedItem("thematicArea") as HTMLSelectElement;
     const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement;
     
     let hasError = false;
     
-    if (!categorySelect?.value) {
-      setCategoryError("Please select a category");
-      setIsCategoryTouched(true);
+    if (!thematicAreaSelect?.value) {
+      setThematicAreaError("Please select a thematic area");
+      setIsThematicAreaTouched(true);
       hasError = true;
     }
     
@@ -845,35 +846,35 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
         }
       }
 
-      // Get the selected category ID
-      const selectedCategoryId = categorySelect.value;
+      // Get the selected thematic area ID
+      const selectedThematicAreaId = thematicAreaSelect.value;
       
       // Check if needs to be saved
-      let finalCategoryId = selectedCategoryId;
-      const isTempCategory = selectedCategoryId.startsWith('temp-cat-');
+      let finalThematicAreaId = selectedThematicAreaId;
+      const isTempThematicArea = selectedThematicAreaId.startsWith('temp-thematic-');
       
-      if (isTempCategory) {
-        // Find the pending category
-        const pendingCategory = pendingNewCategories.find(c => c.id === selectedCategoryId);
-        if (pendingCategory) {
+      if (isTempThematicArea) {
+        // Find the pending thematic area
+        const pendingThematicArea = pendingNewThematicAreas.find(t => t.id === selectedThematicAreaId);
+        if (pendingThematicArea) {
           // Save to database
-          const { data: newCategory, error: categoryError } = await supabase
-            .from("r_category")
-            .insert({ r_category_name: pendingCategory.r_category_name })
-            .select("id, r_category_name")
+          const { data: newThematicArea, error: thematicAreaError } = await supabase
+            .from("r_thematic_area")
+            .insert({ r_thematic_name: pendingThematicArea.r_thematic_name })
+            .select("id, r_thematic_name")
             .single();
 
-          if (categoryError) {
-            throw new Error(`Failed to save category: ${categoryError.message}`);
+          if (thematicAreaError) {
+            throw new Error(`Failed to save thematic area: ${thematicAreaError.message}`);
           }
 
-          // Update final category ID
-          finalCategoryId = newCategory.id;
+          // Update final thematic area ID
+          finalThematicAreaId = newThematicArea.id;
           
-          // Update pending categories and available categories
-          setPendingNewCategories(prev => prev.filter(c => c.id !== selectedCategoryId));
-          setAvailableCategories(prev => 
-            prev.map(c => c.id === selectedCategoryId ? newCategory : c)
+          // Update pending thematic areas and available thematic areas
+          setPendingNewThematicAreas(prev => prev.filter(t => t.id !== selectedThematicAreaId));
+          setAvailableThematicAreas(prev => 
+            prev.map(t => t.id === selectedThematicAreaId ? newThematicArea : t)
           );
         }
       }
@@ -994,7 +995,7 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
           thesis_date: parseInt(dateInput.value),
           thesis_phys: physicalInput?.value || null,
           thesis_digi: digitalInput?.value || null,
-          r_category: parseInt(finalCategoryId),
+          r_thematic_area: parseInt(finalThematicAreaId),
           school: parseInt(finalSchoolId),
           thesis_status: 'pending',
         })
@@ -1913,44 +1914,44 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                   <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                     Research Thematic Area <span className="text-[#eec643]">*</span>
                   </label>
-                  {!showNewCategory ? (
+                  {!showNewThematicArea ? (
                     <div className="flex gap-2">
                       <select
-                        id="category"
-                        name="category"
+                        id="thematicArea"
+                        name="thematicArea"
                         required
-                        value={selectedCategory}
+                        value={selectedThematicArea}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setSelectedCategory(value);
-                          setIsCategoryTouched(true);
+                          setSelectedThematicArea(value);
+                          setIsThematicAreaTouched(true);
                           if (!value || value === "") {
-                            setCategoryError("Please select a category");
+                            setThematicAreaError("Please select a thematic area");
                           } else {
-                            setCategoryError("");
+                            setThematicAreaError("");
                           }
                           validateForm();
                         }}
                         onBlur={() => {
-                          const select = document.getElementById('category') as HTMLSelectElement;
+                          const select = document.getElementById('thematicArea') as HTMLSelectElement;
                           if (!select?.value || select?.value === "") {
-                            setCategoryError("Please select a category");
-                            setIsCategoryTouched(true);
+                            setThematicAreaError("Please select a thematic area");
+                            setIsThematicAreaTouched(true);
                           }
                           validateForm();
                         }}
                       >
-                        <option value="" disabled>Select a category</option>
-                        {availableCategories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.r_category_name}
+                        <option value="" disabled>Select a thematic area</option>
+                        {availableThematicAreas.map((thematicArea) => (
+                          <option key={thematicArea.id} value={thematicArea.id}>
+                            {thematicArea.r_thematic_name}
                           </option>
                         ))}
                       </select>
                       <button
                         type="button"
-                        onClick={() => setShowNewCategory(true)}
+                        onClick={() => setShowNewThematicArea(true)}
                         className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
                       >
                         + New
@@ -1961,28 +1962,28 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     <div className="relative flex-1">
                       <input
                         type="text"
-                        value={newCategoryName}
+                        value={newThematicAreaName}
                         onChange={(e) => {
-                          setNewCategoryName(e.target.value);
-                          setCategoryError("");
+                          setNewThematicAreaName(e.target.value);
+                          setThematicAreaError("");
                           // Real-time validation while typing
                           const value = e.target.value;
                           if (!value.trim()) {
-                            setCategoryError("Category name is required.");
+                            setThematicAreaError("Thematic area name is required.");
                           } else if (value.trim().length < 2) {
-                            setCategoryError("Category name must be at least 2 characters.");
+                            setThematicAreaError("Thematic area name must be at least 2 characters.");
                           } else {
-                            setCategoryError("");
+                            setThematicAreaError("");
                           }
                         }}
                         onBlur={() => {
-                          if (!newCategoryName.trim()) {
-                            setCategoryError("Category name is required.");
-                          } else if (newCategoryName.trim().length < 2) {
-                            setCategoryError("Category name must be at least 2 characters.");
+                          if (!newThematicAreaName.trim()) {
+                            setThematicAreaError("Thematic area name is required.");
+                          } else if (newThematicAreaName.trim().length < 2) {
+                            setThematicAreaError("Thematic area name must be at least 2 characters.");
                           }
                         }}
-                        placeholder="Enter new category name"
+                        placeholder="Enter new thematic area name"
                         maxLength={50}
                         className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
                         required
@@ -1996,18 +1997,18 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                           }
                         }}
                       />
-                      {categoryError && (
+                      {thematicAreaError && (
                         <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
-                          {categoryError}
+                          {thematicAreaError}
                         </p>
                       )}
                     </div>
                     <button
                       type="button"
-                      onClick={handleAddNewCategory}
-                      disabled={!newCategoryName.trim() || newCategoryName.trim().length < 2}
+                      onClick={handleAddNewThematicArea}
+                      disabled={!newThematicAreaName.trim() || newThematicAreaName.trim().length < 2}
                       className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
-                        (!newCategoryName.trim() || newCategoryName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
+                        (!newThematicAreaName.trim() || newThematicAreaName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
                       Add
@@ -2015,9 +2016,9 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     <button
                       type="button"
                       onClick={() => {
-                        setShowNewCategory(false);
-                        setNewCategoryName("");
-                        setCategoryError("");
+                        setShowNewThematicArea(false);
+                        setNewThematicAreaName("");
+                        setThematicAreaError("");
                         validateForm();
                       }}
                       className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
@@ -2026,8 +2027,8 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                     </button>
                   </div>
                   )}
-                    {isCategoryTouched && categoryError && !showNewCategory && (
-                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{categoryError}</p>
+                    {isThematicAreaTouched && thematicAreaError && !showNewThematicArea && (
+                      <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{thematicAreaError}</p>
                     )}
                   </div>
 

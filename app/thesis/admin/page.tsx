@@ -10,7 +10,7 @@ export default async function AdminThesisPage({
   searchParams: Promise<{
     page?: string;
     query?: string;
-    category?: string;
+    thematicArea?: string;
     school?: string;
     year?: string | string[];
     status?: string;
@@ -19,11 +19,11 @@ export default async function AdminThesisPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: schools }] = await Promise.all([
+  const [{ data: thematicAreas }, { data: schools }] = await Promise.all([
     supabase
-      .from("r_category")
-      .select("id, r_category_name")
-      .order("r_category_name", { ascending: true }),
+      .from("r_thematic_area")
+      .select("id, r_thematic_name")
+      .order("r_thematic_name", { ascending: true }),
     supabase
       .from("school")
       .select("id, school_name")

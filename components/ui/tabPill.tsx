@@ -17,7 +17,7 @@ export default function TabPill<T extends string>({
   onTabChange,
 }: TabPillProps<T>) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-100 w-full md:w-fit rounded-xl border border-gray-200 shadow-sm">
+    <div className="flex gap-1 p-1 bg-gray-100 w-full md:min-w-fit md:w-lg lg:w-fit lg:flex-row flex-col rounded-xl border border-gray-200 shadow-sm">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (

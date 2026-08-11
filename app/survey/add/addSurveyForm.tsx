@@ -617,6 +617,7 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         .maybeSingle();
 
       if (existingCategoryInDb) {
+        console.log("Existing category found in DB:", existingCategoryInDb);
         setAvailableCategories(prev => [...prev, existingCategoryInDb]);
         setSelectedCategory(existingCategoryInDb.id);
         const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
