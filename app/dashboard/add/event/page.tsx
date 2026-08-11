@@ -49,22 +49,20 @@ function AddEventContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#fbfaf8]">
+    <>
       <NavBar />
-      
-      <div
-        className="flex-1 w-full mx-auto max-w-[1920px] flex flex-col"
-        style={{
-          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-          backgroundSize: "20px 20px",
-          backgroundAttachment: "fixed",
-        }}
-      >
+    <div className="w-full mx-auto max-w-[1920px] bg-[#fbfaf8] min-h-screen"
+      style={{
+        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+        backgroundAttachment: "fixed",
+      }}
+    >
         <AddEventForm />
-      </div>
 
       <Footer />
     </div>
+    </>
   );
 }
 
