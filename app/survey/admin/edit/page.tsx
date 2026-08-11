@@ -1014,9 +1014,15 @@ function EditSurveyContent() {
                     </div>
 
                     <div>
-                      <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                        Description <span className="text-[#eec643]">*</span>
-                      </label>
+                      <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                        <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                          Description <span className="text-[#eec643]">*</span>
+                        </label>
+                      
+                        <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                          {3000 - formData.survey_desc.length} characters remaining
+                        </span>
+                      </div>
                       <textarea
                         id="description"
                         name="description"

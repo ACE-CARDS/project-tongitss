@@ -1033,6 +1033,14 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
     }
   };
 
+  
+  const [abstract, setAbstract] = useState("");
+
+  const handleAbstractChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setAbstract(value);
+  };
+
   if (isLoadingUser) {
     return (
       <main className="container mx-auto py-8 px-4 max-w-3xl">
@@ -1089,15 +1097,22 @@ export default function AddThesisForm({ categories, schools, returnTo }: AddThes
                 </div>
 
                 <div>
-                  <label htmlFor="abstract" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Abstract <span className="text-[#eec643]">*</span>
-                  </label>
+                  <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                    <label htmlFor="abstract" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      Abstract <span className="text-[#eec643]">*</span>
+                    </label>
+                    <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                      {3000 - abstract.length} characters remaining
+                    </span>
+                  </div>
                   <textarea
                     id="abstract"
                     name="abstract"
+                    value={abstract}
+                    onChange={handleAbstractChange}
                     required
                     rows={4}
-                    maxLength={1500}
+                    maxLength={3000}
                     placeholder="Enter thesis abstract"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                     // Error handling

@@ -1024,6 +1024,14 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
       }, 500);
     }
   };
+  
+
+  const [description, setDescription] = useState("");
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setDescription(value);
+  };
 
   if (isLoadingUser) {
     return (
@@ -1080,15 +1088,23 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
-                    Description <span className="text-[#eec643]">*</span>
-                  </label>
+                  <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
+                    <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
+                      Description <span className="text-[#eec643]">*</span>
+                    </label>
+                  
+                    <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                      {3000 - description.length} characters remaining
+                    </span>
+                  </div>
                   <textarea
                     id="description"
                     name="description"
+                    value={description}
+                    onChange={handleDescriptionChange}
                     required
                     rows={4}
-                    maxLength={1500}
+                    maxLength={3000}
                     placeholder="Enter survey description"
                     className="text-[#475569] font-ubuntu-mono w-full px-3 py-2 border border-[#94a3b8] rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue"
                     onInput={(e) => {
