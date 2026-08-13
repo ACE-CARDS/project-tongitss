@@ -40,8 +40,6 @@ function EditThesisContent() {
   const [authors, setAuthors] = useState<Author[]>([{ id: 1 }]);
   const [availableThematicAreas, setAvailableThematicAreas] = useState<ThematicArea[]>([]);
   const [availableSchools, setAvailableSchools] = useState<School[]>([]);
-  const [showNewThematicArea, setShowNewThematicArea] = useState(false);
-  const [newThematicAreaName, setNewThematicAreaName] = useState("");
   const [showNewSchool, setShowNewSchool] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -54,7 +52,6 @@ function EditThesisContent() {
   const [showScholarDialog, setShowScholarDialog] = useState<Map<number, boolean>>(new Map());
   const [pubYear, setPubYear] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
-  const [pendingNewThematicAreas, setPendingNewThematicAreas] = useState<ThematicArea[]>([]);
   const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
 
   const [formData, setFormData] = useState({
@@ -221,7 +218,7 @@ function EditThesisContent() {
     const abstractValid = abstractInput?.value && abstractInput.value.length >= 10;
     const keywordsInput = document.querySelector('input[name="keywords"]') as HTMLInputElement;
     const keywordsValid = keywordsInput?.value && keywordsInput.value.length >= 2;
-    const thematicAreaSelect = document.querySelector('select[name="thematicArea"]') as HTMLSelectElement;
+    const thematicAreaSelect = document.querySelector('select[name="thematic_area"]') as HTMLSelectElement;
     const thematicAreaValid = !!thematicAreaSelect?.value;
     const schoolSelect = document.querySelector('select[name="school"]') as HTMLSelectElement;
     const schoolValid = !!schoolSelect?.value;
@@ -388,80 +385,6 @@ function EditThesisContent() {
     validateForm();
   };
 
-  const handleAddNewThematicArea = async () => {
-    setThematicAreaError("");
-
-    if (!newThematicAreaName.trim()) {
-      setThematicAreaError("Please enter a thematic area name");
-      return;
-    }
-
-    if (newThematicAreaName.trim().length < 2) {
-      setThematicAreaError("Thematic area name must be at least 2 characters");
-      return;
-    }
-
-    try {
-      const existingThematicArea = availableThematicAreas.find(
-        ta => ta.r_thematic_name.toLowerCase() === newThematicAreaName.toLowerCase()
-      );
-
-      if (existingThematicArea) {
-        setFormData(prev => ({ ...prev, r_thematic_area: existingThematicArea.id }));
-        setShowNewThematicArea(false);
-        setNewThematicAreaName("");
-        setThematicAreaError("");
-        return;
-      }
-
-      const existingPending = pendingNewThematicAreas.find(
-        ta => ta.r_thematic_name.toLowerCase() === newThematicAreaName.toLowerCase()
-      );
-
-      if (existingPending) {
-        setFormData(prev => ({ ...prev, r_thematic_area: existingPending.id }));
-        setShowNewThematicArea(false);
-        setNewThematicAreaName("");
-        setThematicAreaError("");
-        return;
-      }
-
-      const { data: existingThematicAreaInDb } = await supabase
-        .from("r_thematic_area")
-        .select("id, r_thematic_name")
-        .ilike("r_thematic_name", newThematicAreaName)
-        .maybeSingle();
-
-      if (existingThematicAreaInDb) {
-        setAvailableThematicAreas(prev => [...prev, existingThematicAreaInDb]);
-        setFormData(prev => ({ ...prev, r_thematic_area: existingThematicAreaInDb.id }));
-        setShowNewThematicArea(false);
-        setNewThematicAreaName("");
-        setThematicAreaError("");
-        return;
-      }
-
-      // Temporary thematic area with a temporary ID
-      const tempId = `temp-ta-${Date.now()}`;
-      const tempThematicArea: ThematicArea = {
-        id: tempId,
-        r_thematic_name: newThematicAreaName.trim()
-      };
-
-      // Add to list
-      setPendingNewThematicAreas(prev => [...prev, tempThematicArea]);
-      setAvailableThematicAreas(prev => [...prev, tempThematicArea]);
-      setFormData(prev => ({ ...prev, r_thematic_area: tempId }));
-
-      setShowNewThematicArea(false);
-      setNewThematicAreaName("");
-      setThematicAreaError("");
-    } catch (error) {
-      console.error("Error adding thematic area:", error);
-      setThematicAreaError("An unexpected error occurred. Please try again.");
-    }
-  };
-
   const handleAddNewSchool = async () => {
     setSchoolError("");
     
@@ -591,36 +514,7 @@ function EditThesisContent() {
 
       // Get the selected thematic area ID
       const selectedThematicAreaId = formData.r_thematic_area;
-      
-      // Check if needs to be saved
       let finalThematicAreaId = selectedThematicAreaId;
-      const isTempThematicArea = selectedThematicAreaId.startsWith('temp-ta-');
-      
-      if (isTempThematicArea) {
-        // Find the pending thematic area
-        const pendingThematicArea = pendingNewThematicAreas.find(t => t.id === selectedThematicAreaId);
-        if (pendingThematicArea) {
-          // Save to database
-          const { data: newThematicArea, error: thematicAreaError } = await supabase
-            .from("r_thematic_area")
-            .insert({ r_thematic_name: pendingThematicArea.r_thematic_name })
-            .select("id, r_thematic_name")
-            .single();
-
-          if (thematicAreaError) {
-            throw new Error(`Failed to save thematic area: ${thematicAreaError.message}`);
-          }
-
-          // Update final thematic area ID
-          finalThematicAreaId = newThematicArea.id;
-          
-          // Update pending thematic areas and available thematic areas
-          setPendingNewThematicAreas(prev => prev.filter(t => t.id !== selectedThematicAreaId));
-          setAvailableThematicAreas(prev => 
-            prev.map(t => t.id === selectedThematicAreaId ? newThematicArea : t)
-          );
-        }
-      }
 
       // Same logic for school
       const selectedSchoolId = formData.school;
@@ -1614,14 +1508,13 @@ function EditThesisContent() {
                       <label htmlFor="thematic_area" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                         Research Thematic Area <span className="text-[#eec643]">*</span>
                       </label>
-                      {!showNewThematicArea ? (
                         <div className="flex gap-2">
                           <select
                             id="thematic_area"
                             name="thematic_area"
                             required
                             value={formData.r_thematic_area}
-                            className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
+                            className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] custom-scrollbar-blue overflow-hidden ${
                               thematicAreaError ? 'border-red-500' : 'border-[#94a3b8]'
                             }`}
                             onChange={(e) => {
@@ -1647,66 +1540,7 @@ function EditThesisContent() {
                               </option>
                             ))}
                           </select>
-                          <button
-                            type="button"
-                            onClick={() => setShowNewThematicArea(true)}
-                            className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
-                          >
-                            + New
-                          </button>
                         </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newThematicAreaName}
-                            onChange={(e) => {
-                              setNewThematicAreaName(e.target.value);
-                              if (!e.target.value.trim()) {
-                                setThematicAreaError("Thematic area name is required");
-                              } else if (e.target.value.length < 2) {
-                                setThematicAreaError("Thematic area name must be at least 2 characters");
-                              } else {
-                                setThematicAreaError("");
-                              }
-                              validateForm();
-                            }}
-                            placeholder="Enter new thematic area name"
-                            maxLength={50}
-                            className={`text-[#475569] font-ubuntu-mono flex-1 px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8] ${
-                              thematicAreaError ? 'border-red-500' : 'border-[#94a3b8]'
-                            }`}
-                            required
-                            onKeyDown={(e) => {
-                              if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                                return;
-                              }
-                              if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                                e.preventDefault();
-                              }
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={handleAddNewThematicArea}
-                            className="px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono"
-                          >
-                            Add
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowNewThematicArea(false);
-                              setNewThematicAreaName("");
-                              setThematicAreaError("");
-                              validateForm();
-                            }}
-                            className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
                       {thematicAreaError && (
                         <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{thematicAreaError}</p>
                       )}
