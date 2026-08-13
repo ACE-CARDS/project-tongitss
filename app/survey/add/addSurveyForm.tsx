@@ -1093,6 +1093,10 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
                     <label htmlFor="description" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                       Description <span className="text-[#eec643]">*</span>
                     </label>
+
+                    <span className="text-xs font-ubuntu-mono text-[#475569] select-none pt-0.5 text-right">
+                      {3000 - description.length} characters remaining
+                    </span>
                   </div>
                   <textarea
                     id="description"
