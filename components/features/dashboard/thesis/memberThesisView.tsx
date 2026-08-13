@@ -25,14 +25,14 @@ const getItemsPerPage = () => {
 function FilterPopup({
   isOpen, 
   onClose,
-  categories,
+  thematicAreas,
   schools,
   years,
-  selectedCategory,
+  selectedThematicArea,
   selectedSchool,
   selectedYears,
   selectedStatuses,
-  onCategoryChange,
+  onThematicAreaChange,
   onSchoolChange,
   onYearToggle,
   onStatusToggle,
@@ -41,14 +41,14 @@ function FilterPopup({
 }: { 
   isOpen: boolean;
   onClose: () => void;
-  categories: Category[];
+  thematicAreas: ThematicArea[];
   schools: School[];
   years: number[];
-  selectedCategory: string;
+  selectedThematicArea: string;
   selectedSchool: string;
   selectedYears: number[];
   selectedStatuses: string[];
-  onCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onThematicAreaChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onSchoolChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onYearToggle: (year: number) => void;
   onStatusToggle: (status: string) => void;
@@ -152,21 +152,21 @@ function FilterPopup({
 
         <div>
           <label
-            htmlFor="category"
+            htmlFor="thematicArea"
             className="block text-sm font-oswald font-medium text-[#011638] mb-2"
           >
-            Category
+            Research Thematic Area
           </label>
           <select
-            id="category"
-            value={selectedCategory}
-            onChange={onCategoryChange}
+            id="thematicArea"
+            value={selectedThematicArea}
+            onChange={onThematicAreaChange}
             className="border border-[#1e4db7] rounded-lg focus:outline-none focus:ring-[#011638] text-[#475569] bg-[#fbfaf8] w-full px-3 py-2 font-ubuntu-mono hover:border-[#0d21a1] transition-colors"
           >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.r_category_name}
+            <option value="">All Thematic Areas</option>
+            {thematicAreas.map((area) => (
+              <option key={area.id} value={area.id}>
+                {area.r_thematic_name}
               </option>
             ))}
           </select>
@@ -253,9 +253,9 @@ function FilterPopup({
   );
 }
 
-interface Category {
+interface ThematicArea {
   id: string;
-  r_category_name: string;
+  r_thematic_name: string;
 }
 
 interface School {
@@ -529,7 +529,7 @@ function ThesisCard({ thesis, onCardClick }: { thesis: any; onCardClick: (thesis
               <div>
                 <span className="text-[#475569] block font-ubuntu-mono">Research Thematic Area:</span>
                 <span className="font-ubuntu-mono text-[#011638] break-words max-w-full whitespace-normal">
-                  {thesis.r_category?.r_category_name || "Uncategorized"}
+                  {thesis.r_thematic_area?.r_thematic_name || "Uncategorized"}
                 </span>
               </div>
 
@@ -612,7 +612,7 @@ export default function MemberThesisView() {
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedThematicArea, setSelectedThematicArea] = useState<string>("");
   const [selectedSchool, setSelectedSchool] = useState<string>("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -633,7 +633,7 @@ export default function MemberThesisView() {
   const [archivedCount, setArchivedCount] = useState(0);
   
   // Data for filters
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [thematicAreas, setThematicAreas] = useState<ThematicArea[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
 
@@ -653,12 +653,12 @@ export default function MemberThesisView() {
   // Fetch filter data
   useEffect(() => {
     const fetchFilterData = async () => {
-      const { data: categoriesData } = await supabase
-        .from("r_category")
-        .select("id, r_category_name")
-        .order("r_category_name");
+      const { data: thematicAreasData } = await supabase
+        .from("r_thematic_area")
+        .select("id, r_thematic_name")
+        .order("r_thematic_name");
       
-      if (categoriesData) setCategories(categoriesData);
+      if (thematicAreasData) setThematicAreas(thematicAreasData);
 
       const { data: schoolsData } = await supabase
         .from("school")
@@ -730,27 +730,25 @@ export default function MemberThesisView() {
         thesis.thesis_title?.toLowerCase().includes(query) ||
         thesis.thesis_abstract?.toLowerCase().includes(query) ||
         thesis.thesis_keyword?.toLowerCase().includes(query) ||
-        thesis.r_category?.r_category_name?.toLowerCase().includes(query) ||
+        thesis.r_thematic_area?.r_thematic_name?.toLowerCase().includes(query) ||
         thesis.school?.school_name?.toLowerCase().includes(query) ||
         thesis.thesis_phys?.toLowerCase().includes(query) 
       );
     }
     
-    // Apply category filter
-    if (selectedCategory) {
-      const categoryNum = Number(selectedCategory);
+    // Apply thematic area filter
+    if (selectedThematicArea) {
       filtered = filtered.filter(thesis => {
-        const thesisCategoryId = thesis.r_category?.id ? Number(thesis.r_category.id) : null;
-        return thesisCategoryId === categoryNum;
+        const thesisThematicAreaId = thesis.r_thematic_area?.id ? String(thesis.r_thematic_area.id) : null;
+        return thesisThematicAreaId === selectedThematicArea;
       });
     }
     
     // Apply school filter
     if (selectedSchool) {
-      const schoolNum = Number(selectedSchool);
       filtered = filtered.filter(thesis => {
-        const thesisSchoolId = thesis.school?.id ? Number(thesis.school.id) : null;
-        return thesisSchoolId === schoolNum;
+        const thesisSchoolId = thesis.school?.id ? String(thesis.school.id) : null;
+        return thesisSchoolId === selectedSchool;
       });
     }
     
@@ -779,7 +777,7 @@ export default function MemberThesisView() {
     setCurrentPage(1);
   }, [
     searchQuery,
-    selectedCategory,
+    selectedThematicArea,
     selectedSchool,
     selectedYears,
     selectedStatuses,
@@ -793,7 +791,7 @@ export default function MemberThesisView() {
     applyFilters();
   }, [
     searchQuery,
-    selectedCategory,
+    selectedThematicArea,
     selectedSchool,
     selectedYears,
     selectedStatuses,
@@ -821,10 +819,17 @@ export default function MemberThesisView() {
           .select(`
             thesis:thesis(
               *,
-              r_category:r_category(*),
+              r_thematic_area:r_thematic_area(*),
               school:school(*),
               thesis_author:thesis_author(
-                author:author(*)
+                author:author(
+                  id,
+                  author_fname,
+                  author_lname,
+                  author_minit,
+                  author_email,
+                  mem_id
+                )
               )
             )
           `)
@@ -876,8 +881,8 @@ export default function MemberThesisView() {
     }, 0);
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCategory(e.target.value);
+  const handleThematicAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedThematicArea(e.target.value);
   };
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -902,7 +907,7 @@ export default function MemberThesisView() {
 
   const resetFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
+    setSelectedThematicArea("");
     setSelectedSchool("");
     setSelectedYears([]);
     setSelectedStatuses([]);
@@ -912,7 +917,7 @@ export default function MemberThesisView() {
     setSearchQuery("");
   };
 
-  const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length + selectedStatuses.length;
+  const activeFilterCount = (selectedThematicArea ? 1 : 0) + (selectedSchool ? 1 : 0) + selectedYears.length + selectedStatuses.length;
 
   // Modal handlers
   const handleCardClick = (thesis: any) => {
@@ -1108,14 +1113,14 @@ export default function MemberThesisView() {
                 isOpen={showFilters}
                 onClose={() => setShowFilters(false)}
                 buttonRef={filterButtonRef}
-                categories={categories}
+                thematicAreas={thematicAreas}
                 schools={schools}
                 years={availableYears}
-                selectedCategory={selectedCategory}
+                selectedThematicArea={selectedThematicArea}
                 selectedSchool={selectedSchool}
                 selectedYears={selectedYears}
                 selectedStatuses={selectedStatuses}
-                onCategoryChange={handleCategoryChange}
+                onThematicAreaChange={handleThematicAreaChange}
                 onSchoolChange={handleSchoolChange}
                 onYearToggle={handleYearToggle}
                 onStatusToggle={handleStatusToggle}
@@ -1171,11 +1176,11 @@ export default function MemberThesisView() {
         ) : paginatedTheses.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-[#475569] font-ubuntu-mono">
-              {searchQuery || selectedCategory || selectedSchool || selectedYears.length > 0 || selectedStatuses.length > 0
+              {searchQuery || selectedThematicArea || selectedSchool || selectedYears.length > 0 || selectedStatuses.length > 0
                 ? "No theses found." 
                 : "You haven't submitted any theses yet."}
             </p>
-            {!searchQuery && !selectedCategory && !selectedSchool && selectedYears.length === 0 && selectedStatuses.length === 0 && (
+            {!searchQuery && !selectedThematicArea && !selectedSchool && selectedYears.length === 0 && selectedStatuses.length === 0 && (
               <Link 
                 href="/thesis/add"
                 className="inline-block mt-4 text-[#1e4db7] hover:text-[#011638] font-oswald"
@@ -1369,7 +1374,7 @@ export default function MemberThesisView() {
                         Research Thematic Area
                       </p>
                       <p className="font-ubuntu-mono text-[#011638] text-sm break-words">
-                        {selectedThesis.r_category?.r_category_name || "Uncategorized"}
+                        {selectedThesis.r_thematic_area?.r_thematic_name || "Uncategorized"}
                       </p>
                     </div>
                     <div>
