@@ -1914,7 +1914,6 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
                   <label htmlFor="category" className="block text-sm font-oswald font-medium text-[#011638] mb-1">
                     Research Thematic Area <span className="text-[#eec643]">*</span>
                   </label>
-                  {!showNewThematicArea ? (
                     <div className="flex gap-2">
                       <select
                         id="thematicArea"
@@ -1949,85 +1948,8 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
                           </option>
                         ))}
                       </select>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewThematicArea(true)}
-                        className="px-3 py-2 text-[#1e4db7] border border-[#1e4db7] rounded hover:bg-[#1e4db7] hover:text-white transition-colors font-ubuntu-mono whitespace-nowrap"
-                      >
-                        + New
-                      </button>
                     </div>
-                  ) : (
-                    <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        value={newThematicAreaName}
-                        onChange={(e) => {
-                          setNewThematicAreaName(e.target.value);
-                          setThematicAreaError("");
-                          // Real-time validation while typing
-                          const value = e.target.value;
-                          if (!value.trim()) {
-                            setThematicAreaError("Thematic area name is required.");
-                          } else if (value.trim().length < 2) {
-                            setThematicAreaError("Thematic area name must be at least 2 characters.");
-                          } else {
-                            setThematicAreaError("");
-                          }
-                        }}
-                        onBlur={() => {
-                          if (!newThematicAreaName.trim()) {
-                            setThematicAreaError("Thematic area name is required.");
-                          } else if (newThematicAreaName.trim().length < 2) {
-                            setThematicAreaError("Thematic area name must be at least 2 characters.");
-                          }
-                        }}
-                        placeholder="Enter new thematic area name"
-                        maxLength={50}
-                        className={`text-[#475569] font-ubuntu-mono w-full px-3 py-2 border rounded focus:outline-none focus:border-[#011638] bg-[#fbfaf8]`}
-                        required
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            return;
-                          }
-                          
-                          if (!/[A-Za-z\s.'-]/.test(e.key)) {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      {thematicAreaError && (
-                        <p className="text-xs mt-1 text-red-600 font-ubuntu-mono absolute left-0 -bottom-5">
-                          {thematicAreaError}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleAddNewThematicArea}
-                      disabled={!newThematicAreaName.trim() || newThematicAreaName.trim().length < 2}
-                      className={`px-3 py-2 text-white bg-[#1e4db7] rounded hover:bg-[#0d21a1] transition-colors font-ubuntu-mono ${
-                        (!newThematicAreaName.trim() || newThematicAreaName.trim().length < 2) ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNewThematicArea(false);
-                        setNewThematicAreaName("");
-                        setThematicAreaError("");
-                        validateForm();
-                      }}
-                      className="px-3 py-2 text-[#475569] border border-[#94a3b8] rounded hover:bg-gray-100 transition-colors font-ubuntu-mono"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  )}
-                    {isThematicAreaTouched && thematicAreaError && !showNewThematicArea && (
+                    {isThematicAreaTouched && thematicAreaError && (
                       <p className="text-xs mt-1 text-red-600 font-ubuntu-mono">{thematicAreaError}</p>
                     )}
                   </div>
