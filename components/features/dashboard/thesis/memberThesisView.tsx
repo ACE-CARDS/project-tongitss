@@ -1017,7 +1017,7 @@ export default function MemberThesisView() {
           {/* Pending Card */}
           <div
             onClick={() => handleStatusCardClick("pending")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("pending") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1035,7 +1035,7 @@ export default function MemberThesisView() {
           {/* Accepted Card */}
           <div
             onClick={() => handleStatusCardClick("accepted")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("accepted") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1053,7 +1053,7 @@ export default function MemberThesisView() {
           {/* Rejected Card */}
           <div
             onClick={() => handleStatusCardClick("rejected")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("rejected") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
@@ -1071,7 +1071,7 @@ export default function MemberThesisView() {
           {/* Archived Card */}
           <div
             onClick={() => handleStatusCardClick("archived")}
-            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden ${
+            className={`bg-white border border-[#011638] rounded-xl p-4 shadow-sm hover:shadow-xl hover:scale-[1.02] cursor-pointer relative overflow-hidden ${
               isStatusActive("archived") ? "ring-3 ring-[#eec643]" : ""
             }`}
           >
