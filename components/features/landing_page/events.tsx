@@ -89,7 +89,7 @@ export default function Events({id}: {id?: string}) {
             TOTAL
           </h3>
           <span className="text-4xl sm:text-6xl xl:text-8xl font-oswald font-extrabold text-white/90 mt-1">
-            EVENTS
+            INITIATIVES
           </span>
           <p className="text-white/60 tracking-widest uppercase text-sm leading-tight mt-3">
             since establishment

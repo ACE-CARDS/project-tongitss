@@ -144,7 +144,7 @@ export default function EventsTimeline() {
     { label: "ALL EVENTS", value: "ALL" },
     { label: "ONGOING", value: "ONGOING", disabled: isPastYear },
     { label: "UPCOMING", value: "UPCOMING", disabled: isPastYear },
-    { label: "ACCOMPLISHED", value: "COMPLETED" },
+    { label: "COMPLETED", value: "COMPLETED" },
   ];
 
   const handlePageChange = (page: number) => {

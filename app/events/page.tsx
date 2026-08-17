@@ -41,7 +41,7 @@ export default function EventsPage() {
             {/* INTRO PARAGRAPH SECTION */}
             <section className="relative pb-12 px-2 sm:px-5 flex flex-col items-center justify-center text-center overflow-hidden">
               
-              <AnimatedTitle title="EVENTS" />
+              <AnimatedTitle title="INITIATIVES" />
               
               <p className="max-w-3xl text-lg text-slate-600 font-ubuntu-mono leading-relaxed font-medium">
               </p>

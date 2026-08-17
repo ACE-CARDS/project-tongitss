@@ -98,7 +98,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
 
       {/* Navbar */}
       <nav
-        className={`relative w-full mx-auto my-auto max-w-[1150px] top-3 h-14 transition-all duration-300
+        className={`relative w-full mx-auto my-auto max-w-[1200px] top-3 h-14 transition-all duration-300
         `}
       >
         <div className="flex flex-row items-center justify-between lg:px-8 px-2 w-full h-full lg:gap-4 gap-2 text-white">
@@ -182,7 +182,7 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                     ? "bg-[#a6a6a6]/35 hover:bg-[#a6a6a6]/40 scale-[1.04]"
                     : "hover:bg-[#a6a6a6]/30 hover:scale-[1.04]"
                   }`}>
-                  Events
+                  Initiatives
                 </li>
               </Link>
 
