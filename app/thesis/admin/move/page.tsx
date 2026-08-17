@@ -33,7 +33,7 @@ function MoveThesisContent() {
         .from("thesis")
         .select(`
           *,
-          r_category (r_category_name),
+          r_thematic_area (r_thematic_name),
           school (school_name),
           thesis_author (
             author (
