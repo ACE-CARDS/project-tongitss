@@ -99,9 +99,9 @@ function ResourceLink({ link }: { link: string }) {
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          className="text-xs font-oswald text-[#1e4db7] hover:text-[#011638] transition-colors cursor-pointer self-end"
+          className="text-[#0d21a1] ml-auto text-xs font-ubuntu-mono hover:text-[#011638] mt-1 inline-block transition-colors cursor-pointer"
         >
-          {isExpanded ? "Show Less" : "Read More"}
+          {isExpanded ? "Read Less" : "Read More"}
         </button>
       )}
     </div>
