@@ -64,7 +64,7 @@ export default function AboutMission() {
                   </span>
                   
                   <p className="text-white text-xl sm:text-2xl md:text-4xl lg:text-5xl font-black leading-tight z-10 relative">
-                    Building the next generation of S&T professionals committed to the well-being of every Filipino.
+                    A Cordillera Administrative Region where science and technology are deeply integrated and felt in everyday life, driven by a united community of DOST scholars dedicated to national progress.
                   </p>
                   
                   <span className="absolute -bottom-8 right-0 lg:-right-4 text-6xl text-[#eec643]/30 font-serif leading-none select-none">
@@ -148,7 +148,7 @@ export default function AboutMission() {
                   </span>
                   
                   <p className="text-slate-700 text-base sm:text-xl md:text-2xl lg:text-3xl font-medium leading-relaxed relative z-10">
-                    To develop the country&apos;s S&T human resource and improve science education through responsive scholarships and innovative programs.
+                  To mobilize empowered scholars within the Cordillera Administrative Region through dedicated educational mentoring, serving communities beyond the university and embodying the commitment to be 'All in for Progress, All in for Service.'
                   </p>
                   
                   <span className="absolute -bottom-8 right-0 lg:-right-4 text-6xl text-[#011638]/10 font-serif leading-none select-none">
