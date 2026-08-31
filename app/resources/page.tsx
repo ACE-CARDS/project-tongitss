@@ -414,7 +414,7 @@ export default function ResourcesPage() {
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 xl:px-0 pt-8 pb-20 sm:pb-24">
           {/* Header */}
           <div className="text-center mb-8">
-            <AnimatedTitle title="Resources" />
+            <AnimatedTitle title="Publications" />
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">
               Access important documents, forms, and resources from ACE CARDS.
             </p>
