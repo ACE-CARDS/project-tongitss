@@ -99,7 +99,7 @@ function EditMemAppForm() {
     setIsFetching(false);
   };
 
-  //audit log
+  // Audit log
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -124,7 +124,7 @@ function EditMemAppForm() {
     }
   }, [user?.email]);
 
-  //track what changed
+  // Track what changed
   const getChangesString = () => {
     const changes: string[] = [];
 
