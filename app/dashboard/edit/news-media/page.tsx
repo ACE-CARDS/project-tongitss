@@ -56,7 +56,7 @@ function EditNewsMediaContent() {
 
   const formTopRef = useRef<HTMLDivElement>(null);
 
-  // Logic to determine if any change has occurred
+  // Determine if any change has occurred
   const isUnchanged = useMemo(() => {
     const textIsSame =
       JSON.stringify(formData) === JSON.stringify(initialFormData);
@@ -249,9 +249,9 @@ function EditNewsMediaContent() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 10MB limit
-      if (file.size > 10 * 1024 * 1024) {
-        setImageError("File size must be less than 10MB.");
+      // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError("File size must be less than 5MB.");
         return;
       }
       const allowedTypes = [

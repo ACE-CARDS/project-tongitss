@@ -51,7 +51,7 @@ export default function AddEventForm() {
     partnerships.trim() === "" &&
     !imageFile;
 
-  // Change Handlers with Dynamic Validation
+  // Dynamic Validation
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setTitle(val);

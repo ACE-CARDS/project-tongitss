@@ -17,7 +17,7 @@ function EditAnnouncementContent() {
   const type = searchParams.get("type") as "landing" | "dashboard";
   const router = useRouter();
 
-  // Redirect instantly if required queries are missing
+  // Redirect if required queries are missing
   useEffect(() => {
     if (!announcementId || !type) {
       router.push("/dashboard");
@@ -361,7 +361,7 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
             <span className="form_error">{titleError || "\u200b"}</span>
           </div>
 
-          {/* Description Field  */}
+          {/* Description Field */}
           <div>
             <div className="flex sm:grid sm:grid-cols-2 gap-4 items-center">
               <label className="form_label">Description</label>

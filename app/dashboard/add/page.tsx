@@ -1,4 +1,3 @@
-// Much general, not for Announcements only
 "use client";
 
 import NavBar from "@/components/layout/navbar";

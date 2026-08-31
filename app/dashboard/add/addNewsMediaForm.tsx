@@ -32,29 +32,6 @@ export default function AddNewsMediaForm() {
 
   const [titContError, setTitContError] = useState("");
 
-  // Load draft from session storage (same as Announcement Form)
-  useEffect(() => {
-    const savedDraft = sessionStorage.getItem("newsMediaDraft");
-    if (savedDraft) {
-      try {
-        const draft = JSON.parse(savedDraft);
-
-        if (titleRef.current) titleRef.current.value = draft.title || "";
-        if (contentRef.current) contentRef.current.value = draft.content || "";
-        if (postUrlRef.current) postUrlRef.current.value = draft.post_url || "";
-        if (fbPostDateRef.current)
-          fbPostDateRef.current.value = draft.fb_post_date || "";
-
-        // Trigger validation
-        validateTitleContent();
-        if (titleRef.current || contentRef.current) {
-        }
-      } catch (err) {
-        console.error("Error loading draft:", err);
-      }
-    }
-  }, []);
-
   // Clean image preview URL on unmount
   useEffect(() => {
     return () => {
@@ -63,16 +40,6 @@ export default function AddNewsMediaForm() {
       }
     };
   }, [imagePreview]);
-
-  const saveDraft = () => {
-    const draft = {
-      title: titleRef.current?.value || "",
-      content: contentRef.current?.value || "",
-      post_url: postUrlRef.current?.value || "",
-      fb_post_date: fbPostDateRef.current?.value || "",
-    };
-    sessionStorage.setItem("newsMediaDraft", JSON.stringify(draft));
-  };
 
   // Check if link is duplicated
   const checkDuplicatePostUrl = async (url: string): Promise<boolean> => {
@@ -154,9 +121,9 @@ export default function AddNewsMediaForm() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // File sizes (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("File size must be less than 10MB");
+      // File sizes (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
         return;
       }
 
@@ -251,9 +218,6 @@ export default function AddNewsMediaForm() {
 
       await logCreateAudit(title);
 
-      // Clear draft on success
-      sessionStorage.removeItem("newsMediaDraft");
-
       // Redirect
       router.push("/dashboard/add/success?type=news-media");
       router.refresh();
@@ -268,7 +232,7 @@ export default function AddNewsMediaForm() {
     }
   };
 
-  //audit log
+  // Audit log
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -333,7 +297,6 @@ export default function AddNewsMediaForm() {
       <div className="bg-[#fbfaf8] rounded-xl shadow-xl border border-[#e0e7ff] p-6">
         <form
           onSubmit={handleSubmit}
-          onChange={saveDraft}
           className="space-y-6"
         >
           {/* Submit error display */}
@@ -612,7 +575,6 @@ export default function AddNewsMediaForm() {
                   : "/dashboard"
               }
               className="px-4 py-2 text-[#011638] hover:text-[#1a2a4f] font-ubuntu-mono"
-              onClick={() => sessionStorage.removeItem("newsMediaDraft")}
             >
               Cancel
             </Link>
