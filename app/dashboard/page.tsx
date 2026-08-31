@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
+import { useRouter, useSearchParams } from "next/navigation";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
@@ -19,10 +19,10 @@ import LoadingState from "@/components/ui/loading/mainLoadingState";
 import TabLoadingState from "@/components/ui/loading/tabLoadingState";
 import { BsSuitSpadeFill } from "react-icons/bs";
 
-// Internal component to handle search params
+// Handle search params
 function DashboardContent() {
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<string | null>(null); //default null
+  const [activeTab, setActiveTab] = useState<string | null>(null); 
 
   // Get user role
   //const userRole = user?.user_metadata?.role || user?.role || "user";
@@ -145,7 +145,7 @@ function DashboardContent() {
     if (user?.email) {
       setIsDataLoading(true);
       fetchMemberData(user.email).then(() => {
-        // Minimum delay: 1.5s for ellipsis
+        // Minimum delay: 1.5s
         setTimeout(() => {
           setIsDataLoading(false);
         }, 1500);
@@ -253,14 +253,14 @@ function DashboardContent() {
       case "thesis":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
-          return <ThesisAdminWrapper />; //show the RUD for thesis
+          return <ThesisAdminWrapper />; //show the CRUD for thesis
         } else {
           return <MemberThesisView />;
         }
       case "survey":
         // if admin or super admin
         if (userRole === "admin" || userRole === "superadmin") {
-          return <SurveyAdminWrapper />;
+          return <SurveyAdminWrapper />; //show the CRUD for survey
         } else {
           // if member
           return <MemberSurveyView />;
@@ -288,7 +288,7 @@ function DashboardContent() {
 
             <div className="mt-8 mb-8 mx-auto w-[80%] lg:w-[90%] max-w-[1400px] overflow-hidden">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
-                {/*User Name*/}
+                {/* User Name */}
                 <div className="w-full md:w-auto">
                   <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
                     {memberData
@@ -299,18 +299,18 @@ function DashboardContent() {
 
                 <div className="flex flex-col items-center md:items-end gap-y-2 mb-1">
                   <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
-                    {/*Committee Name*/}
+                    {/* Committee Name */}
                     <p className="text-sm md:text-lg font-medium text-[#475569] font-ubuntu-mono">
                       {memberData?.comm || "Member"}
                     </p>
 
                     <span className="hidden md:block h-4 w-px bg-gray-300"></span>
-                    {/*University*/}
+                    {/* University */}
                     <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono">
                       {memberData?.school || "No School"}
                     </p>
                     <span className="hidden md:block h-4 w-px bg-gray-300"></span>
-                    {/*Scholarship*/}
+                    {/* Scholarship */}
                     <p className="text-sm md:text-lg text-[#475569] font-ubuntu-mono">
                       {memberData
                         ? `${memberData.year} ${memberData.schol}`
@@ -319,12 +319,12 @@ function DashboardContent() {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 opacity-70">
-                    {/*Role*/}
+                    {/* Role */}
                     <p className="text-xs md:text-sm text-[#64748b] font-ubuntu-mono uppercase tracking-wider">
                       {memberData?.role || "Member"}
                     </p>
                     <span className="hidden md:block h-3 w-px bg-gray-300"></span>
-                    {/*email*/}
+                    {/* Email */}
                     <p className="text-xs md:text-sm text-[#64748b] font-ubuntu-mono italic">
                       {memberData?.email || " "}
                     </p>
