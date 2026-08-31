@@ -249,7 +249,7 @@ export function AddAnnouncementForm() {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Display Location Buttons */}
+        {/* Display Location */}
         <div>
           <label className="form_label">Display Location</label>
           <div className="grid grid-cols-2 gap-4">

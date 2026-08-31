@@ -140,23 +140,6 @@ function AddResourceContent() {
     }
   }, [user?.email]);
 
-  // Load draft from SessionStorage
-  useEffect(() => {
-    const savedDraft = sessionStorage.getItem("resourceDraft");
-    if (savedDraft) {
-      try {
-        const draft = JSON.parse(savedDraft);
-        if (draft.title) setTitle(draft.title);
-        if (draft.link) setLink(draft.link);
-        if (draft.description) setDescription(draft.description);
-        if (draft.type) setType(draft.type);
-        if (draft.imagePreview) setImagePreview(draft.imagePreview);
-      } catch (err) {
-        console.error("Error loading draft:", err);
-      }
-    }
-  }, []);
-
   // Cleanup Preview URL
   useEffect(() => {
     return () => {
@@ -178,23 +161,6 @@ function AddResourceContent() {
       : email;
     setCurrentUserName(fullName || email);
     setCurrentUserEmail(data?.mem_email || email);
-  };
-
-  const saveDraft = (overrides?: {
-    title?: string;
-    link?: string;
-    type?: string;
-    description?: string;
-    imagePreview?: string;
-  }) => {
-    const draft = {
-      title: overrides?.title ?? title,
-      link: overrides?.link ?? link,
-      type: overrides?.type ?? type,
-      description: overrides?.description ?? description,
-      imagePreview: overrides?.imagePreview ?? imagePreview,
-    };
-    sessionStorage.setItem("resourceDraft", JSON.stringify(draft));
   };
 
   const validateUrl = (urlStr: string): boolean => {
@@ -287,7 +253,6 @@ function AddResourceContent() {
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      saveDraft({ imagePreview: previewUrl });
     }
   };
 
@@ -300,7 +265,6 @@ function AddResourceContent() {
     setImageError("");
     const fileInput = document.getElementById("image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
-    saveDraft({ imagePreview: "" });
   };
 
   const logCreateAudit = async (itemTitle: string) => {
@@ -403,8 +367,6 @@ function AddResourceContent() {
 
       await logCreateAudit(trimmedTitle);
 
-      // Clear draft on success
-      sessionStorage.removeItem("resourceDraft");
       if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
@@ -492,7 +454,6 @@ function AddResourceContent() {
                     onChange={(e) => {
                       setTitle(e.target.value);
                       validateTitle(e.target.value);
-                      saveDraft({ title: e.target.value });
                     }}
                     placeholder="Enter resource title"
                     data-error={!!titleError}
@@ -512,7 +473,6 @@ function AddResourceContent() {
                     onChange={(e) => {
                       setType(e.target.value);
                       if (e.target.value) setTypeError("");
-                      saveDraft({ type: e.target.value });
                     }}
                     data-error={!!typeError}
                     className="form_input"
@@ -546,7 +506,6 @@ function AddResourceContent() {
                     value={description}
                     onChange={(e) => {
                       setDescription(e.target.value);
-                      saveDraft({ description: e.target.value });
                     }}
                     placeholder="Enter resource description"
                     data-error={!!descriptionError}
@@ -652,7 +611,6 @@ function AddResourceContent() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setLink(val);
-                      saveDraft({ link: val });
 
                       if (!val.trim()) {
                         setLinkError("Link is required.");
@@ -681,7 +639,6 @@ function AddResourceContent() {
                   }
                   className="from_btn-cancel"
                   onClick={() => {
-                    sessionStorage.removeItem("resourceDraft");
                     if (imagePreview && imagePreview.startsWith("blob:")) {
                       URL.revokeObjectURL(imagePreview);
                     }
