@@ -278,9 +278,9 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
                     xl:-left-10 xl:top-8 xl:w-50 xl:text-center
                   `}
                 >
-                  <li className="hover:underline">
+                  {/* <li className="hover:underline">
                     <Link href="/survey">Research Surveys</Link>
-                  </li>
+                  </li> */}
                   <li className="hover:underline">
                     <Link href="/thesis">Research Collection</Link>
                   </li>

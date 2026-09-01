@@ -184,14 +184,14 @@ export default function Academics({id}: {id?: string}) {
             {/* Stats Counter */}
             <div className="w-full cursor-default">
               <div className=" mt-10 flex flex-wrap justify-center lg:justify-start gap-6 mb-1">
-                <div ref={surveySectionRef} className="text-center group">
+                {/* <div ref={surveySectionRef} className="text-center group">
                   <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
                     {displaySurveyCount}
                   </div>
                   <div className="text-[#141414]/60 sm:font-bold text-sm mt-1 group-hover:text-[#011638] transition-colors px-6">
                     Research Surveys
                   </div>
-                </div>
+                </div> */}
 
                 <div ref={thesesSectionRef} className="text-center group">
                   <div className="text-5xl sm:font-black sm:font-oswald sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#eec643]/80 group-hover:scale-110 transition-transform duration-300">
@@ -213,7 +213,7 @@ export default function Academics({id}: {id?: string}) {
 
             {/* Buttons */}
             <div className="flex lg:flex-row flex-col justify-center lg:justify-start gap-6 mt-12">
-              <Link
+              {/* <Link
                 href="/survey"
                 onClick={() =>
                   sessionStorage.setItem(
@@ -224,7 +224,7 @@ export default function Academics({id}: {id?: string}) {
                 className="btn-blue"
               >
                 Take Survey→
-              </Link>
+              </Link> */}
 
               <Link
                 href="/thesis"
