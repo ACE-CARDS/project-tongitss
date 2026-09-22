@@ -250,7 +250,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
   return (
     <>
       {isLoading ? (
-      <div className="min-h-[400px]"></div>  // ← Blank
+      <div className="min-h-[400px]"></div>
     ) : (!paginatedSurveys || paginatedSurveys.length === 0) ? (
       <div className="text-center text-[#475569] py-8 font-ubuntu-mono">
         No surveys found.
@@ -571,7 +571,7 @@ export default function AdminClientPagination({ allSurveys, currentPage, onPageC
             })}
           </div>
           
-          {/* pagination info at the END as suggested by Ma'am */}
+          {/* Pagination info */}
           <Pagination
             currentPage={validCurrentPage}
             totalPages={totalPages || 1}
