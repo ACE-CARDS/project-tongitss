@@ -7,6 +7,7 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
 import { sendSurveyApprovalEmail, sendSurveyRejectionEmail } from "@/app/actions/email-actions";
+import { useUser } from "@/components/context/userContext";
 
 function ReviewContent() {
   const router = useRouter();
@@ -22,6 +23,62 @@ function ReviewContent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Current user state for audit
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  // Review audit log
+  const logReviewAudit = async (
+    surveyTitle: string,
+    recordId: number,
+    decision: "Approved" | "Rejected",
+    rejectionReasonText?: string,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    let detailedMessage = `Reviewed survey "${surveyTitle}" (ID: ${recordId}) — ${decision}`;
+
+    if (decision === "Rejected" && rejectionReasonText) {
+      detailedMessage += ` — Reason: "${rejectionReasonText}"`;
+    }
+
+    const logEntry = {
+      action: "Review",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "survey",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write review audit log:", error);
+    }
+  };
 
   // Fetch survey data based on ID in URL
   useEffect(() => {
@@ -88,6 +145,13 @@ function ReviewContent() {
         .eq("id", surveyId);
 
       if (error) throw error;
+
+      // Log review audit (Approved)
+      await logReviewAudit(
+        survey.survey_title,
+        survey.id,
+        "Approved",
+      );
       
       // Send approval email
       const emailResult = await sendSurveyApprovalEmail(Number(surveyId));
@@ -124,6 +188,14 @@ function ReviewContent() {
         .eq("id", surveyId);
 
       if (error) throw error;
+
+      // Log review audit (Rejected)
+      await logReviewAudit(
+        survey.survey_title,
+        survey.id,
+        "Rejected",
+        rejectionReason.trim(),
+      );
       
       // Send rejection email
       const emailResult = await sendSurveyRejectionEmail(Number(surveyId), rejectionReason.trim());

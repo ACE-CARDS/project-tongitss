@@ -51,7 +51,7 @@ const ImgImport = () => {
       details: detailedMessage,
       user: whoDidItName,
       user_email: whoDidItEmail,
-      table_name: "member-pictures",
+      table_name: "member",
     };
 
     const { error } = await supabase.from("audit_log").insert([logEntry]);

@@ -7,6 +7,7 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
 import { sendThesisMoveEmail } from "@/app/actions/email-actions";
+import { useUser } from "@/components/context/userContext";
 
 function MoveThesisContent() {
   const router = useRouter();
@@ -24,6 +25,63 @@ function MoveThesisContent() {
   const [rejectionError, setRejectionError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // User state for audit
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  // Move audit log
+  const logMoveAudit = async (
+    thesisTitle: string,
+    recordId: number,
+    oldStatus: string,
+    newStatus: string,
+    rejectionReasonText?: string,
+  ) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    let detailedMessage = `Moved thesis "${thesisTitle}" (ID: ${recordId}) status from "${oldStatus}" to "${newStatus}"`;
+
+    if (newStatus === "rejected" && rejectionReasonText) {
+      detailedMessage += ` — Reason: "${rejectionReasonText}"`;
+    }
+
+    const logEntry = {
+      action: "Move",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "thesis",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write move audit log:", error);
+    }
+  };
 
   useEffect(() => {
     async function fetchThesis() {
@@ -125,6 +183,15 @@ function MoveThesisContent() {
           .eq("id", thesis.id);
           
         if (error) throw error;
+
+        // Log move
+        await logMoveAudit(
+          thesis.thesis_title,
+          thesis.id,
+          oldStatus,
+          selectedStatus,
+          selectedStatus === "rejected" ? rejectionReason.trim() : undefined,
+        );
         
         // Send move notif email
         const emailResult = await sendThesisMoveEmail(
