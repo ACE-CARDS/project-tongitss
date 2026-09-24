@@ -63,7 +63,7 @@ function MoveThesisContent() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    let detailedMessage = `Moved thesis "${thesisTitle}" (ID: ${recordId}) status from "${oldStatus}" to "${newStatus}"`;
+    let detailedMessage = `Moved thesis "${thesisTitle}": Moved to "${newStatus}"`;
 
     if (newStatus === "rejected" && rejectionReasonText) {
       detailedMessage += ` — Reason: "${rejectionReasonText}"`;

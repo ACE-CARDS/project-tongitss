@@ -60,7 +60,7 @@ function ReviewContent() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    let detailedMessage = `Reviewed thesis "${thesisTitle}" (ID: ${recordId}) — ${decision}`;
+    let detailedMessage = `Reviewed thesis "${thesisTitle}" — ${decision}`;
 
     if (decision === "Rejected" && rejectionReasonText) {
       detailedMessage += ` — Reason: "${rejectionReasonText}"`;

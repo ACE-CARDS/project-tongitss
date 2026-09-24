@@ -63,7 +63,7 @@ function MoveSurveyContent() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    let detailedMessage = `Moved survey "${surveyTitle}" (ID: ${recordId}) status from "${oldStatus}" to "${newStatus}"`;
+    let detailedMessage = `Moved survey "${surveyTitle}": Moved to "${newStatus}"`;
 
     if (newStatus === "rejected" && rejectionReasonText) {
       detailedMessage += ` — Reason: "${rejectionReasonText}"`;

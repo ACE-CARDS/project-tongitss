@@ -60,7 +60,7 @@ function ReviewContent() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    let detailedMessage = `Reviewed survey "${surveyTitle}" (ID: ${recordId}) — ${decision}`;
+    let detailedMessage = `Reviewed survey "${surveyTitle}" — ${decision}`;
 
     if (decision === "Rejected" && rejectionReasonText) {
       detailedMessage += ` — Reason: "${rejectionReasonText}"`;

@@ -258,7 +258,7 @@ export default function ResourcesAdmin() {
 
     const logEntry = {
       action: "Delete",
-      details: `Deleted resource "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      details: `Deleted resource "${itemTitle || "Unknown Title"}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "downloads",
