@@ -1192,6 +1192,9 @@ export default function MembersPage() {
   const [pendingImport, setPendingImport] = useState<any[]>([]);
   const [showImportConfirm, setShowImportConfirm] = useState(false);
 
+  // Track file name for import audit
+  const [importFileName, setImportFileName] = useState<string>("");
+
   const handleConfirmImport = async () => {
     try {
       const { data, error } = await supabase
@@ -1270,7 +1273,10 @@ export default function MembersPage() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Imported ${pendingImport.length} members`;
+    const count = pendingImport.length;
+    const memberLabel = count === 1 ? "member" : "members";
+    const fileLabel = importFileName ? ` from file "${importFileName}"` : "";
+    const detailedMessage = `Imported ${count} ${memberLabel}${fileLabel}`;
 
     const logEntry = {
       action: "Import",
@@ -1291,7 +1297,7 @@ export default function MembersPage() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Exported .csv member list`;
+    const detailedMessage = `Exported the member list to .csv file`;
 
     const logEntry = {
       action: "Export",
@@ -1312,7 +1318,7 @@ export default function MembersPage() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Exported .pdf member list`;
+    const detailedMessage = `Exported the member list to .pdf file`;
 
     const logEntry = {
       action: "Export",
@@ -1693,6 +1699,9 @@ export default function MembersPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+
+                    // get file name for audit
+                    setImportFileName(file.name);
 
                     const text = await file.text();
 

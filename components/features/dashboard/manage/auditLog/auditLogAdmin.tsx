@@ -42,7 +42,8 @@ export default function AuditLogAdmin() {
     { label: "Delete", key: "Delete" },
     { label: "Import", key: "Import" },
     { label: "Export", key: "Export" },
-    { label: "Archive", key: "Archive" },
+    { label: "Move", key: "Move" },
+    { label: "Review", key: "Review" },
   ];
 
   const tables = [
@@ -145,8 +146,10 @@ export default function AuditLogAdmin() {
         return "text-orange-700 bg-orange-50";
       case "Export":
         return "text-purple-700 bg-purple-50";
-      case "Archive":
+      case "Move":
         return "text-pink-700 bg-pink-50";
+      case "Review":
+        return "text-teal-700 bg-teal-50";
       default:
         return "text-slate-700 bg-slate-50";
     }
