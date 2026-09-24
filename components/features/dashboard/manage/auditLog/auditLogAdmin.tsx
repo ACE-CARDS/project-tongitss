@@ -323,7 +323,7 @@ export default function AuditLogAdmin() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3 max-h-[720px] overflow-y-auto pr-2">
+              <div className="space-y-3 max-h-[720px] overflow-y-auto pr-2 custom-scrollbar-blue">
                 {paginatedItems.map((log) => {
                   const expanded = expandedDetails.includes(log.id);
                   const showReadMore = shouldShowReadMore(log.details);
