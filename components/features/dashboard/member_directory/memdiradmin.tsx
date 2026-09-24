@@ -396,6 +396,32 @@ export default function MembersPage() {
     }
   };
 
+  // Delete audit log
+  const logDeleteAudit = async (member: Member) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const memberName =
+      `${member.mem_fname || ""} ${member.mem_lname || ""}`.trim() ||
+      `ID: ${member.id}`;
+
+    const detailedMessage = `Deleted member: "${memberName}" (${member.mem_email || "no email"})`;
+
+    const logEntry = {
+      action: "Delete",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write delete audit log:", error);
+    }
+  };
+
   //color based sa GA
   const getCommitteeStyle = (commName: string) => {
     const name = commName.toLowerCase();
@@ -672,17 +698,22 @@ export default function MembersPage() {
     if (!deleteMember) return;
 
     try {
+      const memberToDelete = deleteMember;
+
       const { error } = await supabase
         .from("member")
         .update({ is_active: false })
-        .eq("id", deleteMember.id);
+        .eq("id", memberToDelete.id);
 
       if (error) throw error;
 
-      setMembers((prev) => prev.filter((m) => m.id !== deleteMember.id));
+      // Log delete audit
+      await logDeleteAudit(memberToDelete);
+
+      setMembers((prev) => prev.filter((m) => m.id !== memberToDelete.id));
 
       setOriginalMembers((prev) =>
-        prev.filter((m) => m.id !== deleteMember.id),
+        prev.filter((m) => m.id !== memberToDelete.id),
       );
 
       setDeleteMember(null);

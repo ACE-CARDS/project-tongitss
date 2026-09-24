@@ -169,7 +169,7 @@ export default function AnnouncementsAdmin() {
 
     const logEntry = {
       action: "Delete",
-      details: `Deleted announcement "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"}) from ${tableName}`,
+      details: `Deleted announcement: "${itemTitle || "Unknown Title"}" from ${tableName}`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: tableName,

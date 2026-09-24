@@ -532,7 +532,7 @@ export default function ThematicAdmin() {
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
     const logEntry = {
       action: "Delete",
-      details: `Deleted thematic area "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      details: `Deleted thematic area: "${itemTitle || "Unknown Title"}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "r_thematic_area",

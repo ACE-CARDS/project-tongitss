@@ -1,11 +1,64 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useUser } from "@/components/context/userContext";
 
 const ImgImport = () => {
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
+
+  // For audit
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useState(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  });
+
+  // Import audit log 
+  const logImportAudit = async (count: number, fileNames: string[]) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const fileLabel =
+      fileNames.length > 0
+        ? ` from file(s): ${fileNames.map((n) => `"${n}"`).join(", ")}`
+        : "";
+    const memberLabel = count === 1 ? "image" : "images";
+    const detailedMessage = `Imported ${count} ${memberLabel}${fileLabel}`;
+
+    const logEntry = {
+      action: "Import",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "member-pictures",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
@@ -46,12 +99,15 @@ const ImgImport = () => {
         setProgress(Math.round((completed / files.length) * 100));
       }
 
+      await logImportAudit(files.length, fileNames);
+
       setMessage("Import complete! All photos synced.");
     } catch (err) {
       setMessage("A critical error occurred during import.");
       console.error(err);
     } finally {
       setUploading(false);
+      event.target.value = "";
     }
   };
 

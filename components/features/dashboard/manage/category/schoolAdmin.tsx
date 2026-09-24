@@ -756,7 +756,7 @@ export default function SchoolAdmin() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Deleted school "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`;
+    const detailedMessage = `Deleted school: "${itemTitle || "Unknown Title"}"`;
 
     const logEntry = {
       action: "Delete",

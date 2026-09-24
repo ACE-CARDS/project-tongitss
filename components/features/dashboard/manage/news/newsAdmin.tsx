@@ -157,7 +157,7 @@ export default function NewsAdmin() {
 
     const logEntry = {
       action: "Delete",
-      details: `Deleted media "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      details: `Deleted news media: "${itemTitle || "Unknown Title"}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "news_media",

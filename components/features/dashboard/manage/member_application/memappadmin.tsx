@@ -807,11 +807,11 @@ export default function MemAppAdmin() {
 
     let detailedMessage = "";
     if (contentType === "instruction") {
-      detailedMessage = `Deleted membership application content "${contentType || "Unknown Title"}" (ID: ${recordID || "Unknown ID"})`;
+      detailedMessage = `Deleted membership application instruction: "${contentType || "Unknown Title"}"`;
     } else if (contentType === "video") {
-      detailedMessage = `Deleted video link: "${text}"`;
+      detailedMessage = `Deleted membership application video link: "${text}"`;
     } else {
-      detailedMessage = `Deleted membership application content "${contentType || "Unknown Title"}" (ID: ${recordID || "Unknown ID"})`;
+      detailedMessage = `Deleted membership application content: "${contentType || "Unknown Title"}"`;
     }
 
     const logEntry = {

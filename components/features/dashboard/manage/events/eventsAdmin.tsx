@@ -368,7 +368,7 @@ export default function EventsAdmin() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Deleted event "${itemTitle || "Unknown Title"}"`;
+    const detailedMessage = `Deleted event: "${itemTitle || "Unknown Title"}"`;
 
     const logEntry = {
       action: "Delete",

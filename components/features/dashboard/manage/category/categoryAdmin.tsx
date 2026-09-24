@@ -532,7 +532,7 @@ export default function CategoryAdmin() {
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
     const logEntry = {
       action: "Delete",
-      details: `Deleted category "${itemTitle || "Unknown Title"}" (ID: ${recordId || "Unknown ID"})`,
+      details: `Deleted category: "${itemTitle || "Unknown Title"}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "r_category",
