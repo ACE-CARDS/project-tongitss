@@ -272,7 +272,7 @@ function AddResourceContent() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Created a new resource titled "${itemTitle}"`;
+    const detailedMessage = `Created a new resource: "${itemTitle}"`;
 
     const logEntry = {
       action: "Create",

@@ -519,7 +519,7 @@ export default function CategoryAdmin() {
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
     const logEntry = {
       action: "Update",
-      details: `Updated category "${newName}" (ID: ${old.id}). Changes: [category changed from "${old.r_category_name}" to "${newName}"]`,
+      details: `Updated category "${newName}": Changed to "${newName}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "r_category",

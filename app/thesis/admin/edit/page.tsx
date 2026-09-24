@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { useUser } from "@/components/context/userContext";
 
 interface ThematicArea {
   id: string;
@@ -64,6 +65,61 @@ function EditThesisContent() {
     r_thematic_area: "",
     school: "",
   });
+
+  // Initial for change tracking / audit log
+  const [initialData, setInitialData] = useState<{
+    thesis_title: string;
+    thesis_abstract: string;
+    thesis_keyword: string;
+    thesis_date: string;
+    thesis_phys: string;
+    thesis_digi: string;
+    r_thematic_area: string;
+    school: string;
+    authors: Array<{
+      firstName: string;
+      middleInitial: string;
+      lastName: string;
+      email: string;
+      memberId: number | null;
+      isScholar: boolean;
+    }>;
+  }>({
+    thesis_title: "",
+    thesis_abstract: "",
+    thesis_keyword: "",
+    thesis_date: "",
+    thesis_phys: "",
+    thesis_digi: "",
+    r_thematic_area: "",
+    school: "",
+    authors: [],
+  });
+
+  // User & Audit Log State
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
 
   // Search for members in the database
   const searchMembers = async (searchTerm: string, authorIndex: number) => {
@@ -296,6 +352,31 @@ function EditThesisContent() {
           thesis_digi: data.thesis_digi || "",
           r_thematic_area: data.r_thematic_area?.id.toString() || "",
           school: data.school?.id.toString() || "",
+        });
+
+        // Capture initial for change tracking / audit log
+        const initialAuthors = (data.thesis_author || []).map((sa: any) => {
+          const a = sa.author || sa;
+          return {
+            firstName: a.author_fname || "",
+            middleInitial: a.author_minit || "",
+            lastName: a.author_lname || "",
+            email: a.author_email || "",
+            memberId: a.mem_id || null,
+            isScholar: a.scholar !== undefined ? a.scholar : false,
+          };
+        });
+
+        setInitialData({
+          thesis_title: data.thesis_title || "",
+          thesis_abstract: data.thesis_abstract || "",
+          thesis_keyword: data.thesis_keyword || "",
+          thesis_date: year ? year.toString() : "",
+          thesis_phys: data.thesis_phys || "",
+          thesis_digi: data.thesis_digi || "",
+          r_thematic_area: data.r_thematic_area?.id?.toString() || "",
+          school: data.school?.id?.toString() || "",
+          authors: initialAuthors,
         });
       }
       setLoading(false);
@@ -681,12 +762,85 @@ function EditThesisContent() {
         if (addError) throw addError;
       }
 
+      // Log audit entry
+      await logUpdateAudit(thesis.thesis_title);
+
       router.push("/thesis/admin/edit/success");
       
     } catch (error) {
       console.error("Error updating thesis:", error);
       setSubmitError(error instanceof Error ? error.message : "Failed to update thesis");
       setIsSubmitting(false);
+    }
+  };
+
+  // Track what changed (for audit log)
+  const getChangesString = () => {
+    const changes: string[] = [];
+
+    if (initialData.thesis_title !== (formData.thesis_title || "")) {
+      changes.push(`Title changed to "${formData.thesis_title}"`);
+    }
+    if (initialData.thesis_abstract !== (formData.thesis_abstract || "")) {
+      changes.push(`Abstract changed to "${formData.thesis_abstract}"`);
+    }
+    if (initialData.thesis_keyword !== (formData.thesis_keyword || "")) {
+      changes.push(`Keywords changed to "${formData.thesis_keyword}"`);
+    }
+    if (initialData.thesis_date !== (pubYear || "")) {
+      changes.push(`Publication year changed to ${pubYear}`);
+    }
+    if (initialData.thesis_phys !== (formData.thesis_phys || "")) {
+      changes.push(`Physical copy changed to "${formData.thesis_phys}"`);
+    }
+    if (initialData.thesis_digi !== (formData.thesis_digi || "")) {
+      changes.push(`Digital copy changed to "${formData.thesis_digi}"`);
+    }
+    if (initialData.r_thematic_area !== (formData.r_thematic_area || "")) {
+      const area = availableThematicAreas.find(a => a.id.toString() === formData.r_thematic_area);
+      changes.push(`Thematic area changed to "${area?.r_thematic_name || formData.r_thematic_area}"`);
+    }
+    if (initialData.school !== (formData.school || "")) {
+      const school = availableSchools.find(s => s.id.toString() === formData.school);
+      changes.push(`School changed to "${school?.school_name || formData.school}"`);
+    }
+
+    // Compare authors
+    const validCurrentAuthors = authors
+      .filter(a => a.firstName?.trim() && a.lastName?.trim() && a.email?.trim())
+      .map(a => `${a.firstName?.trim()} ${a.lastName?.trim()} <${a.email?.trim()}>`);
+    const validOriginalAuthors = (initialData.authors || [])
+      .filter(a => a.firstName?.trim() && a.lastName?.trim() && a.email?.trim())
+      .map(a => `${a.firstName?.trim()} ${a.lastName?.trim()} <${a.email?.trim()}>`);
+
+    if (JSON.stringify(validCurrentAuthors) !== JSON.stringify(validOriginalAuthors)) {
+      changes.push(`authors changed to [${validCurrentAuthors.join(", ") || "none"}]`);
+    }
+
+    return changes.length > 0
+      ? `${changes.join(", ")}`
+      : "No changes detected";
+  };
+
+  const logUpdateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const changes = getChangesString();
+    const detailedMessage = `Updated "${formData.thesis_title}" thesis content: ${changes}`;
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "thesis",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
     }
   };
 

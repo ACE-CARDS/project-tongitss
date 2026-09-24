@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BackButton from "@/components/ui/backButton";
+import { useUser } from "@/components/context/userContext";
 
 interface Category {
   id: string;
@@ -72,6 +73,65 @@ function EditSurveyContent() {
     r_category: "",
     school: "",
   });
+
+  // Initial for change tracking / audit log
+  const [initialData, setInitialData] = useState<{
+    survey_title: string;
+    survey_desc: string;
+    survey_keyword: string;
+    survey_start: string;
+    survey_end: string;
+    survey_link: string;
+    survey_respondents: string;
+    max_respondents: string;
+    r_category: string;
+    school: string;
+    authors: Array<{
+      firstName: string;
+      middleInitial: string;
+      lastName: string;
+      email: string;
+      memberId: number | null;
+      isScholar: boolean;
+    }>;
+  }>({
+    survey_title: "",
+    survey_desc: "",
+    survey_keyword: "",
+    survey_start: "",
+    survey_end: "",
+    survey_link: "",
+    survey_respondents: "",
+    max_respondents: "",
+    r_category: "",
+    school: "",
+    authors: [],
+  });
+
+  // User & Audit Log State
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
 
   // Search for members in the database
   const searchMembers = async (searchTerm: string, authorIndex: number) => {
@@ -309,6 +369,33 @@ function EditSurveyContent() {
           max_respondents: data.max_respondents || "",
           r_category: data.r_category?.id.toString() || "",
           school: data.school?.id.toString() || "",
+        });
+
+        // Capture initial for change tracking / audit log
+        const initialAuthors = (data.survey_author || []).map((sa: any) => {
+          const a = sa.author || sa;
+          return {
+            firstName: a.author_fname || "",
+            middleInitial: a.author_minit || "",
+            lastName: a.author_lname || "",
+            email: a.author_email || "",
+            memberId: a.mem_id || null,
+            isScholar: a.scholar !== undefined ? a.scholar : false,
+          };
+        });
+
+        setInitialData({
+          survey_title: data.survey_title || "",
+          survey_desc: data.survey_desc || "",
+          survey_keyword: data.survey_keyword || "",
+          survey_start: start || "",
+          survey_end: end || "",
+          survey_link: data.survey_link || "",
+          survey_respondents: data.survey_respondents || "",
+          max_respondents: data.max_respondents?.toString() || "",
+          r_category: data.r_category?.id?.toString() || "",
+          school: data.school?.id?.toString() || "",
+          authors: initialAuthors,
         });
       }
       setLoading(false);
@@ -844,6 +931,9 @@ function EditSurveyContent() {
         if (addError) throw addError;
       }
 
+      // Log audit entry
+      await logUpdateAudit(survey.survey_title);
+
       router.push("/survey/admin/edit/success");
       
     } catch (error) {
@@ -936,6 +1026,79 @@ function EditSurveyContent() {
     }
     
     return false;
+  };
+
+  // Track what changed (for audit log)
+  const getChangesString = () => {
+    const changes: string[] = [];
+
+    if (initialData.survey_title !== (formData.survey_title || "")) {
+      changes.push(`Title changed to "${formData.survey_title}"`);
+    }
+    if (initialData.survey_desc !== (formData.survey_desc || "")) {
+      changes.push(`Description changed to "${formData.survey_desc}"`);
+    }
+    if (initialData.survey_start !== (startDate || "")) {
+      changes.push(`Start date changed to ${startDate}`);
+    }
+    if (initialData.survey_end !== (endDate || "")) {
+      changes.push(`End date changed to ${endDate}`);
+    }
+    if (initialData.survey_link !== (formData.survey_link || "")) {
+      changes.push(`Survey link changed to "${formData.survey_link}"`);
+    }
+    if (initialData.survey_respondents !== (formData.survey_respondents || "")) {
+      changes.push(`Target respondents changed to "${formData.survey_respondents}"`);
+    }
+    if (initialData.max_respondents !== (formData.max_respondents || "")) {
+      changes.push(`Maximum respondents changed to ${formData.max_respondents || "none"}`);
+    }
+    if (initialData.r_category !== (formData.r_category || "")) {
+      const category = availableCategories.find(c => c.id.toString() === formData.r_category);
+      changes.push(`Category changed to "${category?.r_category_name || formData.r_category}"`);
+    }
+    if (initialData.school !== (formData.school || "")) {
+      const school = availableSchools.find(s => s.id.toString() === formData.school);
+      changes.push(`School changed to "${school?.school_name || formData.school}"`);
+    }
+
+    // Compare authors
+    const validCurrentAuthors = authors
+      .filter(a => a.firstName?.trim() && a.lastName?.trim() && a.email?.trim())
+      .map(a => `${a.firstName?.trim()} ${a.lastName?.trim()} <${a.email?.trim()}>`);
+    const validOriginalAuthors = (initialData.authors || [])
+      .filter(a => a.firstName?.trim() && a.lastName?.trim() && a.email?.trim())
+      .map(a => `${a.firstName?.trim()} ${a.lastName?.trim()} <${a.email?.trim()}>`);
+
+    if (JSON.stringify(validCurrentAuthors) !== JSON.stringify(validOriginalAuthors)) {
+      changes.push(`authors changed to [${validCurrentAuthors.join(", ") || "none"}]`);
+    }
+
+    return changes.length > 0
+      ? `${changes.join(", ")}`
+      : "No changes detected";
+  };
+
+  const logUpdateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const changes = getChangesString();
+    const detailedMessage = `Updated "${formData.survey_title}" survey content: ${changes}`;
+
+    const logEntry = {
+      action: "Update",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "survey",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
   };
 
   // Check if save button should be disabled

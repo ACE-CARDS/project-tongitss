@@ -754,7 +754,7 @@ export default function MemAppAdmin() {
     let detailedMessage = "";
 
     if (oldDate !== newDate) {
-      detailedMessage = `Changed membership application deadline from "${oldDate}" to "${newDate}"`;
+      detailedMessage = `Updated membership application deadline: "Deadline changed to "${newDate}"`;
     } else {
       detailedMessage = `Re-saved membership application deadline as "${newDate}" (No changes made)`;
     }
@@ -779,7 +779,7 @@ export default function MemAppAdmin() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Updated Google Form signup link from "${oldLink}" to "${newLink}"`;
+    const detailedMessage = `Updated Google Form link: Link changed to "${newLink}"`;
 
     const logEntry = {
       action: "Update",

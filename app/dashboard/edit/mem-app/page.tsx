@@ -129,19 +129,19 @@ function EditMemAppForm() {
     const changes: string[] = [];
 
     if (initialData.type !== formData.type) {
-      changes.push(`type changed to "${formData.type}"`);
+      changes.push(`Type changed to "${formData.type}"`);
     }
     if (initialData.description !== formData.description) {
-      changes.push(`description changed to "${formData.description}"`);
+      changes.push(`Description changed to "${formData.description}"`);
     }
     if (Number(initialData.order_index) !== Number(formData.order_index)) {
       changes.push(
-        `sequence order shifted from #${initialData.order_index} to #${formData.order_index}`,
+        `Sequence order shifted from #${initialData.order_index} to #${formData.order_index}`,
       );
     }
 
     return changes.length > 0
-      ? `Changes: [${changes.join(", ")}]`
+      ? `${changes.join(", ")}`
       : "No changes detected";
   };
 
@@ -151,7 +151,7 @@ function EditMemAppForm() {
       currentUserEmail || user?.email || "unknown@email.com";
 
     const changes = getChangesString();
-    const detailedMessage = `Updated membership application content (ID: ${recordId}). ${changes}`;
+    const detailedMessage = `Updated membership application content: "${changes}"`;
 
     const logEntry = {
       action: "Update",

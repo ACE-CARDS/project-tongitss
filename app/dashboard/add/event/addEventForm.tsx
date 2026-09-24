@@ -312,7 +312,7 @@ export default function AddEventForm() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Created a new event titled "${itemTitle}"`;
+    const detailedMessage = `Created a new event: "${itemTitle}"`;
 
     const logEntry = {
       action: "Create",

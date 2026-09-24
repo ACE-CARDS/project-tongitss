@@ -519,7 +519,7 @@ export default function ThematicAdmin() {
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
     const logEntry = {
       action: "Update",
-      details: `Updated thematic area "${newName}" (ID: ${old.id}). Changes: [thematic area changed from "${old.r_thematic_name}" to "${newName}"]`,
+      details: `Updated thematic area "${newName}": Changed to "${newName}"`,
       user: whoDidItName,
       user_email: whoDidItEmail,
       table_name: "r_thematic_area",

@@ -262,7 +262,7 @@ export default function AddNewsMediaForm() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Created a new media titled "${itemTitle}"`;
+    const detailedMessage = `Created a new media: "${itemTitle}"`;
 
     const logEntry = {
       action: "Create",

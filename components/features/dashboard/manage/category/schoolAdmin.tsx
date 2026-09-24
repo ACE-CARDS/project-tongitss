@@ -696,7 +696,7 @@ export default function SchoolAdmin() {
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Created a new school named "${itemTitle}"`;
+    const detailedMessage = `Created a new school: "${itemTitle}"`;
 
     const logEntry = {
       action: "Create",
@@ -726,18 +726,18 @@ export default function SchoolAdmin() {
 
     if (old.school_name !== newName) {
       changes.push(
-        `school name changed from "${old.school_name}" to "${newName}"`,
+        `School name changed to "${newName}"`,
       );
     }
     if (old.province !== newProvinceId) {
       changes.push(
-        `province changed from "${provinceLookup[old.province] || "N/A"}" to "${newProvinceName}"`,
+        `Province changed to "${newProvinceName}"`,
       );
     }
 
     if (changes.length === 0) return;
 
-    const detailedMessage = `Updated school "${newName}" (ID: ${old.id}). Changes: [${changes.join(", ")}]`;
+    const detailedMessage = `Updated school "${newName}": ${changes.join(", ")}`;
 
     const logEntry = {
       action: "Update",

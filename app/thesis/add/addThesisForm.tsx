@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/ui/backButton";
+import { useUser } from "@/components/context/userContext";
 
 interface ThematicArea {
   id: string;
@@ -65,6 +66,52 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
   const [pendingNewThematicAreas, setPendingNewThematicAreas] = useState<ThematicArea[]>([]);
   const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
   const formSubmittedRef = useRef(false);
+
+  // Audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUser = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUser(user.email);
+    }
+  }, [user?.email]);
+
+  const logCreateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Created a new thesis: "${itemTitle}"`;
+
+    const logEntry = {
+      action: "Create",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "thesis",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -1014,6 +1061,9 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
         .insert(thesisAuthorInserts);
 
       if (linkError) throw linkError;
+
+      // Log audit entry
+      await logCreateAudit(titleInput.value);
 
       sessionStorage.removeItem("thesisDraft");
       router.push(`/thesis/add/success?returnTo=${encodeURIComponent(returnUrl)}`);

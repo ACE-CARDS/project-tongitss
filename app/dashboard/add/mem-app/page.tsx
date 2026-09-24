@@ -238,11 +238,11 @@ export default function AddMemApp() {
 
     let detailedMessage = "";
     if (contentType === "instruction") {
-      detailedMessage = `Created new instruction step at sequence #${orderIdx}: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
+      detailedMessage = `Created a new instruction: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
     } else if (contentType === "video") {
-      detailedMessage = `Added new video link: "${text}"`;
+      detailedMessage = `Added a new video link: "${text}"`;
     } else {
-      detailedMessage = `Created new reminder item: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
+      detailedMessage = `Created a new reminder: "${text.substring(0, 60)}${text.length > 60 ? "..." : ""}"`;
     }
 
     const logEntry = {

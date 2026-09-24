@@ -380,7 +380,7 @@ export default function MembersPage() {
     const oldCommName = await getCommitteeName(oldCommId);
     const newCommName = await getCommitteeName(newCommId);
 
-    const detailedMessage = `Updated committee for member "${memberName}" from "${oldCommName}" to "${newCommName}"`;
+    const detailedMessage = `Updated committee for member "${memberName}": "${oldCommName}" to "${newCommName}"`;
 
     const logEntry = {
       action: "Update",
@@ -1415,7 +1415,7 @@ export default function MembersPage() {
 
       const changes =
         diffs.length > 0
-          ? `Changes: [${diffs.join(", ")}]`
+          ? `${diffs.join(", ")}`
           : "No changes detected.";
 
       const memberName =
@@ -1425,7 +1425,7 @@ export default function MembersPage() {
           `${newObj.mem_fname || ""} ${newObj.mem_lname || ""}`.trim()) ||
         `ID: ${recordId}`;
 
-      const detailedMessage = `Updated member "${memberName}" (ID: ${recordId}). ${changes}`;
+      const detailedMessage = `Updated member "${memberName}": ${changes}`;
 
       const logEntry = {
         action: "Update",

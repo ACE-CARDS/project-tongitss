@@ -176,7 +176,7 @@ function AddScholarshipContent() {
 
             if (error) throw error;
 
-            await logAudit("Create", `Added school: ${schoolData.school} (${schoolData.school_acronym})`, "scholarship");
+            await logAudit("Create", `Created a new school: "${schoolData.school} (${schoolData.school_acronym})"`, "scholarship");
 
             router.push("/dashboard/add/success?type=scholarship&subtype=school");
         } catch (err: any) {
@@ -236,7 +236,7 @@ function AddScholarshipContent() {
 
             if (error) throw error;
 
-            await logAudit("Create", `Added FAQ: ${faqData.question}`, "scholarship_faq");
+            await logAudit("Create", `Created a new FAQ: "${faqData.question}"`, "scholarship_faq");
 
             router.push("/dashboard/add/success?type=scholarship&subtype=faq");
         } catch (err: any) {

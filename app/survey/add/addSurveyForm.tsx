@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import BackButton from "@/components/ui/backButton";
+import { useUser } from "@/components/context/userContext";
 
 interface Category {
   id: string;
@@ -69,6 +70,52 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
   const [pendingNewCategories, setPendingNewCategories] = useState<Category[]>([]);
   const [pendingNewSchools, setPendingNewSchools] = useState<School[]>([]);
   const formSubmittedRef = useRef(false);
+
+  // Audit log
+  const { user } = useUser();
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const loadCurrentUserForAudit = async (email: string) => {
+    const { data } = await supabase
+      .from("member")
+      .select("mem_fname, mem_lname, mem_email")
+      .eq("mem_email", email)
+      .single();
+
+    const fullName = data
+      ? `${data.mem_fname || ""} ${data.mem_lname || ""}`.trim()
+      : email;
+    setCurrentUserName(fullName || email);
+    setCurrentUserEmail(data?.mem_email || email);
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCurrentUserForAudit(user.email);
+    }
+  }, [user?.email]);
+
+  const logCreateAudit = async (itemTitle: string) => {
+    const whoDidItName = currentUserName || user?.email || "Unknown User";
+    const whoDidItEmail =
+      currentUserEmail || user?.email || "unknown@email.com";
+
+    const detailedMessage = `Created a new survey: "${itemTitle}"`;
+
+    const logEntry = {
+      action: "Create",
+      details: detailedMessage,
+      user: whoDidItName,
+      user_email: whoDidItEmail,
+      table_name: "survey",
+    };
+
+    const { error } = await supabase.from("audit_log").insert([logEntry]);
+    if (error) {
+      console.error("Failed to write audit log:", error);
+    }
+  };
 
   // Load current logged-in user's member info
   useEffect(() => {
@@ -1006,6 +1053,9 @@ export default function AddSurveyForm({ categories, schools, returnTo }: AddSurv
         .insert(surveyAuthorInserts);
 
       if (linkError) throw linkError;
+
+      // Log audit entry
+      await logCreateAudit(titleInput.value);
 
       sessionStorage.removeItem("surveyDraft");
       router.push(`/survey/add/success?returnTo=${encodeURIComponent(returnUrl)}`);

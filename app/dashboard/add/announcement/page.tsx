@@ -228,7 +228,7 @@ export function AddAnnouncementForm() {
   const logCreateAudit = async (tableName: string, itemTitle: string) => {
     const whoDidItName = currentUserName || user?.email || "Unknown User";
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
-    const detailedMessage = `Created a new announcement titled "${itemTitle}" in ${tableName}`;
+    const detailedMessage = `Created a new announcement: "${itemTitle}" in ${tableName}`;
 
     const logEntry = {
       action: "Create",

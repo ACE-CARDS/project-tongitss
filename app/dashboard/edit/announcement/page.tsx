@@ -299,19 +299,19 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     const changes: string[] = [];
 
     if (initialData.title !== trimmedTitle) {
-      changes.push(`title changed to "${trimmedTitle}"`);
+      changes.push(`Title changed to "${trimmedTitle}"`);
     }
     if (initialData.description !== description.trim()) {
-      changes.push(`description changed to "${description.trim()}"`);
+      changes.push(`Description changed to "${description.trim()}"`);
     }
     if (initialData.startDate !== startDate) {
-      changes.push(`start date changed to ${startDate}`);
+      changes.push(`Start date changed to ${startDate}`);
     }
     if (initialData.endDate !== endDate) {
-      changes.push(`end date changed to ${endDate}`);
+      changes.push(`End date changed to ${endDate}`);
     }
 
-    return changes.length > 0 ? `Changes: [${changes.join(", ")}]` : "No changes detected";
+    return changes.length > 0 ? `${changes.join(", ")}` : "No changes detected";
   };
 
   const logEditAudit = async (tableName: string, recordId: string, trimmedTitle: string) => {
@@ -319,7 +319,7 @@ export function EditAnnouncementForm({ announcementId, type }: EditAnnouncementF
     const whoDidItEmail = currentUserEmail || user?.email || "unknown@email.com";
     const deltaString = getChangesString(trimmedTitle);
 
-    const detailedMessage = `Updated announcement "${trimmedTitle}" (ID: ${recordId}) in ${tableName}. ${deltaString}`;
+    const detailedMessage = `Updated announcement "${trimmedTitle}" in ${tableName}: ${deltaString}`;
 
     const logEntry = {
       action: "Update",

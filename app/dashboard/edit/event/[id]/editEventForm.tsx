@@ -44,6 +44,18 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
+  // For change tracking / audit log
+  const [initialData, setInitialData] = useState({
+    title: "",
+    shortTitle: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    status: "Select",
+    description: "",
+    partnerships: "",
+  });
+
   useEffect(() => {
     if (!eventId) {
       setIsLoading(false);
@@ -69,6 +81,18 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
         setStatus(data.status || "Select");
         setDescription(data.description || "");
         setPartnerships(data.partnerships || "");
+
+        // Capture initial for change tracking
+        setInitialData({
+          title: data.title || "",
+          shortTitle: data.short_title || "",
+          startDate: data.start_date || "",
+          endDate: data.end_date || "",
+          location: data.location || "",
+          status: data.status || "Select",
+          description: data.description || "",
+          partnerships: data.partnerships || "",
+        });
       } catch (error) {
         setSubmitError("Failed to load event data. It may have been deleted.");
       } finally {
@@ -370,12 +394,50 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
     }
   }, [user?.email, supabase]);
 
+  // Track what changed
+  const getChangesString = () => {
+    const changes: string[] = [];
+
+    if (initialData.title !== title.trim()) {
+      changes.push(`Full title changed to "${title.trim()}"`);
+    }
+    if (initialData.shortTitle !== shortTitle.trim()) {
+      changes.push(`Short title changed to "${shortTitle.trim()}"`);
+    }
+    if (initialData.startDate !== startDate) {
+      changes.push(`Start date changed to "${startDate}"`);
+    }
+    if (initialData.endDate !== endDate) {
+      changes.push(`End date changed to "${endDate}"`);
+    }
+    if (initialData.location !== location.trim()) {
+      changes.push(`Location changed to "${location.trim()}"`);
+    }
+    if (initialData.status !== status) {
+      changes.push(`Status changed to "${status}"`);
+    }
+    if (initialData.description !== description.trim()) {
+      changes.push(`Description changed to "${description.trim()}"`);
+    }
+    if (initialData.partnerships !== partnerships.trim()) {
+      changes.push(`Partnerships changed to "${partnerships.trim()}"`);
+    }
+    if (imageFile && imageFile.size > 0) {
+      changes.push(`Cover image changed`);
+    }
+
+    return changes.length > 0
+      ? `${changes.join(", ")}`
+      : "No changes detected";
+  };
+
   const logUpdateAudit = async (itemTitle: string) => {
     const whoDidItName = currentUserName || user?.email || "Unknown User";
     const whoDidItEmail =
       currentUserEmail || user?.email || "unknown@email.com";
 
-    const detailedMessage = `Updated event titled "${itemTitle}"`;
+    const changes = getChangesString();
+    const detailedMessage = `Updated event content: ${changes}`;
 
     const logEntry = {
       action: "Update",

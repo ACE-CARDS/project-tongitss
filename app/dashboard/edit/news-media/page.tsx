@@ -296,23 +296,23 @@ function EditNewsMediaContent() {
     const imageIsSame = imagePreview === (initialImageUrl || "");
 
     if (initialFormData.title !== formData.title) {
-      changes.push(`title changed to "${formData.title}"`);
+      changes.push(`Title changed to "${formData.title}"`);
     }
     if (initialFormData.content !== formData.content) {
-      changes.push(`description changed to "${formData.content}"`);
+      changes.push(`Description changed to "${formData.content}"`);
     }
     if (initialFormData.fb_post_date !== formData.fb_post_date) {
-      changes.push(`post date changed to ${formData.fb_post_date}`);
+      changes.push(`Post date changed to ${formData.fb_post_date}`);
     }
     if (initialFormData.post_url !== formData.post_url) {
-      changes.push(`post URL changed to ${formData.post_url}`);
+      changes.push(`Post URL changed to "${formData.post_url}"`);
     }
     if (!imageIsSame) {
-      changes.push(`image changed`);
+      changes.push(`Cover image changed`);
     }
 
     return changes.length > 0
-      ? `Changes: [${changes.join(", ")}]`
+      ? `${changes.join(", ")}`
       : "No changes detected";
   };
 
@@ -322,7 +322,7 @@ function EditNewsMediaContent() {
       currentUserEmail || user?.email || "unknown@email.com";
     const changes = getChangesString();
 
-    const detailedMessage = `Updated news article "${formData.title || "Untitled"}" (ID: ${recordId}). ${changes}`;
+    const detailedMessage = `Updated news article "${formData.title || "Untitled"}": ${changes}`;
 
     const logEntry = {
       action: "Update",
