@@ -5,7 +5,7 @@ import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import AboutOrg from "./about-org";
 import AboutMission from "./about-mission";
-import AboutLogo from "./about-logo"; // <-- Missing import added here!
+import AboutLogo from "./about-logo"; 
 import AboutMascot from "./about-mascot";
 import BackButton from "@/components/ui/backButton";
 import LoadingState from "@/components/ui/loading/mainLoadingState"; 

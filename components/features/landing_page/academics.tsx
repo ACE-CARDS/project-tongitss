@@ -28,8 +28,7 @@ export default function Academics({id}: {id?: string}) {
     fetchCounts();
   }, []);
 
-  
-  //count animation for thesis
+
   const [displayThesesCount, setDisplayThesesCount] = useState(0);
   const thesesSectionRef = useRef(null);
   const [hasEnteredTheses, setHasEnteredTheses] = useState(false);
@@ -74,7 +73,6 @@ export default function Academics({id}: {id?: string}) {
     return () => clearInterval(interval);
   }, [hasEnteredTheses, thesesCount]);
 
-  //count animation for survey
   const [displaySurveyCount, setDisplaySurveyCount] = useState(0);
   const surveySectionRef = useRef(null);
   const [hasEnteredSurvey, setHasEnteredSurvey] = useState(false);
@@ -138,10 +136,9 @@ export default function Academics({id}: {id?: string}) {
           {/* Image */}
           <div className="flex justify-center lg:justify-end perspective-1000">
             <div className="relative group">
-              {/* Glow effect behind img */}
+
               <div className="absolute -inset-4 bg-gradient-to-r from-[#eec643]/20 to-[#0d21a1]/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-700" />
 
-              {/* Image w/ 3D hover effect */}
               <div className="rounded-3xl relative transform transition-all duration-700 group-hover:shadow-2xl">
                 <img
                   src="/assets/logos/acad.jpg"
@@ -149,7 +146,6 @@ export default function Academics({id}: {id?: string}) {
                   className="w-full max-w-[clamp(280px,40vw,600px)] rounded-3xl object-cover shadow-2xl ring-4 ring-white/20 transition-all duration-500 group-hover:ring-[#eec643]/70"
                 />
 
-                {/* shining shimmering splendid */}
                 <div className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />

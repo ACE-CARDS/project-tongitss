@@ -25,7 +25,7 @@ export default function Events({id}: {id?: string}) {
 
   // count animation for events
   useEffect(() => {
-    // If data hasn't loaded yet, don't even start the observer
+   
     if (eventCount === 0) return;
 
     const observer = new IntersectionObserver(
@@ -34,7 +34,6 @@ export default function Events({id}: {id?: string}) {
 
         if (hasEventsAnimated.current) return;
         
-        //  Double check eventCount is valid before locking the animation
         if (eventCount > 0) {
           hasEventsAnimated.current = true;
 

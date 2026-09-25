@@ -37,7 +37,7 @@ export default function AboutLogo() {
               transition={{ duration: 0.3 }}
               className="bg-white p-6 sm:p-8 lg:p-12 rounded-[2rem] shadow-xl hover:shadow-2xl border border-slate-100 relative cursor-default transition-shadow"
             >
-              {/* Quote Icon */}
+              
               <span className="absolute -top-6 left-8 text-8xl text-[#eec643]/30 font-serif leading-none select-none">
                 &ldquo;
               </span>

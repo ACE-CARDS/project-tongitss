@@ -18,7 +18,6 @@ import { Transition } from "react-transition-group";
 import AnimatedTitle from "@/components/ui/animatedTitle";
 import ModalBlur from "@/components/ui/modalBlur";
 
-// Move static data outside to prevent re-creation on every render
 const nodeDescriptions: Record<string, string> = {
   rd: "The Regional Director serves as the head of the Executive Committee and the chairperson of the Board of Directors. They preside over all meetings, assign duties to other officers and members of the organization, sign documents on behalf of the organization and take charge of other duties and responsibilities as needed in their position.",
   "dir-int": "The Director for Internal Affairs presides over all meetings and fulfills duties and responsibilities in the absence of the Regional Director. They maintain relationships among members of the organization, handle the application/recruitment process and take charge of other duties and responsibilities as needed in their position.",
@@ -129,7 +128,6 @@ function CommitteeContent() {
         onNodeClick={onNodeClick}
         noDragClassName="cursor-default"
         style={{ cursor: 'default' }}
-        // Removed pointerEvents: none from here
       />
     );
   };

@@ -22,7 +22,6 @@ export default function Members({id}: {id?: string}) {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
 
-    //around oct siya since mostly september ang membership drive
     if (month >= 10) {
       return `${year}-${year + 1}`;
     } else {
@@ -31,9 +30,8 @@ export default function Members({id}: {id?: string}) {
   };
 
   const CURRENT_AY = `AY ${getCurrentAcademicYear()}`;
-  const FIXED_MEMBER_AY = CURRENT_AY; //here ichchange current year for member section
+  const FIXED_MEMBER_AY = CURRENT_AY; //change current year
 
-  // fetch member count for current AY
   useEffect(() => {
     const fetchCounts = async () => {
       const { count: memberTotal } = await supabase
@@ -48,19 +46,16 @@ export default function Members({id}: {id?: string}) {
     fetchCounts();
   }, []);
 
-  // count animation for members
   useEffect(() => {
-    // 1. Wait until we actually have a count to animate to
+
     if (memberCount === 0) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
 
-        // 2. Only run once
         if (hasMembersAnimated.current) return;
         
-        // Double check count is valid
         if (memberCount > 0) {
           hasMembersAnimated.current = true;
 
@@ -87,7 +82,7 @@ export default function Members({id}: {id?: string}) {
     if (memberSectionRef.current) observer.observe(memberSectionRef.current);
 
     return () => observer.disconnect();
-    // Dependency on memberCount ensures this restarts once data is fetched
+
   }, [memberCount]);
 
   return (

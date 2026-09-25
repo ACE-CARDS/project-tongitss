@@ -152,7 +152,6 @@ function ExecutivesContent() {
             </p>
           </div>
 
-          {/* Reusable Filter Dropdown */}
           <div className="flex justify-center mb-10">
             <FilterDropdown 
               value={selectedAY} 

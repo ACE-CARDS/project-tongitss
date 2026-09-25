@@ -19,7 +19,6 @@ export default function Province({ id }: { id?: string }) {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
 
-    //around oct siya since mostly september ang membership drive
     if (month >= 10) {
       return `${year}-${year + 1}`;
     } else {
@@ -39,7 +38,6 @@ export default function Province({ id }: { id?: string }) {
     });
   }, [currentYear]);
 
-  // Map Academic Years for the FilterDropdown Component
   const ayOptions = useMemo(() => {
     return academicYears.map((year) => ({
       label: year,
@@ -185,7 +183,6 @@ export default function Province({ id }: { id?: string }) {
     ],
   };
 
-  // Map Provinces for the FormDropdown Component
   const provinceOptions = useMemo(() => {
     return provinces.map((prov) => ({
       label: prov,
@@ -411,12 +408,12 @@ const [hoveredOrg, setHoveredOrg] = useState<{ name: string; top: number; left: 
         }}
       />
 
-      {/* Decorative blur elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#eec643]/10 rounded-full blur-3xl" />
 
       <div className="w-full mx-auto relative z-10">
         <div className="flex flex-col xl:flex-row items-start lg:items-start justify-between gap-8 lg:gap-16">
+         
           {/* LEFT COLUMN */}
           <div className="flex-1 w-full text-center my-auto xl:text-left">
             {/* Province label */}
