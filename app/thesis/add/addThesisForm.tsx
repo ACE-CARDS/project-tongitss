@@ -599,7 +599,7 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
   ));
 };
 
-  // 2. Form Validation Effect
+  // Form Validation
   useEffect(() => {
     validateForm();
   }, [thematicAreaError, schoolError, digitalLinkError, authors]);
@@ -835,7 +835,7 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 2. Validate category and school before submission
+    // Validate category and school before submission
     const thematicAreaSelect = e.currentTarget.elements.namedItem("thematicArea") as HTMLSelectElement;
     const schoolSelect = e.currentTarget.elements.namedItem("school") as HTMLSelectElement;
     
@@ -862,7 +862,7 @@ export default function AddThesisForm({ thematicAreas, schools, returnTo }: AddT
       return;
     }
 
-    // 3. Prevent double clicks
+    // Prevent double clicks
     setIsSubmitting(true);
     formSubmittedRef.current = true;
 

@@ -1,5 +1,3 @@
-// same code as /survey/admin/success/page.tsx 
-
 import Link from "next/link";
 import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
