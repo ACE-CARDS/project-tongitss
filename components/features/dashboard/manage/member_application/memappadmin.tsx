@@ -6,7 +6,7 @@ import Link from "next/link";
 import PaginationNav from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
 
-// --- DnD Kit Imports ---
+// DnD Kit Imports
 import {
   DndContext,
   closestCenter,
@@ -34,7 +34,7 @@ interface MemAppItem {
   order_index: number;
 }
 
-// --- Helper Components ---
+// Helper Components
 function Toast({
   message,
   type,
@@ -168,8 +168,6 @@ function SortableRow({
     id: item.id.toString(),
   });
 
-  // FIX 1: Lock the drag transform to the Y-axis only.
-  // This physically prevents horizontal dragging, stopping the scrollbar from appearing.
   const style = {
     transform: transform ? `translate3d(0px, ${transform.y}px, 0)` : undefined,
     transition,
@@ -237,7 +235,7 @@ function SortableRow({
 
       <td className="px-4 py-2 text-center w-[35%]">
         <div className="flex justify-center items-center w-full">
-          {/* ZONE 1: Arrow Buttons (Fixed Width) */}
+          {/* Arrow Buttons */}
           <div className="w-[30px] flex justify-center">
             {isDragEnabled && (
               <div className="flex flex-col gap-0.5">
@@ -344,7 +342,7 @@ function SortableRow({
   );
 }
 
-// --- Main Component ---
+// Main
 export default function MemAppAdmin() {
   const supabase = createClient();
   const router = useRouter();
@@ -359,7 +357,7 @@ export default function MemAppAdmin() {
   const [initialDeadlineDate, setInitialDeadlineDate] = useState("");
   const [savingDeadline, setSavingDeadline] = useState(false);
 
-  // Signup Link States
+  // Signup Link 
   const [signupLinkItem, setSignupLinkItem] = useState<MemAppItem | null>(null);
 
   const [signupLink, setSignupLink] = useState("");
@@ -508,7 +506,7 @@ export default function MemAppAdmin() {
     }
   };
 
-  // NEW: handleMove logic for Arrows
+  // handleMove logic for Arrows
   const handleMove = async (id: number, dir: "up" | "down") => {
     const currentIndex = filteredItems.findIndex((i) => i.id === id);
     const targetIndex = dir === "up" ? currentIndex - 1 : currentIndex + 1;
@@ -522,7 +520,6 @@ export default function MemAppAdmin() {
     setFilteredItems(newOrder);
 
     try {
-      // Swap order_index values in DB
       await supabase
         .from("announce_memapp")
         .update({ order_index: target.order_index })

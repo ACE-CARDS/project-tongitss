@@ -129,7 +129,7 @@ export default function CommitteeDirectory() {
         </p>
       </div>
 
-      {/* Filter Dropdown Integration */}
+      {/* Filter Dropdown */}
       <div className="flex justify-center w-full mb-12">
         <FilterDropdown
           value={activeTab}
@@ -213,7 +213,7 @@ export default function CommitteeDirectory() {
             )}
           </motion.div>
 
-          {/* Pagination Navigation Integration */}
+          {/* Pagination Navigation */}
           <PaginationNav
             currentPage={currentPage}
             totalPages={totalPages}

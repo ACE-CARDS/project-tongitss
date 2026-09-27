@@ -1,4 +1,3 @@
-//Ctrl+F niyo nalang "CHANGE AY" to know where mga ichchange ay kasi naka filter yan based don
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -38,7 +37,7 @@ const getCurrentAcademicYear = () => {
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
 
-  // around oct siya since mostly september ang membership drive
+  // new academic year every october
   if (month >= 10) {
     return `AY ${year}-${year + 1}`;
   } else {
@@ -82,7 +81,7 @@ export default function MembersPage() {
           course_rel:course (course_name)
         `,
         )
-        .eq("acadyear", currentAcademicYear) //CHANGE AY here yung thnx
+        .eq("acadyear", currentAcademicYear) 
         .eq("is_active", true);
 
       const { data: committeeData } = await supabase
@@ -181,7 +180,6 @@ export default function MembersPage() {
   const normalize = (str: string) =>
     str.toLowerCase().replace(/\s+/g, " ").trim();
 
-  // prio for listing
   const priority = [
     "Regional Director",
     "Director for Internal Affairs",
@@ -422,7 +420,6 @@ export default function MembersPage() {
     }
   };
 
-  //color based sa GA
   const getCommitteeStyle = (commName: string) => {
     const name = commName.toLowerCase();
     if (name.includes("internal")) return "text-purple-800";
@@ -725,7 +722,7 @@ export default function MembersPage() {
     }
   };
 
-  //for edit
+  // edit
   const [editMember, setEditMember] = useState<Member | null>(null);
   const [editForm, setEditForm] = useState({
     mem_fname: "",
@@ -982,7 +979,7 @@ export default function MembersPage() {
               school_rel:school (school_name)
             `,
         )
-        .eq("acadyear", currentAcademicYear) //change ay
+        .eq("acadyear", currentAcademicYear)
         .then(({ data, error }) => {
           if (error || !data) return;
 
@@ -999,18 +996,17 @@ export default function MembersPage() {
           // logo
           doc.addImage(img, "PNG", 10, 8, 20, 20);
 
-          // titel
+          // title
           doc.setTextColor(1, 22, 56);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(30);
           doc.text("MEMBERSHIP DIRECTORY", 37, 21);
 
-          // ay
+          // academic year
           doc.setTextColor(1, 22, 56);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(15);
           doc.text(currentAcademicYear, pageWidth - 10, 20, {
-            //change AY
             align: "right",
           });
 
@@ -1615,7 +1611,7 @@ export default function MembersPage() {
   const [customCourse, setCustomCourse] = useState("");
   const [customCourseError, setCustomCourseError] = useState(false);
 
-  //REAL MAIN PURO RETURN E ANG HIRAP HANAPIN
+  //MAIN
   return (
     <div className="w-full flex flex-col">
       <main className="flex-1">
@@ -2023,7 +2019,7 @@ export default function MembersPage() {
         </div>
       </main>
 
-      {/* mowdals */}
+      {/* modals */}
       <Popup
         isOpen={showImportError}
         title="Import Failed"

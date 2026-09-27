@@ -87,12 +87,12 @@ const ImgImport = () => {
         const { error } = await supabase.storage
           .from("member-pictures")
           .upload(file.name, file, {
-            upsert: true, // RULE: Overwrites existing file in bucket if name matches
+            upsert: true, // Overwrites existing file in bucket if name matches
           });
 
         if (error) {
           console.error(`Error uploading ${file.name}:`, error.message);
-          // We continue with other files even if one fails
+          // continue with other files even if one fails
         }
 
         completed++;

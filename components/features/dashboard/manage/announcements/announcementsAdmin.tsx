@@ -25,7 +25,7 @@ export type SortField = "title" | "start_date" | null;
 export type SortOrder = "asc" | "desc" | null;
 type TabType = "landing" | "dashboard";
 
-// --- Sub-Component: Expandable Description ---
+// Expandable Description
 function AnnouncementDescription({ description }: { description: string }) {
   const [isOpen, setIsOpen] = useState(false);
   if (description.length <= 120) {
@@ -66,7 +66,7 @@ function AnnouncementDescription({ description }: { description: string }) {
   );
 }
 
-// --- Sub-Component: Standardized Delete Portal ---
+// Standardized Delete Portal
 function DeleteConfirmPopup({
   isOpen,
   onClose,
@@ -115,7 +115,7 @@ function DeleteConfirmPopup({
   );
 }
 
-// --- MAIN COMPONENT ---
+// MAIN 
 export default function AnnouncementsAdmin() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -140,7 +140,7 @@ export default function AnnouncementsAdmin() {
     { id: "dashboard" as const, label: "Member Dashboard" },
   ], []);
 
-  // User Audit State Integration
+  // User Audit State 
   const { user } = useUser();
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -287,7 +287,7 @@ export default function AnnouncementsAdmin() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8 flex justify-between sm:items-end items-center sm:flex-row flex-col sm:gap-0 gap-3">
         <div>
           <h1 className="text-2xl font-oswald font-bold text-[#011638]">
@@ -313,7 +313,7 @@ export default function AnnouncementsAdmin() {
         />
       </div>
 
-      {/* Table Section */}
+      {/* Table */}
       <div className="manage_table_div">
         <table className="manage_table">
           <thead className="manage_thead">
@@ -385,7 +385,7 @@ export default function AnnouncementsAdmin() {
         </table>
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

@@ -253,7 +253,7 @@ export default function BigCalendar() {
           onEventClick={handleSelectFromMore}
         />
 
-        {/*Calendar Modal mhm*/}
+        {/*Calendar Modal*/}
         <CalendarEvent
           isShowing={isPopupShowing}
           onClose={() => {

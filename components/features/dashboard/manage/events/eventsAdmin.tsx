@@ -28,7 +28,7 @@ interface EventItem {
 type SortField = "title" | "start_date" | "location" | "status" | null;
 type SortOrder = "asc" | "desc" | null;
 
-// Helper: Format date
+// Format date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -132,7 +132,7 @@ function EventPartnerships({ partnerships }: { partnerships: string | null }) {
   );
 }
 
-// --- Standardized Delete Portal ---
+// Standardized Delete Portal
 function DeleteConfirmPopup({
   isOpen,
   onClose,
