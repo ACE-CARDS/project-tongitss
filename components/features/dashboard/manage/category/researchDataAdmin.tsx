@@ -37,7 +37,6 @@ export default function ResearchDataAdmin() {
         />
       </div>
 
-      {/* Content Area with subtle fade-in transition logic could be added via framer-motion if desired */}
       <div className="bg-white rounded-2xl">
         {activeTab === 'categories' ? (
           <CategoryAdmin />
