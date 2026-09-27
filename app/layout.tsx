@@ -3,6 +3,7 @@ import { Oswald, Ubuntu_Sans } from "next/font/google";
 import "./globals.css";
 import { getUserWithRole } from "@/utils/supabase/session";
 import { UserProvider } from "@/components/context/userContext";
+import Script from "next/script";
 
 
 
@@ -31,6 +32,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getUserWithRole();
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
+  
   return (
     <html lang="en">
       <body
@@ -40,6 +43,13 @@ export default async function RootLayout({
         <UserProvider user={user}>  
           {children}
         </UserProvider>
+
+        {!isAdmin && (
+          <Script 
+            src="/scripts/disableDevtools.js" 
+            strategy="afterInteractive" 
+          />
+        )}
       </body>
     </html>
   );
