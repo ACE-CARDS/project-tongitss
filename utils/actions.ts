@@ -14,7 +14,7 @@ export async function signinWithGoogle() {
   
   const origin = `${proto}://${host}`;
 
-  const targetPath = '/dashboard';
+  const targetPath = '/dashboard?tab=announcements';
   const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(targetPath)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
