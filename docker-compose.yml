@@ -1,20 +1,31 @@
-services:
-  postgres:
-    image: postgres:16
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: your_db_password
-      POSTGRES_DB: project_tongitss
-    ports:
-      - "5432:5432"
+# services:
+#   postgres:
+#     image: postgres:17
+#     container_name: selfhost_postgres
+#     restart: always
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: your_secure_db_password
+#       POSTGRES_DB: project_tongitss
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
 
-  minio:
-    image: bitnami/minio:latest
-    restart: always
-    environment:
-      MINIO_ROOT_USER: admin_access_key
-      MINIO_ROOT_PASSWORD: admin_secret_key
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+#   minio:
+#     image: bitnamilegacy/minio:latest
+#     container_name: selfhost_minio
+#     restart: always
+#     command: server /bitnami/minio/data --console-address ":9001"
+#     environment:
+#       MINIO_ROOT_USER: minio_admin
+#       MINIO_ROOT_PASSWORD: minio_secure_password
+#     ports:
+#       - "9000:9000" # S3 API Port
+#       - "9001:9001" # MinIO Web Console Port
+#     volumes:
+#       - minio_data:/bitnami/minio/data
+
+# volumes:
+#   postgres_data:
+#   minio_data:

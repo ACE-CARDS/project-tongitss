@@ -1,0 +1,10 @@
+{$APP_DOMAIN} {
+	handle_path /rest/v1/* {
+		reverse_proxy postgrest:3000
+	}
+	reverse_proxy app:3000
+}
+
+{$FILES_DOMAIN} {
+	reverse_proxy minio:9000
+}
