@@ -24,15 +24,15 @@ BEGIN
 END;
 $function$;
 
--- 3. Attach whitelist check and user-linking triggers to Better Auth's public."user" table
-DROP TRIGGER IF EXISTS on_auth_user_whitelist ON public."user";
+-- 3. Attach whitelist check and user-linking triggers to Better Auth's auth.users table
+DROP TRIGGER IF EXISTS on_auth_user_whitelist ON auth.users;
 CREATE TRIGGER on_auth_user_whitelist
-  BEFORE INSERT ON public."user"
+  BEFORE INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.check_member_whitelist();
 
-DROP TRIGGER IF EXISTS on_auth_user_created ON public."user";
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON public."user"
+  AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.create_user_on_login();
