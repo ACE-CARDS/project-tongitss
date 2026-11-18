@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "../context/userContext";
-import { createClient } from "@/utils/supabase/client";
+import { authClient } from "@/lib/auth-client";
 import Popup from "@/components/ui/popup";
 
 const siteName = "ACE CARDS";
@@ -13,7 +13,6 @@ const siteName = "ACE CARDS";
 export default function NavBar({ isOverHero = false, isLoading = false}) {
   const { user } = useUser();
   const router = useRouter();
-  const supabase = createClient();
   const [menuOpen, setMenuisOpen] = useState(false);
   const [academicsOpen, setAcademicsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -82,11 +81,16 @@ export default function NavBar({ isOverHero = false, isLoading = false}) {
     if (user?.email) {
       localStorage.removeItem(`dashboard_tab_${user.email}`);
     }
-    
-    await supabase.auth.signOut();
-    setIsLogoutOpen(false);
-    router.push("/");
-    router.refresh();
+
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          setIsLogoutOpen(false);
+          router.push("/");
+          router.refresh();
+        },
+      },
+    });
   };
 
   return (
