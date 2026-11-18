@@ -15,4 +15,5 @@ export const auth = betterAuth({
     },
   },
   plugins: [nextCookies()],
+  account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
 });

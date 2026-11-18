@@ -24,7 +24,6 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState<string | null>(null); 
 
   // Get user role
-  //const userRole = user?.user_metadata?.role || user?.role || "user";
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -292,7 +291,7 @@ function DashboardContent() {
                   <h2 className="text-2xl md:text-4xl font-bold uppercase font-oswald text-[#011638] text-center md:text-left">
                     {memberData
                       ? `${memberData.fname} ${memberData.lname}`
-                      : user.user_metadata.name || "User"}
+                      : user?.name || "User"}
                   </h2>
                 </div>
 

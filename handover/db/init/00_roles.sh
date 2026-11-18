@@ -9,4 +9,5 @@ create role app_auth login password '${APP_AUTH_PASSWORD}';
 create schema if not exists extensions;
 create extension if not exists "uuid-ossp" with schema extensions;
 create extension if not exists pgcrypto with schema extensions;
+alter database app set search_path = public, extensions;
 SQL
