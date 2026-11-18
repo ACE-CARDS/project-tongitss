@@ -11,6 +11,7 @@ export default function GoogleSignInButton() {
     await authClient.signIn.social({
       provider: "google",
       callbackURL: "/dashboard",
+      errorCallbackURL: "/auth/auth-code-error",
     });
   };
 
