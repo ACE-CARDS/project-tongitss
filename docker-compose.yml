@@ -46,9 +46,25 @@ services:
     volumes:
       - ./handover/storage:/storage:ro
     entrypoint: >
+      # /bin/sh -c "
+      # until mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do sleep 2; done;
+      # for d in /storage/*; do b=$$(basename $$d); mc mb --ignore-existing local/$$b; mc anonymous set download local/$$b; mc mirror --overwrite $$d local/$$b; done"
+      # Added this, original is above:
       /bin/sh -c "
       until mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do sleep 2; done;
-      for d in /storage/*; do b=$$(basename $$d); mc mb --ignore-existing local/$$b; mc anonymous set download local/$$b; mc mirror --overwrite $$d local/$$b; done"
+      for d in /storage/public/*; do
+        [ -d \"$$d\" ] || continue;
+        b=$$(basename \"$$d\");
+        mc mb --ignore-existing local/$$b;
+        mc anonymous set download local/$$b;
+        mc mirror --overwrite \"$$d\" local/$$b;
+      done;
+      for d in /storage/private/*; do
+        [ -d \"$$d\" ] || continue;
+        b=$$(basename \"$$d\");
+        mc mb --ignore-existing local/$$b;
+        mc mirror --overwrite \"$$d\" local/$$b;
+      done"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
