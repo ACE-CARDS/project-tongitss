@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Footer from "@/components/layout/footer";
 import Link from "next/link";
-import { signinWithGoogle } from "@/utils/actions";
 import { BsSuitSpadeFill } from "react-icons/bs";
 import BackButton from "@/components/ui/backButton";
 import GoogleSignInButton from "@/components/ui/auth/google-signin-button";
