@@ -199,9 +199,11 @@ function ExecutivesContent() {
                             alt={`${exec.fname} ${exec.lname}`}
                             onError={(e) => {
                               const img = e.currentTarget;
-                              if (img.src === photoUrlJpg) {
+                              if (!img.dataset.triedPng) {
+                                img.dataset.triedPng = "true";
                                 img.src = photoUrlPng;
-                              } else if (img.src === photoUrlPng) {
+                              } else if (!img.dataset.triedFallback) {
+                                img.dataset.triedFallback = "true";
                                 img.src = fallbackUrl;
                               }
                             }}
