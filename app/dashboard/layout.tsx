@@ -1,4 +1,4 @@
-import { getUserWithRole } from '@/utils/supabase/session';
+import { getUserWithRole } from '@/utils/db/session';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

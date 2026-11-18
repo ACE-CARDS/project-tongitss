@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/db/server";
 
 export async function getUserWithRole() {
   const session = await auth.api.getSession({

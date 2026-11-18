@@ -1,9 +1,9 @@
+import { UserProvider } from "@/components/context/userContext";
+import { getUserWithRole } from "@/utils/db/session";
 import type { Metadata } from "next";
 import { Oswald, Ubuntu_Sans } from "next/font/google";
-import "./globals.css";
-import { getUserWithRole } from "@/utils/supabase/session";
-import { UserProvider } from "@/components/context/userContext";
 import Script from "next/script";
+import "./globals.css";
 
 
 
