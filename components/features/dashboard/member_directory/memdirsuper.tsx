@@ -4,6 +4,7 @@ import { useUser } from "@/components/context/userContext";
 import Pagination from "@/components/ui/pagination";
 import Popup from "@/components/ui/popup";
 import { createClient } from "@/utils/db/client";
+import { uploadFile, removeFiles } from "@/utils/db/storage";
 import { GState, jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useEffect, useRef, useState } from "react";
@@ -1652,6 +1653,7 @@ export default function MembersPage() {
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [showImagesConfirm, setShowImagesConfirm] = useState(false);
   const [showImagesSuccess, setShowImagesSuccess] = useState(false);
+  
   const handleConfirmImagesImport = async () => {
     setShowImagesConfirm(false);
     try {
@@ -1666,35 +1668,13 @@ export default function MembersPage() {
           .replace(/\s+/g, "_");
         const standardizedName = `${baseName}.${fileExtension}`;
 
-        const { data: existingFiles, error: listError } = await supabase.storage
-          .from("member-photos")
-          .list("", { search: baseName });
+        // Delete any existing photo for this member regardless of previous extension
+        const candidateKeys = ["jpg", "jpeg", "png", "webp"].map(
+          (ext) => `${baseName}.${ext}`,
+        );
+        await removeFiles("member-photos", candidateKeys);
 
-        if (listError) throw listError;
-
-        if (existingFiles && existingFiles.length > 0) {
-          const filesToDelete = existingFiles
-            .filter(
-              (f) => f.name.split(".").slice(0, -1).join(".") === baseName,
-            )
-            .map((f) => f.name);
-
-          if (filesToDelete.length > 0) {
-            const { error: delError } = await supabase.storage
-              .from("member-photos")
-              .remove(filesToDelete);
-            if (delError) throw delError;
-          }
-        }
-
-        const { error: uploadError } = await supabase.storage
-          .from("member-photos")
-          .upload(standardizedName, file, {
-            upsert: true,
-            cacheControl: "0",
-          });
-
-        if (uploadError) throw uploadError;
+        await uploadFile("member-photos", standardizedName, file);
       }
 
       setPendingImages([]);

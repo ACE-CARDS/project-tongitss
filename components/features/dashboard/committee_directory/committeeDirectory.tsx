@@ -9,8 +9,7 @@ import { BsSuitSpadeFill } from "react-icons/bs";
 
 const supabase = createClient();
 
-const STORAGE_URL =
-  "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
+const STORAGE_URL = "/files/member-photos";
 
 const containerVariants = {
   hidden: { opacity: 0 },

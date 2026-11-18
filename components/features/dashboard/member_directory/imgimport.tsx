@@ -1,5 +1,6 @@
 import { useUser } from "@/components/context/userContext";
 import { createClient } from "@/utils/db/client";
+import { uploadFile } from "@/utils/db/storage";
 import { useState } from "react";
 
 const ImgImport = () => {
@@ -84,14 +85,13 @@ const ImgImport = () => {
       for (const file of files) {
         setMessage(`Uploading: ${file.name}...`);
 
-        const { error } = await supabase.storage
-          .from("member-pictures")
-          .upload(file.name, file, {
-            upsert: true, // Overwrites existing file in bucket if name matches
-          });
-
-        if (error) {
-          console.error(`Error uploading ${file.name}:`, error.message);
+        try {
+          await uploadFile("member-pictures", file.name, file);
+        } catch (error) {
+          console.error(
+            `Error uploading ${file.name}:`,
+            error instanceof Error ? error.message : error,
+          );
           // continue with other files even if one fails
         }
 

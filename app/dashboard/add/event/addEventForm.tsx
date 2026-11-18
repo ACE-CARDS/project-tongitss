@@ -3,6 +3,7 @@
 import { useUser } from "@/components/context/userContext";
 import BackButton from "@/components/ui/backButton";
 import { createClient } from "@/utils/db/client";
+import { uploadFile } from "@/utils/db/storage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -248,16 +249,15 @@ export default function AddEventForm() {
       if (imageFile && imageFile.size > 0) {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from("events")
-          .upload(fileName, imageFile);
-        if (uploadError)
-          throw new Error(`Upload failed: ${uploadError.message}`);
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("events").getPublicUrl(fileName);
-        imageUrl = publicUrl;
+        try {
+          const { publicUrl } = await uploadFile("events", fileName, imageFile);
+          imageUrl = publicUrl;
+        } catch (err) {
+          throw new Error(
+            `Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`
+          );
+        }
       }
 
       const startDateObj = new Date(startDate);

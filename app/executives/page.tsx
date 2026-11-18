@@ -10,8 +10,7 @@ import { createClient } from "@/utils/db/client";
 import { Suspense, useEffect, useState } from "react";
 import { BsSuitSpadeFill } from "react-icons/bs";
 
-const STORAGE_URL =
-  "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";
+const STORAGE_URL = "/files/member-photos";
 
   interface Member {
     fname: string;

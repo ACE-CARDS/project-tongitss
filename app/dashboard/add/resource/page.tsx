@@ -6,6 +6,7 @@ import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import { createClient } from "@/utils/db/client";
+import { uploadFile } from "@/utils/db/storage";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -204,22 +205,14 @@ function AddResourceContent() {
   const uploadImage = async (file: File): Promise<string | null> => {
     const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("resource-image")
-      .upload(filePath, file);
-
-    if (uploadError) {
+    try {
+      const { publicUrl } = await uploadFile("resource-image", fileName, file);
+      return publicUrl;
+    } catch (uploadError) {
       console.error("Upload error:", uploadError);
       return null;
     }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("resource-image").getPublicUrl(filePath);
-
-    return publicUrl;
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

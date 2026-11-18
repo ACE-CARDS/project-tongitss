@@ -6,6 +6,7 @@ import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import { createClient } from "@/utils/db/client";
+import { removeFiles, uploadFile } from "@/utils/db/storage";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -224,25 +225,20 @@ function EditNewsMediaContent() {
   const uploadImage = async (file: File): Promise<string | null> => {
     const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("news-image")
-      .upload(filePath, file);
-
-    if (uploadError) return null;
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("news-image").getPublicUrl(filePath);
-
-    return publicUrl;
+    try {
+      const { publicUrl } = await uploadFile("news-image", fileName, file);
+      return publicUrl;
+    } catch {
+      return null;
+    }
   };
 
   const deleteOldImage = async (oldImageUrl: string) => {
-    const fileName = oldImageUrl.split("/").pop();
-    if (fileName) {
-      await supabase.storage.from("news-image").remove([fileName]);
+    const rawName = oldImageUrl.split("/").pop()?.split("?")[0];
+    if (rawName) {
+      const fileName = decodeURIComponent(rawName);
+      await removeFiles("news-image", [fileName]);
     }
   };
 
