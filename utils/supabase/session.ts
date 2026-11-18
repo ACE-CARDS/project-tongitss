@@ -1,44 +1,44 @@
-// lib/supabase/user-session.ts
-import { createClient } from '@/utils/supabase/server';
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { createClient } from "@/utils/supabase/server"; // or your PostgREST client
 
 export async function getUserWithRole() {
-  const supabase = await createClient();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (!session?.user) return null;
 
-  if (authError || !user) return null;
-
-
-  const { data: profile, error: dbError } = await supabase
-    .from('users')
+  const db = await createClient();
+  const { data: profile, error: dbError } = await db
+    .from("users")
     .select(`
-      member_id, 
+      member_id,
       member!inner (
         role,
         acadyear,
         is_active
       )
     `)
-    .eq('id', user.id)
-    .eq('member.is_active', true)
-    .order('acadyear', { foreignTable: 'member', ascending: false })
-    .limit(1, { foreignTable: 'member' })
+    .eq("id", session.user.id)
+    .eq("member.is_active", true)
+    .order("acadyear", { foreignTable: "member", ascending: false })
+    .limit(1, { foreignTable: "member" })
     .single();
 
-  console.log("Auth User ID:", user.id);
-  console.log("Public Profile Data (Latest Year):", profile);
-  
   if (dbError || !profile) {
     console.error("Access Denied or Database Error:", dbError);
-    return null; 
+    return null;
   }
-  
-  const memberData = Array.isArray(profile?.member) ? profile.member[0] : profile?.member;
+
+  const memberData = Array.isArray(profile.member)
+    ? profile.member[0]
+    : profile.member;
 
   return {
-    ...user,
+    ...session.user,
     role: memberData?.role || null,
     acadyear: memberData?.acadyear || null,
-    member_id: profile.member_id
+    member_id: profile.member_id,
   };
 }
