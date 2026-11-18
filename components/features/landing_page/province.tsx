@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import FormDropdown from "@/components/ui/formDropdown";
 import FilterDropdown from "@/components/ui/filterDropdown";
-import { createClient } from "@/utils/supabase/client";
+import FormDropdown from "@/components/ui/formDropdown";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface School {
   id: number;

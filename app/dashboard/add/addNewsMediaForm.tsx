@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/components/context/userContext";
 import BackButton from "@/components/ui/backButton";
+import { createClient } from "@/utils/db/client";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function AddNewsMediaForm() {
   const router = useRouter();

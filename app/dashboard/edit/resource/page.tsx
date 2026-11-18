@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import Link from "next/link";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
-import LoadingState from "@/components/ui/loading/mainLoadingState";
 import { useUser } from "@/components/context/userContext";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import { createClient } from "@/utils/db/client";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 interface ResourceItem {
   id: number;

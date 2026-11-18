@@ -1,11 +1,11 @@
 // same logic as thesis
 "use client";
 
-import Link from "next/link";
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
+import { createClient } from "@/utils/db/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 function FilterPopup({
   isOpen, 

@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
+import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
 import { useUser } from "@/components/context/userContext";
 import Announcements from "@/components/features/dashboard/announcements/announcements";
-import SurveyAdminWrapper from "@/app/survey/admin/survey_admin_wrapper";
-import MemdirSuper from "@/components/features/dashboard/member_directory/memdirsuper";
-import MemdirAdmin from "@/components/features/dashboard/member_directory/memdiradmin";
-import { createClient } from "@/utils/supabase/client";
-import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
 import CommitteeDirectory from "@/components/features/dashboard/committee_directory/committeeDirectory";
+import MemdirAdmin from "@/components/features/dashboard/member_directory/memdiradmin";
+import MemdirSuper from "@/components/features/dashboard/member_directory/memdirsuper";
 import MemberSurveyView from "@/components/features/dashboard/survey/memberSurveyView";
 import MemberThesisView from "@/components/features/dashboard/thesis/memberThesisView";
-import ManagePage from "./manage/page";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
 import TabLoadingState from "@/components/ui/loading/tabLoadingState";
-import { BsSuitSpadeFill } from "react-icons/bs";
+import { createClient } from "@/utils/db/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import ThesisAdminWrapper from "../thesis/admin/thesis_admin_wrapper";
+import ManagePage from "./manage/page";
 
 // Handle search params
 function DashboardContent() {

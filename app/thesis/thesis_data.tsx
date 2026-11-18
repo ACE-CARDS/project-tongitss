@@ -1,6 +1,6 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/db/server";
+import ClientPagination from './client-pagination';
 import ThesisHeader from "./thesis_header";
-import ClientPagination from './client-pagination'; 
 
 // Main export
 export default async function ThesisData({

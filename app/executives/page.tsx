@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import { createClient } from "@/utils/supabase/client";
-import BackButton from "@/components/ui/backButton";
-import LoadingState from "@/components/ui/loading/mainLoadingState";
-import { BsSuitSpadeFill } from "react-icons/bs";
+import NavBar from "@/components/layout/navbar";
 import AnimatedTitle from "@/components/ui/animatedTitle";
+import BackButton from "@/components/ui/backButton";
 import FilterDropdown from "@/components/ui/filterDropdown";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import { createClient } from "@/utils/db/client";
+import { Suspense, useEffect, useState } from "react";
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 const STORAGE_URL =
   "https://lnxkspjvyiceoiibdjow.supabase.co/storage/v1/object/public/member-photos";

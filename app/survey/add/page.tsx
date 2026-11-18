@@ -1,9 +1,9 @@
 // Same logic as thesis
 
-import { createClient } from "@/utils/supabase/server";
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import AddSurveyForm from "./addSurveyForm"; 
+import NavBar from "@/components/layout/navbar";
+import { createClient } from "@/utils/db/server";
+import AddSurveyForm from "./addSurveyForm";
 
 export default async function AddSurveyPage({ searchParams, }: { searchParams: Promise<{ returnTo?: string }> }) {
   const supabase = await createClient();

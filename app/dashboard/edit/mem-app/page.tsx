@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
+import { createClient } from "@/utils/db/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 // Expanded parser for YouTube, Google Drive, and Facebook
 const getEmbedUrl = (url: string) => {

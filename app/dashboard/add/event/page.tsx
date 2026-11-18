@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import AddEventForm from "./addEventForm";
-import { createClient } from "@/utils/supabase/client";
-import LoadingState from "@/components/ui/loading/mainLoadingState";
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
+import LoadingState from "@/components/ui/loading/mainLoadingState";
+import { createClient } from "@/utils/db/client";
+import { Suspense, useEffect, useState } from "react";
+import AddEventForm from "./addEventForm";
 
 import { useUser } from "@/components/context/userContext";
 

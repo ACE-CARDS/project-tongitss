@@ -1,20 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import SurveyDescription from "../survey_description";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import Pagination from "@/components/ui/pagination";
-import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
 import GradientLine from "@/components/ui/gradientLine";
+import Pagination from "@/components/ui/pagination";
+import { createClient } from "@/utils/db/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import SurveyDescription from "../survey_description";
 
-import { LuCircleArrowRight } from "react-icons/lu";
-import { FaRegCalendar } from "react-icons/fa6";
-import { FaRegAddressBook } from "react-icons/fa6";
-import { FaRegFolderClosed } from "react-icons/fa6";
-import { FaSchool } from "react-icons/fa6";
 import Image from "next/image";
+import { FaRegAddressBook, FaRegCalendar, FaRegFolderClosed, FaSchool } from "react-icons/fa6";
+import { LuCircleArrowRight } from "react-icons/lu";
 
 interface ClientPaginationProps {
   allSurveys: any[];

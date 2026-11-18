@@ -1,10 +1,10 @@
 // for dashboard tab
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
-import AdminSurveyHeader from "./admin_survey_header";
+import { createClient } from "@/utils/db/client";
+import { useCallback, useEffect, useState } from "react";
 import AdminClientPagination from "./admin_client_pagination";
+import AdminSurveyHeader from "./admin_survey_header";
 
 // type definitions
 interface Category {

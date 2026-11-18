@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { createClient } from "@/utils/supabase/client";
-import { BsSuitSpadeFill } from "react-icons/bs";
 import FilterDropdown from "@/components/ui/filterDropdown";
 import PaginationNav from "@/components/ui/pagination";
+import { createClient } from "@/utils/db/client";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { BsSuitSpadeFill } from "react-icons/bs";
 
 const supabase = createClient();
 

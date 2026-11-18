@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
-import AdminThesisHeader from "./admin_thesis_header";
+import { createClient } from "@/utils/db/client";
+import { useCallback, useEffect, useState } from "react";
 import AdminClientPagination from "./admin_client_pagination";
+import AdminThesisHeader from "./admin_thesis_header";
 
 interface ThematicArea {
   id: string;

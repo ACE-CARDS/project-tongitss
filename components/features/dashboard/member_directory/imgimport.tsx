@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/components/context/userContext";
+import { createClient } from "@/utils/db/client";
+import { useState } from "react";
 
 const ImgImport = () => {
   const supabase = createClient();

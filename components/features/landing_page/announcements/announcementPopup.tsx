@@ -1,6 +1,6 @@
 import AnnounceCard from "@/components/features/landing_page/announcements/announceCard";
 import ModalBlur from "@/components/ui/modalBlur";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/db/client";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { type FC, useEffect, useRef, useState } from "react";

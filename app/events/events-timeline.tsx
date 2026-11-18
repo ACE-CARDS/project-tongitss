@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import BackToTop from "@/components/ui/backToTop";
 import FilterDropdown from "@/components/ui/filterDropdown";
 import ModalBlur from "@/components/ui/modalBlur";
 import PaginationNav from "@/components/ui/pagination";
 import SearchBar from "@/components/ui/searchBar";
-import BackToTop from "@/components/ui/backToTop";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useRef, useState } from "react";
 
 export default function EventsTimeline() {
   const [activeFilter, setActiveFilter] = useState("ALL");

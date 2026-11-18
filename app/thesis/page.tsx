@@ -1,9 +1,9 @@
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import ThesisData from "./thesis_data";
-import { createClient } from "@/utils/supabase/server";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton"; // For back button
+import { createClient } from "@/utils/db/server";
 import ThesisPageClient from "./thesis-page-client";
+import ThesisData from "./thesis_data";
 
 // Main export
 export default async function ThesisPage({

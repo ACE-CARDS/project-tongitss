@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
 import Pagination from "@/components/ui/pagination";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useRef, useState } from "react";
 
 type AuditLog = {
   id: number;

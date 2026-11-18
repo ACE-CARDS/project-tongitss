@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { createClient } from "@/utils/supabase/client";
-import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
-import SearchBar from "@/components/ui/searchBar";
 import AddButton from "@/components/ui/addButton";
-import TableActions from "@/components/ui/tableActions";
-import Popup from "@/components/ui/popup";
-import FormDropdown from "@/components/ui/formDropdown";
-import SortIcon from "@/components/ui/sortIcon";
 import FormActions from "@/components/ui/FormActions";
+import FormDropdown from "@/components/ui/formDropdown";
+import Pagination from "@/components/ui/pagination";
+import Popup from "@/components/ui/popup";
+import SearchBar from "@/components/ui/searchBar";
+import SortIcon from "@/components/ui/sortIcon";
+import TableActions from "@/components/ui/tableActions";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useMemo, useState } from "react";
 
 // Types
 interface School {

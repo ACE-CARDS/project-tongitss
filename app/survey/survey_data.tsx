@@ -1,8 +1,8 @@
 // Same logic as thesis
 
-import { createClient } from "@/utils/supabase/server";
-import SurveyHeader from "./survey_header";
+import { createClient } from "@/utils/db/server";
 import ClientPagination from './client-pagination';
+import SurveyHeader from "./survey_header";
 
 export default async function SurveyData({
   searchParams,

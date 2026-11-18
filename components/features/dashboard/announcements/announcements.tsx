@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import BigCalendar from "@/components/features/dashboard/announcements/calendar";
-import { createClient } from "@/utils/supabase/client";
-import AnnounceMemberCard from "@/components/features/dashboard/announcements/announceMemberCard";
 import { useUser } from "@/components/context/userContext";
+import AnnounceMemberCard from "@/components/features/dashboard/announcements/announceMemberCard";
+import BigCalendar from "@/components/features/dashboard/announcements/calendar";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useState } from "react";
 
 const supabase = createClient();
 

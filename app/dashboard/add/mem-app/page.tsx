@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
 import { useUser } from "@/components/context/userContext";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
+import { createClient } from "@/utils/db/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;

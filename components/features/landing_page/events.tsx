@@ -1,6 +1,6 @@
+import { createClient } from "@/utils/db/client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 
 export default function Events({id}: {id?: string}) {
   const supabase = createClient();

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import ThesisAbstract from "../thesis_abstract";
-import { useRouter } from "next/navigation";
-import SpotlightCard from "@/components/ui/SpotlightCard";
-import { createClient } from "@/utils/supabase/client";
-import Pagination from "@/components/ui/pagination";
-import Image from "next/image";
 import ModalBlur from "@/components/ui/modalBlur";
+import Pagination from "@/components/ui/pagination";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import { createClient } from "@/utils/db/client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import ThesisAbstract from "../thesis_abstract";
 
 interface ClientPaginationProps {
   allTheses: any[];

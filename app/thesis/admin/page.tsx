@@ -1,7 +1,7 @@
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import { createClient } from "@/utils/supabase/server";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
+import { createClient } from "@/utils/db/server";
 import ThesisAdminWrapper from "./thesis_admin_wrapper";
 
 export default async function AdminThesisPage({

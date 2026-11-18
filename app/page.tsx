@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import NavBar from "@/components/layout/navbar";
+import Acedemics from "@/components/features/landing_page/academics";
 import Popup from "@/components/features/landing_page/announcements/announcementPopup";
+import Events from "@/components/features/landing_page/events";
+import Hero from "@/components/features/landing_page/hero";
+import Members from "@/components/features/landing_page/members";
+import NewsMedia from "@/components/features/landing_page/newsMedia";
+import Province from "@/components/features/landing_page/province";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
+import BackToTop from "@/components/ui/backToTop";
+import BottomBlur from "@/components/ui/bottomBlur";
 import Kidla from "@/components/ui/kidla/kidlaButton";
 import KidlaDialogue from "@/components/ui/kidla/kidlaDialogue";
-import Footer from "@/components/layout/footer";
-import { createClient } from "@/utils/supabase/client";
-import BottomBlur from "@/components/ui/bottomBlur";
-import NewsMedia from "@/components/features/landing_page/newsMedia";
-import Hero from "@/components/features/landing_page/hero";
-import Events from "@/components/features/landing_page/events";
-import Members from "@/components/features/landing_page/members";
-import Province from "@/components/features/landing_page/province";
-import Acedemics from "@/components/features/landing_page/academics";
-import BackToTop from "@/components/ui/backToTop";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [isModalShowing, setIsModalShowing] = useState(false);

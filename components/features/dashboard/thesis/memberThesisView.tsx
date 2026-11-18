@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import ThesisAbstract from '@/app/thesis/thesis_abstract';
 import { useUser } from "@/components/context/userContext";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import PaginationNav from "@/components/ui/pagination";
 import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
-import ThesisAbstract from '@/app/thesis/thesis_abstract';
-import Image from "next/image";
 import ModalBlur from "@/components/ui/modalBlur";
+import PaginationNav from "@/components/ui/pagination";
+import { createClient } from "@/utils/db/client";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {

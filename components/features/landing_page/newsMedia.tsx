@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"; 
 import Link from "next/link"; 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/db/client';
 import { BsSuitSpadeFill } from "react-icons/bs";
 import GradientLine from "@/components/ui/gradientLine";
 

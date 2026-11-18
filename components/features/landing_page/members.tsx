@@ -1,8 +1,8 @@
-import { createClient } from "@/utils/supabase/client";
+import GradientLine from "@/components/ui/gradientLine";
+import { createClient } from "@/utils/db/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import GradientLine from "@/components/ui/gradientLine";
-import Image from "next/image";
 
 export default function Members({id}: {id?: string}) {
   const supabase = createClient();

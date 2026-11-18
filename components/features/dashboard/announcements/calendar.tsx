@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
-import { createClient } from "@/utils/supabase/client";
 import CalendarEvent from "@/components/features/dashboard/announcements/calendarEvent";
-import Image from "next/image";
 import ShowMoreEventsModal from "@/components/features/dashboard/announcements/showMoreEventsModal";
+import { createClient } from "@/utils/db/client";
+import moment from "moment";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
 
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/components/features/dashboard/announcements/toolbar.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const supabase = createClient();
 const localizer = momentLocalizer(moment);

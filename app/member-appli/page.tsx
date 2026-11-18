@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import NavBar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import { createClient } from "@/utils/supabase/client";
+import NavBar from "@/components/layout/navbar";
 import BackButton from "@/components/ui/backButton";
 import LoadingState from "@/components/ui/loading/mainLoadingState";
+import { createClient } from "@/utils/db/client";
+import { Suspense, useEffect, useState } from "react";
 
 import ApplicationHero from "./application-hero";
 import ApplicationInfo from "./application-info";

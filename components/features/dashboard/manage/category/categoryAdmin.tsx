@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, use } from "react";
-import { createClient } from "@/utils/supabase/client";
-import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
+import AddButton from "@/components/ui/addButton";
+import FormActions from "@/components/ui/FormActions";
+import Pagination from "@/components/ui/pagination";
+import Popup from "@/components/ui/popup";
+import SearchBar from "@/components/ui/searchBar";
 import SortIcon from "@/components/ui/sortIcon";
 import TableActions from "@/components/ui/tableActions";
-import SearchBar from "@/components/ui/searchBar";
-import AddButton from "@/components/ui/addButton";
-import Popup from "@/components/ui/popup";
-import FormActions from "@/components/ui/FormActions";
+import { createClient } from "@/utils/db/client";
+import { useEffect, useState } from "react";
 
 interface Category {
   id: number;

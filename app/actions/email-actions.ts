@@ -2,7 +2,7 @@
 "use server"
 
 import nodemailer from "nodemailer"
-import { createClient } from "@/utils/supabase/server"
+import { createClient } from "@/utils/db/server"
 
 // Email Config
 const transporter = nodemailer.createTransport({

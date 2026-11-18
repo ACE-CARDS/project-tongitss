@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
-import Pagination from "@/components/ui/pagination";
 import { useUser } from "@/components/context/userContext";
-import SortIcon from "@/components/ui/sortIcon";
 import AddButton from "@/components/ui/addButton";
-import TableActions from "@/components/ui/tableActions";
-import SearchBar from "@/components/ui/searchBar";
+import Pagination from "@/components/ui/pagination";
 import Popup from "@/components/ui/popup";
+import SearchBar from "@/components/ui/searchBar";
+import SortIcon from "@/components/ui/sortIcon";
+import TableActions from "@/components/ui/tableActions";
+import { createClient } from "@/utils/db/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 interface EventItem {
   id: number;

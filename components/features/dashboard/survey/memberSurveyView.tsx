@@ -1,21 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import SurveyDescription from "@/app/survey/survey_description";
+import { useUser } from "@/components/context/userContext";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import GradientLine from "@/components/ui/gradientLine";
+import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
+import PaginationNav from "@/components/ui/pagination";
+import { createClient } from "@/utils/db/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { useUser } from "@/components/context/userContext";
-import SurveyDescription from "@/app/survey/survey_description";
-import SpotlightCard from "@/components/ui/SpotlightCard";
-import PaginationNav from "@/components/ui/pagination";
-import MemberFeatureBanner from "@/components/ui/memberFeatureBanner";
-import GradientLine from "@/components/ui/gradientLine";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FaRegAddressBook, FaRegCalendar, FaRegFolderClosed, FaSchool } from "react-icons/fa6";
 import { LuCircleArrowRight } from "react-icons/lu";
-import { FaRegCalendar } from "react-icons/fa6";
-import { FaRegAddressBook } from "react-icons/fa6";
-import { FaRegFolderClosed } from "react-icons/fa6";
-import { FaSchool } from "react-icons/fa6";
-import Image from "next/image";
 
 // Helper function for responsive items per page
 const getItemsPerPage = () => {

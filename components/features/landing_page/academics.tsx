@@ -1,7 +1,7 @@
+import GradientLine from "@/components/ui/gradientLine";
+import { createClient } from "@/utils/db/client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import GradientLine from "@/components/ui/gradientLine";
-import { createClient } from "@/utils/supabase/client"; 
 
 export default function Academics({id}: {id?: string}) {
   const supabase = createClient();

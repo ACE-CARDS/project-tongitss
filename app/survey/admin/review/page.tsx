@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import NavBar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
-import BackButton from "@/components/ui/backButton";
 import { sendSurveyApprovalEmail, sendSurveyRejectionEmail } from "@/app/actions/email-actions";
 import { useUser } from "@/components/context/userContext";
+import Footer from "@/components/layout/footer";
+import NavBar from "@/components/layout/navbar";
+import BackButton from "@/components/ui/backButton";
+import { createClient } from "@/utils/db/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 function ReviewContent() {
   const router = useRouter();
