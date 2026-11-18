@@ -195,7 +195,7 @@ export function AddAnnouncementForm() {
             announce_dash_end: endDate,
           };
 
-      const { error: dbError } = await supabase.from(tableName).insert(payload);
+      const { error: dbError } = await supabase.from(tableName).insert(payload as Record<string, any>);
       if (dbError) throw new Error(dbError.message);
 
       await logCreateAudit(tableName, trimmedTitle);
