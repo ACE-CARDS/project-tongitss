@@ -1,0 +1,87 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTHENTICATOR_PASSWORD: ${AUTHENTICATOR_PASSWORD}
+      APP_AUTH_PASSWORD: ${APP_AUTH_PASSWORD}
+      OLD_PREFIX: ${OLD_SUPABASE_PUBLIC_PREFIX}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./handover/db/init:/docker-entrypoint-initdb.d:ro
+      - ./handover/db/seed:/seed:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d app']
+      interval: 5s
+      retries: 20
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@db:5432/app
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${POSTGREST_JWT_SECRET}
+      PGRST_DB_MAX_ROWS: 1000
+
+  minio:
+    image: pgsty/silo:latest
+    restart: unless-stopped
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - miniodata:/data
+
+  minio-init:
+    image: pgsty/silo:latest
+    depends_on: [minio]
+    restart: 'no'
+    volumes:
+      - ./handover/storage:/storage:ro
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do sleep 2; done;
+      for d in /storage/*; do b=$$(basename $$d); mc mb --ignore-existing local/$$b; mc anonymous set download local/$$b; mc mirror --overwrite $$d local/$$b; done"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      AUTH_DATABASE_URL: postgres://app_auth:${APP_AUTH_PASSWORD}@db:5432/app?options=-c%20search_path%3Dauth
+      POSTGREST_URL: http://postgrest:3000
+      POSTGREST_JWT_SECRET: ${POSTGREST_JWT_SECRET}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    depends_on: [app, postgrest, minio]
+
+volumes:
+  pgdata:
+  miniodata:
+  caddydata:
