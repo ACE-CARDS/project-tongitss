@@ -46,7 +46,7 @@ export default async function RootLayout({
 
         {!isAdmin && (
           <Script 
-            src="/scripts/disableDevtools.js" 
+            src="/scripts/disableDevTools.js" 
             strategy="afterInteractive" 
           />
         )}
